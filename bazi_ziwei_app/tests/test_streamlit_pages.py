@@ -9,14 +9,14 @@ if APP_DIR not in sys.path:
 
 
 class StreamlitPageImportTests(unittest.TestCase):
-    def test_v1_page_modules_import(self):
-        for module_name in [
-            "ui.home",
-            "ui.profile_form",
-            "ui.bazi_page",
-            "ui.five_element_page",
-            "ui.useful_god_page",
-            "ui.luck_page",
+   def test_v1_page_modules_import(self):
+       for module_name in [
+           "ui.home",
+           "ui.profile_form",
+           "ui.bazi_page",
+           "ui.five_element_page",
+            "ui.inquiry_page",
+           "ui.luck_page",
             "ui.yearly_page",
             "ui.special_reports_page",
             "ui.ziwei_page",

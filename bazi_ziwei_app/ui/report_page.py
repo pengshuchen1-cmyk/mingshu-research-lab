@@ -21,12 +21,33 @@ def render_report_page() -> None:
     渲染报告导出页面。
     """
     import streamlit as st
+    from ui.styles import card_style
 
-    st.title("报告导出")
+    st.markdown(
+        '<div style="background:linear-gradient(135deg,#3D2B1A 0%,#5C4A32 100%);'
+        'border-radius:16px;padding:24px 32px;margin-bottom:24px;'
+        'box-shadow:0 4px 12px rgba(61,43,26,0.15);">'
+        '<h1 style="color:#FCF8F0;font-size:28px;letter-spacing:3px;'
+        'font-weight:700;margin:0 0 4px 0;">报告导出</h1>'
+        '<p style="color:#D4C5B0;font-size:13px;margin:0;">'
+        '支持 Markdown、TXT、PDF 三种格式导出综合分析报告</p></div>',
+        unsafe_allow_html=True,
+    )
     chart = st.session_state.get("current_chart")
     report = st.session_state.get("current_report")
     if not chart or not report:
-        st.info("请先在新建命盘页面生成命盘，或从命盘档案中选择一个命盘。")
+        st.markdown(
+                    '<div style="background:#FAF7F4;border:1px dashed #EDE6DC;'
+                    'border-radius:12px;padding:36px 24px;text-align:center;'
+                    'margin:20px 0;">'
+                    '<div style="font-size:36px;margin-bottom:12px;">📄</div>'
+                    '<div style="font-size:16px;font-weight:600;color:#3D2B1A;margin-bottom:6px;">'
+                    '请先新建或加载一个命盘</div>'
+                    '<div style="font-size:13px;color:#8C7A64;line-height:1.6;">'
+                    '在「新建命盘」页面输入个人信息生成命盘，'
+                    '或在「命盘档案」中选择一个已保存的命盘，'
+                    '即可导出完整分析报告。</div></div>',
+                    unsafe_allow_html=True)
         return
     if chart.get("error"):
         st.error(chart["error"])
@@ -52,12 +73,26 @@ def render_report_page() -> None:
     pdf_report = build_pdf_report(profile, chart, report, luck_data, yearly_data, monthly_data)
     name = profile.get("name", "未命名")
 
-    st.markdown("### 当前命盘")
-    st.write(f"姓名：{name}｜日主：{chart.get('day_master', '')}")
-    st.caption("报告内容包含八字排盘、五行十神、日主强弱、喜用五行细化、基础分析、大运流年、年度运程、流月分析和免责声明。")
+    st.markdown(
+                    f'<div style="{card_style()}margin-bottom:20px;">'
+                    '<div style="display:flex;justify-content:space-between;'
+                    'align-items:center;flex-wrap:wrap;gap:8px;">'
+                    '<div><div style="font-size:12px;color:#8C7A64;margin-bottom:2px;">当前命盘</div>'
+                    f'<div style="font-size:20px;font-weight:700;color:#3D2B1A;">{name}</div></div>'
+                    f'<div style="font-size:14px;color:#5C4A32;">日主 {chart.get("day_master", "")}</div>'
+                    '</div>'
+                    '<div style="font-size:12px;color:#8C7A64;margin-top:8px;line-height:1.5;">'
+                    '报告内容包含：八字排盘 · 五行十神 · 日主强弱 · 喜用五行细化 · '
+                    '基础分析 · 大运流年 · 年度运程 · 流月分析 · 免责声明</div></div>',
+                    unsafe_allow_html=True)
     if not pdf_report.startswith(b"%PDF"):
         st.info("当前环境 PDF 导出暂不可用，请先使用 Markdown 或 TXT 导出。也可以先运行：python -m pip install -r requirements.txt")
 
+    st.markdown(
+                    f'<div style="{card_style()}margin-bottom:20px;padding:20px 24px;">'
+                    '<div style="font-weight:600;color:#3D2B1A;font-size:15px;margin-bottom:14px;">'
+                    '选择导出格式</div></div>',
+                    unsafe_allow_html=True)
     col1, col2, col3 = st.columns(3)
     with col1:
         st.download_button(

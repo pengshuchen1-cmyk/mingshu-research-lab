@@ -18,6 +18,7 @@ from utils.database import (
     update_profile_birth_info,
     update_report,
 )
+from ui.styles import card_style
 from utils.validators import validate_profile
 
 
@@ -46,7 +47,16 @@ def render_archive_page() -> None:
 
     profiles = search_profiles(keyword=keyword, gender=gender)
     if not profiles:
-        st.info("暂无符合条件的命盘。")
+        st.markdown(
+                    '<div style="background:#FAF7F4;border:1px dashed #EDE6DC;'
+                    'border-radius:12px;padding:36px 24px;text-align:center;'
+                    'margin:20px 0;">'
+                    '<div style="font-size:36px;margin-bottom:12px;">📂</div>'
+                    '<div style="font-size:16px;font-weight:600;color:#3D2B1A;margin-bottom:6px;">'
+                    '暂无符合条件的命盘</div>'
+                    '<div style="font-size:13px;color:#8C7A64;line-height:1.6;">'
+                    '请先修改搜索条件，或在「新建命盘」页面创建并保存命盘。</div></div>',
+                    unsafe_allow_html=True)
         return
 
     st.markdown("### 已保存命盘")
@@ -186,9 +196,16 @@ def render_archive_page() -> None:
                 st.success("已重新排盘，并加载为当前命盘。")
                 st.rerun()
 
-        st.markdown("### 删除命盘")
-        confirm_delete = st.checkbox("我确认要删除该命盘及相关报告", key=f"confirm_delete_{profile_id}")
-        if st.button("删除命盘", disabled=not confirm_delete):
+        st.markdown(
+                    f'<div style="{card_style()}border:1px solid #B85C4A40;margin-top:20px;padding:16px 20px;">'
+                    '<div style="font-weight:600;color:#B85C4A;font-size:15px;margin-bottom:8px;">'
+                    '⚠ 删除命盘</div>'
+                    '<div style="font-size:13px;color:#5C4A32;margin-bottom:12px;line-height:1.5;">'
+                    '删除操作不可撤销，命盘信息和报告将从本地数据库中永久移除。</div>',
+                    unsafe_allow_html=True)
+        confirm_delete = st.checkbox("我确认要永久删除该命盘", key=f"confirm_delete_{profile_id}")
+        if st.button("删除命盘", disabled=not confirm_delete, type="primary"):
             delete_profile(profile_id)
             st.success("命盘已删除。")
             st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)

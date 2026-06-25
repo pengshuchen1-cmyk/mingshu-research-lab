@@ -266,8 +266,8 @@ def render_element_wheel_html(
         f'text-anchor="middle" dominant-baseline="central" '
         f'fill="#3D2B1A" font-size="14" font-weight="700" '
         f'font-family="Noto Sans SC, PingFang SC, sans-serif" '
-        f'style="text-shadow:0 1px 3px rgba(255,255,255,0.6);">'
-        f'{a["emoji"]} {a["name"]}</text>'
+        f'style="transform-origin:{a["lx"]:.1f}px {a["ly"]:.1f}px;text-shadow:0 1px 3px rgba(255,255,255,0.6);" '
+        f'class="text-norotate">{a["emoji"]} {a["name"]}</text>'
         for a in arc_data
     )
 
@@ -276,8 +276,8 @@ def render_element_wheel_html(
         f'text-anchor="middle" dominant-baseline="central" '
         f'fill="rgba(255,255,255,0.85)" font-size="13" font-weight="800" '
         f'font-family="Noto Sans SC, PingFang SC, sans-serif" '
-        f'style="text-shadow:0 1px 4px rgba(0,0,0,0.3);" '
-        f'class="score-fade">{a["score"]}</text>'
+        f'style="transform-origin:{a["sx"]:.1f}px {a["sy"]:.1f}px;text-shadow:0 1px 4px rgba(0,0,0,0.3);" '
+        f'class="score-fade text-norotate">{a["score"]}</text>'
         for a in arc_data
     )
 
@@ -286,6 +286,10 @@ def render_element_wheel_html(
 @keyframes wheel-rotate {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+@keyframes text-norotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(-360deg); }
 }
 @keyframes wheel-pulse {
     0% { opacity: 0.08; }
@@ -340,6 +344,9 @@ def render_element_wheel_html(
     animation:wheel-rotate 40s linear infinite;
 }}
 .spin-group:hover {{ animation-play-state:paused; }}
+.text-norotate {{
+    animation:text-norotate 40s linear infinite;
+}}
 .pulse-ring {{
     animation:wheel-pulse 3s ease-in-out infinite;
 }}
@@ -374,13 +381,13 @@ def render_element_wheel_html(
        {particles}
         {clouds}
         {border}
-       <circle cx="{cx}" cy="{cy}" r="{outer_r + 6}" fill="none"
-                stroke="#EDE6DC" stroke-width="1.5" opacity="0.4"/>
-        <g class="spin-group">{arcs_svg}</g>
+      <circle cx="{cx}" cy="{cy}" r="{outer_r + 6}" fill="none"
+               stroke="#EDE6DC" stroke-width="1.5" opacity="0.4"/>
+        <g class="spin-group">{arcs_svg}
         {labels_svg}
-        {scores_svg}
-        {dot_decoration}
-        <circle cx="{cx}" cy="{cy}" r="{outer_r * 0.54}"
+        {scores_svg}</g>
+       {dot_decoration}
+       <circle cx="{cx}" cy="{cy}" r="{outer_r * 0.54}"
                 fill="none" stroke="{dominant_color}" stroke-width="2"
                 stroke-dasharray="3 10" opacity="0.3" class="pulse-ring"/>
         <g class="center-group">
