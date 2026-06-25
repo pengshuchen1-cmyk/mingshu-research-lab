@@ -1,0 +1,240 @@
+[
+  {
+    "id": "project_progress",
+    "tag": "项目推进",
+    "trigger": {"ten_gods": ["食神", "伤官", "七杀"], "elements": ["木", "火"], "branch_relations": ["冲月支"]},
+    "text": "本月容易围绕项目推进、进度确认、成果交付或方案调整展开。",
+    "advice": "建议把目标拆成里程碑，重要节点提前同步，避免临近截止才集中处理。"
+  },
+  {
+    "id": "role_change",
+    "tag": "岗位变化",
+    "trigger": {"ten_gods": ["正官", "七杀", "偏印"], "elements": ["金", "水"], "branch_relations": ["冲月支"]},
+    "text": "本月容易出现岗位职责、汇报关系、工作内容或主业节奏的调整信号。",
+    "advice": "建议先确认职责边界和评价标准，再决定是否主动争取新任务。"
+  },
+  {
+    "id": "superior_pressure",
+    "tag": "上级压力",
+    "trigger": {"ten_gods": ["正官", "七杀"], "elements": ["金"], "branch_relations": ["冲月支"]},
+    "text": "本月容易遇到上级要求、考核节点、规则约束或强执行任务。",
+    "advice": "建议用书面清单确认优先级，减少口头理解偏差。"
+  },
+  {
+    "id": "client_communication",
+    "tag": "客户沟通",
+    "trigger": {"ten_gods": ["正财", "偏财", "伤官"], "elements": ["土", "火"], "branch_relations": ["冲日支"]},
+    "text": "本月客户、合作方、外部资源沟通会更频繁，容易反复确认需求。",
+    "advice": "建议把需求、价格、交付边界和时间点写清楚。"
+  },
+  {
+    "id": "contract_documents",
+    "tag": "合同文书",
+    "trigger": {"ten_gods": ["正官", "七杀", "伤官"], "elements": ["金", "土"], "branch_relations": ["冲月支", "冲日支"]},
+    "text": "本月容易遇到合同、文件、审批、沟通确认或规则流程相关事务。",
+    "advice": "重要内容建议保留记录，涉及钱款、合作和口头承诺时要尽量落到文字。"
+  },
+  {
+    "id": "presentation",
+    "tag": "汇报展示",
+    "trigger": {"ten_gods": ["食神", "伤官", "正官"], "elements": ["火"], "branch_relations": ["冲月支"]},
+    "text": "本月容易出现汇报、展示、面试、公开表达或内容发布类事务。",
+    "advice": "建议提前准备材料，用事实和结果支撑表达，语气保留弹性。"
+  },
+  {
+    "id": "study_exam",
+    "tag": "学习考试",
+    "trigger": {"ten_gods": ["正印", "偏印", "食神"], "elements": ["木", "水"], "branch_relations": ["冲时支"]},
+    "text": "本月适合学习、考试、资料整理、资质准备或系统复盘。",
+    "advice": "建议把学习目标拆小，固定复习时段，避免只收集资料不行动。"
+  },
+  {
+    "id": "team_friction",
+    "tag": "团队摩擦",
+    "trigger": {"ten_gods": ["比肩", "劫财", "伤官"], "elements": ["木", "火"], "branch_relations": ["冲月支", "冲日支"]},
+    "text": "本月团队内部容易出现意见不一致、分工拉扯或沟通语气问题。",
+    "advice": "建议先讲目标和边界，再讨论责任归属，避免把情绪放在前面。"
+  },
+  {
+    "id": "cooperation_chance",
+    "tag": "合作机会",
+    "trigger": {"ten_gods": ["劫财", "偏财", "正财"], "elements": ["土", "木"], "branch_relations": ["冲日支"]},
+    "text": "本月容易出现合作、资源置换、客户转介绍或共同推进的机会。",
+    "advice": "建议先小范围试运行，再扩大投入，分账和退出机制要提前讲清。"
+  },
+  {
+    "id": "competition",
+    "tag": "竞争增强",
+    "trigger": {"ten_gods": ["比肩", "劫财", "七杀"], "elements": ["木", "金"], "branch_relations": ["冲月支"]},
+    "text": "本月竞争感增强，容易和同行、同事或同类项目形成比较。",
+    "advice": "建议聚焦自己的优势指标，少被外界节奏牵着走。"
+  },
+  {
+    "id": "finance整理",
+    "tag": "财务整理",
+    "trigger": {"ten_gods": ["正财", "偏财"], "elements": ["土"], "branch_relations": ["冲日支"]},
+    "text": "本月容易处理账目、预算、报销、回款、采购或生活成本整理。",
+    "advice": "建议做一次现金流盘点，把固定支出和临时支出分开管理。"
+  },
+  {
+    "id": "expense_increase",
+    "tag": "支出增加",
+    "trigger": {"ten_gods": ["劫财", "偏财", "伤官"], "elements": ["火", "土"], "branch_relations": ["冲日支"]},
+    "text": "本月容易出现人情、设备、学习、出行或项目推进带来的支出增加。",
+    "advice": "建议给非必要支出设上限，避免因为情绪或面子临时加码。"
+  },
+  {
+    "id": "windfall_chance",
+    "tag": "偏财机会",
+    "trigger": {"ten_gods": ["偏财", "食神", "伤官"], "elements": ["土", "火"], "branch_relations": ["冲时支"]},
+    "text": "本月可能看到项目型收益、临时订单、资源撮合或副业机会。",
+    "advice": "建议先核算投入产出和回收周期，不宜只看表面热闹。"
+  },
+  {
+    "id": "investment_caution",
+    "tag": "投资谨慎",
+    "trigger": {"ten_gods": ["偏财", "七杀", "偏印"], "elements": ["金", "水"], "branch_relations": ["冲日支"]},
+    "text": "本月面对投资、扩张、借贷或高风险机会时，需要多做验证。",
+    "advice": "建议保留现金缓冲，不熟悉的项目先不重仓参与。"
+  },
+  {
+    "id": "partnership_split",
+    "tag": "合伙分账",
+    "trigger": {"ten_gods": ["劫财", "比肩", "偏财"], "elements": ["木", "土"], "branch_relations": ["冲日支"]},
+    "text": "本月合伙、分账、资源投入和收益归属容易成为讨论重点。",
+    "advice": "建议把谁投入什么、如何分配、如何退出写清楚。"
+  },
+  {
+    "id": "cash_pressure",
+    "tag": "现金流压力",
+    "trigger": {"ten_gods": ["正财", "劫财", "七杀"], "elements": ["土", "金"], "branch_relations": ["冲月支"]},
+    "text": "本月现金流、账期、固定支出或回款节奏需要更细致管理。",
+    "advice": "建议提前安排付款顺序，避免多个支出节点叠在一起。"
+  },
+  {
+    "id": "resource_monetize",
+    "tag": "资源变现",
+    "trigger": {"ten_gods": ["偏财", "食神", "伤官"], "elements": ["火", "土"], "branch_relations": ["冲时支"]},
+    "text": "本月适合把技能、内容、人脉或项目资源转成更清晰的收益路径。",
+    "advice": "建议把服务内容、报价和交付范围做成标准版本。"
+  },
+  {
+    "id": "client_payment",
+    "tag": "客户回款",
+    "trigger": {"ten_gods": ["正财", "偏财", "正官"], "elements": ["土", "金"], "branch_relations": ["冲月支"]},
+    "text": "本月容易处理客户回款、账期确认、发票流程或费用结算。",
+    "advice": "建议提前确认节点，避免到期后再被动催促。"
+  },
+  {
+    "id": "relationship_warm",
+    "tag": "感情升温",
+    "trigger": {"ten_gods": ["食神", "正财", "正官"], "elements": ["火", "土"], "branch_relations": []},
+    "text": "本月关系中更适合增加陪伴、表达关心和讨论现实安排。",
+    "advice": "建议用具体行动建立信任，不只停留在情绪表达。"
+  },
+  {
+    "id": "relationship_friction",
+    "tag": "关系摩擦",
+    "trigger": {"ten_gods": ["伤官", "劫财", "七杀"], "elements": ["火", "金"], "branch_relations": ["冲日支"]},
+    "text": "本月关系中容易因为语气、时间分配、承诺边界或现实压力产生摩擦。",
+    "advice": "建议先确认对方真实诉求，再讨论解决方案。"
+  },
+  {
+    "id": "old_contact",
+    "tag": "旧人联系",
+    "trigger": {"ten_gods": ["偏印", "劫财", "比肩"], "elements": ["水", "木"], "branch_relations": ["冲日支"]},
+    "text": "本月可能出现旧同事、旧朋友、旧客户或过去议题被重新提起。",
+    "advice": "建议分清情绪回忆和现实价值，不急着做长期承诺。"
+  },
+  {
+    "id": "family_affairs",
+    "tag": "家庭事务",
+    "trigger": {"ten_gods": ["正印", "正财", "正官"], "elements": ["土", "水"], "branch_relations": ["冲年支"]},
+    "text": "本月容易涉及家庭沟通、长辈事务、居住安排或现实责任。",
+    "advice": "建议把时间和责任安排说具体，避免一个人默默承担。"
+  },
+  {
+    "id": "partner_talk",
+    "tag": "伴侣沟通",
+    "trigger": {"ten_gods": ["正财", "正官", "伤官"], "elements": ["火", "土"], "branch_relations": ["冲日支"]},
+    "text": "本月伴侣或重要合作关系中的沟通需求增加，现实安排会被看见。",
+    "advice": "建议围绕时间、钱、责任和期待做具体沟通。"
+  },
+  {
+    "id": "social_obligation",
+    "tag": "人情往来",
+    "trigger": {"ten_gods": ["劫财", "比肩", "偏财"], "elements": ["木", "火"], "branch_relations": []},
+    "text": "本月人情往来、聚会、邀约和社交支出会更明显。",
+    "advice": "建议选择真正有价值的互动，不必每个邀约都答应。"
+  },
+  {
+    "id": "friend_help",
+    "tag": "朋友求助",
+    "trigger": {"ten_gods": ["劫财", "比肩", "正印"], "elements": ["木", "水"], "branch_relations": []},
+    "text": "本月朋友、同事或熟人可能提出协助、资源或情绪支持需求。",
+    "advice": "建议量力而行，帮忙前先说明边界和可承担范围。"
+  },
+  {
+    "id": "cooperation_boundary",
+    "tag": "合作边界",
+    "trigger": {"ten_gods": ["劫财", "比肩", "偏财", "正官"], "elements": ["木", "金"], "branch_relations": ["冲日支"]},
+    "text": "本月合作关系中的职责、收益、时间和承诺边界需要被重新确认。",
+    "advice": "建议把模糊地带讲清楚，避免后续互相误会。"
+  },
+  {
+    "id": "sleep_schedule",
+    "tag": "睡眠作息",
+    "trigger": {"ten_gods": ["伤官", "七杀", "偏印"], "elements": ["火", "水"], "branch_relations": ["冲时支"]},
+    "text": "本月睡眠、作息和精力恢复需要更多关注，容易晚睡或脑内停不下来。",
+    "advice": "建议固定睡前流程，减少夜间信息刺激。"
+  },
+  {
+    "id": "mood_fluctuation",
+    "tag": "情绪波动",
+    "trigger": {"ten_gods": ["伤官", "七杀", "偏印"], "elements": ["火", "水"], "branch_relations": ["冲日支"]},
+    "text": "本月情绪起伏、焦虑感或急躁感更容易被触发。",
+    "advice": "建议重要沟通避开情绪高点，先写下来再表达。"
+  },
+  {
+    "id": "digestion",
+    "tag": "脾胃注意",
+    "trigger": {"ten_gods": ["正财", "偏财", "食神"], "elements": ["土"], "branch_relations": []},
+    "text": "本月饮食、脾胃、消化和生活节律需要适度管理。",
+    "advice": "建议少做暴饮暴食和过度应酬，保持规律饮食。"
+  },
+  {
+    "id": "liver_pressure",
+    "tag": "肝胆压力",
+    "trigger": {"ten_gods": ["比肩", "劫财", "七杀"], "elements": ["木"], "branch_relations": ["冲月支"]},
+    "text": "本月压力容易通过紧绷、烦躁或身体疲劳表现出来。",
+    "advice": "建议增加舒展运动，减少连续高压工作时长。"
+  },
+  {
+    "id": "breath_skin",
+    "tag": "呼吸皮肤",
+    "trigger": {"ten_gods": ["正官", "七杀"], "elements": ["金"], "branch_relations": []},
+    "text": "本月呼吸、皮肤、过敏或环境适应状态值得留意。",
+    "advice": "建议保持环境清洁，作息不稳定时更要注意恢复。"
+  },
+  {
+    "id": "heart_fire",
+    "tag": "心火焦虑",
+    "trigger": {"ten_gods": ["食神", "伤官", "七杀"], "elements": ["火"], "branch_relations": ["冲日支"]},
+    "text": "本月心火、焦虑、眼睛疲劳或情绪外放较容易出现。",
+    "advice": "建议减少熬夜和连续高刺激输入，重要决定先冷静一晚。"
+  },
+  {
+    "id": "kidney_fatigue",
+    "tag": "腰肾疲劳",
+    "trigger": {"ten_gods": ["正印", "偏印", "七杀"], "elements": ["水"], "branch_relations": ["冲时支"]},
+    "text": "本月容易感到精力不足、腰背疲劳或恢复速度变慢。",
+    "advice": "建议保证睡眠和保暖，安排低强度恢复活动。"
+  },
+  {
+    "id": "travel_safety",
+    "tag": "出行安全",
+    "trigger": {"ten_gods": ["七杀", "伤官", "偏财"], "elements": ["水", "金"], "branch_relations": ["冲年支", "冲时支"]},
+    "text": "本月出行、交通、差旅或临时变动增加时，需要更重视安全和时间余量。",
+    "advice": "建议提前规划路线和备选方案，重要物品与票据信息留备份。"
+  }
+]

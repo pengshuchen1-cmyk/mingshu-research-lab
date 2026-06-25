@@ -1,0 +1,6 @@
+{
+  "rules": [
+    {"id": "risk-weak", "title": "身弱节奏风险", "condition": {"strength": "身弱"}, "tags": ["压力", "支持"], "text": "身弱时更需要资源、平台和环境支持。", "advice": "建议避免长期单打独斗。", "risk": "需要注意压力过载和恢复不足。"},
+    {"id": "risk-peer", "title": "合伙边界风险", "condition": {"ten_gods_contains": ["比肩", "劫财"]}, "tags": ["合伙", "边界"], "text": "比劫明显时，合作和人情议题更需要清楚边界。", "advice": "建议提前写清规则。", "risk": "需要注意口头承诺。"}
+  ]
+}

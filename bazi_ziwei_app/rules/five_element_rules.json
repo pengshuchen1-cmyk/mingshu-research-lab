@@ -1,0 +1,6 @@
+{
+  "rules": [
+    {"id": "element-wood", "title": "木气主题", "condition": {"elements_contains": ["木"]}, "tags": ["学习", "规划"], "text": "木代表生发、学习、规划与成长。", "advice": "建议重视长期学习和方向梳理。", "risk": "需要注意计划过多而执行不足。"},
+    {"id": "element-fire", "title": "火气主题", "condition": {"elements_contains": ["火"]}, "tags": ["表达", "行动"], "text": "火代表表达、行动、曝光和影响力。", "advice": "建议保持稳定输出。", "risk": "需要注意急躁和消耗。"}
+  ]
+}

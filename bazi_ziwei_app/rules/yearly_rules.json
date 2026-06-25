@@ -1,0 +1,6 @@
+{
+  "rules": [
+    {"id": "year-favorable", "title": "喜用年份", "condition": {"year_relation": "喜用相关"}, "tags": ["机会", "推进"], "text": "喜用相关年份更适合推进已验证计划和资源积累。", "advice": "建议主动争取资源，同时保留复盘。", "risk": "需要注意扩张过快。"},
+    {"id": "year-pressure", "title": "忌神年份", "condition": {"year_relation": "忌神相关"}, "tags": ["压力", "收敛"], "text": "忌神相关年份更容易感到消耗或反复，适合收紧节奏。", "advice": "建议先稳住基本盘，重要决定多验证。", "risk": "需要注意高成本试错。"}
+  ]
+}

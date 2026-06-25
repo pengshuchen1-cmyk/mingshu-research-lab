@@ -1,0 +1,137 @@
+"""公历转八字基础排盘。"""
+
+from __future__ import annotations
+
+from datetime import datetime
+
+
+def _call_first(obj: object, method_names: list[str]) -> str | None:
+    """尝试调用第一个可用方法。"""
+    for name in method_names:
+        method = getattr(obj, name, None)
+        if callable(method):
+            value = method()
+            if value is not None:
+                return str(value)
+    return None
+
+
+def _build_solar(year: int, month: int, day: int, hour: int, minute: int):
+    """兼容不同 lunar_python 版本创建 Solar 对象。"""
+    from lunar_python import Solar
+
+    try:
+        return Solar(year, month, day, hour, minute, 0)
+    except TypeError:
+        return Solar.fromYmdHms(year, month, day, hour, minute, 0)
+
+
+def _split_pillar(pillar: str) -> tuple[str, str]:
+    """从干支字符串中拆分天干和地支。"""
+    if len(pillar) >= 2:
+        return pillar[0], pillar[1]
+    return "", ""
+
+
+def get_lunar_eight_char(year: int, month: int, day: int, hour: int, minute: int = 0) -> dict:
+    """
+    使用 lunar_python 根据公历生日生成八字四柱。
+    """
+    try:
+        datetime(year, month, day, hour, minute)
+        solar = _build_solar(year, month, day, hour, minute)
+        lunar = solar.getLunar()
+        eight_char = lunar.getEightChar()
+
+        year_pillar = _call_first(eight_char, ["getYear", "getYearInGanZhi"]) or ""
+        month_pillar = _call_first(eight_char, ["getMonth", "getMonthInGanZhi"]) or ""
+        day_pillar = _call_first(eight_char, ["getDay", "getDayInGanZhi"]) or ""
+        hour_pillar = _call_first(eight_char, ["getTime", "getHour", "getTimeInGanZhi"]) or ""
+
+        year_gan = _call_first(eight_char, ["getYearGan"]) or _split_pillar(year_pillar)[0]
+        year_zhi = _call_first(eight_char, ["getYearZhi"]) or _split_pillar(year_pillar)[1]
+        month_gan = _call_first(eight_char, ["getMonthGan"]) or _split_pillar(month_pillar)[0]
+        month_zhi = _call_first(eight_char, ["getMonthZhi"]) or _split_pillar(month_pillar)[1]
+        day_gan = _call_first(eight_char, ["getDayGan"]) or _split_pillar(day_pillar)[0]
+        day_zhi = _call_first(eight_char, ["getDayZhi"]) or _split_pillar(day_pillar)[1]
+        hour_gan = _call_first(eight_char, ["getTimeGan", "getHourGan"]) or _split_pillar(hour_pillar)[0]
+        hour_zhi = _call_first(eight_char, ["getTimeZhi", "getHourZhi"]) or _split_pillar(hour_pillar)[1]
+
+        lunar_text = _call_first(lunar, ["toFullString", "toString"]) or str(lunar)
+        solar_text = f"{year:04d}-{month:02d}-{day:02d} {hour:02d}:{minute:02d}:00"
+
+        # 新字段：纳音、空亡、十二长生、五行
+        year_na_yin = _call_first(eight_char, ["getYearNaYin"]) or ""
+        month_na_yin = _call_first(eight_char, ["getMonthNaYin"]) or ""
+        day_na_yin = _call_first(eight_char, ["getDayNaYin"]) or ""
+        time_na_yin = _call_first(eight_char, ["getTimeNaYin"]) or ""
+
+        year_xun_kong = _call_first(eight_char, ["getYearXunKong"]) or ""
+        month_xun_kong = _call_first(eight_char, ["getMonthXunKong"]) or ""
+        day_xun_kong = _call_first(eight_char, ["getDayXunKong"]) or ""
+        time_xun_kong = _call_first(eight_char, ["getTimeXunKong"]) or ""
+
+        year_di_shi = _call_first(eight_char, ["getYearDiShi"]) or ""
+        month_di_shi = _call_first(eight_char, ["getMonthDiShi"]) or ""
+        day_di_shi = _call_first(eight_char, ["getDayDiShi"]) or ""
+        time_di_shi = _call_first(eight_char, ["getTimeDiShi"]) or ""
+
+        year_wu_xing = _call_first(eight_char, ["getYearWuXing"]) or ""
+        month_wu_xing = _call_first(eight_char, ["getMonthWuXing"]) or ""
+        day_wu_xing = _call_first(eight_char, ["getDayWuXing"]) or ""
+        time_wu_xing = _call_first(eight_char, ["getTimeWuXing"]) or ""
+
+        # 全局数据：命宫、身宫、胎元、胎息
+        ming_gong = _call_first(eight_char, ["getMingGong"]) or ""
+        shen_gong = _call_first(eight_char, ["getShenGong"]) or ""
+        tai_yuan = _call_first(eight_char, ["getTaiYuan"]) or ""
+        tai_xi = _call_first(eight_char, ["getTaiXi"]) or ""
+
+        return {
+            "solar": solar_text,
+            "lunar_text": lunar_text,
+            "year_pillar": year_pillar,
+            "month_pillar": month_pillar,
+            "day_pillar": day_pillar,
+            "hour_pillar": hour_pillar,
+            "year_gan": year_gan,
+            "year_zhi": year_zhi,
+            "month_gan": month_gan,
+            "month_zhi": month_zhi,
+            "day_gan": day_gan,
+            "day_zhi": day_zhi,
+            "hour_gan": hour_gan,
+            "hour_zhi": hour_zhi,
+            "day_master": day_gan,
+            # 纳音
+            "year_na_yin": year_na_yin,
+            "month_na_yin": month_na_yin,
+            "day_na_yin": day_na_yin,
+            "time_na_yin": time_na_yin,
+            # 空亡
+            "year_xun_kong": year_xun_kong,
+            "month_xun_kong": month_xun_kong,
+            "day_xun_kong": day_xun_kong,
+            "time_xun_kong": time_xun_kong,
+            # 十二长生
+            "year_di_shi": year_di_shi,
+            "month_di_shi": month_di_shi,
+            "day_di_shi": day_di_shi,
+            "time_di_shi": time_di_shi,
+            # 五行
+            "year_wu_xing": year_wu_xing,
+            "month_wu_xing": month_wu_xing,
+            "day_wu_xing": day_wu_xing,
+            "time_wu_xing": time_wu_xing,
+            # 全局
+            "ming_gong": ming_gong,
+            "shen_gong": shen_gong,
+            "tai_yuan": tai_yuan,
+            "tai_xi": tai_xi,
+        }
+    except ModuleNotFoundError as exc:
+        if exc.name == "lunar_python":
+            return {"error": "缺少 lunar_python，请先运行：python -m pip install -r requirements.txt"}
+        return {"error": f"日期不合法或排盘失败：{exc}"}
+    except Exception as exc:
+        return {"error": f"日期不合法或排盘失败：{exc}"}

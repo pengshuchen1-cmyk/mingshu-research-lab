@@ -1,0 +1,6 @@
+{
+  "rules": [
+    {"id": "advice-learning", "title": "学习成长建议", "condition": {"has_resource": true}, "tags": ["学习", "方法"], "text": "印星有体现时，学习和系统建设对长期发展有帮助。", "advice": "建议把学习转化为可执行清单。", "risk": "需要注意只输入不输出。"},
+    {"id": "advice-cashflow", "title": "现金流建议", "condition": {"has_wealth": true}, "tags": ["预算", "现金流"], "text": "财星有体现时，预算和现金流管理更重要。", "advice": "建议记录收入、支出、项目回款和风险敞口。", "risk": "需要注意短期机会带来的资金波动。"}
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "rules": [
+    {"id": "useful-wood", "title": "喜木建议", "condition": {"favorable_elements_contains": ["木"]}, "tags": ["学习", "成长"], "text": "喜木时更适合学习、规划、文化、教育和创意成长。", "advice": "建议建立长期学习计划。", "risk": "需要注意只规划不落实。"},
+    {"id": "useful-fire", "title": "喜火建议", "condition": {"favorable_elements_contains": ["火"]}, "tags": ["表达", "传播"], "text": "喜火时更适合表达、传播、品牌和行动力建设。", "advice": "建议增加可见成果。", "risk": "需要注意节奏过快。"}
+  ]
+}

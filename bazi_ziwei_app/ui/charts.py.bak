@@ -1,0 +1,433 @@
+"""命数研究室 · Altair 统计图 + 五行轮盘模块（动画升级版 v2.0）。
+
+所有图表使用设计系统的配色（五行色 / 茶色 / 金色系）。
+五行轮盘为 SVG 动画组件，包含粒子、流光、呼吸光晕、旋转等效果。
+"""
+
+import pandas as pd
+import altair as alt
+import math
+import random
+from typing import Any
+
+# ——— 设计系统色板 ———
+ELEMENT_COLORS_PLOT = ["#8BA888", "#B85C4A", "#C4A882", "#D4A843", "#7A9BAE"]
+GOLD_SCALE = ["#EDE6DC", "#D4A843", "#B8860B", "#8C7A64", "#3D2B1A"]
+
+# ——— 五行轮盘数据 ———
+ELEMENT_NAMES = ["木", "火", "土", "金", "水"]
+ELEMENT_COLORS_SVG = {
+    "木": "#8BA888", "火": "#B85C4A", "土": "#C4A882",
+    "金": "#D4A843", "水": "#7A9BAE",
+}
+ELEMENT_GRADIENTS = {
+    "木": ("#7BA878", "#9CC49C"),
+    "火": ("#B85C4A", "#D07460"),
+    "土": ("#C4A882", "#D4BC98"),
+    "金": ("#D4A843", "#E4BD58"),
+    "水": ("#6A9BAE", "#8ABED4"),
+}
+ELEMENT_EMOJIS_SVG = {
+    "木": "\U0001f333", "火": "\U0001f525",
+    "土": "\u26f0\ufe0f", "金": "\u2694\ufe0f", "水": "\U0001f4a7",
+}
+
+# 大运阶段 → 数值映射
+STAGE_SCORES = {
+    "偏助力": 90, "小有助力": 70, "平稳观察": 50,
+    "略有压力": 30, "压力较明显": 10,
+}
+STAGE_COLORS = {
+    "偏助力": "#8BA888", "小有助力": "#D4A843",
+    "平稳观察": "#C4A882", "略有压力": "#B8860B",
+    "压力较明显": "#B85C4A",
+}
+
+
+# ===================================================================
+#  五行轮盘（SVG + CSS 动画 v2.0）
+# ===================================================================
+
+def _polar_to_cartesian(
+    cx: float, cy: float, r: float, angle_deg: float
+) -> tuple[float, float]:
+    """极坐标 → 笛卡尔坐标。"""
+    rad = math.radians(angle_deg)
+    return (cx + r * math.cos(rad), cy + r * math.sin(rad))
+
+
+def _describe_arc(
+    cx: float, cy: float, outer_r: float, inner_r: float,
+    start_deg: float, end_deg: float,
+) -> str:
+    """描述一个环形扇区的 SVG path d 属性。"""
+    x1o, y1o = _polar_to_cartesian(cx, cy, outer_r, start_deg)
+    x2o, y2o = _polar_to_cartesian(cx, cy, outer_r, end_deg)
+    x1i, y1i = _polar_to_cartesian(cx, cy, inner_r, end_deg)
+    x2i, y2i = _polar_to_cartesian(cx, cy, inner_r, start_deg)
+    large = 1 if (end_deg - start_deg) > 180 else 0
+    return (
+        f"M {x1o:.2f} {y1o:.2f} "
+        f"A {outer_r} {outer_r} 0 {large} 1 {x2o:.2f} {y2o:.2f} "
+        f"L {x1i:.2f} {y1i:.2f} "
+        f"A {inner_r} {inner_r} 0 {large} 0 {x2i:.2f} {y2i:.2f} Z"
+    )
+
+
+def _build_gradient_defs(
+    arc_data: list[dict], cx: float, cy: float
+) -> str:
+    """构建 SVG defs 中的线性渐变 + 滤镜。"""
+    parts = []
+    for a in arc_data:
+        c1, c2 = ELEMENT_GRADIENTS.get(a["name"], ("#888", "#888"))
+        gid = f"grad_{a['name']}"
+        parts.append(
+            f'<linearGradient id="{gid}" x1="0%" y1="0%" x2="100%" y2="100%">'
+            f'<stop offset="0%" stop-color="{c1}" stop-opacity="0.95"/>'
+            f'<stop offset="100%" stop-color="{c2}" stop-opacity="0.85"/>'
+            f'</linearGradient>'
+        )
+    parts += [
+        '<radialGradient id="centerGlow" cx="50%" cy="50%" r="50%">'
+        '<stop offset="0%" stop-color="#FCF8F0" stop-opacity="1"/>'
+        '<stop offset="70%" stop-color="#F5F0EB" stop-opacity="0.95"/>'
+        '<stop offset="100%" stop-color="#EDE6DC" stop-opacity="0.8"/>'
+        '</radialGradient>',
+        '<filter id="shadowFilter">'
+        '<feDropShadow dx="0" dy="2" stdDeviation="6" flood-opacity="0.15"/>'
+        '</filter>',
+    ]
+    return "".join(parts)
+
+
+def _build_particles(
+    width: int, height: int, cx: float, cy: float,
+    outer_r: float, color: str, count: int = 16,
+) -> str:
+    """生成浮动粒子。"""
+    random.seed(42)
+    out = ""
+    for _ in range(count):
+        px = random.uniform(20, width - 20)
+        py = random.uniform(20, height - 20)
+        pr = random.uniform(1.2, 3.2)
+        po = random.uniform(0.12, 0.40)
+        dur = random.uniform(4, 8)
+        delay = random.uniform(0, 6)
+        dxc = px - cx
+        dyc = py - cy
+        dist = math.hypot(dxc, dyc)
+        if dist < outer_r * 0.55:
+            px = cx + dxc / dist * outer_r * 0.85 if dist > 0 else px
+            py = cy + dyc / dist * outer_r * 0.85 if dist > 0 else py
+        out += (
+            f'<circle cx="{px:.1f}" cy="{py:.1f}" r="{pr}" '
+            f'fill="{color}" opacity="{po}" '
+            f'class="particle" style="animation-delay:{delay}s;animation-duration:{dur}s"/>'
+        )
+    return out
+
+
+def _build_dot_decoration(
+    cx: float, cy: float, outer_r: float,
+) -> str:
+    """外环装饰光点。"""
+    out = ""
+    for deg in range(0, 360, 72):
+        dx, dy = _polar_to_cartesian(cx, cy, outer_r + 6, deg - 90)
+        out += (
+            f'<circle cx="{dx:.1f}" cy="{dy:.1f}" r="2.5" fill="#D4A843" '
+            f'opacity="0.5" class="dot-pulse"/>'
+        )
+    return out
+
+
+def render_element_wheel_html(
+    five_elements: dict[str, float],
+    width: int = 440,
+    height: int = 440,
+    animated: bool = True,
+) -> str:
+    """生成五行轮盘 SVG 的完整 HTML 字符串（v2.0 — 粒子 + 流光 + 呼吸光晕）。"""
+    cx, cy = width / 2, height / 2
+    outer_r = min(cx, cy) * 0.82
+    inner_r = outer_r * 0.48
+
+    total = sum(max(float(v), 0.1) for v in five_elements.values()) or 1
+    sorted_elements = sorted(
+        [(el, max(float(score), 0.1)) for el, score in five_elements.items()],
+        key=lambda x: -x[1],
+    )
+
+    # 构建弧段数据
+    arc_data: list[dict[str, Any]] = []
+    current_deg = -90.0
+    for i, (el_name, el_score) in enumerate(sorted_elements):
+        sweep = max(el_score / total * 360, 2)
+        if sweep > 359:
+            sweep = 359
+        end_deg = current_deg + sweep
+        path = _describe_arc(cx, cy, outer_r, inner_r, current_deg, end_deg)
+        mid_deg = (current_deg + end_deg) / 2
+        label_r = outer_r * 0.80
+        lx, ly = _polar_to_cartesian(cx, cy, label_r, mid_deg)
+        score_r = outer_r * 0.62
+        sx, sy = _polar_to_cartesian(cx, cy, score_r, mid_deg)
+        arc_data.append({
+            "name": el_name,
+            "color": ELEMENT_COLORS_SVG.get(el_name, "#888"),
+            "emoji": ELEMENT_EMOJIS_SVG.get(el_name, ""),
+            "score": round(el_score, 1),
+            "pct": round(el_score / total * 100, 1),
+            "path": path,
+            "lx": lx, "ly": ly,
+            "sx": sx, "sy": sy,
+        })
+        current_deg = end_deg
+
+    dominant = arc_data[0] if arc_data else None
+    dominant_name = dominant["name"] if dominant else "—"
+    dominant_pct = dominant["pct"] if dominant else 0
+    dominant_color = dominant["color"] if dominant else "#3D2B1A"
+
+    # 构建 SVG 子元素
+    grad_defs = _build_gradient_defs(arc_data, cx, cy)
+    particles = _build_particles(width, height, cx, cy, outer_r, dominant_color)
+    dot_decoration = _build_dot_decoration(cx, cy, outer_r)
+
+    arcs_svg = "".join(
+        f'<path d="{a["path"]}" fill="url(#grad_{a["name"]})" '
+        f'stroke="#F5F0EB" stroke-width="2.5" opacity="0.92" '
+        f'filter="url(#shadowFilter)"/>'
+        for a in arc_data
+    )
+
+    labels_svg = "".join(
+        f'<text x="{a["lx"]:.1f}" y="{a["ly"]:.1f}" '
+        f'text-anchor="middle" dominant-baseline="central" '
+        f'fill="#3D2B1A" font-size="14" font-weight="700" '
+        f'font-family="Noto Sans SC, PingFang SC, sans-serif" '
+        f'style="text-shadow:0 1px 3px rgba(255,255,255,0.6);">'
+        f'{a["emoji"]} {a["name"]}</text>'
+        for a in arc_data
+    )
+
+    scores_svg = "".join(
+        f'<text x="{a["sx"]:.1f}" y="{a["sy"]:.1f}" '
+        f'text-anchor="middle" dominant-baseline="central" '
+        f'fill="rgba(255,255,255,0.85)" font-size="13" font-weight="800" '
+        f'font-family="Noto Sans SC, PingFang SC, sans-serif" '
+        f'style="text-shadow:0 1px 4px rgba(0,0,0,0.3);" '
+        f'class="score-fade">{a["score"]}</text>'
+        for a in arc_data
+    )
+
+    # 动画 CSS
+    anim_css = """
+@keyframes wheel-rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+@keyframes wheel-pulse {
+    0% { opacity: 0.08; }
+    50% { opacity: 0.25; }
+    100% { opacity: 0.08; }
+}
+@keyframes wheel-glow {
+    0% { filter: drop-shadow(0 0 12px rgba(184,134,11,0.10)); }
+    50% { filter: drop-shadow(0 0 28px rgba(184,134,11,0.40)); }
+    100% { filter: drop-shadow(0 0 12px rgba(184,134,11,0.10)); }
+}
+@keyframes fade-in {
+    0% { opacity: 0; transform: scale(0.8); }
+    60% { transform: scale(1.05); }
+    100% { opacity: 1; transform: scale(1); }
+}
+@keyframes score-fade-in {
+    0% { opacity: 0; transform: translateY(8px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes particle-float {
+    0%, 100% { transform: translate(0, 0); opacity: 0.15; }
+    25% { transform: translate(10px, -8px); opacity: 0.6; }
+    50% { transform: translate(-6px, -15px); opacity: 0.3; }
+    75% { transform: translate(8px, -5px); opacity: 0.5; }
+}
+@keyframes dot-pulse {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.3); }
+}
+@keyframes center-breath {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.04); }
+}
+""" if animated else ""
+
+    html = f"""<!DOCTYPE html>
+<html><head>
+<style>
+* {{ margin:0; padding:0; box-sizing:border-box; }}
+.wheel-wrap {{
+    display:flex; justify-content:center; align-items:center;
+    width:{width}px; height:{height}px;
+    position:relative; background:transparent;
+}}
+.wheel-svg {{
+    {'animation:wheel-glow 4s ease-in-out infinite;' if animated else ''}
+    filter:drop-shadow(0 6px 30px rgba(61,43,26,0.10));
+}}
+.spin-group {{
+    transform-origin:{cx}px {cy}px;
+    animation:wheel-rotate 40s linear infinite;
+}}
+.spin-group:hover {{ animation-play-state:paused; }}
+.pulse-ring {{
+    animation:wheel-pulse 3s ease-in-out infinite;
+}}
+.center-group {{
+    animation:fade-in 0.8s ease-out both;
+}}
+.center-inner {{
+    animation:center-breath 4s ease-in-out infinite;
+    transform-origin:{cx}px {cy}px;
+}}
+.particle {{
+    animation:particle-float 5s ease-in-out infinite;
+}}
+.dot-pulse {{
+    animation:dot-pulse 3s ease-in-out infinite;
+}}
+.score-fade {{
+    animation:score-fade-in 0.5s ease-out both;
+}}
+.score-fade:nth-child(1) {{ animation-delay:0.15s; }}
+.score-fade:nth-child(2) {{ animation-delay:0.25s; }}
+.score-fade:nth-child(3) {{ animation-delay:0.35s; }}
+.score-fade:nth-child(4) {{ animation-delay:0.45s; }}
+.score-fade:nth-child(5) {{ animation-delay:0.55s; }}
+{anim_css if animated else ''}
+</style></head>
+<body style="margin:0;padding:0;background:transparent;overflow:hidden;">
+<div class="wheel-wrap">
+    <svg width="{width}" height="{height}" viewBox="0 0 {width} {height}"
+         xmlns="http://www.w3.org/2000/svg" class="wheel-svg">
+        <defs>{grad_defs}</defs>
+        {particles}
+        <circle cx="{cx}" cy="{cy}" r="{outer_r + 6}" fill="none"
+                stroke="#EDE6DC" stroke-width="1.5" opacity="0.4"/>
+        <g class="spin-group">{arcs_svg}</g>
+        {labels_svg}
+        {scores_svg}
+        {dot_decoration}
+        <circle cx="{cx}" cy="{cy}" r="{outer_r * 0.54}"
+                fill="none" stroke="{dominant_color}" stroke-width="2"
+                stroke-dasharray="3 10" opacity="0.3" class="pulse-ring"/>
+        <g class="center-group">
+            <circle cx="{cx}" cy="{cy}" r="{inner_r * 0.72}"
+                    fill="url(#centerGlow)" stroke="{dominant_color}"
+                    stroke-width="3" class="center-inner"
+                    filter="url(#shadowFilter)"/>
+            <circle cx="{cx}" cy="{cy}" r="{inner_r * 0.70}"
+                    fill="none" stroke="{dominant_color}"
+                    stroke-width="0.5" opacity="0.3"/>
+            <text x="{cx}" y="{cy - 16}" text-anchor="middle"
+                  dominant-baseline="central" font-size="26" font-weight="800"
+                  fill="{dominant_color}"
+                  font-family="Noto Sans SC, PingFang SC, sans-serif"
+                  style="text-shadow:0 2px 6px rgba(255,255,255,0.5);"
+                  class="center-inner">{dominant_name}</text>
+            <text x="{cx}" y="{cy + 14}" text-anchor="middle"
+                  dominant-baseline="central" font-size="16" font-weight="700"
+                  fill="#8C7A64"
+                  font-family="Noto Sans SC, PingFang SC, sans-serif"
+                  class="center-inner">{dominant_pct:.1f}%</text>
+            <text x="{cx}" y="{cy + 32}" text-anchor="middle"
+                  dominant-baseline="central" font-size="10" font-weight="500"
+                  fill="#B8A894"
+                  font-family="Noto Sans SC, PingFang SC, sans-serif">主导</text>
+        </g>
+    </svg>
+</div>
+</body></html>"""
+    return html
+
+
+def render_element_wheel(
+    five_elements: dict[str, float],
+    key: str = "elem_wheel",
+    width: int = 440,
+    animated: bool = True,
+) -> None:
+    """在 Streamlit 中渲染五行轮盘。"""
+    import streamlit as st
+    from streamlit.components.v1 import html as st_html
+    html_str = render_element_wheel_html(five_elements, width=width, animated=animated)
+    st_html(html_str, height=width + 20, scrolling=False)
+
+
+# ===================================================================
+#  原有 Altair 图表
+# ===================================================================
+
+def render_dayun_chart(dayun_list: list[dict]) -> alt.Chart:
+    """大运阶段助力度柱状图。"""
+    rows = []
+    for d in dayun_list:
+        stage = d.get("stage_level", "平稳观察")
+        rows.append({
+            "大运": d.get("pillar", ""),
+            "年份": f'{d.get("start_age", "")}-{d.get("end_age", "")}\u5c81',
+            "助力度": STAGE_SCORES.get(stage, 50),
+            "阶段": stage,
+            "十神": d.get("ten_god", ""),
+        })
+    df = pd.DataFrame(rows)
+    chart = (
+        alt.Chart(df)
+        .mark_bar(cornerRadiusTopLeft=6, cornerRadiusTopRight=6, size=36)
+        .encode(
+            x=alt.X("年份:N", title=None, sort=list(df["年份"])),
+            y=alt.Y("助力度:Q", title=None, scale=alt.Scale(domain=[0, 100])),
+            color=alt.Color(
+                "阶段:N",
+                scale=alt.Scale(
+                    domain=list(STAGE_COLORS.keys()),
+                    range=list(STAGE_COLORS.values()),
+                ),
+                legend=alt.Legend(orient="bottom", title=None, labelFontSize=11),
+            ),
+            tooltip=["大运", "年份", "十神", "阶段", "助力度"],
+        )
+        .properties(height=260)
+        .configure_view(strokeWidth=0)
+        .configure_axis(grid=False, labelFontSize=12, labelColor="#5C4A32", tickColor="#EDE6DC")
+    )
+    text = chart.mark_text(align="center", dy=-8, fontSize=12, fontWeight="bold", color="#3D2B1A").encode(text="大运:N")
+    return chart + text
+
+
+def render_yearly_scores_chart(scores: dict) -> alt.Chart:
+    """年度各维度评分水平条。"""
+    df = pd.DataFrame([
+        {"维度": k, "评分": v}
+        for k, v in sorted(scores.items(), key=lambda x: -x[1])
+    ])
+    chart = (
+        alt.Chart(df)
+        .mark_bar(cornerRadiusTopRight=6, cornerRadiusBottomRight=6, size=28)
+        .encode(
+            x=alt.X("评分:Q", title=None, scale=alt.Scale(domain=[0, 100])),
+            y=alt.Y("维度:N", sort="-x", title=None),
+            color=alt.condition(
+                alt.datum.评分 >= 70, alt.value("#B8860B"),
+                alt.condition(alt.datum.评分 >= 50, alt.value("#D4A843"), alt.value("#8C7A64")),
+            ),
+            tooltip=["维度", "评分"],
+        )
+        .properties(height=200)
+        .configure_view(strokeWidth=0)
+        .configure_axis(grid=False, labelFontSize=13, labelColor="#5C4A32")
+    )
+    text = chart.mark_text(align="left", dx=6, fontSize=12, fontWeight="bold", color="#5C4A32").encode(text=alt.Text("评分:Q", format=".0f"))
+    return chart + text
