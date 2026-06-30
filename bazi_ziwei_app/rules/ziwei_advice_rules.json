@@ -1,0 +1,34 @@
+{
+  "rules": [
+    {
+      "id": "zw_advice_cross",
+      "title": "交叉参考建议",
+      "text": "紫微斗数适合与八字五行、十神喜忌、大运流年交叉参考，不建议单独作为重大决策依据。",
+      "source_ids": [
+        "ziwei_doushu_quanshu",
+        "ziwei_doushu_daquan"
+      ],
+      "confidence": "高"
+    },
+    {
+      "id": "zw_advice_trend",
+      "title": "趋势参考建议",
+      "text": "紫微斗数揭示的是倾向和趋势，不是宿命。同一星曜在不同宫位和组合中含义不同。",
+      "source_ids": [
+        "ziwei_doushu_quanshu",
+        "ziwei_doushu_quanji"
+      ],
+      "confidence": "高"
+    },
+    {
+      "id": "zw_advice_practice",
+      "title": "实践验证建议",
+      "text": "建议把紫微斗数作为自我观察的辅助工具，通过记录实际经历来验证和调整理解。",
+      "source_ids": [
+        "ziwei_doushu_daquan",
+        "traditional_ziwei_palace_system"
+      ],
+      "confidence": "高"
+    }
+  ]
+}

@@ -150,7 +150,7 @@ def render_yearly_page():
         if scores:
             st.markdown("### 🎯 年度评分")
             fig = render_yearly_scores_chart(scores)
-            st.altair_chart(fig, width='stretch')
+            st.altair_chart(fig, use_container_width=True)
     except Exception:
         pass
 
@@ -305,6 +305,10 @@ def render_yearly_page():
             unsafe_allow_html=True,
         )
 
+        # Get source info for this month from monthly_data
+        month_source_titles = monthly_data[month_num - 1].get("source_titles", []) if monthly_data and month_num <= len(monthly_data) else []
+        month_basis = monthly_data[month_num - 1].get("basis", "") if monthly_data and month_num <= len(monthly_data) else ""
+
         with st.expander(f"📖 {month_name} 详细分析", expanded=False):
             # 大方向
             st.markdown(f"#### 🎯 本月大方向")
@@ -330,6 +334,18 @@ def render_yearly_page():
             st.markdown(f"#### 🌿 五行提示")
             st.caption(gan_advice)
 
+            # 命理依据 / 参考来源
+            with st.expander("📚 命理依据 / 参考来源", expanded=False):
+                st.markdown(f"- **流月十神**：{ten_god}")
+                st.markdown(f"- **五行关系**：{relation}")
+                if branch_rels:
+                    for br in branch_rels:
+                        st.markdown(f"- **地支关系**：{br.get('label', '')} — {br.get('text', '')}")
+                if month_basis:
+                    st.markdown(f"- **规则依据**：{month_basis}")
+                if month_source_titles:
+                    st.markdown(f"- **参考来源**：{'、'.join(month_source_titles)}")
+
     st.markdown("""---""")
 
     # ====== 月度数据表（保留参考）======
@@ -347,7 +363,7 @@ def render_yearly_page():
         }
         for em in enhanced_months
     ]
-    st.dataframe(pd.DataFrame(df_rows), width='stretch', hide_index=True)
+    st.dataframe(pd.DataFrame(df_rows), use_container_width=True, hide_index=True)
 
     # 底部导航备注
     st.caption("本报告基于传统命理模型生成，仅供个人兴趣和文化研究参考。")

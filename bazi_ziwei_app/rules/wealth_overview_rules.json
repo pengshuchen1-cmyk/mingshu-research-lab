@@ -1,0 +1,207 @@
+{
+  "rules": [
+    {
+      "id": "wealth_strong_star",
+      "condition": {
+        "wealth_star_count": ">=3"
+      },
+      "tags": [
+        "财星明显"
+      ],
+      "text": "命局财星较明显，对财富和现实资源较敏感，容易发现收益型机会。",
+      "type": "strength",
+      "source_ids": [
+        "yuan_hai_zi_ping",
+        "san_ming_tong_hui"
+      ],
+      "basis": "财星在十神中代表现实财富和资源，数量多则对收益机会较敏感。参考渊海子平财星理论。",
+      "school": "子平八字",
+      "confidence": "高"
+    },
+    {
+      "id": "wealth_weak_star",
+      "condition": {
+        "wealth_star_count": 0
+      },
+      "tags": [
+        "财星不显"
+      ],
+      "text": "财星不显于四柱天干，财富来源更依赖技能输出、专业服务和长期积累。",
+      "type": "weakness",
+      "source_ids": [
+        "yuan_hai_zi_ping",
+        "san_ming_tong_hui"
+      ],
+      "basis": "财星不显则不宜直接投资经营，更适合通过食伤（技能）或印星（资质）间接求财。",
+      "school": "子平八字",
+      "confidence": "中等"
+    },
+    {
+      "id": "wealth_star_favorable",
+      "condition": {
+        "wealth_element_favorable": true
+      },
+      "tags": [
+        "财星喜用"
+      ],
+      "text": "财星五行属于命局喜用，求财过程中的能量消耗较小，收益更容易积累。",
+      "type": "strength",
+      "source_ids": [
+        "zi_ping_zhen_quan",
+        "san_ming_tong_hui"
+      ],
+      "basis": "喜用五行当旺时获取外部资源更容易，参考子平真诠用神理论。",
+      "school": "子平八字",
+      "confidence": "高"
+    },
+    {
+      "id": "wealth_star_unfavorable",
+      "condition": {
+        "wealth_element_unfavorable": true
+      },
+      "tags": [
+        "财星忌神"
+      ],
+      "text": "财星五行属于命局忌神，求财过程容易伴随消耗、压力或额外风险。",
+      "type": "risk",
+      "source_ids": [
+        "zi_ping_zhen_quan",
+        "san_ming_tong_hui"
+      ],
+      "basis": "忌神五行当旺时追求对应资源会伴随额外消耗，参考子平真诠忌神理论。",
+      "school": "子平八字",
+      "confidence": "高"
+    },
+    {
+      "id": "wealth_body_strong",
+      "condition": {
+        "strength": "身强",
+        "wealth_star_count": ">=2"
+      },
+      "tags": [
+        "身强能担财"
+      ],
+      "text": "日主偏强且财星有力，具备承担和运营财富资源的能力。",
+      "type": "strength",
+      "source_ids": [
+        "yuan_hai_zi_ping",
+        "di_tian_sui_chan_wei"
+      ],
+      "basis": "身强方能担财官，日主强旺时资源整合能力和抗风险能力更好。",
+      "school": "子平八字",
+      "confidence": "高"
+    },
+    {
+      "id": "wealth_body_weak",
+      "condition": {
+        "strength": "身弱",
+        "wealth_star_count": ">=2"
+      },
+      "tags": [
+        "财多身弱"
+      ],
+      "text": "财星较多但日主偏弱，容易出现「富屋贫人」的情况——机会虽多但实际承接困难。",
+      "type": "risk",
+      "source_ids": [
+        "yuan_hai_zi_ping",
+        "di_tian_sui_chan_wei"
+      ],
+      "basis": "财多身弱如富屋贫人，需大运扶身才能充分承接财富机会。",
+      "school": "子平八字",
+      "confidence": "高"
+    },
+    {
+      "id": "wealth_shi_sheng_cai",
+      "condition": {
+        "has_shi_sheng_cai": true
+      },
+      "tags": [
+        "食伤生财"
+      ],
+      "text": "命局有食伤生财倾向，适合通过技能、内容、技术或服务价值来创造收益。",
+      "type": "strength",
+      "source_ids": [
+        "yuan_hai_zi_ping",
+        "san_ming_tong_hui"
+      ],
+      "basis": "食伤生财是经典的财富模式，才华转化为收益的能力较强。",
+      "school": "子平八字",
+      "confidence": "高"
+    },
+    {
+      "id": "wealth_peer_restrict",
+      "condition": {
+        "peer_star_count": ">=3",
+        "wealth_star_count": ">=2"
+      },
+      "tags": [
+        "比劫争财"
+      ],
+      "text": "比劫明显且财星也可见，需要注意朋友、同事或同行竞争对财务稳定性的影响。",
+      "type": "risk",
+      "source_ids": [
+        "yuan_hai_zi_ping",
+        "san_ming_tong_hui"
+      ],
+      "basis": "比劫夺财是十神基础关系，比劫旺时容易出现合伙、竞争或人情带来的财务消耗。",
+      "school": "子平八字",
+      "confidence": "中等"
+    },
+    {
+      "id": "wealth_guan_sheng_yin",
+      "condition": {
+        "officer_star_count": ">=2",
+        "wealth_star_count": ">=2"
+      },
+      "tags": [
+        "官财相生"
+      ],
+      "text": "官杀与财星配合，适合在组织、平台、管理或制度化体系内积累收入。",
+      "type": "strength",
+      "source_ids": [
+        "yuan_hai_zi_ping",
+        "san_ming_tong_hui"
+      ],
+      "basis": "财生官杀，官杀护财，形成良性循环，适合制度化平台发展。",
+      "school": "子平八字",
+      "confidence": "中等"
+    },
+    {
+      "id": "wealth_output_type",
+      "condition": {
+        "output_star_count": ">=3",
+        "wealth_star_count": "<2"
+      },
+      "tags": [
+        "食伤求财"
+      ],
+      "text": "食伤明显而财星不显，更适合通过技术输出、内容创作、专业服务来创造收益。",
+      "type": "guidance",
+      "source_ids": [
+        "yuan_hai_zi_ping",
+        "san_ming_tong_hui"
+      ],
+      "basis": "食伤代表技能和创造力，食伤旺者适合以才华和服务为媒介获取财富。",
+      "school": "子平八字",
+      "confidence": "中等"
+    },
+    {
+      "id": "wealth_resource_type",
+      "condition": {
+        "resource_star_count": ">=3"
+      },
+      "tags": [
+        "印星求财"
+      ],
+      "text": "印星明显，适合借助平台、资质、口碑和知识体系来间接获取收益。",
+      "type": "guidance",
+      "source_ids": [
+        "yuan_hai_zi_ping",
+        "zi_ping_zhen_quan"
+      ],
+      "basis": "印星代表知识、资质和贵人，适合通过系统学习和专业背书来获得稳定收入。",
+      "school": "子平八字",
+      "confidence": "中等"
+    }
+  ]
+}

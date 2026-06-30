@@ -1,144 +1,138 @@
-"""紫微斗数页面 —— 4×3 网格宫位卡片 + 新手指南。"""
+"""紫微斗数页面 — v1.2-D-Polish 卡片化"""
 
 from __future__ import annotations
 
-import pandas as pd
-
+import streamlit as st
 from core.ziwei_engine import build_ziwei_chart
-from core.ziwei_constants import PALACE_NAMES
-from report.ziwei_report import generate_ziwei_report
+from core.ziwei_life_card_engine import analyze_ziwei_life_card
+from core.ziwei_triangle_engine import get_sanfang_sizheng
+from core.ziwei_sihua_engine import get_sihua_by_year_gan, apply_sihua_to_chart
+from core.ziwei_star_engine import get_year_gan_from_profile
+from core.ziwei_constants import (
+    DETAILED_STAR_EXPLANATIONS, PALACE_EXPLANATIONS, DETAILED_PALACE_EXPLANATIONS,
+    PALACE_NAMES, MINOR_STAR_MEANINGS, FIERCE_STAR_MEANINGS,
+)
+from ui.ziwei_components import (
+    render_hero_card, render_palace_card, render_star_chip,
+    render_sihua_chip, render_keyword_tags, render_boundary_notice,
+    render_triangle_card, render_source_card,
+)
 
 
-def render_ziwei_page() -> None:
-    """渲染紫微斗数页面。"""
-    import streamlit as st
-    from core.ziwei_constants import ZWDS_GUIDE, STAR_MEANINGS, STAR_GROUPS
+def _j(items):
+    return "、".join(items) if items else ""
 
+
+def render_ziwei_page():
     profile = st.session_state.get("current_profile", {})
     if not profile:
-        st.info("请先在新建命盘页面生成命盘，或从命盘档案中加载一个命盘。")
-        return
+        st.info("请先在新建命盘页面生成命盘。"); return
+    chart = build_ziwei_chart(profile)
+    if not chart.get("available"):
+        st.warning(chart.get("message", "紫微斗数基础盘暂不可用。")); return
 
-    result = build_ziwei_chart(profile)
-    if not result.get("available"):
-        st.warning(result.get("message", "紫微斗数基础盘暂不可用。"))
-        return
+    palaces = chart.get("palaces", [])
+    msbp = chart.get("main_stars_by_palace", {})
+    ms_ready = chart.get("main_stars_ready", False)
+    yg = get_year_gan_from_profile(profile)
+    sihua = apply_sihua_to_chart(chart, get_sihua_by_year_gan(yg))
+    sbp = sihua.get("sihua_by_palace", {})
 
-    # ★ 新手入门指南（实用解读说明）
-    with st.expander("📖 快速看懂紫微斗数 · 新手入门指南", expanded=True):
-        st.markdown(ZWDS_GUIDE)
-        st.markdown(
-            '<div style="background:linear-gradient(135deg,#3D2B1A 0%,#5C4A32 100%);'
-            'border-radius:12px;padding:20px;margin:12px 0;">'
-            '<div style="color:#FCF8F0;font-size:14px;font-weight:600;margin-bottom:10px;">'
-            '📌 简单看懂一张命盘的步骤</div>'
-            '<ol style="color:#D4C5B0;font-size:13px;line-height:1.8;margin:0;padding-left:20px;">'
-            '<li><b>第一眼：看命宫地支</b> —— 命宫落在哪个地支?决定命盘的基本倾向。</li>'
-            '<li><b>看身宫</b> —— 身宫代表后天努力方向，与命宫互补。</li>'
-            '<li><b>看十二宫分布</b> —— 每个宫位代表生活的一个领域?注意对宫影响。</li>'
-            '<li><b>参考主星说明</b> —— 了解十四主星的基础含义。</li>'
-            '<li><b>交叉验证</b> —— 结合八字喜用神、大运流年一起看更准确。</li>'
-            '</ol></div>',
-            unsafe_allow_html=True,
-        )
+    t1, t2, t3, t4, t5, t6 = st.tabs(["命盘名片", "十二宫盘", "主星速查", "重点宫位", "三方四正", "参考依据"])
 
-    # 十四主星含义速查
-    with st.expander("⭐ 十四主星含义速查"):
-        stars_html = ""
-        for star, meaning in STAR_MEANINGS.items():
-            groups = []
-            for g, members in STAR_GROUPS.items():
-                if star in members:
-                    groups.append(g)
-            tag = " \u00b7 ".join(groups) if groups else "\u4e2d\u5929"
-            stars_html += (
-                '<div style="display:flex;padding:6px 0;border-bottom:1px solid #EDE6DC;">'
-                f'<span style="font-weight:700;color:#3D2B1A;width:60px;flex-shrink:0;">{star}</span>'
-                f'<span style="color:#8C7A64;width:90px;font-size:12px;">{tag}</span>'
-                f'<span style="color:#5C4A32;font-size:13px;">{meaning}</span></div>'
-            )
-        st.markdown(stars_html, unsafe_allow_html=True)
+    with t1:
+        card = analyze_ziwei_life_card(chart)
+        c1, c2, c3 = st.columns(3)
+        with c1: st.markdown(render_hero_card("命宫", chart.get("life_palace",""), "命盘核心"), unsafe_allow_html=True)
+        with c2: st.markdown(render_hero_card("身宫", chart.get("body_palace",""), card.get("shen_gong_summary","")[:30]), unsafe_allow_html=True)
+        with c3: st.markdown(render_hero_card("命身关系", card.get("ming_shen_relation",""), ""), unsafe_allow_html=True)
 
-    # 命宫/身宫指标卡
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown(
-            f'<div style="background:#FAF7F4;border-radius:10px;padding:16px 20px;'
-            f'box-shadow:0 1px 3px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.04);'
-            f'text-align:center;border:2px solid #B8860B;">'
-            f'<div style="font-size:12px;color:#8C7A64;margin-bottom:4px;">\u547d\u5bab</div>'
-            f'<div style="font-size:22px;font-weight:700;color:#B8860B;">{result.get("life_palace", "")}</div>'
-            f'</div>',
-            unsafe_allow_html=True,
-        )
-    with col2:
-        st.markdown(
-            f'<div style="background:#FAF7F4;border-radius:10px;padding:16px 20px;'
-            f'box-shadow:0 1px 3px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.04);'
-            f'text-align:center;">'
-            f'<div style="font-size:12px;color:#8C7A64;margin-bottom:4px;">\u8eab\u5bab</div>'
-            f'<div style="font-size:22px;font-weight:700;color:#3D2B1A;">{result.get("body_palace", "")}</div>'
-            f'</div>',
-            unsafe_allow_html=True,
-        )
+        st.divider()
+        col_w, col_r, col_h = st.columns(3)
+        for col, name in [(col_w, "命宫"), (col_h, "财帛宫"), (col_r, "官禄宫")]:
+            stars = msbp.get(name, [])
+            detail = DETAILED_PALACE_EXPLANATIONS.get(name, {})
+            pos = _j(detail.get("positive_tendencies", [])[:2]) if detail else ""
+            with col:
+                st.markdown(f'<div class="zw-hero"><div style="font-weight:600;color:#3D2B1A;font-size:14px;margin-bottom:4px;">{name}</div>{"".join(render_star_chip(s) for s in stars)}<div style="font-size:11px;color:#5C4A32;margin-top:4px;">{pos}</div></div>', unsafe_allow_html=True)
 
-    # 12 宫位 4x3 网格卡片
-    st.markdown("## \u7d2b\u5fae\u6597\u6570")
-    st.markdown("### \u5341\u4e8c\u5bab\u4f4d \u00b7 \u70b9\u51fb\u67e5\u770b\u5bab\u4f4d\u8bf4\u660e")
-    palaces = result.get("palaces", [])
-    for i in range(0, 12, 4):
-        cols = st.columns(4)
-        for j in range(4):
-            if i + j < len(palaces):
-                p = palaces[i + j]
-                is_life = p.get("is_life_palace")
-                is_body = p.get("is_body_palace")
-                border_style = "border:2px solid #B8860B;" if is_life else "border:1px solid #EDE6DC;"
-                palace_name = p.get("name", "")
-                branch = p.get("branch", "")
-                explanation = p.get("explanation", "")
-                with cols[j]:
-                    st.markdown(
-                        f'<div style="background:#FAF7F4;border-radius:10px;padding:10px 6px;'
-                        f'text-align:center;{border_style}box-shadow:0 1px 2px rgba(0,0,0,0.04);">'
-                        f'<div style="font-size:11px;color:#8C7A64;margin-bottom:1px;">{palace_name}</div>'
-                        f'<div style="font-size:15px;font-weight:700;color:#3D2B1A;margin:2px 0;'
-                        f'font-family:\'Noto Serif SC\',serif;">{branch}</div>'
-                        f'<div style="font-size:10px;color:#8C7A64;line-height:1.3;">'
-                        f'{explanation[:25]}{"..." if len(explanation) > 25 else ""}</div>'
-                        f'<div style="font-size:10px;color:#B8A894;margin-top:3px;">\u4e3b\u661f: \u5f85\u5b8c\u5584</div>'
-                        + ('<div style="font-size:10px;color:#B8860B;margin-top:2px;font-weight:600;">\u2605 \u547d\u5bab</div>' if is_life else '')
-                        + ('<div style="font-size:10px;color:#8C7A64;margin-top:2px;">\u2606 \u8eab\u5bab</div>' if is_body and not is_life else '')
-                        + '</div>',
-                        unsafe_allow_html=True,
-                    )
-                    # 宫位说明弹窗
-                    with st.popover(f"📖 {palace_name}"):
-                        opp = PALACE_NAMES[(PALACE_NAMES.index(palace_name) + 6) % 12]
-                        st.markdown(
-                            f"**{palace_name}**\uff08\u5730\u652f\uff1a{branch}\uff09  "
-                            f"\n\n{explanation}  "
-                            f"\n\n💡 **\u770b\u76d8\u63d0\u793a**\uff1a\u5bf9\u5bab\u662f**{opp}**\uff0c\u4e24\u5bab\u4e92\u76f8\u5f71\u54cd\u3002"
-                        )
+        col1, col2, col3 = st.columns(3)
+        for col, name in [(col1, "夫妻宫"), (col2, "福德宫"), (col3, "迁移宫")]:
+            detail = DETAILED_PALACE_EXPLANATIONS.get(name, {})
+            pos = _j(detail.get("positive_tendencies", [])[:1]) if detail else ""
+            with col:
+                st.markdown(f'<div class="zw-hero" style="border-color:#EDE6DC;"><div style="font-weight:600;color:#5C4A32;font-size:13px;">{name}</div><div style="font-size:11px;color:#8C7A64;">{pos}</div></div>', unsafe_allow_html=True)
 
-    # 十二宫位数据表
-    with st.expander("📋 \u67e5\u770b\u5bab\u4f4d\u8be6\u7ec6\u4fe1\u606f"):
-        rows = [
-            {
-                "\u5bab\u4f4d": p.get("name", ""),
-                "\u5730\u652f": p.get("branch", ""),
-                "\u547d\u5bab": "\u2605" if p.get("is_life_palace") else "",
-                "\u8eab\u5bab": "\u2606" if p.get("is_body_palace") else "",
-                "\u4e3b\u661f": "\u5f85\u5b8c\u5584",
-                "\u57fa\u7840\u542b\u4e49": p.get("explanation", ""),
-            }
-            for p in palaces
-        ]
-        st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
+        st.divider()
+        if sbp:
+            st.markdown("#### 四化")
+            for pn, shs in sbp.items():
+                chips = "".join(render_sihua_chip(s) for s in shs)
+                st.markdown(f'<span style="font-size:12px;color:#5C4A32;">{pn}：</span>{chips}', unsafe_allow_html=True)
 
-    # 紫微基础报告
-    report = generate_ziwei_report(result)
-    st.markdown("### \u7d2b\u5fae\u57fa\u7840\u62a5\u544a")
-    for item in report.get("sections", []):
-        with st.expander(item.get("title", ""), expanded=item.get("title") == "\u547d\u5bab\u5206\u6790"):
-            st.markdown(item.get("text", ""))
+        st.divider()
+        st.markdown(render_boundary_notice(card.get("module_boundary","版本说明：当前包含十四主星落宫、生年四化、三方四正基础。辅星、煞星、大限流年、飞化仍在后续完善。")), unsafe_allow_html=True)
+
+    with t2:
+        for i in range(0, 12, 4):
+            cols = st.columns(4)
+            for j in range(4):
+                if i + j < len(palaces):
+                    p = palaces[i+j]
+                    sn = p.get("name",""); br = p.get("branch","")
+                    is_life = p.get("is_life_palace"); is_body = p.get("is_body_palace")
+                    stars = p.get("main_stars", []); shs = sbp.get(sn, [])
+                    with cols[j]:
+                        st.markdown(render_palace_card(sn, br, stars, shs, is_life, is_body,
+                            "主星未显" if ms_ready else "主星待完善"), unsafe_allow_html=True)
+
+    with t3:
+        st.markdown("#### 十四主星")
+        for star in DETAILED_STAR_EXPLANATIONS:
+            s = DETAILED_STAR_EXPLANATIONS[star]
+            loc = ""
+            for pn, sl in msbp.items():
+                if star in sl: loc = f"[{_j(sl)}]"
+            with st.expander(f"{star}({s.get('star_type','')}){loc}", expanded=False):
+                st.markdown(f'{"".join(render_keyword_tags(s.get("core_keywords",[])))}', unsafe_allow_html=True)
+                st.markdown(f"**性格**：{s.get('personality_tendency','')}")
+                st.markdown(f"**事业**：{s.get('career_tendency','')}")
+        with st.expander("辅星速查（待完善）"):
+            for sn, m in MINOR_STAR_MEANINGS.items():
+                st.markdown(f"**{sn}**（{m['type']}）：{'、'.join(m['keywords'])} — {m['meaning']}")
+        with st.expander("煞星速查（待完善）"):
+            for sn, m in FIERCE_STAR_MEANINGS.items():
+                st.markdown(f"**{sn}**（{m['type']}）：{'、'.join(m['keywords'])} — {m['meaning']}")
+
+    with t4:
+        for name in ["命宫", "财帛宫", "官禄宫", "夫妻宫", "疾厄宫", "福德宫", "迁移宫"]:
+            br = ""; stars = []; shs = []
+            for p in palaces:
+                if p.get("name") == name: br = p.get("branch","")
+            stars = msbp.get(name, []); shs = sbp.get(name, [])
+            detail = DETAILED_PALACE_EXPLANATIONS.get(name, {})
+            with st.expander(name, expanded=(name=="命宫")):
+                st.markdown(f'<span style="font-size:13px;color:#5C4A32;">{name}落{br}支</span>', unsafe_allow_html=True)
+                st.markdown("".join(render_star_chip(s) for s in stars) + "".join(render_sihua_chip(s) for s in shs), unsafe_allow_html=True)
+                if detail:
+                    pos = detail.get("positive_tendencies",[]); rsk = detail.get("risk_tendencies",[])
+                    if pos: st.markdown(f"**优势**：{'、'.join(pos)}")
+                    if rsk: st.markdown(f"**注意**：{'、'.join(rsk)}")
+                    st.info(detail.get("advice",""))
+
+    with t5:
+        for name in ["命宫", "财帛宫", "官禄宫", "夫妻宫"]:
+            tri = get_sanfang_sizheng(name, chart)
+            st.markdown(render_triangle_card(name, tri["sanfang"], tri["sizheng"], tri.get("summary","")), unsafe_allow_html=True)
+        st.info("当前为基础结构准备，后续将结合辅星、四化、大限流年增强。")
+
+    with t6:
+        refs = [("紫微斗数全书","十四主星/十二宫/星曜性质"),("紫微斗数全集","星曜组合/宫位分析"),("紫微斗数大全","十二宫系统"),("传统十二宫体系","命宫/身宫/十二宫位"),("传统四化体系","化禄权科忌")]
+        for t, u in refs: st.markdown(render_source_card(t, u), unsafe_allow_html=True)
+        st.divider()
+        st.markdown("**完成度**")
+        items = [("命宫/身宫定位",True),("十二宫位",True),("十四主星落宫",True),("生年四化",True),("三方四正结构",True),("辅星数据结构",True),("煞星数据结构",True),("辅星落宫算法",False),("煞星落宫算法",False),("大限流年",False),("飞化",False)]
+        for name, ok in items:
+            st.markdown(f'- {"✅" if ok else "❌"} {name}')
+        st.divider()
+        st.warning("当前内容基于传统命理模型生成，仅供个人兴趣、文化研究和自我规划参考，不应作为医疗、法律、投资、婚姻等重大决策的唯一依据。")

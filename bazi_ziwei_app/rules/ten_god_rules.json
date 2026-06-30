@@ -1,6 +1,52 @@
 {
   "rules": [
-    {"id": "tg-peer", "title": "比劫主题", "condition": {"ten_gods_contains": ["比肩", "劫财"]}, "tags": ["自我", "合作"], "text": "比劫代表自我、同辈、竞争与合作边界。", "advice": "建议明确分工与资源边界。", "risk": "需要注意竞争和人情消耗。"},
-    {"id": "tg-output", "title": "食伤主题", "condition": {"ten_gods_contains": ["食神", "伤官"]}, "tags": ["表达", "输出"], "text": "食伤代表表达、创意、技术输出和成果展示。", "advice": "建议把能力变成作品或服务。", "risk": "需要注意规则摩擦和过度表达。"}
+    {
+      "id": "tg-peer",
+      "title": "比劫主题",
+      "condition": {
+        "ten_gods_contains": [
+          "比肩",
+          "劫财"
+        ]
+      },
+      "tags": [
+        "自我",
+        "合作"
+      ],
+      "text": "比劫代表自我、同辈、竞争与合作边界。",
+      "advice": "建议明确分工与资源边界。",
+      "risk": "需要注意竞争和人情消耗。",
+      "source_ids": [
+        "yuan_hai_zi_ping",
+        "san_ming_tong_hui"
+      ],
+      "basis": "基于十神基础理论，比劫代表自我、同辈、竞争与合作边界；食伤代表表达、创意、技术输出和成果展示。参考《渊海子平》十神体系。",
+      "school": "子平八字",
+      "confidence": "高"
+    },
+    {
+      "id": "tg-output",
+      "title": "食伤主题",
+      "condition": {
+        "ten_gods_contains": [
+          "食神",
+          "伤官"
+        ]
+      },
+      "tags": [
+        "表达",
+        "输出"
+      ],
+      "text": "食伤代表表达、创意、技术输出和成果展示。",
+      "advice": "建议把能力变成作品或服务。",
+      "risk": "需要注意规则摩擦和过度表达。",
+      "source_ids": [
+        "yuan_hai_zi_ping",
+        "san_ming_tong_hui"
+      ],
+      "basis": "基于十神基础理论，比劫代表自我、同辈、竞争与合作边界；食伤代表表达、创意、技术输出和成果展示。参考《渊海子平》十神体系。",
+      "school": "子平八字",
+      "confidence": "高"
+    }
   ]
 }

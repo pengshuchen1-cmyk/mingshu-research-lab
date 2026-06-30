@@ -10,7 +10,7 @@ from core.five_elements import element_summary
 
 
 from ui.charts import render_element_wheel
-from ui.styles import ELEMENT_COLORS, element_tag
+from ui.styles import ELEMENT_COLORS
 
 from ui.styles import ELEMENT_EMOJIS, ELEMENT_METADATA
 
@@ -60,7 +60,7 @@ def _render_element_bar_chart(five_elements: dict) -> None:
     text = chart.mark_text(
         align="left", dx=6, fontSize=13, fontWeight="bold",
     ).encode(text=alt.Text("权重:Q", format=".2f"))
-    st.altair_chart(chart + text, width='stretch')
+    st.altair_chart(chart + text, use_container_width=True, key='five_element_bar')
 
 
 def _render_element_donut_chart(five_elements: dict) -> None:
@@ -89,7 +89,7 @@ def _render_element_donut_chart(five_elements: dict) -> None:
         )
         .properties(height=300)
     )
-    st.altair_chart(chart, width='stretch')
+    st.altair_chart(chart, use_container_width=True, key='five_element_donut')
 
 
 def _render_element_cards(summary: dict) -> None:
@@ -159,7 +159,7 @@ def _render_ten_god_chart(counts: dict) -> None:
         )
         .properties(height=240)
     )
-    st.altair_chart(chart, width='stretch')
+    st.altair_chart(chart, use_container_width=True, key='five_ten_god_bar')
 
 
 def render_five_element_page() -> None:
@@ -194,7 +194,7 @@ def render_five_element_page() -> None:
             'margin-bottom:8px;text-align:center;">🌀 五行能量轮盘</div>',
             unsafe_allow_html=True,
         )
-        render_element_wheel(five_elements, key="five_el_wheel", width=420, animated=True)
+        render_element_wheel(five_elements, key="five_el_wheel", width=420, animated=False)
     with col_right:
         st.markdown(
             '<div style="font-weight:600;color:#3D2B1A;font-size:15px;'
@@ -241,7 +241,7 @@ def render_five_element_page() -> None:
             _render_ten_god_chart(counts)
         with col_t2:
             rows = [{"十神": k, "数量": v} for k, v in sorted(counts.items(), key=lambda x: -x[1])]
-            st.dataframe(pd.DataFrame(rows), width='stretch', hide_index=True)
+            st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
 
     # —— 五行解说 ——
     st.markdown("### 📖 五行解释")

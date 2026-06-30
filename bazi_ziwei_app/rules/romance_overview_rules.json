@@ -1,0 +1,168 @@
+{
+  "rules": [
+    {
+      "id": "romance_peach_strong",
+      "condition": {
+        "peach_blossom_count": ">=2"
+      },
+      "tags": [
+        "桃花明显"
+      ],
+      "text": "命局桃花星较明显，异性缘和社交吸引力较强，感情机会较容易到来。",
+      "type": "strength",
+      "source_ids": [
+        "yuan_hai_zi_ping",
+        "san_ming_tong_hui"
+      ],
+      "school": "子平八字",
+      "basis": "桃花星基于日支三合局对宫，多柱见桃花则异性缘整体较活跃。",
+      "confidence": "中"
+    },
+    {
+      "id": "romance_spouse_strong_male",
+      "condition": {
+        "gender": "男",
+        "wealth_star_count": ">=2"
+      },
+      "tags": [
+        "妻星明显"
+      ],
+      "text": "男命财星较明显，对感情和伴侣关系关注度较高，感情缘分容易被引动。",
+      "type": "strength",
+      "source_ids": [
+        "yuan_hai_zi_ping",
+        "san_ming_tong_hui"
+      ],
+      "school": "子平八字",
+      "basis": "男命以正财为妻星，财星明显则姻缘缘分较容易出现。",
+      "confidence": "高"
+    },
+    {
+      "id": "romance_spouse_strong_female",
+      "condition": {
+        "gender": "女",
+        "officer_star_count": ">=2"
+      },
+      "tags": [
+        "夫星明显"
+      ],
+      "text": "女命官杀较明显，对感情和婚姻较为重视，伴侣缘分在命中较突出。",
+      "type": "strength",
+      "source_ids": [
+        "yuan_hai_zi_ping",
+        "san_ming_tong_hui"
+      ],
+      "school": "子平八字",
+      "basis": "女命以正官为夫星，官杀明显则伴侣缘分较易显现。",
+      "confidence": "高"
+    },
+    {
+      "id": "romance_spouse_none",
+      "condition": {
+        "spouse_star_count": 0
+      },
+      "tags": [
+        "配偶星不显"
+      ],
+      "text": "配偶星不显于天干，感情缘分更依赖大运流年引动，不宜急躁。",
+      "type": "observation",
+      "source_ids": [
+        "yuan_hai_zi_ping",
+        "ming_li_tan_yuan"
+      ],
+      "school": "子平八字",
+      "basis": "配偶星不显则感情需要运势引动，适合在社交活动中主动拓展机会。",
+      "confidence": "中等"
+    },
+    {
+      "id": "romance_day_clash",
+      "condition": {
+        "day_zhi_clashed": true
+      },
+      "tags": [
+        "日支逢冲"
+      ],
+      "text": "日支（夫妻宫）与命局其他地支相冲，感情关系容易受到外部因素影响而阶段性调整。",
+      "type": "risk",
+      "source_ids": [
+        "ming_li_tan_yuan",
+        "san_ming_tong_hui"
+      ],
+      "school": "刑冲合害",
+      "basis": "日支为夫妻宫，逢冲则关系容易因外部环境变化而需要重新调整。",
+      "confidence": "中等"
+    },
+    {
+      "id": "romance_spouse_favorable",
+      "condition": {
+        "spouse_element_favorable": true
+      },
+      "tags": [
+        "夫妻宫喜用"
+      ],
+      "text": "日支（夫妻宫）五行属于命局喜用，伴侣关系对整体运势有积极助益。",
+      "type": "strength",
+      "source_ids": [
+        "zi_ping_zhen_quan",
+        "san_ming_tong_hui"
+      ],
+      "school": "子平八字",
+      "basis": "夫妻宫为喜用时，亲密关系对个人成长和状态有正面作用。",
+      "confidence": "高"
+    },
+    {
+      "id": "romance_spouse_unfavorable",
+      "condition": {
+        "spouse_element_unfavorable": true
+      },
+      "tags": [
+        "夫妻宫忌神"
+      ],
+      "text": "日支（夫妻宫）五行属于命局忌神，亲密关系中需要更多耐心、包容和沟通来化解分歧。",
+      "type": "risk",
+      "source_ids": [
+        "zi_ping_zhen_quan",
+        "san_ming_tong_hui"
+      ],
+      "school": "子平八字",
+      "basis": "夫妻宫为忌神时，亲密关系需要更多经营和包容来维护稳定。",
+      "confidence": "中等"
+    },
+    {
+      "id": "romance_output_strong",
+      "condition": {
+        "output_star_count": ">=3"
+      },
+      "tags": [
+        "表达丰富"
+      ],
+      "text": "食伤较明显，善于表达感受和经营感情互动，但也需要注意情绪表达的分寸。",
+      "type": "observation",
+      "source_ids": [
+        "yuan_hai_zi_ping",
+        "san_ming_tong_hui"
+      ],
+      "school": "子平八字",
+      "basis": "食伤代表情感表达和互动方式，食伤旺者感情表达力较强。",
+      "confidence": "中等"
+    },
+    {
+      "id": "romance_peer_strong",
+      "condition": {
+        "peer_star_count": ">=3"
+      },
+      "tags": [
+        "自我边界强"
+      ],
+      "text": "比劫较明显，感情中自我意识和独立性较强，需要注意双方边界的平衡。",
+      "type": "observation",
+      "source_ids": [
+        "yuan_hai_zi_ping",
+        "san_ming_tong_hui"
+      ],
+      "school": "子平八字",
+      "basis": "比劫代表自我意识和独立性，在感情中需要注意平衡双方边界。",
+      "confidence": "中等"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "rules": [
+    {
+      "id": "zw_card_profile",
+      "title": "紫微命盘身份",
+      "text": "紫微命盘以命宫为基点，结合身宫和十二宫位分布形成个人命盘特征。当前版本基于命宫、身宫和十二宫含义生成名片报告。",
+      "source_ids": [
+        "ziwei_doushu_quanshu",
+        "ziwei_doushu_daquan"
+      ],
+      "confidence": "高",
+      "basis": "基于紫微斗数十二宫体系和《紫微斗数大全》命盘综合判断框架。"
+    },
+    {
+      "id": "zw_card_module",
+      "title": "模块边界",
+      "text": "当前版本为紫微基础宫位分析版。十四主星落宫、四化飞星、大限流年将在后续版本完善。当前版本不伪造未实现算法。",
+      "source_ids": [
+        "ziwei_doushu_quanshu",
+        "ziwei_doushu_quanji",
+        "ziwei_doushu_daquan"
+      ],
+      "confidence": "高",
+      "basis": "基于紫微斗数全书和全集，明确当前模块实现边界。"
+    }
+  ]
+}

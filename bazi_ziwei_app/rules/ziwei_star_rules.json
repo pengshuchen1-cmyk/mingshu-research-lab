@@ -1,0 +1,354 @@
+{
+  "rules": [
+    {
+      "id": "zw_star_紫微",
+      "star_name": "紫微",
+      "star_type": "帝星",
+      "core_keywords": [
+        "统御",
+        "责任",
+        "格局",
+        "组织",
+        "领导"
+      ],
+      "personality_tendency": "领导 · 统御 · 地位",
+      "career_tendency": "适合管理、组织、领导型职业",
+      "wealth_tendency": "财富方面适合平台型、管理型收益",
+      "relationship_tendency": "关系中容易承担主导角色，需要关注对方感受",
+      "risk_tendency": "自尊较强、压力集中、容易承担过多",
+      "advice": "善用格局和统筹能力，细节管理可借助团队",
+      "source_ids": [
+        "ziwei_doushu_quanshu",
+        "ziwei_doushu_quanji",
+        "ziwei_doushu_daquan"
+      ],
+      "basis": "基于《紫微斗数全书》和《紫微斗数全集》中紫微星的星曜性质解释，结合现代生活场景转写。",
+      "confidence": "高"
+    },
+    {
+      "id": "zw_star_天机",
+      "star_name": "天机",
+      "star_type": "智星",
+      "core_keywords": [
+        "思考",
+        "变化",
+        "策划",
+        "机敏",
+        "学习"
+      ],
+      "personality_tendency": "思考 · 策划 · 机敏",
+      "career_tendency": "适合策划、咨询、研究、IT技术",
+      "wealth_tendency": "财富方面适合脑力变现和策略型收益",
+      "relationship_tendency": "关系中思维活跃，需要表达清晰避免猜测",
+      "risk_tendency": "想太多、变动多、执行分散",
+      "advice": "把思考转化为行动，避免停留在脑内推演",
+      "source_ids": [
+        "ziwei_doushu_quanshu",
+        "ziwei_doushu_daquan",
+        "traditional_ziwei_palace_system"
+      ],
+      "basis": "基于《紫微斗数全书》和《紫微斗数全集》中天机星的星曜性质解释，结合现代生活场景转写。",
+      "confidence": "高"
+    },
+    {
+      "id": "zw_star_太阳",
+      "star_name": "太阳",
+      "star_type": "官星",
+      "core_keywords": [
+        "外放",
+        "照耀",
+        "责任",
+        "表达",
+        "男性贵人"
+      ],
+      "personality_tendency": "外放 · 责任 · 照耀",
+      "career_tendency": "适合传播、教育、管理、公共服务",
+      "wealth_tendency": "财富方面适合靠责任和影响力获得收益",
+      "relationship_tendency": "关系中光明正直，需要注意主动倾听对方",
+      "risk_tendency": "消耗过快、过度承担、情绪外放",
+      "advice": "注意节奏管理，留出恢复时间",
+      "source_ids": [
+        "ziwei_doushu_quanshu",
+        "ziwei_doushu_quanji",
+        "ziwei_doushu_daquan"
+      ],
+      "basis": "基于《紫微斗数全书》和《紫微斗数全集》中太阳星的星曜性质解释，结合现代生活场景转写。",
+      "confidence": "高"
+    },
+    {
+      "id": "zw_star_武曲",
+      "star_name": "武曲",
+      "star_type": "财星",
+      "core_keywords": [
+        "执行",
+        "财富",
+        "决断",
+        "规则",
+        "管理"
+      ],
+      "personality_tendency": "执行 · 财富 · 管理",
+      "career_tendency": "适合管理、财务、执行、规则型职业",
+      "wealth_tendency": "财富方面偏务实稳健，适合经营和积累型收入",
+      "relationship_tendency": "关系中务实直接，需要注意情感表达",
+      "risk_tendency": "刚硬、财务压力、关系表达不足",
+      "advice": "发挥执行力，同时培养柔软沟通",
+      "source_ids": [
+        "ziwei_doushu_quanshu",
+        "ziwei_doushu_daquan",
+        "traditional_ziwei_palace_system"
+      ],
+      "basis": "基于《紫微斗数全书》和《紫微斗数全集》中武曲星的星曜性质解释，结合现代生活场景转写。",
+      "confidence": "高"
+    },
+    {
+      "id": "zw_star_天同",
+      "star_name": "天同",
+      "star_type": "福星",
+      "core_keywords": [
+        "福气",
+        "享受",
+        "温和",
+        "人缘",
+        "稳定"
+      ],
+      "personality_tendency": "福气 · 享受 · 温和",
+      "career_tendency": "适合稳定环境和人际导向型职业",
+      "wealth_tendency": "财富以稳定为主，适合服务型和文化型收入",
+      "relationship_tendency": "关系中温和包容，关系和谐度较高",
+      "risk_tendency": "安逸、拖延、抗压不足",
+      "advice": "发挥好人缘，适当培养抗压能力",
+      "source_ids": [
+        "ziwei_doushu_quanshu",
+        "ziwei_doushu_daquan",
+        "traditional_ziwei_palace_system"
+      ],
+      "basis": "基于《紫微斗数全书》和《紫微斗数全集》中天同星的星曜性质解释，结合现代生活场景转写。",
+      "confidence": "高"
+    },
+    {
+      "id": "zw_star_廉贞",
+      "star_name": "廉贞",
+      "star_type": "囚星",
+      "core_keywords": [
+        "规则",
+        "欲望",
+        "审美",
+        "边界",
+        "权力"
+      ],
+      "personality_tendency": "规则 · 审美 · 边界",
+      "career_tendency": "适合规则、审美、设计、管理类职业",
+      "wealth_tendency": "财富方面适合高端服务和规范化收入",
+      "relationship_tendency": "感情深刻但复杂度较高，需要注意边界",
+      "risk_tendency": "情绪复杂、关系拉扯、是非较多",
+      "advice": "保持规则意识，减少感情中的复杂判断",
+      "source_ids": [
+        "ziwei_doushu_quanshu",
+        "ziwei_doushu_quanji",
+        "ziwei_doushu_daquan"
+      ],
+      "basis": "基于《紫微斗数全书》和《紫微斗数全集》中廉贞星的星曜性质解释，结合现代生活场景转写。",
+      "confidence": "高"
+    },
+    {
+      "id": "zw_star_天府",
+      "star_name": "天府",
+      "star_type": "库星",
+      "core_keywords": [
+        "稳定",
+        "库藏",
+        "资源",
+        "包容",
+        "管理"
+      ],
+      "personality_tendency": "稳定 · 资源 · 包容",
+      "career_tendency": "适合管理、资源、平台型职业",
+      "wealth_tendency": "财富方面偏稳定积累，适合长期经营",
+      "relationship_tendency": "关系中包容稳重，需要注意行动力",
+      "risk_tendency": "保守、依赖稳定、行动偏慢",
+      "advice": "发挥稳定优势，适当增加变化应对能力",
+      "source_ids": [
+        "ziwei_doushu_quanshu",
+        "ziwei_doushu_daquan",
+        "traditional_ziwei_palace_system"
+      ],
+      "basis": "基于《紫微斗数全书》和《紫微斗数全集》中天府星的星曜性质解释，结合现代生活场景转写。",
+      "confidence": "高"
+    },
+    {
+      "id": "zw_star_太阴",
+      "star_name": "太阴",
+      "star_type": "富星",
+      "core_keywords": [
+        "细腻",
+        "内在",
+        "财富",
+        "审美",
+        "女性缘"
+      ],
+      "personality_tendency": "细腻 · 内在 · 审美",
+      "career_tendency": "适合文化、审美、咨询、疗愈型职业",
+      "wealth_tendency": "财富偏细腻经营，适合服务业和文化类收入",
+      "relationship_tendency": "感情细腻丰富，需要注意情绪波动",
+      "risk_tendency": "敏感、情绪波动、犹豫",
+      "advice": "善用细腻感知，同时培养情绪稳定度",
+      "source_ids": [
+        "ziwei_doushu_quanshu",
+        "ziwei_doushu_quanji",
+        "ziwei_doushu_daquan"
+      ],
+      "basis": "基于《紫微斗数全书》和《紫微斗数全集》中太阴星的星曜性质解释，结合现代生活场景转写。",
+      "confidence": "高"
+    },
+    {
+      "id": "zw_star_贪狼",
+      "star_name": "贪狼",
+      "star_type": "桃花星",
+      "core_keywords": [
+        "欲望",
+        "人缘",
+        "才艺",
+        "桃花",
+        "应酬"
+      ],
+      "personality_tendency": "人缘 · 欲望 · 才艺",
+      "career_tendency": "适合社交、娱乐、创意、艺术型职业",
+      "wealth_tendency": "财富方面偏人脉和资源型收入，机会较多",
+      "relationship_tendency": "吸引力强但需要注意关系质量和边界",
+      "risk_tendency": "分心、欲望过强、关系需要经营",
+      "advice": "善用人缘和才艺，保持主要方向专注",
+      "source_ids": [
+        "ziwei_doushu_quanshu",
+        "ziwei_doushu_daquan",
+        "traditional_ziwei_palace_system"
+      ],
+      "basis": "基于《紫微斗数全书》和《紫微斗数全集》中贪狼星的星曜性质解释，结合现代生活场景转写。",
+      "confidence": "高"
+    },
+    {
+      "id": "zw_star_巨门",
+      "star_name": "巨门",
+      "star_type": "暗星",
+      "core_keywords": [
+        "口才",
+        "分析",
+        "怀疑",
+        "表达",
+        "辩论"
+      ],
+      "personality_tendency": "口才 · 分析 · 思辨",
+      "career_tendency": "适合法律、咨询、传媒、教育型职业",
+      "wealth_tendency": "财富方面偏口才和知识变现",
+      "relationship_tendency": "喜欢深度交流，需要注意语气和表达能力",
+      "risk_tendency": "口舌轻重、误会、负面思考",
+      "advice": "善用口才同时注意表达分寸",
+      "source_ids": [
+        "ziwei_doushu_quanshu",
+        "ziwei_doushu_quanji",
+        "ziwei_doushu_daquan"
+      ],
+      "basis": "基于《紫微斗数全书》和《紫微斗数全集》中巨门星的星曜性质解释，结合现代生活场景转写。",
+      "confidence": "高"
+    },
+    {
+      "id": "zw_star_天相",
+      "star_name": "天相",
+      "star_type": "印星",
+      "core_keywords": [
+        "辅佐",
+        "协调",
+        "制度",
+        "形象",
+        "合作"
+      ],
+      "personality_tendency": "辅佐 · 协调 · 信义",
+      "career_tendency": "适合辅佐、管理、协调、制度型职业",
+      "wealth_tendency": "财富靠平台和信誉积累，稳定型收入",
+      "relationship_tendency": "关系中重视承诺，容易被他人评价影响",
+      "risk_tendency": "依赖评价、过度配合",
+      "advice": "发挥协调能力，保持自我主张",
+      "source_ids": [
+        "ziwei_doushu_quanshu",
+        "ziwei_doushu_quanji",
+        "ziwei_doushu_daquan"
+      ],
+      "basis": "基于《紫微斗数全书》和《紫微斗数全集》中天相星的星曜性质解释，结合现代生活场景转写。",
+      "confidence": "高"
+    },
+    {
+      "id": "zw_star_天梁",
+      "star_name": "天梁",
+      "star_type": "荫星",
+      "core_keywords": [
+        "庇护",
+        "原则",
+        "长辈",
+        "清高",
+        "化解"
+      ],
+      "personality_tendency": "庇护 · 原则 · 传统",
+      "career_tendency": "适合医疗、教育、公益、传统行业",
+      "wealth_tendency": "财富方面偏稳定，注重长期积累",
+      "relationship_tendency": "关系中注重原则和责任感，可能略显距离感",
+      "risk_tendency": "说教、保守、固执",
+      "advice": "发挥化解能力，同时增加灵活性",
+      "source_ids": [
+        "ziwei_doushu_quanshu",
+        "ziwei_doushu_daquan",
+        "traditional_ziwei_palace_system"
+      ],
+      "basis": "基于《紫微斗数全书》和《紫微斗数全集》中天梁星的星曜性质解释，结合现代生活场景转写。",
+      "confidence": "高"
+    },
+    {
+      "id": "zw_star_七杀",
+      "star_name": "七杀",
+      "star_type": "将星",
+      "core_keywords": [
+        "突破",
+        "竞争",
+        "决断",
+        "压力",
+        "开创"
+      ],
+      "personality_tendency": "突破 · 决断 · 开创",
+      "career_tendency": "适合创业、管理、竞争型、挑战型职业",
+      "wealth_tendency": "偏项目型和风险回报型收益，波动较大",
+      "relationship_tendency": "关系中果断直接，需要注意方式",
+      "risk_tendency": "急进、冲突、风险决策",
+      "advice": "发挥决断力，同时预留缓冲空间",
+      "source_ids": [
+        "ziwei_doushu_quanshu",
+        "ziwei_doushu_quanji",
+        "ziwei_doushu_daquan"
+      ],
+      "basis": "基于《紫微斗数全书》和《紫微斗数全集》中七杀星的星曜性质解释，结合现代生活场景转写。",
+      "confidence": "高"
+    },
+    {
+      "id": "zw_star_破军",
+      "star_name": "破军",
+      "star_type": "耗星",
+      "core_keywords": [
+        "破旧立新",
+        "变化",
+        "改革",
+        "冒险",
+        "重组"
+      ],
+      "personality_tendency": "革新 · 变化 · 重组",
+      "career_tendency": "适合改革、创新、危机管理、转型",
+      "wealth_tendency": "财富方面偏变动型，破而后立",
+      "relationship_tendency": "变化较多，需要稳定的感情基础",
+      "risk_tendency": "波动、破耗、冲动改变",
+      "advice": "破旧立新是能力，但重大变化前先做规划",
+      "source_ids": [
+        "ziwei_doushu_quanshu",
+        "ziwei_doushu_quanji",
+        "ziwei_doushu_daquan"
+      ],
+      "basis": "基于《紫微斗数全书》和《紫微斗数全集》中破军星的星曜性质解释，结合现代生活场景转写。",
+      "confidence": "高"
+    }
+  ]
+}

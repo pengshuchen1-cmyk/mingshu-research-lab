@@ -187,7 +187,7 @@ def _render_donut(five_elements: dict) -> None:
         )
         .properties(height=260)
     )
-    st.altair_chart(chart, width='stretch')
+    st.altair_chart(chart, use_container_width=True, key='inquiry_element_bar')
 
 
 def _render_bar(five_elements: dict) -> None:
@@ -217,7 +217,7 @@ def _render_bar(five_elements: dict) -> None:
     text = chart.mark_text(
         align="left", dx=5, fontSize=12, fontWeight="bold",
     ).encode(text=alt.Text("权重:Q", format=".2f"))
-    st.altair_chart(chart + text, width='stretch')
+    st.altair_chart(chart + text, use_container_width=True, key='inquiry_element_bar_text')
 
 
 def _render_strength_section(chart: dict) -> None:
@@ -309,7 +309,7 @@ def _render_luck_overview(chart: dict) -> None:
             }
             for item in dayun_list
         ]
-        st.dataframe(pd.DataFrame(rows), width='stretch', hide_index=True)
+        st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
 
     # Brief yearly list
     yearly_list = result.get("yearly_list", [])
@@ -325,7 +325,7 @@ def _render_luck_overview(chart: dict) -> None:
                 }
                 for item in yearly_list
             ]
-            st.dataframe(pd.DataFrame(yr_rows), width='stretch', hide_index=True)
+            st.dataframe(pd.DataFrame(yr_rows), use_container_width=True, hide_index=True)
 
 
 def _render_ten_god_summary(chart: dict) -> None:
@@ -348,7 +348,7 @@ def _render_ten_god_summary(chart: dict) -> None:
         )
         .properties(height=200)
     )
-    st.altair_chart(chart_viz, width='stretch')
+    st.altair_chart(chart_viz, use_container_width=True, key='inquiry_ten_god_bar')
 
 
 def _render_chart_tags(chart: dict) -> None:
@@ -391,7 +391,7 @@ def _render_quick_nav() -> None:
     cols = st.columns(len(nav_items))
     for idx, (label, page_name) in enumerate(nav_items):
         with cols[idx]:
-            if st.button(label, key=f"nav_{idx}", width='stretch'):
+            if st.button(label, key=f"nav_{idx}", use_container_width=True):
                 st.session_state["_nav_to"] = page_name
 
 

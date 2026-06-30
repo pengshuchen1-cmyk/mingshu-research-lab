@@ -456,9 +456,9 @@ def analyze_yearly_fortune(chart: dict, target_year: int, luck_data: dict | None
         peach_months = []
         career_good = career_bad = wealth_good = wealth_bad = rel_good = rel_bad = []
         health_concerns = []
-        ten_god = yearly_data.get("ten_god", "")
-        relation = yearly_data.get("relation_to_favorable", "")
-        overall_level = yearly_data.get("overall_level", "")
+        ten_god = ten_god if ten_god else ""
+        relation = relation if relation else ""
+        overall_level = overall_level if overall_level else ""
 
     overall_text = f"{narrative['overall_text']}{luck_note}"
     risk_text = narrative["risk_text"]

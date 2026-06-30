@@ -1,0 +1,33 @@
+{
+  "rules": [
+    {
+      "id": "zw_risk_fake_star",
+      "title": "星曜伪造风险",
+      "text": "当前版本不实现主星落宫算法，必须避免说'某星在某宫'。所有星曜仅作含义速查。",
+      "source_ids": [
+        "ziwei_doushu_quanshu"
+      ],
+      "confidence": "高"
+    },
+    {
+      "id": "zw_risk_fake_sihua",
+      "title": "四化伪造风险",
+      "text": "当前版本不做飞化断事。四化仅作基础解释，不涉及'某宫化禄/化忌'等判断。",
+      "source_ids": [
+        "ziwei_doushu_quanshu",
+        "traditional_ziwei_sihua_system"
+      ],
+      "confidence": "高"
+    },
+    {
+      "id": "zw_risk_fake_luck",
+      "title": "大限流年伪造风险",
+      "text": "当前版本不实现大限流年，必须避免说'某年大限如何'或'某年流年如何'。",
+      "source_ids": [
+        "ziwei_doushu_quanji",
+        "ziwei_doushu_daquan"
+      ],
+      "confidence": "高"
+    }
+  ]
+}

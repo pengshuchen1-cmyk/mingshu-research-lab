@@ -1,6 +1,46 @@
 {
   "rules": [
-    {"id": "useful-wood", "title": "喜木建议", "condition": {"favorable_elements_contains": ["木"]}, "tags": ["学习", "成长"], "text": "喜木时更适合学习、规划、文化、教育和创意成长。", "advice": "建议建立长期学习计划。", "risk": "需要注意只规划不落实。"},
-    {"id": "useful-fire", "title": "喜火建议", "condition": {"favorable_elements_contains": ["火"]}, "tags": ["表达", "传播"], "text": "喜火时更适合表达、传播、品牌和行动力建设。", "advice": "建议增加可见成果。", "risk": "需要注意节奏过快。"}
+    {
+      "id": "useful_god_career",
+      "title": "用神职业方向",
+      "condition": {
+        "element_relation": "喜用相关"
+      },
+      "tags": [
+        "职业选择",
+        "喜用五行"
+      ],
+      "text": "喜用五行对应的行业和方向更适合长期发展，有助于能量补充和稳定发挥。",
+      "advice": "建议优先选择喜用五行属性明显的职业方向或行业领域。",
+      "risk": "需要注意勿因短期利益选择忌神五行主导的行业。",
+      "source_ids": [
+        "zi_ping_zhen_quan",
+        "san_ming_tong_hui"
+      ],
+      "basis": "根据《子平真诠》用神理论，用神对应的五行和行业方向对长期发展有补充和助益作用。",
+      "school": "子平八字",
+      "confidence": "高"
+    },
+    {
+      "id": "useful_god_life",
+      "title": "用神生活建议",
+      "condition": {
+        "element_relation": "喜用相关"
+      },
+      "tags": [
+        "生活方式",
+        "环境选择"
+      ],
+      "text": "喜用五行对应的颜色、方位、季节和生活方式有助于日常调养和能量平衡。",
+      "advice": "建议在日常环境中适当增加喜用五行元素，如颜色、植物、方位和环境布置。",
+      "risk": "需要注意过度依赖五行调候，忽视现实问题的根本解决。",
+      "source_ids": [
+        "qiong_tong_bao_jian",
+        "san_ming_tong_hui"
+      ],
+      "basis": "根据《穷通宝鉴》五行调候理论，喜用五行对应的环境和生活方式有助于日常能量平衡。",
+      "school": "调候",
+      "confidence": "中等"
+    }
   ]
 }

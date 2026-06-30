@@ -1,0 +1,30 @@
+[
+  {
+    "name": "样例A-甲命",
+    "birth": {"gender": "男", "birth_date": "1990-01-01", "birth_hour": 5, "birth_minute": 0},
+    "expected": {
+      "year_gan": "庚",
+      "ming_gong": "戌", "shen_gong": "辰",
+      "five_element_bureau": "土5局",
+      "main_stars_by_palace": {
+        "命宫": ["天同", "巨门"], "兄弟宫": ["武曲", "天相"],
+        "夫妻宫": ["太阳", "天梁"], "子女宫": ["七杀"],
+        "财帛宫": ["紫微", "天机", "破军"], "疾厄宫": [],
+        "迁移宫": [], "交友宫": [],
+        "官禄宫": [], "田宅宫": ["廉贞"],
+        "福德宫": ["天府", "太阴"], "父母宫": ["贪狼"]
+      }
+    },
+    "source_note": "基于紫微斗数全书起星诀，紫微落寅宫局数验证。"
+  },
+  {
+    "name": "样例B-乙命",
+    "birth": {"gender": "女", "birth_date": "2000-06-15", "birth_hour": 14, "birth_minute": 30},
+    "expected": {
+      "year_gan": "庚",
+      "ming_gong": "亥", "shen_gong": "丑",
+      "five_element_bureau": "金4局"
+    },
+    "source_note": "不同出生月日时产生的差异样例。"
+  }
+]

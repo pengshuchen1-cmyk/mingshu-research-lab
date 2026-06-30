@@ -54,6 +54,7 @@ class V1LocalFeatureTests(unittest.TestCase):
        "首页",
        "新建命盘",
        "八字排盘",
+       "命盘总览",
         "综合问盘",
         "五行喜忌",
        "大运流年",
@@ -143,7 +144,7 @@ class V1LocalFeatureTests(unittest.TestCase):
         self.assertTrue(chart["available"])
         self.assertEqual(len(chart["palaces"]), 12)
         self.assertIn("命宫", [item["name"] for item in chart["palaces"]])
-        self.assertIn("十四主星排布将在后续版本完善", chart["star_note"])
+        self.assertIn("十四主星排布已实现（v1.2-B），基于传统起星诀计算。", chart["star_note"])
         self.assertIn("命宫分析", [item["title"] for item in report["sections"]])
         self.assertIn("综合建议", [item["title"] for item in report["sections"]])
 

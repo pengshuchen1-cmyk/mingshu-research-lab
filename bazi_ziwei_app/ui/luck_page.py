@@ -122,7 +122,7 @@ def render_luck_page():
         return [""] * len(row)
 
     styled_df = df.style.apply(_highlight_current, axis=1)
-    st.dataframe(styled_df, width='stretch', hide_index=True)
+    st.dataframe(styled_df, use_container_width=True, hide_index=True)
 
     # ====== 大运阶段详解 ======
     st.markdown("### 🔍 大运各阶段详解")
@@ -204,7 +204,7 @@ def render_luck_page():
         }
         for item in result.get("yearly_list", [])
     ]
-    st.dataframe(pd.DataFrame(yearly_rows), width='stretch', hide_index=True)
+    st.dataframe(pd.DataFrame(yearly_rows), use_container_width=True, hide_index=True)
 
     # 底部备注
     st.caption("本报告基于传统命理模型生成，仅供个人兴趣和文化研究参考。")

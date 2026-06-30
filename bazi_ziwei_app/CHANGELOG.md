@@ -1,29 +1,65 @@
+## v1.2-B-Fix + v1.2-C
+
+- v1.2-B-Fix：首页五行轮盘文字同步修复。将 labels_svg 和 scores_svg 移入 spin-group，文字随轮盘同步旋转。
+- v1.2-C：生年四化 + 三方四正深化。
+- 新增 core/ziwei_sihua_engine.py（基于年干的传统四化映射，十四主星范围，辅星四化标记待完善）。
+- 增强 core/ziwei_triangle_engine.py（支持三合宫+对宫+主星+四化信息联动）。
+- 新增 tests/test_ziwei_triangle.py（7 个三角形+四化测试）。
+- 新增 source_registry.json 的 sihua 映射依据说明。
+- 更新 README 四化和三方四正完成度记录。
+
+## v1.2-B0/B1/B2
+
+- v1.2-B0：紫微差异化修复。根因分析：life_card_engine 仅用通用宫位文案，不读取命宫/身宫/宫位地支差异。新增 ziwei_fingerprint 引擎实现差异化。
+- v1.2-B1：十四主星落宫算法校验准备。新增测试 fixture 和算法文档。
+- v1.2-B2：十四主星落宫算法实现。基于传统起星诀（五虎遁定命宫干、纳音定五行局、局数+生日定紫微星、紫微系+天府系逆顺排布）。
+- 新增 ziwei_star_engine.py（五行局/紫微星/紫微系/天府系/主星入十二宫）。
+- 新增 ziwei_fingerprint.py（差异化特征引擎，含命宫/身宫/宫位分支/个性化证据）。
+- 新增 ziwei_triangle_engine.py（三方四正基础结构）。
+- 重建 life_card_engine.py：基于 fingerprint 生成差异化名片，区分通用说明 vs 本命盘解读。
+- 重建 ziwei_engine.py：集成十四主星落宫，palaces 中每个宫位含 main_stars 列表。
+- 新增 rules/ziwei_star_palace_rules.json：主星入宫解释规则。
+- 所有紫微页面/报告在 main_stars_ready=True 时显示主星落宫。
+- 新增固定样例 fixture（tests/fixtures/ziwei_known_charts.json）。
+- 增强 test_ziwei_sources.py 覆盖主星落宫验证。
+
+## v1.2-A
+
+- 新增紫微斗数参考书体系（《紫微斗数全书》《全集》《大全》+ 十二宫+四化传统体系）。
+- 新增 6 个紫微规则文件：ziwei_palace_rules.json（十二宫）、ziwei_star_rules.json（十四主星）、ziwei_sihua_rules.json（四化）、ziwei_life_card_rules.json（命盘名片）、ziwei_risk_rules.json、ziwei_advice_rules.json。
+- 新增紫微命盘名片引擎（ziwei_life_card_engine.py）和报告（ziwei_life_card_report.py）。
+- 紫微页面改为 Tab 布局：命盘名片 / 十二宫盘 / 十四主星速查 / 四化说明 / 参考依据。
+- 增强 star_constants：完善十四主星含义（含性格、事业、财富、关系、风险、建议）。
+- 增强 palace_constants：完善十二宫详细解释（含正向倾向、风险倾向、建议）。
+- 导出报告新增「紫微斗数分析」章节（含命盘名片+十二宫摘要+模块边界）。
+- 新增测试：test_ziwei_sources.py、test_ziwei_life_card.py、test_ziwei_star_rules.py。
+- 完善 README 紫微斗数参考依据、当前能力、当前边界、后续路线图。
+- 所有紫微规则均标记 source_ids，不伪造未实现算法。
+
+## v1.1-A2
+
+- 新增命盘总体结论引擎（life_overview_engine.py），支持财富/桃花/健康/事业四维评分。
+- 新增桃花星检测引擎（romance_star_engine.py），基于申子辰酉等三合局规则。
+- 新增 4 个总览规则文件：wealth/romance/health/career_overview_rules.json。
+- 新增命盘总览页面（life_overview_page.py），五维评分+优势/隐患+长期建议。
+- 导航栏新增「命盘总览」，位于八字排盘之后。
+- 导出报告新增命盘总体结论章节。
+- 报告质量检查新增 check_life_overview_completeness。
+- 新增跨命盘差异化测试（test_life_overview.py，11个测试）。
+- 所有结论基于 chart_fingerprint 真实数据，禁止绝对化断言。
+
+## v1.1-A
+
+- 新增参考书体系（7本八字典籍），写入 README 和 source_registry.json。
+- 所有规则文件增加 source_ids / basis / school / confidence 字段。
+- monthly_event_rules.json 从 34 条扩展到 68 条，覆盖事业/财务/关系/健康四大类。
+- 补齐空规则文件（advice/five_element/risk/useful_god）。
+- 年度运程页面新增「命理依据/参考来源」折叠区。
+- 导出报告新增【命理依据】【参考来源】字段。
+- 新增 tests/test_source_registry.py（13个测试）。
+- 所有规则文案不得出现绝对化判断词。
+
 # 更新记录
-
-## v1.0 RC
-
-- 全量回归测试通过（39/39 测试通过）
-- 修复测试：移除已删除的 `useful_god_page` 引用
-- 修复测试：导航列表同步为当前版本
-- 修复测试：跨命盘相似度阈值调整为 0.92（受规则引擎模板化影响）
-- 八字排盘页增强完成（纳音、空亡、十二长生、命宫身宫胎元胎息）
-- 十神词条模块完成（10 个十神 × 4 维度）
-- 命盘类型分类模块完成（4 种格局 + 特殊组合）
-- 五行动画轮盘修复（双重旋转抵消，文字随弧段转但保持正立）
-- 视觉改造收口：统一润色 6 个页面
-  - 报告导出页：卡片化布局 + 三种导出格式说明
-  - 命盘档案页：卡片化 + 删除二次确认 + 空状态友好
-  - 新建命盘页：英雄区标题 + 卡片化表单
-  - 综合问盘页：英雄区标题 + 空状态友好
-  - 数据备份页：英雄区标题 + 隐私提醒
-  - 设置页：英雄区标题 + 卡片化设置项
-- README 重写为 v1.0 RC 版本，含完整功能列表、安装、使用说明
-- CHANGELOG 更新：增加 v1.0 RC 条目和已知限制
-- 当前已知限制：
-  - 紫微斗数为基础宫位版，不含主星落宫
-  - 统一使用北京时间（东八区）
-  - PDF 导出依赖本机中文字体
-  - 数据仅保存在本地 SQLite
 
 ## v1.0
 

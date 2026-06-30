@@ -2,239 +2,1864 @@
   {
     "id": "project_progress",
     "tag": "项目推进",
-    "trigger": {"ten_gods": ["食神", "伤官", "七杀"], "elements": ["木", "火"], "branch_relations": ["冲月支"]},
+    "trigger": {
+      "ten_gods": [
+        "食神",
+        "伤官",
+        "七杀"
+      ],
+      "elements": [
+        "木",
+        "火"
+      ],
+      "branch_relations": [
+        "冲月支"
+      ]
+    },
     "text": "本月容易围绕项目推进、进度确认、成果交付或方案调整展开。",
-    "advice": "建议把目标拆成里程碑，重要节点提前同步，避免临近截止才集中处理。"
+    "advice": "建议把目标拆成里程碑，重要节点提前同步，避免临近截止才集中处理。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan"
+    ],
+    "basis": "基于食神、伤官、七杀在十神中的含义；结合冲月支等地支六冲关系；转化为现代生活事件标签。",
+    "school": "子平八字",
+    "confidence": "高"
   },
   {
     "id": "role_change",
     "tag": "岗位变化",
-    "trigger": {"ten_gods": ["正官", "七杀", "偏印"], "elements": ["金", "水"], "branch_relations": ["冲月支"]},
+    "trigger": {
+      "ten_gods": [
+        "正官",
+        "七杀",
+        "偏印"
+      ],
+      "elements": [
+        "金",
+        "水"
+      ],
+      "branch_relations": [
+        "冲月支"
+      ]
+    },
     "text": "本月容易出现岗位职责、汇报关系、工作内容或主业节奏的调整信号。",
-    "advice": "建议先确认职责边界和评价标准，再决定是否主动争取新任务。"
+    "advice": "建议先确认职责边界和评价标准，再决定是否主动争取新任务。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan"
+    ],
+    "basis": "基于正官、七杀、偏印在十神中的含义；结合冲月支等地支六冲关系；转化为现代生活事件标签。",
+    "school": "子平八字",
+    "confidence": "高"
   },
   {
     "id": "superior_pressure",
     "tag": "上级压力",
-    "trigger": {"ten_gods": ["正官", "七杀"], "elements": ["金"], "branch_relations": ["冲月支"]},
+    "trigger": {
+      "ten_gods": [
+        "正官",
+        "七杀"
+      ],
+      "elements": [
+        "金"
+      ],
+      "branch_relations": [
+        "冲月支"
+      ]
+    },
     "text": "本月容易遇到上级要求、考核节点、规则约束或强执行任务。",
-    "advice": "建议用书面清单确认优先级，减少口头理解偏差。"
+    "advice": "建议用书面清单确认优先级，减少口头理解偏差。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan"
+    ],
+    "basis": "基于正官、七杀在十神中的含义；结合冲月支等地支六冲关系；转化为现代生活事件标签。",
+    "school": "子平八字",
+    "confidence": "高"
   },
   {
     "id": "client_communication",
     "tag": "客户沟通",
-    "trigger": {"ten_gods": ["正财", "偏财", "伤官"], "elements": ["土", "火"], "branch_relations": ["冲日支"]},
+    "trigger": {
+      "ten_gods": [
+        "正财",
+        "偏财",
+        "伤官"
+      ],
+      "elements": [
+        "土",
+        "火"
+      ],
+      "branch_relations": [
+        "冲日支"
+      ]
+    },
     "text": "本月客户、合作方、外部资源沟通会更频繁，容易反复确认需求。",
-    "advice": "建议把需求、价格、交付边界和时间点写清楚。"
+    "advice": "建议把需求、价格、交付边界和时间点写清楚。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan"
+    ],
+    "basis": "基于正财、偏财、伤官在十神中的含义；结合冲日支等地支六冲关系；转化为现代生活事件标签。",
+    "school": "子平八字",
+    "confidence": "高"
   },
   {
     "id": "contract_documents",
     "tag": "合同文书",
-    "trigger": {"ten_gods": ["正官", "七杀", "伤官"], "elements": ["金", "土"], "branch_relations": ["冲月支", "冲日支"]},
+    "trigger": {
+      "ten_gods": [
+        "正官",
+        "七杀",
+        "伤官"
+      ],
+      "elements": [
+        "金",
+        "土"
+      ],
+      "branch_relations": [
+        "冲月支",
+        "冲日支"
+      ]
+    },
     "text": "本月容易遇到合同、文件、审批、沟通确认或规则流程相关事务。",
-    "advice": "重要内容建议保留记录，涉及钱款、合作和口头承诺时要尽量落到文字。"
+    "advice": "重要内容建议保留记录，涉及钱款、合作和口头承诺时要尽量落到文字。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan"
+    ],
+    "basis": "基于正官、七杀、伤官在十神中的含义；结合冲月支、冲日支等地支六冲关系；转化为现代生活事件标签。",
+    "school": "子平八字",
+    "confidence": "高"
   },
   {
     "id": "presentation",
     "tag": "汇报展示",
-    "trigger": {"ten_gods": ["食神", "伤官", "正官"], "elements": ["火"], "branch_relations": ["冲月支"]},
+    "trigger": {
+      "ten_gods": [
+        "食神",
+        "伤官",
+        "正官"
+      ],
+      "elements": [
+        "火"
+      ],
+      "branch_relations": [
+        "冲月支"
+      ]
+    },
     "text": "本月容易出现汇报、展示、面试、公开表达或内容发布类事务。",
-    "advice": "建议提前准备材料，用事实和结果支撑表达，语气保留弹性。"
+    "advice": "建议提前准备材料，用事实和结果支撑表达，语气保留弹性。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan"
+    ],
+    "basis": "基于食神、伤官、正官在十神中的含义；结合冲月支等地支六冲关系；转化为现代生活事件标签。",
+    "school": "子平八字",
+    "confidence": "高"
   },
   {
     "id": "study_exam",
     "tag": "学习考试",
-    "trigger": {"ten_gods": ["正印", "偏印", "食神"], "elements": ["木", "水"], "branch_relations": ["冲时支"]},
+    "trigger": {
+      "ten_gods": [
+        "正印",
+        "偏印",
+        "食神"
+      ],
+      "elements": [
+        "木",
+        "水"
+      ],
+      "branch_relations": [
+        "冲时支"
+      ]
+    },
     "text": "本月适合学习、考试、资料整理、资质准备或系统复盘。",
-    "advice": "建议把学习目标拆小，固定复习时段，避免只收集资料不行动。"
+    "advice": "建议把学习目标拆小，固定复习时段，避免只收集资料不行动。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan"
+    ],
+    "basis": "基于正印、偏印、食神在十神中的含义；结合冲时支等地支六冲关系；转化为现代生活事件标签。",
+    "school": "子平八字",
+    "confidence": "高"
   },
   {
     "id": "team_friction",
     "tag": "团队摩擦",
-    "trigger": {"ten_gods": ["比肩", "劫财", "伤官"], "elements": ["木", "火"], "branch_relations": ["冲月支", "冲日支"]},
+    "trigger": {
+      "ten_gods": [
+        "比肩",
+        "劫财",
+        "伤官"
+      ],
+      "elements": [
+        "木",
+        "火"
+      ],
+      "branch_relations": [
+        "冲月支",
+        "冲日支"
+      ]
+    },
     "text": "本月团队内部容易出现意见不一致、分工拉扯或沟通语气问题。",
-    "advice": "建议先讲目标和边界，再讨论责任归属，避免把情绪放在前面。"
+    "advice": "建议先讲目标和边界，再讨论责任归属，避免把情绪放在前面。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan"
+    ],
+    "basis": "基于比肩、劫财、伤官在十神中的含义；结合冲月支、冲日支等地支六冲关系；转化为现代生活事件标签。",
+    "school": "子平八字",
+    "confidence": "高"
   },
   {
     "id": "cooperation_chance",
     "tag": "合作机会",
-    "trigger": {"ten_gods": ["劫财", "偏财", "正财"], "elements": ["土", "木"], "branch_relations": ["冲日支"]},
+    "trigger": {
+      "ten_gods": [
+        "劫财",
+        "偏财",
+        "正财"
+      ],
+      "elements": [
+        "土",
+        "木"
+      ],
+      "branch_relations": [
+        "冲日支"
+      ]
+    },
     "text": "本月容易出现合作、资源置换、客户转介绍或共同推进的机会。",
-    "advice": "建议先小范围试运行，再扩大投入，分账和退出机制要提前讲清。"
+    "advice": "建议先小范围试运行，再扩大投入，分账和退出机制要提前讲清。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan"
+    ],
+    "basis": "基于劫财、偏财、正财在十神中的含义；结合冲日支等地支六冲关系；转化为现代生活事件标签。",
+    "school": "子平八字",
+    "confidence": "高"
   },
   {
     "id": "competition",
     "tag": "竞争增强",
-    "trigger": {"ten_gods": ["比肩", "劫财", "七杀"], "elements": ["木", "金"], "branch_relations": ["冲月支"]},
+    "trigger": {
+      "ten_gods": [
+        "比肩",
+        "劫财",
+        "七杀"
+      ],
+      "elements": [
+        "木",
+        "金"
+      ],
+      "branch_relations": [
+        "冲月支"
+      ]
+    },
     "text": "本月竞争感增强，容易和同行、同事或同类项目形成比较。",
-    "advice": "建议聚焦自己的优势指标，少被外界节奏牵着走。"
+    "advice": "建议聚焦自己的优势指标，少被外界节奏牵着走。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan"
+    ],
+    "basis": "基于比肩、劫财、七杀在十神中的含义；结合冲月支等地支六冲关系；转化为现代生活事件标签。",
+    "school": "子平八字",
+    "confidence": "高"
   },
   {
     "id": "finance整理",
     "tag": "财务整理",
-    "trigger": {"ten_gods": ["正财", "偏财"], "elements": ["土"], "branch_relations": ["冲日支"]},
+    "trigger": {
+      "ten_gods": [
+        "正财",
+        "偏财"
+      ],
+      "elements": [
+        "土"
+      ],
+      "branch_relations": [
+        "冲日支"
+      ]
+    },
     "text": "本月容易处理账目、预算、报销、回款、采购或生活成本整理。",
-    "advice": "建议做一次现金流盘点，把固定支出和临时支出分开管理。"
+    "advice": "建议做一次现金流盘点，把固定支出和临时支出分开管理。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan"
+    ],
+    "basis": "基于正财、偏财在十神中的含义；结合冲日支等地支六冲关系；转化为现代生活事件标签。",
+    "school": "子平八字",
+    "confidence": "高"
   },
   {
     "id": "expense_increase",
     "tag": "支出增加",
-    "trigger": {"ten_gods": ["劫财", "偏财", "伤官"], "elements": ["火", "土"], "branch_relations": ["冲日支"]},
+    "trigger": {
+      "ten_gods": [
+        "劫财",
+        "偏财",
+        "伤官"
+      ],
+      "elements": [
+        "火",
+        "土"
+      ],
+      "branch_relations": [
+        "冲日支"
+      ]
+    },
     "text": "本月容易出现人情、设备、学习、出行或项目推进带来的支出增加。",
-    "advice": "建议给非必要支出设上限，避免因为情绪或面子临时加码。"
+    "advice": "建议给非必要支出设上限，避免因为情绪或面子临时加码。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan"
+    ],
+    "basis": "基于劫财、偏财、伤官在十神中的含义；结合冲日支等地支六冲关系；转化为现代生活事件标签。",
+    "school": "子平八字",
+    "confidence": "高"
   },
   {
     "id": "windfall_chance",
     "tag": "偏财机会",
-    "trigger": {"ten_gods": ["偏财", "食神", "伤官"], "elements": ["土", "火"], "branch_relations": ["冲时支"]},
+    "trigger": {
+      "ten_gods": [
+        "偏财",
+        "食神",
+        "伤官"
+      ],
+      "elements": [
+        "土",
+        "火"
+      ],
+      "branch_relations": [
+        "冲时支"
+      ]
+    },
     "text": "本月可能看到项目型收益、临时订单、资源撮合或副业机会。",
-    "advice": "建议先核算投入产出和回收周期，不宜只看表面热闹。"
+    "advice": "建议先核算投入产出和回收周期，不宜只看表面热闹。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan"
+    ],
+    "basis": "基于偏财、食神、伤官在十神中的含义；结合冲时支等地支六冲关系；转化为现代生活事件标签。",
+    "school": "子平八字",
+    "confidence": "高"
   },
   {
     "id": "investment_caution",
     "tag": "投资谨慎",
-    "trigger": {"ten_gods": ["偏财", "七杀", "偏印"], "elements": ["金", "水"], "branch_relations": ["冲日支"]},
+    "trigger": {
+      "ten_gods": [
+        "偏财",
+        "七杀",
+        "偏印"
+      ],
+      "elements": [
+        "金",
+        "水"
+      ],
+      "branch_relations": [
+        "冲日支"
+      ]
+    },
     "text": "本月面对投资、扩张、借贷或高风险机会时，需要多做验证。",
-    "advice": "建议保留现金缓冲，不熟悉的项目先不重仓参与。"
+    "advice": "建议保留现金缓冲，不熟悉的项目先不重仓参与。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan"
+    ],
+    "basis": "基于偏财、七杀、偏印在十神中的含义；结合冲日支等地支六冲关系；转化为现代生活事件标签。",
+    "school": "子平八字",
+    "confidence": "高"
   },
   {
     "id": "partnership_split",
     "tag": "合伙分账",
-    "trigger": {"ten_gods": ["劫财", "比肩", "偏财"], "elements": ["木", "土"], "branch_relations": ["冲日支"]},
+    "trigger": {
+      "ten_gods": [
+        "劫财",
+        "比肩",
+        "偏财"
+      ],
+      "elements": [
+        "木",
+        "土"
+      ],
+      "branch_relations": [
+        "冲日支"
+      ]
+    },
     "text": "本月合伙、分账、资源投入和收益归属容易成为讨论重点。",
-    "advice": "建议把谁投入什么、如何分配、如何退出写清楚。"
+    "advice": "建议把谁投入什么、如何分配、如何退出写清楚。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan"
+    ],
+    "basis": "基于劫财、比肩、偏财在十神中的含义；结合冲日支等地支六冲关系；转化为现代生活事件标签。",
+    "school": "子平八字",
+    "confidence": "高"
   },
   {
     "id": "cash_pressure",
     "tag": "现金流压力",
-    "trigger": {"ten_gods": ["正财", "劫财", "七杀"], "elements": ["土", "金"], "branch_relations": ["冲月支"]},
+    "trigger": {
+      "ten_gods": [
+        "正财",
+        "劫财",
+        "七杀"
+      ],
+      "elements": [
+        "土",
+        "金"
+      ],
+      "branch_relations": [
+        "冲月支"
+      ]
+    },
     "text": "本月现金流、账期、固定支出或回款节奏需要更细致管理。",
-    "advice": "建议提前安排付款顺序，避免多个支出节点叠在一起。"
+    "advice": "建议提前安排付款顺序，避免多个支出节点叠在一起。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan"
+    ],
+    "basis": "基于正财、劫财、七杀在十神中的含义；结合冲月支等地支六冲关系；转化为现代生活事件标签。",
+    "school": "子平八字",
+    "confidence": "高"
   },
   {
     "id": "resource_monetize",
     "tag": "资源变现",
-    "trigger": {"ten_gods": ["偏财", "食神", "伤官"], "elements": ["火", "土"], "branch_relations": ["冲时支"]},
+    "trigger": {
+      "ten_gods": [
+        "偏财",
+        "食神",
+        "伤官"
+      ],
+      "elements": [
+        "火",
+        "土"
+      ],
+      "branch_relations": [
+        "冲时支"
+      ]
+    },
     "text": "本月适合把技能、内容、人脉或项目资源转成更清晰的收益路径。",
-    "advice": "建议把服务内容、报价和交付范围做成标准版本。"
+    "advice": "建议把服务内容、报价和交付范围做成标准版本。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan"
+    ],
+    "basis": "基于偏财、食神、伤官在十神中的含义；结合冲时支等地支六冲关系；转化为现代生活事件标签。",
+    "school": "子平八字",
+    "confidence": "高"
   },
   {
     "id": "client_payment",
     "tag": "客户回款",
-    "trigger": {"ten_gods": ["正财", "偏财", "正官"], "elements": ["土", "金"], "branch_relations": ["冲月支"]},
+    "trigger": {
+      "ten_gods": [
+        "正财",
+        "偏财",
+        "正官"
+      ],
+      "elements": [
+        "土",
+        "金"
+      ],
+      "branch_relations": [
+        "冲月支"
+      ]
+    },
     "text": "本月容易处理客户回款、账期确认、发票流程或费用结算。",
-    "advice": "建议提前确认节点，避免到期后再被动催促。"
+    "advice": "建议提前确认节点，避免到期后再被动催促。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan"
+    ],
+    "basis": "基于正财、偏财、正官在十神中的含义；结合冲月支等地支六冲关系；转化为现代生活事件标签。",
+    "school": "子平八字",
+    "confidence": "高"
   },
   {
     "id": "relationship_warm",
     "tag": "感情升温",
-    "trigger": {"ten_gods": ["食神", "正财", "正官"], "elements": ["火", "土"], "branch_relations": []},
+    "trigger": {
+      "ten_gods": [
+        "食神",
+        "正财",
+        "正官"
+      ],
+      "elements": [
+        "火",
+        "土"
+      ],
+      "branch_relations": []
+    },
     "text": "本月关系中更适合增加陪伴、表达关心和讨论现实安排。",
-    "advice": "建议用具体行动建立信任，不只停留在情绪表达。"
+    "advice": "建议用具体行动建立信任，不只停留在情绪表达。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui"
+    ],
+    "basis": "基于食神、正财、正官在十神中的含义；转化为现代生活事件标签。",
+    "school": "子平八字",
+    "confidence": "中等"
   },
   {
     "id": "relationship_friction",
     "tag": "关系摩擦",
-    "trigger": {"ten_gods": ["伤官", "劫财", "七杀"], "elements": ["火", "金"], "branch_relations": ["冲日支"]},
+    "trigger": {
+      "ten_gods": [
+        "伤官",
+        "劫财",
+        "七杀"
+      ],
+      "elements": [
+        "火",
+        "金"
+      ],
+      "branch_relations": [
+        "冲日支"
+      ]
+    },
     "text": "本月关系中容易因为语气、时间分配、承诺边界或现实压力产生摩擦。",
-    "advice": "建议先确认对方真实诉求，再讨论解决方案。"
+    "advice": "建议先确认对方真实诉求，再讨论解决方案。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan"
+    ],
+    "basis": "基于伤官、劫财、七杀在十神中的含义；结合冲日支等地支六冲关系；转化为现代生活事件标签。",
+    "school": "子平八字",
+    "confidence": "高"
   },
   {
     "id": "old_contact",
     "tag": "旧人联系",
-    "trigger": {"ten_gods": ["偏印", "劫财", "比肩"], "elements": ["水", "木"], "branch_relations": ["冲日支"]},
+    "trigger": {
+      "ten_gods": [
+        "偏印",
+        "劫财",
+        "比肩"
+      ],
+      "elements": [
+        "水",
+        "木"
+      ],
+      "branch_relations": [
+        "冲日支"
+      ]
+    },
     "text": "本月可能出现旧同事、旧朋友、旧客户或过去议题被重新提起。",
-    "advice": "建议分清情绪回忆和现实价值，不急着做长期承诺。"
+    "advice": "建议分清情绪回忆和现实价值，不急着做长期承诺。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan"
+    ],
+    "basis": "基于偏印、劫财、比肩在十神中的含义；结合冲日支等地支六冲关系；转化为现代生活事件标签。",
+    "school": "子平八字",
+    "confidence": "高"
   },
   {
     "id": "family_affairs",
     "tag": "家庭事务",
-    "trigger": {"ten_gods": ["正印", "正财", "正官"], "elements": ["土", "水"], "branch_relations": ["冲年支"]},
+    "trigger": {
+      "ten_gods": [
+        "正印",
+        "正财",
+        "正官"
+      ],
+      "elements": [
+        "土",
+        "水"
+      ],
+      "branch_relations": [
+        "冲年支"
+      ]
+    },
     "text": "本月容易涉及家庭沟通、长辈事务、居住安排或现实责任。",
-    "advice": "建议把时间和责任安排说具体，避免一个人默默承担。"
+    "advice": "建议把时间和责任安排说具体，避免一个人默默承担。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan"
+    ],
+    "basis": "基于正印、正财、正官在十神中的含义；结合冲年支等地支六冲关系；转化为现代生活事件标签。",
+    "school": "子平八字",
+    "confidence": "高"
   },
   {
     "id": "partner_talk",
     "tag": "伴侣沟通",
-    "trigger": {"ten_gods": ["正财", "正官", "伤官"], "elements": ["火", "土"], "branch_relations": ["冲日支"]},
+    "trigger": {
+      "ten_gods": [
+        "正财",
+        "正官",
+        "伤官"
+      ],
+      "elements": [
+        "火",
+        "土"
+      ],
+      "branch_relations": [
+        "冲日支"
+      ]
+    },
     "text": "本月伴侣或重要合作关系中的沟通需求增加，现实安排会被看见。",
-    "advice": "建议围绕时间、钱、责任和期待做具体沟通。"
+    "advice": "建议围绕时间、钱、责任和期待做具体沟通。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan"
+    ],
+    "basis": "基于正财、正官、伤官在十神中的含义；结合冲日支等地支六冲关系；转化为现代生活事件标签。",
+    "school": "子平八字",
+    "confidence": "高"
   },
   {
     "id": "social_obligation",
     "tag": "人情往来",
-    "trigger": {"ten_gods": ["劫财", "比肩", "偏财"], "elements": ["木", "火"], "branch_relations": []},
+    "trigger": {
+      "ten_gods": [
+        "劫财",
+        "比肩",
+        "偏财"
+      ],
+      "elements": [
+        "木",
+        "火"
+      ],
+      "branch_relations": []
+    },
     "text": "本月人情往来、聚会、邀约和社交支出会更明显。",
-    "advice": "建议选择真正有价值的互动，不必每个邀约都答应。"
+    "advice": "建议选择真正有价值的互动，不必每个邀约都答应。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui"
+    ],
+    "basis": "基于劫财、比肩、偏财在十神中的含义；转化为现代生活事件标签。",
+    "school": "子平八字",
+    "confidence": "中等"
   },
   {
     "id": "friend_help",
     "tag": "朋友求助",
-    "trigger": {"ten_gods": ["劫财", "比肩", "正印"], "elements": ["木", "水"], "branch_relations": []},
+    "trigger": {
+      "ten_gods": [
+        "劫财",
+        "比肩",
+        "正印"
+      ],
+      "elements": [
+        "木",
+        "水"
+      ],
+      "branch_relations": []
+    },
     "text": "本月朋友、同事或熟人可能提出协助、资源或情绪支持需求。",
-    "advice": "建议量力而行，帮忙前先说明边界和可承担范围。"
+    "advice": "建议量力而行，帮忙前先说明边界和可承担范围。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui"
+    ],
+    "basis": "基于劫财、比肩、正印在十神中的含义；转化为现代生活事件标签。",
+    "school": "子平八字",
+    "confidence": "中等"
   },
   {
     "id": "cooperation_boundary",
     "tag": "合作边界",
-    "trigger": {"ten_gods": ["劫财", "比肩", "偏财", "正官"], "elements": ["木", "金"], "branch_relations": ["冲日支"]},
+    "trigger": {
+      "ten_gods": [
+        "劫财",
+        "比肩",
+        "偏财",
+        "正官"
+      ],
+      "elements": [
+        "木",
+        "金"
+      ],
+      "branch_relations": [
+        "冲日支"
+      ]
+    },
     "text": "本月合作关系中的职责、收益、时间和承诺边界需要被重新确认。",
-    "advice": "建议把模糊地带讲清楚，避免后续互相误会。"
+    "advice": "建议把模糊地带讲清楚，避免后续互相误会。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan"
+    ],
+    "basis": "基于劫财、比肩、偏财、正官在十神中的含义；结合冲日支等地支六冲关系；转化为现代生活事件标签。",
+    "school": "子平八字",
+    "confidence": "高"
   },
   {
     "id": "sleep_schedule",
     "tag": "睡眠作息",
-    "trigger": {"ten_gods": ["伤官", "七杀", "偏印"], "elements": ["火", "水"], "branch_relations": ["冲时支"]},
+    "trigger": {
+      "ten_gods": [
+        "伤官",
+        "七杀",
+        "偏印"
+      ],
+      "elements": [
+        "火",
+        "水"
+      ],
+      "branch_relations": [
+        "冲时支"
+      ]
+    },
     "text": "本月睡眠、作息和精力恢复需要更多关注，容易晚睡或脑内停不下来。",
-    "advice": "建议固定睡前流程，减少夜间信息刺激。"
+    "advice": "建议固定睡前流程，减少夜间信息刺激。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "qiong_tong_bao_jian",
+      "ming_li_tan_yuan"
+    ],
+    "basis": "基于伤官、七杀、偏印在十神中的含义；结合冲时支等地支六冲关系；参考五行调候原理；转化为现代生活事件标签。",
+    "school": "子平八字",
+    "confidence": "高"
   },
   {
     "id": "mood_fluctuation",
     "tag": "情绪波动",
-    "trigger": {"ten_gods": ["伤官", "七杀", "偏印"], "elements": ["火", "水"], "branch_relations": ["冲日支"]},
+    "trigger": {
+      "ten_gods": [
+        "伤官",
+        "七杀",
+        "偏印"
+      ],
+      "elements": [
+        "火",
+        "水"
+      ],
+      "branch_relations": [
+        "冲日支"
+      ]
+    },
     "text": "本月情绪起伏、焦虑感或急躁感更容易被触发。",
-    "advice": "建议重要沟通避开情绪高点，先写下来再表达。"
+    "advice": "建议重要沟通避开情绪高点，先写下来再表达。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan"
+    ],
+    "basis": "基于伤官、七杀、偏印在十神中的含义；结合冲日支等地支六冲关系；参考五行调候原理；转化为现代生活事件标签。",
+    "school": "子平八字",
+    "confidence": "高"
   },
   {
     "id": "digestion",
     "tag": "脾胃注意",
-    "trigger": {"ten_gods": ["正财", "偏财", "食神"], "elements": ["土"], "branch_relations": []},
+    "trigger": {
+      "ten_gods": [
+        "正财",
+        "偏财",
+        "食神"
+      ],
+      "elements": [
+        "土"
+      ],
+      "branch_relations": []
+    },
     "text": "本月饮食、脾胃、消化和生活节律需要适度管理。",
-    "advice": "建议少做暴饮暴食和过度应酬，保持规律饮食。"
+    "advice": "建议少做暴饮暴食和过度应酬，保持规律饮食。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "qiong_tong_bao_jian"
+    ],
+    "basis": "基于正财、偏财、食神在十神中的含义；参考五行调候原理；转化为现代生活事件标签。",
+    "school": "子平八字",
+    "confidence": "中等"
   },
   {
     "id": "liver_pressure",
     "tag": "肝胆压力",
-    "trigger": {"ten_gods": ["比肩", "劫财", "七杀"], "elements": ["木"], "branch_relations": ["冲月支"]},
+    "trigger": {
+      "ten_gods": [
+        "比肩",
+        "劫财",
+        "七杀"
+      ],
+      "elements": [
+        "木"
+      ],
+      "branch_relations": [
+        "冲月支"
+      ]
+    },
     "text": "本月压力容易通过紧绷、烦躁或身体疲劳表现出来。",
-    "advice": "建议增加舒展运动，减少连续高压工作时长。"
+    "advice": "建议增加舒展运动，减少连续高压工作时长。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan"
+    ],
+    "basis": "基于比肩、劫财、七杀在十神中的含义；结合冲月支等地支六冲关系；转化为现代生活事件标签。",
+    "school": "子平八字",
+    "confidence": "高"
   },
   {
     "id": "breath_skin",
     "tag": "呼吸皮肤",
-    "trigger": {"ten_gods": ["正官", "七杀"], "elements": ["金"], "branch_relations": []},
+    "trigger": {
+      "ten_gods": [
+        "正官",
+        "七杀"
+      ],
+      "elements": [
+        "金"
+      ],
+      "branch_relations": []
+    },
     "text": "本月呼吸、皮肤、过敏或环境适应状态值得留意。",
-    "advice": "建议保持环境清洁，作息不稳定时更要注意恢复。"
+    "advice": "建议保持环境清洁，作息不稳定时更要注意恢复。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui"
+    ],
+    "basis": "基于正官、七杀在十神中的含义；转化为现代生活事件标签。",
+    "school": "子平八字",
+    "confidence": "中等"
   },
   {
     "id": "heart_fire",
     "tag": "心火焦虑",
-    "trigger": {"ten_gods": ["食神", "伤官", "七杀"], "elements": ["火"], "branch_relations": ["冲日支"]},
+    "trigger": {
+      "ten_gods": [
+        "食神",
+        "伤官",
+        "七杀"
+      ],
+      "elements": [
+        "火"
+      ],
+      "branch_relations": [
+        "冲日支"
+      ]
+    },
     "text": "本月心火、焦虑、眼睛疲劳或情绪外放较容易出现。",
-    "advice": "建议减少熬夜和连续高刺激输入，重要决定先冷静一晚。"
+    "advice": "建议减少熬夜和连续高刺激输入，重要决定先冷静一晚。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan"
+    ],
+    "basis": "基于食神、伤官、七杀在十神中的含义；结合冲日支等地支六冲关系；转化为现代生活事件标签。",
+    "school": "子平八字",
+    "confidence": "高"
   },
   {
     "id": "kidney_fatigue",
     "tag": "腰肾疲劳",
-    "trigger": {"ten_gods": ["正印", "偏印", "七杀"], "elements": ["水"], "branch_relations": ["冲时支"]},
+    "trigger": {
+      "ten_gods": [
+        "正印",
+        "偏印",
+        "七杀"
+      ],
+      "elements": [
+        "水"
+      ],
+      "branch_relations": [
+        "冲时支"
+      ]
+    },
     "text": "本月容易感到精力不足、腰背疲劳或恢复速度变慢。",
-    "advice": "建议保证睡眠和保暖，安排低强度恢复活动。"
+    "advice": "建议保证睡眠和保暖，安排低强度恢复活动。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan"
+    ],
+    "basis": "基于正印、偏印、七杀在十神中的含义；结合冲时支等地支六冲关系；转化为现代生活事件标签。",
+    "school": "子平八字",
+    "confidence": "高"
   },
   {
     "id": "travel_safety",
     "tag": "出行安全",
-    "trigger": {"ten_gods": ["七杀", "伤官", "偏财"], "elements": ["水", "金"], "branch_relations": ["冲年支", "冲时支"]},
+    "trigger": {
+      "ten_gods": [
+        "七杀",
+        "伤官",
+        "偏财"
+      ],
+      "elements": [
+        "水",
+        "金"
+      ],
+      "branch_relations": [
+        "冲年支",
+        "冲时支"
+      ]
+    },
     "text": "本月出行、交通、差旅或临时变动增加时，需要更重视安全和时间余量。",
-    "advice": "建议提前规划路线和备选方案，重要物品与票据信息留备份。"
+    "advice": "建议提前规划路线和备选方案，重要物品与票据信息留备份。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan"
+    ],
+    "basis": "基于七杀、伤官、偏财在十神中的含义；结合冲年支、冲时支等地支六冲关系；转化为现代生活事件标签。",
+    "school": "子平八字",
+    "confidence": "高"
+  },
+  {
+    "id": "career_meeting",
+    "tag": "汇报展示",
+    "trigger": {
+      "ten_gods": [
+        "食神",
+        "伤官",
+        "正官"
+      ],
+      "elements": [
+        "火",
+        "金"
+      ],
+      "branch_relations": [
+        "冲月支"
+      ]
+    },
+    "text": "本月容易出现汇报、展示、面试、公开表达或内容发布类事务，适合提前准备材料和预演。",
+    "advice": "用事实和结果支撑表达，语气保留弹性，注意倾听对方的反馈和实际需求。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui"
+    ],
+    "basis": "基于食伤（表达输出）和正官（外部评价）在十神中的含义，结合地支冲动关系，转化为正式汇报和公开表达事件。",
+    "school": "子平八字",
+    "confidence": "中等"
+  },
+  {
+    "id": "career_contract",
+    "tag": "合同文书",
+    "trigger": {
+      "ten_gods": [
+        "正官",
+        "七杀",
+        "伤官"
+      ],
+      "elements": [
+        "金",
+        "土"
+      ],
+      "branch_relations": [
+        "冲月支",
+        "冲日支"
+      ]
+    },
+    "text": "本月容易遇到合同、文件、审批、沟通确认或规则流程相关事务。",
+    "advice": "重要内容建议保留记录，涉及钱款、合作和口头承诺时要尽量落到文字。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan"
+    ],
+    "basis": "基于官杀（规则约束）和伤官（文书细节）在十神中的含义，结合地支冲动关系，转化为合同文书类事务。",
+    "school": "子平八字",
+    "confidence": "中等"
+  },
+  {
+    "id": "career_approval",
+    "tag": "流程审批",
+    "trigger": {
+      "ten_gods": [
+        "正官",
+        "偏印"
+      ],
+      "elements": [
+        "金",
+        "水"
+      ],
+      "branch_relations": [
+        "冲月支"
+      ]
+    },
+    "text": "本月容易遇到流程审批、资质审核、制度合规或标准化手续，节奏可能比预期慢。",
+    "advice": "建议提前准备材料和备选方案，留出审批周期，不要压线提交。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui"
+    ],
+    "basis": "基于正官（规则流程）和偏印（资质审核）在十神中的含义，转化为现代职场中的审批和合规事件。",
+    "school": "子平八字",
+    "confidence": "中等"
+  },
+  {
+    "id": "career_temp_task",
+    "tag": "临时任务",
+    "trigger": {
+      "ten_gods": [
+        "七杀",
+        "劫财",
+        "偏财"
+      ],
+      "elements": [
+        "火",
+        "木"
+      ],
+      "branch_relations": [
+        "冲月支",
+        "冲时支"
+      ]
+    },
+    "text": "本月容易遇到临时任务、紧急需求或计划外的变数，需要快速判断优先级。",
+    "advice": "先确认紧急性和影响范围，再决定是否投入资源，避免被突发任务打乱主线。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan"
+    ],
+    "basis": "基于七杀（突发压力）、劫财（资源变动）和偏财（临时机会）在十神中的含义，结合地支冲动，转化为临时任务类事件。",
+    "school": "子平八字",
+    "confidence": "中等"
+  },
+  {
+    "id": "career_skill_output",
+    "tag": "技能输出",
+    "trigger": {
+      "ten_gods": [
+        "食神",
+        "伤官",
+        "正印"
+      ],
+      "elements": [
+        "木",
+        "火"
+      ],
+      "branch_relations": [
+        "冲时支"
+      ]
+    },
+    "text": "本月适合把专业技能、学习成果或经验积累转化为可见输出，如培训、教程、工具或方案。",
+    "advice": "建议把技能整理成可复用的形式，增加专业能见度。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "zi_ping_zhen_quan"
+    ],
+    "basis": "基于食伤（技能展示）和正印（知识积累）在十神中的含义，转化为技能输出和专业展示类事件。",
+    "school": "子平八字",
+    "confidence": "中等"
+  },
+  {
+    "id": "career_work_publish",
+    "tag": "作品发布",
+    "trigger": {
+      "ten_gods": [
+        "食神",
+        "伤官"
+      ],
+      "elements": [
+        "火",
+        "土"
+      ],
+      "branch_relations": [
+        "冲时支"
+      ]
+    },
+    "text": "本月适合发布作品、内容、产品或阶段性成果，容易获得关注和反馈。",
+    "advice": "发布前做好质量把关，提前考虑反馈应对和后续跟进计划。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui"
+    ],
+    "basis": "基于食伤的代表输出和展示含义，转化为作品发布和成果公开事件。",
+    "school": "子平八字",
+    "confidence": "中等"
+  },
+  {
+    "id": "finance_partner_split",
+    "tag": "合伙分账",
+    "trigger": {
+      "ten_gods": [
+        "劫财",
+        "比肩",
+        "偏财"
+      ],
+      "elements": [
+        "木",
+        "土"
+      ],
+      "branch_relations": [
+        "冲日支"
+      ]
+    },
+    "text": "本月合作、合伙或资源分配类事务容易成为财务焦点，需要提前确认分账规则。",
+    "advice": "建议以书面形式确认各方投入、收益分配、亏损承担和退出条件。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui"
+    ],
+    "basis": "基于劫财（资源分配）、比肩（平等竞争）和偏财（项目收益）在十神中的含义，结合地支冲动，转化为合伙分账类财务事件。",
+    "school": "子平八字",
+    "confidence": "中等"
+  },
+  {
+    "id": "finance_cashflow",
+    "tag": "现金流压力",
+    "trigger": {
+      "ten_gods": [
+        "劫财",
+        "七杀",
+        "偏印"
+      ],
+      "elements": [
+        "水",
+        "金"
+      ],
+      "branch_relations": [
+        "冲日支",
+        "冲年支"
+      ]
+    },
+    "text": "本月现金流可能面临短期压力，支出节奏快于收入，容易出现预算紧张。",
+    "advice": "建议提前盘点近期支出和回款节点，保留应急资金，避免透支。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan"
+    ],
+    "basis": "基于劫财（支出增加）、七杀（压力）和偏印（不确定性）在十神中的含义，结合地支冲动关系，转化为现金流紧张类事件。",
+    "school": "子平八字",
+    "confidence": "中等"
+  },
+  {
+    "id": "finance_resource_monetize",
+    "tag": "资源变现",
+    "trigger": {
+      "ten_gods": [
+        "偏财",
+        "食神",
+        "劫财"
+      ],
+      "elements": [
+        "土",
+        "火"
+      ],
+      "branch_relations": [
+        "冲时支"
+      ]
+    },
+    "text": "本月适合把手头资源、人脉、技能或信息转化为实际收益，变现窗口期可能较短。",
+    "advice": "建议快速评估资源匹配度和变现路径，抓住短期机会但不宜过度承诺。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui"
+    ],
+    "basis": "基于偏财（灵活收益）、食神（技能价值）和劫财（资源连接）在十神中的含义，转化为资源变现类财务事件。",
+    "school": "子平八字",
+    "confidence": "中等"
+  },
+  {
+    "id": "finance_client_payment",
+    "tag": "客户回款",
+    "trigger": {
+      "ten_gods": [
+        "正财",
+        "偏财"
+      ],
+      "elements": [
+        "土"
+      ],
+      "branch_relations": [
+        "冲日支"
+      ]
+    },
+    "text": "本月适合跟进客户回款、订单确认和合同结算，财务确认周期可能拉长。",
+    "advice": "建议提前与客户确认付款流程和时间节点，保留催款跟进记录。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui"
+    ],
+    "basis": "基于正财（稳定收入）和偏财（项目收益）在十神中的含义，结合地支冲动，转化为回款和订单确认类财务事件。",
+    "school": "子平八字",
+    "confidence": "中等"
+  },
+  {
+    "id": "finance_shopping",
+    "tag": "采购消费",
+    "trigger": {
+      "ten_gods": [
+        "正财",
+        "偏财",
+        "劫财"
+      ],
+      "elements": [
+        "土",
+        "火"
+      ],
+      "branch_relations": [
+        "冲日支"
+      ]
+    },
+    "text": "本月采购、设备更新、生活消费或投资型支出容易增多，需要控制预算。",
+    "advice": "建议区分必要和可选支出，重要采购做多方比价和时间规划。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui"
+    ],
+    "basis": "基于正财（现实支出）和偏财（灵活消费）在十神中的含义，转化为采购消费类财务事件。",
+    "school": "子平八字",
+    "confidence": "基础"
+  },
+  {
+    "id": "finance_loan",
+    "tag": "借贷担保",
+    "trigger": {
+      "ten_gods": [
+        "劫财",
+        "比肩",
+        "偏财"
+      ],
+      "elements": [
+        "水",
+        "木"
+      ],
+      "branch_relations": [
+        "冲日支"
+      ]
+    },
+    "text": "本月可能遇到借贷、担保、垫资或资金拆借的请求，需要谨慎评估。",
+    "advice": "建议按能力上限决定额度，不熟悉的领域不担保，涉及资金往来务必留书面凭证。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui"
+    ],
+    "basis": "基于劫财（资金流动）和比肩（朋友关系）在十神中的含义，结合地支冲动，转化为借贷担保类财务风险事件。",
+    "school": "子平八字",
+    "confidence": "中等"
+  },
+  {
+    "id": "finance_gift_spending",
+    "tag": "人情开销",
+    "trigger": {
+      "ten_gods": [
+        "劫财",
+        "伤官",
+        "偏财"
+      ],
+      "elements": [
+        "火",
+        "土"
+      ],
+      "branch_relations": [
+        "冲日支"
+      ]
+    },
+    "text": "本月人情往来、社交活动、礼赠或聚会开支可能超出预期。",
+    "advice": "建议提前设定社交预算上限，根据关系亲疏和实际能力合理安排。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui"
+    ],
+    "basis": "基于劫财（人情支出）和伤官（社交表达）在十神中的含义，转化为人情开销类财务事件。",
+    "school": "子平八字",
+    "confidence": "基础"
+  },
+  {
+    "id": "finance_budget_adjust",
+    "tag": "预算调整",
+    "trigger": {
+      "ten_gods": [
+        "正官",
+        "正财",
+        "七杀"
+      ],
+      "elements": [
+        "金",
+        "土"
+      ],
+      "branch_relations": [
+        "冲月支"
+      ]
+    },
+    "text": "本月可能需要对已有预算进行调整，受到外部政策、规则或上级要求的影响。",
+    "advice": "建议提前准备弹性预算方案，与相关人员沟通调整节点和空间。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui"
+    ],
+    "basis": "基于正官（规则要求）和正财（预算管理）在十神中的含义，结合地支冲动，转化为预算调整类财务事件。",
+    "school": "子平八字",
+    "confidence": "基础"
+  },
+  {
+    "id": "relation_warm",
+    "tag": "感情升温",
+    "trigger": {
+      "ten_gods": [
+        "食神",
+        "伤官",
+        "正财"
+      ],
+      "elements": [
+        "火",
+        "土"
+      ],
+      "branch_relations": [
+        "冲日支"
+      ]
+    },
+    "text": "本月感情关系有升温迹象，适合通过共同体验、真诚表达和具体行动增加亲密感。",
+    "advice": "建议多安排共同活动，用陪伴和具体行动代替口头承诺。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui"
+    ],
+    "basis": "基于食伤（情感表达）和正财（现实承诺）在十神中的含义，结合地支冲动关系，转化为感情升温类关系事件。",
+    "school": "子平八字",
+    "confidence": "中等"
+  },
+  {
+    "id": "relation_friction",
+    "tag": "关系摩擦",
+    "trigger": {
+      "ten_gods": [
+        "七杀",
+        "伤官",
+        "比肩"
+      ],
+      "elements": [
+        "金",
+        "火"
+      ],
+      "branch_relations": [
+        "冲日支"
+      ]
+    },
+    "text": "本月关系方面容易因立场不同、表达方式或期待差异产生摩擦。",
+    "advice": "建议先冷静倾听，再表达自己的真实需求和边界，避免在情绪高点做决定。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan"
+    ],
+    "basis": "基于七杀（压力冲突）、伤官（表达摩擦）和比肩（立场坚持）在十神中的含义，结合地支冲动，转化为关系摩擦类事件。",
+    "school": "子平八字",
+    "confidence": "中等"
+  },
+  {
+    "id": "relation_old_contact",
+    "tag": "旧人联系",
+    "trigger": {
+      "ten_gods": [
+        "偏印",
+        "劫财"
+      ],
+      "elements": [
+        "水",
+        "木"
+      ],
+      "branch_relations": [
+        "冲年支",
+        "冲时支"
+      ]
+    },
+    "text": "本月容易收到旧人消息、过往关系重启或回顾以前的事情。",
+    "advice": "以当前状态为基准评估是否重新建立联系，避免被过去情绪影响判断。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan"
+    ],
+    "basis": "基于偏印（回顾思考）和劫财（旧有关系）在十神中的含义，结合地支冲动关系，转化为旧人联系类关系事件。",
+    "school": "子平八字",
+    "confidence": "中等"
+  },
+  {
+    "id": "relation_family",
+    "tag": "家庭事务",
+    "trigger": {
+      "ten_gods": [
+        "正印",
+        "偏印",
+        "劫财"
+      ],
+      "elements": [
+        "木",
+        "水"
+      ],
+      "branch_relations": [
+        "冲年支"
+      ]
+    },
+    "text": "本月家庭事务增多，可能涉及长辈健康、家庭决策或居住环境调整。",
+    "advice": "建议与家人充分沟通，分配好各自的责任分工，避免独自承担。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui"
+    ],
+    "basis": "基于正印（家庭支持）和劫财（同辈关系）在十神中的含义，结合地支冲年支，转化为家庭事务类关系事件。",
+    "school": "子平八字",
+    "confidence": "中等"
+  },
+  {
+    "id": "relation_elder",
+    "tag": "长辈事务",
+    "trigger": {
+      "ten_gods": [
+        "正印",
+        "偏印",
+        "正官"
+      ],
+      "elements": [
+        "木",
+        "金"
+      ],
+      "branch_relations": [
+        "冲年支"
+      ]
+    },
+    "text": "本月长辈事务或上级关系中可能出现需要关注的事项，如健康状况、重要决定或责任交接。",
+    "advice": "建议保持耐心沟通，确认长辈的真实需求，避免单方面代做决定。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui"
+    ],
+    "basis": "基于正印（长辈支持）和正官（责任义务）在十神中的含义，结合地支冲年支，转化为长辈事务类关系事件。",
+    "school": "子平八字",
+    "confidence": "中等"
+  },
+  {
+    "id": "relation_living_adjust",
+    "tag": "居住调整",
+    "trigger": {
+      "ten_gods": [
+        "偏财",
+        "劫财",
+        "七杀"
+      ],
+      "elements": [
+        "土",
+        "水"
+      ],
+      "branch_relations": [
+        "冲日支"
+      ]
+    },
+    "text": "本月可能出现居住环境变动、搬家、装修或室友/邻居变化的情况。",
+    "advice": "建议提前做好时间安排和预算，重要合同仔细审阅。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui"
+    ],
+    "basis": "基于偏财（环境变化）和劫财（同住关系）在十神中的含义，结合地支冲动，转化为居住调整类关系事件。",
+    "school": "子平八字",
+    "confidence": "基础"
+  },
+  {
+    "id": "relation_social_invite",
+    "tag": "社交邀约",
+    "trigger": {
+      "ten_gods": [
+        "食神",
+        "劫财",
+        "偏财"
+      ],
+      "elements": [
+        "火",
+        "木"
+      ],
+      "branch_relations": [
+        "冲年支",
+        "冲时支"
+      ]
+    },
+    "text": "本月社交邀约增多，聚会、活动或行业交流可能占用较多时间和精力。",
+    "advice": "建议根据实际精力筛选参加，优先参加对主线目标有帮助的活动。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui"
+    ],
+    "basis": "基于食神（社交表达）和劫财（人际往来）在十神中的含义，转化为社交邀约类关系事件。",
+    "school": "子平八字",
+    "confidence": "基础"
+  },
+  {
+    "id": "relation_gossip",
+    "tag": "口舌误会",
+    "trigger": {
+      "ten_gods": [
+        "伤官",
+        "比肩",
+        "劫财"
+      ],
+      "elements": [
+        "火",
+        "金"
+      ],
+      "branch_relations": [
+        "冲月支",
+        "冲日支"
+      ]
+    },
+    "text": "本月容易出现口舌误会、信息传达偏差或在群体中被误解的情况。",
+    "advice": "重要信息最好当面或书面确认，避免通过第三方传话。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan"
+    ],
+    "basis": "基于伤官（言语表达）、比肩（同辈互动）在十神中的含义，结合地支冲动，转化为口舌误会类关系事件。",
+    "school": "子平八字",
+    "confidence": "中等"
+  },
+  {
+    "id": "health_sleep",
+    "tag": "睡眠作息",
+    "trigger": {
+      "ten_gods": [
+        "偏印",
+        "七杀",
+        "伤官"
+      ],
+      "elements": [
+        "水",
+        "金"
+      ],
+      "branch_relations": [
+        "冲时支"
+      ]
+    },
+    "text": "本月睡眠和作息容易受影响，思虑过多或压力增大可能导致入睡困难。",
+    "advice": "建议固定作息时间，减少睡前信息摄入，适当安排放松和冥想。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "qiong_tong_bao_jian"
+    ],
+    "basis": "基于偏印（思虑过多）和七杀（压力增大）在十神中的含义，结合五行调候和水金气息，转化为睡眠作息类健康事件。",
+    "school": "调候",
+    "confidence": "中等"
+  },
+  {
+    "id": "health_emotion",
+    "tag": "情绪波动",
+    "trigger": {
+      "ten_gods": [
+        "伤官",
+        "七杀",
+        "偏印"
+      ],
+      "elements": [
+        "火",
+        "金"
+      ],
+      "branch_relations": [
+        "冲月支",
+        "冲日支"
+      ]
+    },
+    "text": "本月情绪容易波动，对外界评价和人际反馈更敏感，可能感到急躁或低落交替出现。",
+    "advice": "建议增加独处调整时间，用运动、书写或对话进行情绪疏导。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "qiong_tong_bao_jian"
+    ],
+    "basis": "基于伤官（情绪起伏）、七杀（压力累积）在十神中的含义，参考五行调候理论，转化为情绪波动类健康事件。",
+    "school": "调候",
+    "confidence": "中等"
+  },
+  {
+    "id": "health_digest",
+    "tag": "脾胃注意",
+    "trigger": {
+      "ten_gods": [
+        "正财",
+        "偏财",
+        "食神"
+      ],
+      "elements": [
+        "土"
+      ],
+      "branch_relations": [
+        "冲日支"
+      ]
+    },
+    "text": "本月脾胃消化系统需要多加注意，饮食不规律或过度社交可能导致肠胃不适。",
+    "advice": "建议注意饮食规律，减少生冷刺激食物，适当增加温和养胃的饮食安排。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "qiong_tong_bao_jian"
+    ],
+    "basis": "基于土五行对应脾胃的传统五行理论，结合正财（现实压力）和食神（饮食享受）在十神中的含义，脾胃系统在本月需要更多关注。",
+    "school": "调候",
+    "confidence": "基础"
+  },
+  {
+    "id": "health_liver",
+    "tag": "肝胆压力",
+    "trigger": {
+      "ten_gods": [
+        "七杀",
+        "偏印",
+        "伤官"
+      ],
+      "elements": [
+        "木"
+      ],
+      "branch_relations": [
+        "冲月支"
+      ]
+    },
+    "text": "本月肝胆系统负担可能加重，与情绪压力、作息紊乱或过量饮酒有关。",
+    "advice": "建议减少熬夜和酒精摄入，增加户外活动和深呼吸调节。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "qiong_tong_bao_jian"
+    ],
+    "basis": "基于木五行对应肝胆的传统五行理论，结合七杀（压力）和伤官（消耗）在十神中的含义，肝胆系统在本月需要重点维护。",
+    "school": "调候",
+    "confidence": "基础"
+  },
+  {
+    "id": "health_respiratory",
+    "tag": "呼吸皮肤",
+    "trigger": {
+      "ten_gods": [
+        "正印",
+        "偏印",
+        "劫财"
+      ],
+      "elements": [
+        "金",
+        "水"
+      ],
+      "branch_relations": [
+        "冲年支"
+      ]
+    },
+    "text": "本月呼吸系统和皮肤需要多加关注，换季或环境变化可能引发敏感反应。",
+    "advice": "建议注意保暖、保湿和空气质量，避免接触已知过敏源。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "qiong_tong_bao_jian"
+    ],
+    "basis": "基于金水五行对应呼吸和皮肤的传统五行理论，结合印星对体质的影响，转化为呼吸皮肤类健康提醒。",
+    "school": "调候",
+    "confidence": "基础"
+  },
+  {
+    "id": "health_heart",
+    "tag": "心火焦虑",
+    "trigger": {
+      "ten_gods": [
+        "伤官",
+        "七杀",
+        "正官"
+      ],
+      "elements": [
+        "火"
+      ],
+      "branch_relations": [
+        "冲月支",
+        "冲日支"
+      ]
+    },
+    "text": "本月心火偏旺，容易感到焦虑、烦躁或注意力难以集中。",
+    "advice": "建议通过规律运动、深呼吸练习和减少咖啡因摄入来调节心绪。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "qiong_tong_bao_jian"
+    ],
+    "basis": "基于火五行对应心的传统五行理论，结合伤官（焦躁）和七杀（紧张）在十神中的含义，转化为心火焦虑类健康提醒。",
+    "school": "调候",
+    "confidence": "基础"
+  },
+  {
+    "id": "health_kidney",
+    "tag": "腰肾疲劳",
+    "trigger": {
+      "ten_gods": [
+        "偏印",
+        "七杀",
+        "劫财"
+      ],
+      "elements": [
+        "水",
+        "木"
+      ],
+      "branch_relations": [
+        "冲时支"
+      ]
+    },
+    "text": "本月腰肾区域容易感到疲劳或不适，与久坐、过度劳累或作息不规律有关。",
+    "advice": "建议避免久坐，适当进行腰部拉伸，保证充足的睡眠和水分摄入。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "qiong_tong_bao_jian"
+    ],
+    "basis": "基于水五行对应肾的传统五行理论，结合偏印（消耗）和七杀（压力）在十神中的含义，转化为腰肾疲劳类健康提醒。",
+    "school": "调候",
+    "confidence": "基础"
+  },
+  {
+    "id": "health_overwork",
+    "tag": "过劳提醒",
+    "trigger": {
+      "ten_gods": [
+        "七杀",
+        "伤官",
+        "正官"
+      ],
+      "elements": [
+        "金",
+        "火"
+      ],
+      "branch_relations": [
+        "冲月支",
+        "冲时支"
+      ]
+    },
+    "text": "本月工作强度或精神压力偏大，需要留意过劳信号，包括持续性疲劳、效率下降和睡眠变差。",
+    "advice": "建议强制安排休息时段，合理分配任务优先级，不要把战线拉得太长。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "qiong_tong_bao_jian"
+    ],
+    "basis": "基于七杀（高强度压力）和伤官（精神消耗）在十神中的含义，结合五行调候理论，转化为过劳提醒类健康事件。",
+    "school": "调候",
+    "confidence": "中等"
+  },
+  {
+    "id": "health_exercise",
+    "tag": "运动拉伸",
+    "trigger": {
+      "ten_gods": [
+        "食神",
+        "正印"
+      ],
+      "elements": [
+        "木",
+        "火"
+      ],
+      "branch_relations": []
+    },
+    "text": "本月适合增加运动量和身体拉伸，提升体能状态和精神活力。",
+    "advice": "建议选择适合自己节奏的运动方式，如快走、瑜伽、游泳或力量训练。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "qiong_tong_bao_jian"
+    ],
+    "basis": "基于食神（身心调节）和正印（休养恢复）在十神中的含义，转化为运动拉伸类健康建议。",
+    "school": "调候",
+    "confidence": "基础"
+  },
+  {
+    "id": "health_mindset",
+    "tag": "心态修整",
+    "trigger": {
+      "ten_gods": [
+        "偏印",
+        "正印",
+        "食神"
+      ],
+      "elements": [
+        "木",
+        "水"
+      ],
+      "branch_relations": []
+    },
+    "text": "本月适合进行心态调整和内在整理，减少对外界信息的被动接收，增加独处和内省时间。",
+    "advice": "建议通过阅读、写作、冥想或自然接触来恢复心理能量。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "qiong_tong_bao_jian"
+    ],
+    "basis": "基于印星（内在整理）和食神（身心调节）在十神中的含义，转化为心态修整类健康建议。",
+    "school": "调候",
+    "confidence": "基础"
+  },
+  {
+    "id": "health_diet",
+    "tag": "饮食节制",
+    "trigger": {
+      "ten_gods": [
+        "食神",
+        "伤官",
+        "偏财"
+      ],
+      "elements": [
+        "火",
+        "土"
+      ],
+      "branch_relations": []
+    },
+    "text": "本月社交和外出就餐增多，容易忽略饮食节制，影响消化和体重。",
+    "advice": "建议保持规律三餐，减少高油高糖食物，增加蔬菜和优质蛋白摄入。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "qiong_tong_bao_jian"
+    ],
+    "basis": "基于食伤（饮食享受）和偏财（社交消费）在十神中的含义，结合五行调候理论，转化为饮食节制类健康提醒。",
+    "school": "调候",
+    "confidence": "基础"
+  },
+  {
+    "id": "health_travel_safety",
+    "tag": "出行安全",
+    "trigger": {
+      "ten_gods": [
+        "七杀",
+        "伤官",
+        "偏财"
+      ],
+      "elements": [
+        "水",
+        "金"
+      ],
+      "branch_relations": [
+        "冲年支",
+        "冲时支"
+      ]
+    },
+    "text": "本月出行、交通、差旅或临时变动增加时，需要更重视安全和时间余量。",
+    "advice": "建议提前规划路线和备选方案，重要物品与票据信息留备份。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui"
+    ],
+    "basis": "基于七杀（意外风险）和伤官（变动因素）在十神中的含义，结合地支冲动，转化为出行安全类提醒。",
+    "school": "子平八字",
+    "confidence": "中等"
   }
 ]

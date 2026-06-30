@@ -22,7 +22,17 @@ PDF_FONT_CANDIDATES = [
 
 def _polish_report_text(text: str) -> str:
     """减少导出报告中的低信息量重复标签。"""
-    return (text or "").replace("平稳观察", "阶段校准")
+    lines = (text or "").split("\n")
+    seen_refs: set[str] = set()
+    result: list[str] = []
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("- 【参考来源】") or stripped.startswith("  - 【参考来源】"):
+            if stripped in seen_refs:
+                continue
+            seen_refs.add(stripped)
+        result.append(line)
+    return "\n".join(result).replace("平稳观察", "阶段校准")
 
 
 def _profile_lines(profile: dict, bullet: str = "-") -> list[str]:
@@ -179,7 +189,7 @@ def _yearly_lines(yearly_data: dict | None, bullet: str = "-") -> list[str]:
 
 
 def _monthly_lines(monthly_data: list[dict] | None, bullet: str = "-") -> list[str]:
-    """生成流月分析行。"""
+    """生成流月分析行（含命理依据和参考来源）。"""
     if not monthly_data:
         return [f"{bullet} 流月分析：当前未生成流月分析。"]
     lines = []
@@ -208,6 +218,13 @@ def _monthly_lines(monthly_data: list[dict] | None, bullet: str = "-") -> list[s
                 f"  {bullet} 不适合做：{avoid}",
             ]
         )
+        # Add 命理依据 and 参考来源
+        basis = item.get("basis", "")
+        source_titles = item.get("source_titles", [])
+        if basis:
+            lines.append(f"  {bullet} 【命理依据】{basis}")
+        if source_titles:
+            lines.append(f"  {bullet} 【参考来源】{'、'.join(source_titles)}")
     return lines
 
 
@@ -220,6 +237,83 @@ def _action_advice_lines(report: dict, yearly_data: dict | None, bullet: str = "
         f"{bullet} 关系建议：{_paragraph(report.get('love_text', ''), '关系中建议保持清晰沟通，把期待、边界和现实安排说具体。')}",
         f"{bullet} 自我成长建议：{_paragraph(yearly_advice or report.get('advice', ''), '自我成长上建议持续复盘，把命盘提示转化为现实中的行动计划。')}",
     ]
+
+
+def _life_overview_lines(report: dict, bullet: str = "-") -> list[str]:
+    """生成命局总论行。"""
+    text = report.get("life_overview", "")
+    if text:
+        return [f"{bullet} 命局总论："] + [f"  {bullet} {line}" for line in text.split("\n") if line.strip()]
+    return [f"{bullet} 命局总论：暂未生成。"]
+
+
+def _ziwei_life_card_lines(chart, bullet: str = "-") -> list[str]:
+    """生成紫微命盘名片导出行。"""
+    if not chart:
+        return [f"{bullet} 紫微斗数暂无数据。"]
+    try:
+        from core.ziwei_life_card_engine import analyze_ziwei_life_card
+        card = analyze_ziwei_life_card(chart)
+        lines = [
+            f"{bullet} 紫微命盘名片",
+            f"  {bullet} 命盘身份：{card.get('ziwei_profile_type', '')}",
+            f"  {bullet} 命宫：{card.get('ming_gong_summary', '')}",
+            f"  {bullet} 身宫：{card.get('shen_gong_summary', '')}",
+        ]
+        for name in ["官禄宫", "财帛宫", "夫妻宫", "福德宫", "疾厄宫", "迁移宫"]:
+            summary = card.get("key_palace_summaries", {}).get(name, "")
+            if summary:
+                lines.append(f"  {bullet} 【{name}】{summary[:80]}")
+        for s in card.get("strengths", [])[:3]:
+            lines.append(f"  {bullet} 优势：{s}")
+        for r in card.get("risks", [])[:3]:
+            lines.append(f"  {bullet} 需关注：{r}")
+        lines.append(f"  {bullet} 模块边界：{card.get('module_boundary', '')}")
+        sources = card.get("source_titles", [])
+        if sources:
+            lines.append(f"  {bullet} 【参考来源】{'、'.join(sources)}")
+        return lines
+    except Exception:
+        return [f"{bullet} 紫微命盘名片暂未生成。"]
+
+
+def _life_overview_export_lines(chart: dict, report: dict, bullet: str = "-") -> list[str]:
+    """从 life_overview_engine 获取命盘总体结论。"""
+    try:
+        from core.life_overview_engine import analyze_life_overview
+        dp = analyze_life_overview(chart)
+        lines = [
+            f"{bullet} 总体类型：{dp.get('overall_pattern', '')}",
+            f"{bullet} {dp.get('overall_summary', '')}",
+        ]
+        # Wealth
+        w = dp.get("wealth_overview", {})
+        lines.append(f"{bullet} 【财富潜力】{w.get('wealth_summary', '')}")
+        lines.append(f"  {bullet} 类型：{w.get('wealth_type', '')} | 评估：{w.get('wealth_level', '')}")
+        # Romance
+        r = dp.get("romance_overview", {})
+        lines.append(f"{bullet} 【桃花·感情】{r.get('romance_summary', '')}")
+        lines.append(f"  {bullet} 类型：{r.get('romance_type', '')} | 评估：{r.get('romance_level', '')}")
+        # Health
+        h = dp.get("health_overview", {})
+        lines.append(f"{bullet} 【健康稳定】{h.get('health_summary', '')}")
+        lines.append(f"  {bullet} 评估：{h.get('health_stability_level', '')}")
+        # Career
+        c = dp.get("career_overview", {})
+        lines.append(f"{bullet} 【事业发展】{c.get('career_summary', '')}")
+        lines.append(f"  {bullet} 类型：{c.get('career_type', '')} | 评估：{c.get('career_stability_level', '')}")
+        # Strengths & Risks
+        for s in dp.get("key_strengths", [])[:4]:
+            lines.append(f"{bullet} 优势：{s}")
+        for r in dp.get("key_risks", [])[:4]:
+            lines.append(f"{bullet} 隐患：{r}")
+        # Sources
+        sources = dp.get("source_titles", [])
+        if sources:
+            lines.append(f"{bullet} 【参考来源】{'、'.join(sources)}")
+        return lines
+    except Exception:
+        return [f"{bullet} 命盘总体结论暂未生成。"]
 
 
 def build_markdown_report(
@@ -239,53 +333,59 @@ def build_markdown_report(
         "## 一、基础信息",
         *_profile_lines(profile),
         "",
-        "## 二、八字排盘",
+        "## 二、命局总论",
+        *_life_overview_lines(report),
+        "",
+        "## 三、命盘总体结论",
+        *_life_overview_export_lines(chart, report),
+        "",
+        "## 四、八字排盘",
         *_pillar_lines(chart),
         "",
-        "## 三、五行结构分析",
+        "## 五、五行结构分析",
         *_five_element_lines(chart),
         "",
         _paragraph(report.get("five_element_text", ""), "五行结构用于观察能力、资源和状态分布，仍需结合现实经历综合判断。"),
         "",
-        "## 四、十神结构分析",
+        "## 六、十神结构分析",
         *_ten_god_lines(chart),
         "",
         _paragraph(report.get("ten_god_text", ""), "十神结构用于观察行为模式、资源关系和阶段主题，不宜单独判断结果。"),
         "",
-        "## 五、日主强弱与喜忌",
+        "## 七、日主强弱与喜忌",
         *_strength_lines(chart),
         "",
         _paragraph(report.get("strength_text", ""), "日主强弱用于观察承接力和资源需求，喜忌五行仍需结合大运流年验证。"),
         *_useful_god_lines(chart, report),
         "",
-        "## 六、基础性格与行为模式",
+        "## 八、基础性格与行为模式",
         _paragraph(report.get("personality_text", ""), "性格与行为模式适合从日主强弱、十神和五行共同观察。"),
         "",
-        "## 七、事业方向分析",
+        "## 九、事业方向分析",
         _paragraph(report.get("career_text", ""), "事业方向建议结合能力积累、平台环境和阶段机会共同判断。"),
         "",
-        "## 八、财运模式分析",
+        "## 十、财运模式分析",
         _paragraph(report.get("wealth_text", ""), "财运模式更适合从收入来源、现金流、项目风险和长期信用观察。"),
         "",
-        "## 九、感情关系分析",
+        "## 十一、感情关系分析",
         _paragraph(report.get("love_text", ""), "感情关系建议结合沟通方式、现实责任和相处体验综合观察。"),
         "",
-        "## 十、大运阶段分析",
+        "## 十二、大运阶段分析",
         *_luck_lines(chart, luck_data),
         "",
-        "## 十一、未来十年流年趋势",
+        "## 十三、未来十年流年趋势",
         *_future_yearly_lines(luck_data),
         "",
-        "## 十二、年度运程详情",
+        "## 十四、年度运程详情",
         *_yearly_lines(yearly_data),
         "",
-        "## 十三、十二个月流月趋势",
+        "## 十五、十二个月流月趋势",
         *_monthly_lines(monthly_data),
         "",
-        "## 十四、综合行动建议",
+        "## 十六、综合行动建议",
         *_action_advice_lines(report, yearly_data),
         "",
-        "## 十五、免责声明",
+        "## 十八、免责声明",
         DISCLAIMER,
         "",
     ]

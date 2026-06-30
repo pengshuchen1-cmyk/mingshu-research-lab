@@ -1,0 +1,64 @@
+{
+  "rules": [
+    {
+      "id": "zw_sihua_化禄",
+      "name": "化禄",
+      "keywords": "财富 · 机遇 · 顺利",
+      "advantage": "增加财运机会",
+      "disadvantage": "让收益流动",
+      "suitable": "宜主动拓展和把握机会",
+      "avoid": "忌过度依赖运气",
+      "source_ids": [
+        "ziwei_doushu_quanshu",
+        "traditional_ziwei_sihua_system"
+      ],
+      "basis": "基于传统紫微斗数四化体系，化禄代表财富和机会的流动。",
+      "confidence": "中等"
+    },
+    {
+      "id": "zw_sihua_化权",
+      "name": "化权",
+      "keywords": "权力 · 掌控 · 担当",
+      "advantage": "增强掌控力",
+      "disadvantage": "让目标落地",
+      "suitable": "宜承担关键角色和责任",
+      "avoid": "忌过度控制他人",
+      "source_ids": [
+        "ziwei_doushu_quanshu",
+        "traditional_ziwei_sihua_system"
+      ],
+      "basis": "基于传统紫微斗数四化体系，化权代表权力和目标的实现。",
+      "confidence": "中等"
+    },
+    {
+      "id": "zw_sihua_化科",
+      "name": "化科",
+      "keywords": "名誉 · 才华 · 形象",
+      "advantage": "提升能见度",
+      "disadvantage": "让能力被认可",
+      "suitable": "宜展示能力和积累口碑",
+      "avoid": "忌过度在意他人评价",
+      "source_ids": [
+        "ziwei_doushu_quanshu",
+        "traditional_ziwei_sihua_system"
+      ],
+      "basis": "基于传统紫微斗数四化体系，化科代表名誉和形象的展现。",
+      "confidence": "中等"
+    },
+    {
+      "id": "zw_sihua_化忌",
+      "name": "化忌",
+      "keywords": "消耗 · 考验 · 关注",
+      "advantage": "带来课题和考验",
+      "disadvantage": "让问题显现",
+      "suitable": "宜正视和解决问题",
+      "avoid": "忌逃避或过度焦虑",
+      "source_ids": [
+        "ziwei_doushu_quanshu",
+        "traditional_ziwei_sihua_system"
+      ],
+      "basis": "基于传统紫微斗数四化体系，化忌代表需关注的生命课题。",
+      "confidence": "中等"
+    }
+  ]
+}

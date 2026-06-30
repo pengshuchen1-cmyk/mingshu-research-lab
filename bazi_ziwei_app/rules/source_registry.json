@@ -1,0 +1,128 @@
+{
+  "yuan_hai_zi_ping": {
+    "title": "渊海子平",
+    "category": "八字经典",
+    "used_for": [
+      "十神",
+      "六亲",
+      "子平基础断法"
+    ],
+    "note": "用于十神和基础关系解释，软件中不直接复制古籍原文，只做规则化转写。"
+  },
+  "san_ming_tong_hui": {
+    "title": "三命通会",
+    "category": "八字综合",
+    "used_for": [
+      "干支",
+      "五行",
+      "纳音",
+      "大运流年"
+    ],
+    "note": "用于干支、五行、纳音和综合命理框架。"
+  },
+  "zi_ping_zhen_quan": {
+    "title": "子平真诠",
+    "category": "格局用神",
+    "used_for": [
+      "用神",
+      "格局",
+      "成败救应"
+    ],
+    "note": "用于用神、忌神、格局成败逻辑。"
+  },
+  "qiong_tong_bao_jian": {
+    "title": "穷通宝鉴",
+    "category": "调候五行",
+    "used_for": [
+      "五行四时",
+      "调候",
+      "健康状态"
+    ],
+    "note": "用于寒暖燥湿、五行太过不及和状态提醒。"
+  },
+  "di_tian_sui_chan_wei": {
+    "title": "滴天髓阐微",
+    "category": "旺衰体用",
+    "used_for": [
+      "旺衰",
+      "月令",
+      "体用",
+      "命局气势"
+    ],
+    "note": "用于命局气势、旺衰和运势层次变化。"
+  },
+  "ming_li_tan_yuan": {
+    "title": "命理探源",
+    "category": "命理整理",
+    "used_for": [
+      "强弱",
+      "化合刑冲",
+      "流年流月"
+    ],
+    "note": "用于强弱、化合刑冲和流年流月关系整理。"
+  },
+  "shen_feng_tong_kao": {
+    "title": "神峰通考",
+    "category": "命例参考",
+    "used_for": [
+      "格局",
+      "命例",
+      "应事"
+    ],
+    "note": "用于命例式判断和运势应事方式参考。"
+  },
+  "ziwei_doushu_quanshu": {
+    "title": "紫微斗数全书",
+    "category": "紫微斗数经典",
+    "used_for": [
+      "十四主星",
+      "十二宫",
+      "星曜性质",
+      "斗数准绳"
+    ],
+    "note": "用于紫微斗数基础框架、星曜含义和宫位解释，软件中只做现代规则化转写。"
+  },
+  "ziwei_doushu_quanji": {
+    "title": "紫微斗数全集",
+    "category": "紫微斗数综合",
+    "used_for": [
+      "星曜组合",
+      "宫位分析",
+      "四化",
+      "大限流年"
+    ],
+    "note": "用于后续星曜组合、四化和大限流年规则校验。"
+  },
+  "ziwei_doushu_daquan": {
+    "title": "紫微斗数大全",
+    "category": "紫微斗数综合",
+    "used_for": [
+      "十二宫系统",
+      "命盘综合判断",
+      "星群组合"
+    ],
+    "note": "用于十二宫系统和紫微命盘综合判断框架。"
+  },
+  "traditional_ziwei_palace_system": {
+    "title": "传统紫微斗数十二宫体系",
+    "category": "紫微斗数宫位",
+    "used_for": [
+      "命宫",
+      "身宫",
+      "十二宫位",
+      "宫位含义"
+    ],
+    "note": "用于命宫、身宫、十二宫位的基础解释。"
+  },
+  "traditional_ziwei_sihua_system": {
+    "title": "传统紫微斗数四化体系",
+    "category": "紫微斗数四化",
+    "used_for": [
+      "化禄",
+      "化权",
+      "化科",
+      "化忌"
+    ],
+    "note": "用于四化基础解释和后续飞化算法准备。"
+  }
+}

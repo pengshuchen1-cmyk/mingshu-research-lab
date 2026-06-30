@@ -60,7 +60,7 @@ def render_archive_page() -> None:
         return
 
     st.markdown("### 已保存命盘")
-    st.dataframe(pd.DataFrame(profiles), width='stretch', hide_index=True)
+    st.dataframe(pd.DataFrame(profiles), use_container_width=True, hide_index=True)
     options = {f"{item['id']}｜{item['name']}｜{item['birth_date']}": item["id"] for item in profiles}
     selected = st.selectbox("选择命盘", list(options.keys()))
     profile_id = options[selected]

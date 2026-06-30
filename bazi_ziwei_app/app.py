@@ -14,6 +14,7 @@ from ui.compatibility_page import render_compatibility_page
 from ui.bazi_page import render_bazi_page
 from ui.inquiry_page import render_inquiry_page
 from ui.five_element_page import render_five_element_page
+from ui.life_overview_page import render_life_overview_page
 from ui.home import render_home
 from ui.luck_page import render_luck_page
 from ui.profile_form import render_profile_form
@@ -32,6 +33,7 @@ def get_pages() -> dict:
         "首页": render_home,
         "新建命盘": render_profile_form,
         "八字排盘": render_bazi_page,
+        "命盘总览": render_life_overview_page,
         "综合问盘": render_inquiry_page,
         "五行喜忌": render_five_element_page,
         "大运流年": render_luck_page,

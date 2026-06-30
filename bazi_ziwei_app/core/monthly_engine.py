@@ -29,6 +29,28 @@ TAG_MAP: dict[str, list[str]] = {
 }
 
 RULES_PATH = Path(__file__).resolve().parents[1] / "rules" / "monthly_event_rules.json"
+SOURCE_REGISTRY_PATH = Path(__file__).resolve().parents[1] / "rules" / "source_registry.json"
+_SOURCE_REGISTRY_CACHE: dict | None = None
+
+
+def _load_source_registry() -> dict:
+    """读取参考书注册表。"""
+    global _SOURCE_REGISTRY_CACHE
+    if _SOURCE_REGISTRY_CACHE is not None:
+        return _SOURCE_REGISTRY_CACHE
+    try:
+        with open(SOURCE_REGISTRY_PATH, "r", encoding="utf-8") as f:
+            _SOURCE_REGISTRY_CACHE = json.load(f)
+        return _SOURCE_REGISTRY_CACHE
+    except Exception:
+        _SOURCE_REGISTRY_CACHE = {}
+        return _SOURCE_REGISTRY_CACHE
+
+
+def _get_source_titles(source_ids: list[str]) -> list[str]:
+    """根据 source_ids 返回可读书名列表。"""
+    registry = _load_source_registry()
+    return [registry[s]["title"] for s in source_ids if s in registry]
 
 
 def _cycle_pillar(index: int) -> str:
@@ -165,8 +187,8 @@ def _match_event_rules(
     elements: list[str],
     branch_relations: list[dict],
     rules: list[dict],
-) -> tuple[list[str], list[str], list[str]]:
-    """根据十神、五行和地支冲动匹配事件规则。"""
+) -> tuple[list[str], list[str], list[str], list[str], list[str]]:
+    """根据十神、五行和地支冲动匹配事件规则，返回 tag, text, advice, source_ids, basis。"""
     relation_labels = [item.get("label", "") for item in branch_relations]
     matched: list[tuple[int, dict]] = []
     for rule in rules:
@@ -185,6 +207,8 @@ def _match_event_rules(
         _unique([rule.get("tag", "") for rule in selected], 6),
         _unique([rule.get("text", "") for rule in selected], 6),
         _unique([rule.get("advice", "") for rule in selected], 6),
+        _unique(sum([rule.get("source_ids", []) for rule in selected], []), 8),
+        _unique([rule.get("basis", "") for rule in selected if rule.get("basis")], 4),
     )
 
 
@@ -208,11 +232,13 @@ def analyze_monthly_fortune(chart: dict, target_year: int) -> list[dict]:
         elements = [item for item in [gan_element, zhi_element] if item]
         relation = _relation(elements, favorable, unfavorable)
         branch_relations = analyze_year_branch_relations(chart, zhi)
-        rule_tags, rule_events, rule_advices = _match_event_rules(ten_god, elements, branch_relations, rules)
+        rule_tags, rule_events, rule_advices, rule_source_ids, rule_basis = _match_event_rules(ten_god, elements, branch_relations, rules)
         relation_tag = "阶段校准" if relation == "平稳观察" else relation
         tags = _unique(list(TAG_MAP.get(ten_god, TAG_MAP["未知"])) + rule_tags + [relation_tag], 6)
         if relation_tag not in tags:
             tags.append(relation_tag)
+        source_titles = _get_source_titles(rule_source_ids)
+        basis_text = "；".join(rule_basis) if rule_basis else ""
         seed = {
             "month": month,
             "month_name": MONTH_NAMES[month - 1],
@@ -225,6 +251,9 @@ def analyze_monthly_fortune(chart: dict, target_year: int) -> list[dict]:
             "event_tags": tags,
             "rule_events": rule_events,
             "rule_advices": rule_advices,
+            "rule_source_ids": rule_source_ids,
+            "source_titles": source_titles,
+            "basis": basis_text,
         }
         narrative = build_monthly_narrative(chart, seed)
         items.append(
@@ -251,6 +280,9 @@ def analyze_monthly_fortune(chart: dict, target_year: int) -> list[dict]:
                 "advice_text": narrative["advice_text"],
                 "suitable_actions": narrative["suitable_actions"],
                 "actions_to_avoid": narrative["actions_to_avoid"],
+                "basis": basis_text,
+                "source_ids": rule_source_ids,
+                "source_titles": source_titles,
             }
         )
     return items

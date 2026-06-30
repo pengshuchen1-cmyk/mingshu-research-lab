@@ -3,38 +3,99 @@
     {
       "id": "career-output",
       "title": "表达输出型事业路径",
-      "condition": {"ten_gods_contains": ["食神", "伤官"]},
-      "tags": ["创意表达型", "专业输出"],
+      "condition": {
+        "ten_gods_contains": [
+          "食神",
+          "伤官"
+        ]
+      },
+      "tags": [
+        "创意表达型",
+        "专业输出"
+      ],
       "text": "命局中食伤有体现，事业上更适合通过表达、技术方案、内容作品、产品打磨或专业服务形成可见价值。",
       "advice": "建议把能力沉淀成作品、流程、课程、方案或案例，持续积累可被他人理解的成果。",
-      "risk": "需要注意表达过快、规则摩擦或交付节奏不稳定。"
+      "risk": "需要注意表达过快、规则摩擦或交付节奏不稳定。",
+      "source_ids": [
+        "yuan_hai_zi_ping",
+        "san_ming_tong_hui"
+      ],
+      "basis": "基于食神 伤官在十神中的含义，转化为现代生活事件标签。",
+      "school": "子平八字",
+      "confidence": "中等"
     },
     {
       "id": "career-authority",
       "title": "组织规则型事业路径",
-      "condition": {"ten_gods_contains": ["正官", "七杀"]},
-      "tags": ["稳定组织型", "管理责任"],
+      "condition": {
+        "ten_gods_contains": [
+          "正官",
+          "七杀"
+        ]
+      },
+      "tags": [
+        "稳定组织型",
+        "管理责任"
+      ],
       "text": "命局中官杀有体现，事业上容易面对目标、规则、职位责任和外部评价，适合在制度化平台中建立信用。",
       "advice": "建议把目标拆成阶段计划，重视流程、交付、复盘和压力管理。",
-      "risk": "需要注意长期紧绷、被考核牵动节奏，或用硬扛代替沟通。"
+      "risk": "需要注意长期紧绷、被考核牵动节奏，或用硬扛代替沟通。",
+      "source_ids": [
+        "yuan_hai_zi_ping",
+        "san_ming_tong_hui"
+      ],
+      "basis": "基于正官 七杀在十神中的含义，转化为现代生活事件标签。",
+      "school": "子平八字",
+      "confidence": "中等"
     },
     {
       "id": "career-resource",
       "title": "学习资源型事业路径",
-      "condition": {"ten_gods_contains": ["正印", "偏印"]},
-      "tags": ["平台借力型", "专业技术型"],
+      "condition": {
+        "ten_gods_contains": [
+          "正印",
+          "偏印"
+        ]
+      },
+      "tags": [
+        "平台借力型",
+        "专业技术型"
+      ],
       "text": "命局中印星有体现，事业成长更依赖学习系统、资质背景、平台支持和贵人资源。",
       "advice": "建议保持学习升级，建立方法论，并把知识转化成现实中的服务能力。",
-      "risk": "需要注意只学习不行动，或过度等待外部保护。"
+      "risk": "需要注意只学习不行动，或过度等待外部保护。",
+      "source_ids": [
+        "yuan_hai_zi_ping",
+        "san_ming_tong_hui",
+        "zi_ping_zhen_quan"
+      ],
+      "basis": "根据印星在子平十神中的含义（学习、支持、资质），结合命局五行喜忌关系，转化为职业发展路径参考。",
+      "school": "子平八字",
+      "confidence": "中等"
     },
     {
       "id": "career-wealth",
       "title": "经营收益型事业路径",
-      "condition": {"ten_gods_contains": ["正财", "偏财"]},
-      "tags": ["销售经营型", "管理资源型"],
+      "condition": {
+        "ten_gods_contains": [
+          "正财",
+          "偏财"
+        ]
+      },
+      "tags": [
+        "销售经营型",
+        "管理资源型"
+      ],
       "text": "命局中财星有体现，事业上对客户、资源、收益和现实回报较敏感，适合经营、销售、项目和资源整合。",
       "advice": "建议重视预算、客户质量、合同边界和现金流节奏。",
-      "risk": "需要注意为短期收益过度消耗精力，或忽略风险评估。"
+      "risk": "需要注意为短期收益过度消耗精力，或忽略风险评估。",
+      "source_ids": [
+        "yuan_hai_zi_ping",
+        "san_ming_tong_hui"
+      ],
+      "basis": "基于正财 偏财在十神中的含义，转化为现代生活事件标签。",
+      "school": "子平八字",
+      "confidence": "中等"
     }
   ]
 }

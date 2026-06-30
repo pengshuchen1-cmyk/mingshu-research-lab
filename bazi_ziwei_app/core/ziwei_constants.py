@@ -74,3 +74,276 @@ PALACE_EXPLANATIONS = {
     "福德宫": "观察精神状态、兴趣享受、内在满足和恢复能力。",
     "父母宫": "观察长辈、家庭背景、上级缘分和外部保护。",
 }
+
+# ===== v1.2-A: Enhanced constants =====
+
+DETAILED_PALACE_EXPLANATIONS = {
+    "命宫": {
+        "life_area": "人生主轴 · 性格气质 · 自我定位",
+        "positive_tendencies": ["自我认知清晰", "领导力", "目标感强"],
+        "risk_tendencies": ["主观过强", "压力集中", "自我怀疑"],
+        "advice": "命宫是命盘核心，适合先读懂命宫再延伸看其他宫位。",
+    },
+    "兄弟宫": {
+        "life_area": "手足关系 · 同辈互动 · 朋友互助",
+        "positive_tendencies": ["手足和谐", "朋友帮助", "团队协作"],
+        "risk_tendencies": ["同辈竞争", "资源争夺", "人际关系压力"],
+        "advice": "兄弟宫也代表同辈关系和协作质量，可以参考但不用过度聚焦。",
+    },
+    "夫妻宫": {
+        "life_area": "伴侣类型 · 亲密关系模式 · 合作关系",
+        "positive_tendencies": ["伴侣支持", "感情深刻", "合作能力"],
+        "risk_tendencies": ["关系摩擦", "期待落差", "信任调整"],
+        "advice": "夫妻宫影响亲密关系和重要合作，需要与八字喜忌交叉参考。",
+    },
+    "子女宫": {
+        "life_area": "子女缘分 · 创造力 · 晚辈关系",
+        "positive_tendencies": ["子女缘分好", "创造力强", "传承意识"],
+        "risk_tendencies": ["期望过高", "管教压力", "付出感强"],
+        "advice": "子女宫也代表创作力和作品延伸，可结合八字食伤星判断。",
+    },
+    "财帛宫": {
+        "life_area": "财富方式 · 收入结构 · 金钱观念",
+        "positive_tendencies": ["财星入宫", "理财有道", "收入来源多元"],
+        "risk_tendencies": ["支出冲动", "投资波动", "财务压力"],
+        "advice": "财帛宫观察金钱观和财富方式，不能单独判断实际财富量。",
+    },
+    "疾厄宫": {
+        "life_area": "身心状态 · 压力反应 · 生活习惯",
+        "positive_tendencies": ["身体基础好", "恢复力强", "健康意识好"],
+        "risk_tendencies": ["压力积累", "慢性疲劳", "饮食作息需注意"],
+        "advice": "疾厄宫不做医学诊断，仅用于提醒身心状态和生活习惯。",
+    },
+    "迁移宫": {
+        "life_area": "外部机会 · 出行发展 · 外地机遇",
+        "positive_tendencies": ["外出发展有利", "适应力强", "社交广泛"],
+        "risk_tendencies": ["环境变动多", "归属感弱", "离乡发展压力"],
+        "advice": "迁移宫强时适合在变化中寻找机会，适合出差、留学、异地工作。",
+    },
+    "交友宫": {
+        "life_area": "朋友 · 团队 · 合作伙伴",
+        "positive_tendencies": ["人脉广泛", "团队协作", "合作伙伴优质"],
+        "risk_tendencies": ["朋友关系波动", "合作边界模糊", "人脉消耗"],
+        "advice": "交友宫观察朋友圈质量，适合与八字比劫交叉验证。",
+    },
+    "官禄宫": {
+        "life_area": "事业方向 · 工作模式 · 成就模式",
+        "positive_tendencies": ["事业目标明确", "工作能力强", "适合管理或专业路线"],
+        "risk_tendencies": ["工作压力大", "职业方向调整", "过度投入"],
+        "advice": "官禄宫适合结合八字官杀和食伤星一起判断事业倾向。",
+    },
+    "田宅宫": {
+        "life_area": "家宅 · 居住 · 资产稳定度",
+        "positive_tendencies": ["居住稳定", "资产积累", "家庭支持"],
+        "risk_tendencies": ["家居变动", "资产波动", "家族责任"],
+        "advice": "田宅宫观察不动产和家庭稳定性，适合与八字土五行交叉参考。",
+    },
+    "福德宫": {
+        "life_area": "内在状态 · 精神享受 · 情绪稳定度",
+        "positive_tendencies": ["内心充实", "精神独立", "情绪稳定"],
+        "risk_tendencies": ["情绪波动", "精神消耗", "焦虑倾向"],
+        "advice": "福德宫影响长期幸福感和内心状态，适合与八字印星交叉参考。",
+    },
+    "父母宫": {
+        "life_area": "长辈 · 家庭背景 · 上级缘分",
+        "positive_tendencies": ["长辈支持", "家庭背景好", "上级提携"],
+        "risk_tendencies": ["家庭压力", "长辈健康", "代际差异"],
+        "advice": "父母宫也反映上级关系和外部保护力，可与八字印星交叉验证。",
+    },
+}
+
+DETAILED_STAR_EXPLANATIONS = {
+    "紫微": {
+        "star_type": "帝星",
+        "core_keywords": ["统御", "责任", "格局", "组织", "领导"],
+        "personality_tendency": "领导 · 统御 · 地位",
+        "career_tendency": "适合管理、组织、领导型职业",
+        "wealth_tendency": "财富方面适合平台型、管理型收益",
+        "relationship_tendency": "关系中容易承担主导角色，需要关注对方感受",
+        "risk_tendency": "自尊较强、压力集中、容易承担过多",
+        "advice": "善用格局和统筹能力，细节管理可借助团队",
+    },
+    "天机": {
+        "star_type": "智星",
+        "core_keywords": ["思考", "变化", "策划", "机敏", "学习"],
+        "personality_tendency": "思考 · 策划 · 机敏",
+        "career_tendency": "适合策划、咨询、研究、IT技术",
+        "wealth_tendency": "财富方面适合脑力变现和策略型收益",
+        "relationship_tendency": "关系中思维活跃，需要表达清晰避免猜测",
+        "risk_tendency": "想太多、变动多、执行分散",
+        "advice": "把思考转化为行动，避免停留在脑内推演",
+    },
+    "太阳": {
+        "star_type": "官星",
+        "core_keywords": ["外放", "照耀", "责任", "表达", "男性贵人"],
+        "personality_tendency": "外放 · 责任 · 照耀",
+        "career_tendency": "适合传播、教育、管理、公共服务",
+        "wealth_tendency": "财富方面适合靠责任和影响力获得收益",
+        "relationship_tendency": "关系中光明正直，需要注意主动倾听对方",
+        "risk_tendency": "消耗过快、过度承担、情绪外放",
+        "advice": "注意节奏管理，留出恢复时间",
+    },
+    "武曲": {
+        "star_type": "财星",
+        "core_keywords": ["执行", "财富", "决断", "规则", "管理"],
+        "personality_tendency": "执行 · 财富 · 管理",
+        "career_tendency": "适合管理、财务、执行、规则型职业",
+        "wealth_tendency": "财富方面偏务实稳健，适合经营和积累型收入",
+        "relationship_tendency": "关系中务实直接，需要注意情感表达",
+        "risk_tendency": "刚硬、财务压力、关系表达不足",
+        "advice": "发挥执行力，同时培养柔软沟通",
+    },
+    "天同": {
+        "star_type": "福星",
+        "core_keywords": ["福气", "享受", "温和", "人缘", "稳定"],
+        "personality_tendency": "福气 · 享受 · 温和",
+        "career_tendency": "适合稳定环境和人际导向型职业",
+        "wealth_tendency": "财富以稳定为主，适合服务型和文化型收入",
+        "relationship_tendency": "关系中温和包容，关系和谐度较高",
+        "risk_tendency": "安逸、拖延、抗压不足",
+        "advice": "发挥好人缘，适当培养抗压能力",
+    },
+    "廉贞": {
+        "star_type": "囚星",
+        "core_keywords": ["规则", "欲望", "审美", "边界", "权力"],
+        "personality_tendency": "规则 · 审美 · 边界",
+        "career_tendency": "适合规则、审美、设计、管理类职业",
+        "wealth_tendency": "财富方面适合高端服务和规范化收入",
+        "relationship_tendency": "感情深刻但复杂度较高，需要注意边界",
+        "risk_tendency": "情绪复杂、关系拉扯、是非较多",
+        "advice": "保持规则意识，减少感情中的复杂判断",
+    },
+    "天府": {
+        "star_type": "库星",
+        "core_keywords": ["稳定", "库藏", "资源", "包容", "管理"],
+        "personality_tendency": "稳定 · 资源 · 包容",
+        "career_tendency": "适合管理、资源、平台型职业",
+        "wealth_tendency": "财富方面偏稳定积累，适合长期经营",
+        "relationship_tendency": "关系中包容稳重，需要注意行动力",
+        "risk_tendency": "保守、依赖稳定、行动偏慢",
+        "advice": "发挥稳定优势，适当增加变化应对能力",
+    },
+    "太阴": {
+        "star_type": "富星",
+        "core_keywords": ["细腻", "内在", "财富", "审美", "女性缘"],
+        "personality_tendency": "细腻 · 内在 · 审美",
+        "career_tendency": "适合文化、审美、咨询、疗愈型职业",
+        "wealth_tendency": "财富偏细腻经营，适合服务业和文化类收入",
+        "relationship_tendency": "感情细腻丰富，需要注意情绪波动",
+        "risk_tendency": "敏感、情绪波动、犹豫",
+        "advice": "善用细腻感知，同时培养情绪稳定度",
+    },
+    "贪狼": {
+        "star_type": "桃花星",
+        "core_keywords": ["欲望", "人缘", "才艺", "桃花", "应酬"],
+        "personality_tendency": "人缘 · 欲望 · 才艺",
+        "career_tendency": "适合社交、娱乐、创意、艺术型职业",
+        "wealth_tendency": "财富方面偏人脉和资源型收入，机会较多",
+        "relationship_tendency": "吸引力强但需要注意关系质量和边界",
+        "risk_tendency": "分心、欲望过强、关系需要经营",
+        "advice": "善用人缘和才艺，保持主要方向专注",
+    },
+    "巨门": {
+        "star_type": "暗星",
+        "core_keywords": ["口才", "分析", "怀疑", "表达", "辩论"],
+        "personality_tendency": "口才 · 分析 · 思辨",
+        "career_tendency": "适合法律、咨询、传媒、教育型职业",
+        "wealth_tendency": "财富方面偏口才和知识变现",
+        "relationship_tendency": "喜欢深度交流，需要注意语气和表达能力",
+        "risk_tendency": "口舌轻重、误会、负面思考",
+        "advice": "善用口才同时注意表达分寸",
+    },
+    "天相": {
+        "star_type": "印星",
+        "core_keywords": ["辅佐", "协调", "制度", "形象", "合作"],
+        "personality_tendency": "辅佐 · 协调 · 信义",
+        "career_tendency": "适合辅佐、管理、协调、制度型职业",
+        "wealth_tendency": "财富靠平台和信誉积累，稳定型收入",
+        "relationship_tendency": "关系中重视承诺，容易被他人评价影响",
+        "risk_tendency": "依赖评价、过度配合",
+        "advice": "发挥协调能力，保持自我主张",
+    },
+    "天梁": {
+        "star_type": "荫星",
+        "core_keywords": ["庇护", "原则", "长辈", "清高", "化解"],
+        "personality_tendency": "庇护 · 原则 · 传统",
+        "career_tendency": "适合医疗、教育、公益、传统行业",
+        "wealth_tendency": "财富方面偏稳定，注重长期积累",
+        "relationship_tendency": "关系中注重原则和责任感，可能略显距离感",
+        "risk_tendency": "说教、保守、固执",
+        "advice": "发挥化解能力，同时增加灵活性",
+    },
+    "七杀": {
+        "star_type": "将星",
+        "core_keywords": ["突破", "竞争", "决断", "压力", "开创"],
+        "personality_tendency": "突破 · 决断 · 开创",
+        "career_tendency": "适合创业、管理、竞争型、挑战型职业",
+        "wealth_tendency": "偏项目型和风险回报型收益，波动较大",
+        "relationship_tendency": "关系中果断直接，需要注意方式",
+        "risk_tendency": "急进、冲突、风险决策",
+        "advice": "发挥决断力，同时预留缓冲空间",
+    },
+    "破军": {
+        "star_type": "耗星",
+        "core_keywords": ["破旧立新", "变化", "改革", "冒险", "重组"],
+        "personality_tendency": "革新 · 变化 · 重组",
+        "career_tendency": "适合改革、创新、危机管理、转型",
+        "wealth_tendency": "财富方面偏变动型，破而后立",
+        "relationship_tendency": "变化较多，需要稳定的感情基础",
+        "risk_tendency": "波动、破耗、冲动改变",
+        "advice": "破旧立新是能力，但重大变化前先做规划",
+    },
+}
+
+SIHUA_EXPLANATIONS = {
+    "化禄": {
+        "keywords": "财富 · 机遇 · 顺利",
+        "advantage": "增加财运机会",
+        "disadvantage": "让收益流动",
+        "suitable": "宜主动拓展和把握机会",
+        "avoid": "忌过度依赖运气",
+    },
+    "化权": {
+        "keywords": "权力 · 掌控 · 担当",
+        "advantage": "增强掌控力",
+        "disadvantage": "让目标落地",
+        "suitable": "宜承担关键角色和责任",
+        "avoid": "忌过度控制他人",
+    },
+    "化科": {
+        "keywords": "名誉 · 才华 · 形象",
+        "advantage": "提升能见度",
+        "disadvantage": "让能力被认可",
+        "suitable": "宜展示能力和积累口碑",
+        "avoid": "忌过度在意他人评价",
+    },
+    "化忌": {
+        "keywords": "消耗 · 考验 · 关注",
+        "advantage": "带来课题和考验",
+        "disadvantage": "让问题显现",
+        "suitable": "宜正视和解决问题",
+        "avoid": "忌逃避或过度焦虑",
+    },
+}
+
+# ===== v1.2-D: Minor & Fierce Stars =====
+MINOR_STARS = ["文昌", "文曲", "左辅", "右弼"]
+FIERCE_STARS = ["擎羊", "陀罗", "火星", "铃星", "地空", "地劫"]
+ALL_STARS = MAIN_STARS + MINOR_STARS + FIERCE_STARS
+
+MINOR_STAR_MEANINGS = {
+    "文昌": {"type": "文星", "keywords": ["学识","文采","考试","修养"], "meaning": "文昌为文星，代表学识、考试、文采和正统修养。"},
+    "文曲": {"type": "才星", "keywords": ["才艺","口才","技艺","创意"], "meaning": "文曲为才艺星，代表才艺、口才、技艺和创意表达。"},
+    "左辅": {"type": "助星", "keywords": ["辅助","贵人","支持","团队"], "meaning": "左辅为助星，代表贵人、辅助力量和团队支持。"},
+    "右弼": {"type": "佐星", "keywords": ["辅佐","助力","合作","互补"], "meaning": "右弼为佐星，代表辅佐、合作和互补力量。"},
+}
+FIERCE_STAR_MEANINGS = {
+    "擎羊": {"type": "煞星", "keywords": ["竞争","冲突","急性","突破"], "meaning": "擎羊为煞星，代表竞争、冲突和急性。行动力强但也容易引发摩擦。"},
+    "陀罗": {"type": "煞星", "keywords": ["拖延","纠缠","反复","耐心"], "meaning": "陀罗为煞星，代表拖延、纠缠和反复。"},
+    "火星": {"type": "煞星", "keywords": ["爆发","行动","急躁","热情"], "meaning": "火星为煞星，代表爆发力和行动力，但也容易急躁和冲动。"},
+    "铃星": {"type": "煞星", "keywords": ["暗火","焦虑","内耗","敏感"], "meaning": "铃星为煞星，代表内火、焦虑和暗中消耗。"},
+    "地空": {"type": "煞星", "keywords": ["空亡","破耗","理想","虚无"], "meaning": "地空为煞星，代表空亡、破耗和精神层面追求。"},
+    "地劫": {"type": "煞星", "keywords": ["劫难","变动","失去","转换"], "meaning": "地劫为煞星，代表劫难、变动和阶段性的失去。"},
+}
+STAR_CATEGORIES = {"十四主星": MAIN_STARS, "辅星": MINOR_STARS, "煞星": FIERCE_STARS}
+ALL_STAR_PLACEMENT_READY = False

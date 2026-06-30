@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from core.five_elements import element_summary
+from core.life_assessment import life_overview
 from report.useful_god_report import generate_useful_god_explanation
 
 FAVORABLE_ELEMENT_TEXT: dict[str, str] = {
@@ -163,6 +164,21 @@ def generate_basic_bazi_report(chart: dict) -> dict:
     favorable_text = _favorable_text(strength_info)
     useful_god = generate_useful_god_explanation(chart)
 
+    # 命局总论
+    try:
+        lo = life_overview(chart)
+        life_wealth = lo.get("wealth", {})
+        life_romance = lo.get("romance", {})
+        life_health = lo.get("health", {})
+        life_overview_text = (
+            f"【财富格局】{life_wealth.get('summary', '暂无法判断。')}\n"
+            f"【感情趋势】{life_romance.get('summary', '暂无法判断。')}\n"
+            f"【健康基础】{life_health.get('summary', '暂无法判断。')}\n"
+            f"参考依据：渊海子平、三命通会、子平真诠、穷通宝鉴。"
+        )
+    except Exception:
+        life_overview_text = ""
+
     summary = (
         f"此命盘日主为{day_master}，日主强弱初判为{strength_info.get('strength', '暂无法判断')}。"
         "以下解读基于四柱、藏干、五行、十神和日主强弱的基础统计，"
@@ -179,6 +195,7 @@ def generate_basic_bazi_report(chart: dict) -> dict:
     )
 
     return {
+        "life_overview": life_overview_text,
         "summary": summary,
         "day_master": day_master,
         "five_element_text": five_element_text,

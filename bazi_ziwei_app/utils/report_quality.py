@@ -24,7 +24,11 @@ YEARLY_REQUIRED_FIELDS = [
     "advice_text",
 ]
 
-FORBIDDEN_WORDS = ["必定", "绝对", "注定", "一定发财", "一定离婚", "必然破财", "无法改变"]
+FORBIDDEN_WORDS = [
+    "必定", "绝对", "注定", "一定发财", "一定离婚", "必然破财", "无法改变",
+    "必定发财", "一定有钱", "一定贫穷", "必定离婚", "必定长寿", "寿命短",
+    "活不长", "必有大病", "一定有灾", "必定婚姻不好",
+]
 
 
 def _result(issues: list[str], suggestions: list[str]) -> dict:
@@ -151,6 +155,43 @@ def check_yearly_series_diversity(yearly_data: list[dict]) -> dict:
     elif len(set(briefs)) < max(2, len(briefs) // 2):
         issues.append("未来流年文案重复度过高。")
         suggestions.append("请结合年份干支、十神、喜忌和地支关系生成不同提示。")
+    return _result(issues, suggestions)
+
+
+def check_life_overview_completeness(life_overview: dict) -> dict:
+    """
+    检查命盘总体结论完整度。
+    """
+    issues: list[str] = []
+    suggestions: list[str] = []
+    if not life_overview:
+        return _result(["命盘总体结论为空。"], ["请生成命盘总体结论。"])
+
+    required_keys = ["wealth_overview", "romance_overview", "health_overview", "career_overview"]
+    missing = [k for k in required_keys if k not in life_overview]
+    if missing:
+        issues.append(f"命盘总览缺少：{'、'.join(missing)}。")
+
+    if not life_overview.get("evidence"):
+        issues.append("命盘总览缺少判断依据 (evidence)。")
+    if not life_overview.get("source_ids"):
+        issues.append("命盘总览缺少参考来源 (source_ids)。")
+    if not life_overview.get("source_titles"):
+        issues.append("命盘总览缺少参考书名 (source_titles)。")
+
+    health = life_overview.get("health_overview", {})
+    disclaimer = health.get("medical_disclaimer", "")
+    if not disclaimer:
+        issues.append("健康总览缺少医学免责声明。")
+
+    text = str(life_overview)
+    forbidden = check_forbidden_words(text)
+    issues.extend(forbidden["issues"])
+
+    if issues:
+        suggestions.extend(["请确保命盘总览包含四个维度、判断依据和参考来源。",
+                            "健康部分必须包含医学免责声明。",
+                            "避免使用绝对化断言。"])
     return _result(issues, suggestions)
 
 
