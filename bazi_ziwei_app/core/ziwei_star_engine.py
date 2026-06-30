@@ -328,3 +328,27 @@ def get_year_gan_from_profile(profile: dict) -> str:
         return ""
     except Exception:
         return ""
+
+
+def get_year_branch_from_profile(profile: dict) -> str:
+    """从 profile 获取年支。
+
+    当前项目的紫微年干按公历年份计算；年支也使用同一套年份口径，
+    避免用“年干索引”粗略推年支造成 2000 庚辰年被误当成庚午年。
+    """
+    try:
+        bd = profile.get("birth_date", "")
+        year = None
+        if bd:
+            parts = str(bd).split("-")
+            if len(parts) == 3:
+                year = int(parts[0])
+        if not year:
+            birth_date = profile.get("birth_date") or profile.get("birthDate") or ""
+            if hasattr(birth_date, "year"):
+                year = birth_date.year
+        if year:
+            return EARTHLY_BRANCHES[(year - 4) % 12]
+        return ""
+    except Exception:
+        return ""

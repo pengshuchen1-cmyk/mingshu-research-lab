@@ -10,6 +10,7 @@ from core.ten_god_explanations import get_ten_god_explanation, get_ten_god_html
 from core.chart_type import classify_chart, get_combination_html
 from core.di_shi_explanations import get_di_shi_explanation, get_di_shi_color
 from core.life_assessment import life_overview
+from ui.bazi_components import render_full_bazi_chart
 
 
 def _render_element_donut(five_elements: dict, col) -> None:
@@ -99,6 +100,14 @@ def _hidden_text(items: list[dict]) -> str:
     return "、".join(f"{item.get('gan', '')}({item.get('ten_god', '')})" for item in items)
 
 
+def _short_lunar_text(lunar_text: str) -> str:
+    """基础信息只展示普通用户能快速读懂的农历摘要。"""
+    parts = str(lunar_text or "").split()
+    if len(parts) >= 2:
+        return " ".join(parts[:2])
+    return str(lunar_text or "").split(" 纳音[")[0][:32]
+
+
 def render_pillar_card(col, pillar: dict, ten_god_gan: str, hidden_stems: list,
                        is_day: bool = False) -> None:
     """单柱卡片渲染。"""
@@ -172,8 +181,11 @@ def render_bazi_page() -> None:
     ]
     lunar = chart.get("lunar_text", "")
     if lunar:
-        rows.append(("农历", lunar))
+        rows.append(("农历", _short_lunar_text(lunar)))
     st.markdown(info_card_html("基础信息", rows), unsafe_allow_html=True)
+    if lunar:
+        with st.expander("专业历法细节", expanded=False):
+            st.write(lunar)
 
     # ============== 1.5 命局总论 ==============
     st.markdown("## 命局总论")
@@ -240,15 +252,10 @@ def render_bazi_page() -> None:
 
     st.divider()
 
-    # ============== 2. 四柱八字卡片 ==============
+    # ============== 2. 八字解读入口 ==============
     st.markdown("## 八字排盘")
-    st.markdown("### 四柱八字")
-    cols = st.columns(4)
-    for i, key in enumerate(["year", "month", "day", "hour"]):
-        pillar = chart["pillars"][key]
-        ten_god_gan = chart["ten_gods"][key]["gan"]
-        stems = chart.get("hidden_stems", {}).get(key, [])
-        render_pillar_card(cols[i], pillar, ten_god_gan, stems, is_day=(key == "day"))
+    st.caption("八字排盘页是唯一完整展示四柱的主要页面。")
+    render_full_bazi_chart(chart)
 
     # ============== 3. 日主总览 ==============
     strength = chart.get("day_master_strength", {})

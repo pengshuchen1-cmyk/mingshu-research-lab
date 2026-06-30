@@ -7,7 +7,6 @@ from datetime import date
 from core.bazi_engine import build_bazi_chart
 from report.bazi_report import generate_basic_bazi_report
 from utils.database import save_profile
-from ui.styles import card_style
 from utils.validators import validate_profile
 
 
@@ -17,19 +16,9 @@ def render_profile_form() -> None:
     """
     import streamlit as st
 
+    st.title("新建命盘")
     st.markdown(
-        '<div style="background:linear-gradient(135deg,#3D2B1A 0%,#5C4A32 100%);'
-        'border-radius:16px;padding:24px 32px;margin-bottom:24px;'
-        'box-shadow:0 4px 12px rgba(61,43,26,0.15);">'
-        '<h1 style="color:#FCF8F0;font-size:28px;letter-spacing:3px;'
-        'font-weight:700;margin:0 0 4px 0;">新建命盘</h1>'
-        '<p style="color:#D4C5B0;font-size:13px;margin:0;">'
-        '输入个人信息生成八字命盘，支持保存到本地档案</p></div>',
-        unsafe_allow_html=True,
-    )
-
-    st.markdown(
-        f'<div style="{card_style()}margin-bottom:16px;padding:20px 24px;'
+        f'<div style="background:#FAF7F4;border-radius:10px;padding:20px 24px;'
         f'box-shadow:0 1px 3px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.04);'
         f'margin-bottom:16px;">',
         unsafe_allow_html=True,
@@ -76,14 +65,8 @@ def render_profile_form() -> None:
     chart = st.session_state.get("current_chart")
     report = st.session_state.get("current_report")
     if chart and report and not chart.get("error"):
-        st.markdown(
-                    f'<div style="{card_style()}margin-top:16px;">'
-                    '<div style="font-weight:600;color:#3D2B1A;font-size:16px;margin-bottom:10px;">'
-                    '📋 当前命盘概要</div>'
-                    f'<div style="font-size:14px;color:#5C4A32;line-height:1.6;">'
-                    f'{report.get("summary", "")}</div></div>',
-                    unsafe_allow_html=True,
-                )
-        if st.button("保存命盘", use_container_width=True):
+        st.markdown("### 当前命盘")
+        st.write(report.get("summary", ""))
+        if st.button("保存命盘"):
             profile_id = save_profile(chart.get("profile", {}), chart, report)
             st.success(f"命盘已保存，档案编号：{profile_id}")

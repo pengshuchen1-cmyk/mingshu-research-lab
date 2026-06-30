@@ -31,12 +31,12 @@ fi
 source .venv/bin/activate
 
 # 检查依赖是否已安装，避免每次都重装
-if ! python -c "import streamlit" 2>/dev/null; then
+if ! .venv/bin/python -c "import streamlit" 2>/dev/null; then
   echo "正在安装依赖，请稍等..."
-  python -m pip install --upgrade pip -q
-  python -m pip install -r requirements.txt -q
+  .venv/bin/python -m pip install --upgrade pip -q
+  .venv/bin/python -m pip install -r requirements.txt -q
 fi
 
 echo "正在启动命数研究室..."
 echo "  地址: http://127.0.0.1:8501"
-python -m streamlit run app.py --server.port 8501
+.venv/bin/python -m streamlit run app.py --server.port 8501

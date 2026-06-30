@@ -9,6 +9,7 @@ except ModuleNotFoundError:
     raise SystemExit(1)
 
 from ui.archive_page import render_archive_page
+from ui.acceptance_page import render_acceptance_page
 from ui.backup_page import render_backup_page
 from ui.compatibility_page import render_compatibility_page
 from ui.bazi_page import render_bazi_page
@@ -31,6 +32,7 @@ def get_pages() -> dict:
     """返回左侧导航页面。"""
     return {
         "首页": render_home,
+        "验收中心": render_acceptance_page,
         "新建命盘": render_profile_form,
         "八字排盘": render_bazi_page,
         "命盘总览": render_life_overview_page,
@@ -65,12 +67,19 @@ def main() -> None:
         unsafe_allow_html=True,
     )
 
-    # 支持首页快捷按钮导航
+    # 支持首页快捷按钮导航，同时始终保留左侧导航。
     nav_target = st.session_state.pop("navigate_to", None)
     if nav_target and nav_target in pages:
-        selected = nav_target
-    else:
-        selected = st.sidebar.radio("导航", list(pages.keys()), label_visibility="collapsed")
+        st.session_state["sidebar_navigation"] = nav_target
+    elif st.session_state.get("sidebar_navigation") not in pages:
+        st.session_state["sidebar_navigation"] = list(pages.keys())[0]
+
+    selected = st.sidebar.radio(
+        "导航",
+        list(pages.keys()),
+        key="sidebar_navigation",
+        label_visibility="collapsed",
+    )
     pages[selected]()
 
 

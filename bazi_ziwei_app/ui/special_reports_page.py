@@ -7,6 +7,7 @@ from report.export_report import build_special_pdf_report, build_special_text_re
 from report.love_report import generate_love_report
 from report.special_report_common import build_special_markdown
 from report.wealth_report import generate_wealth_report
+from ui.bazi_components import render_loaded_profile_hint
 
 
 def _safe_filename(name: str, report_type: str, suffix: str) -> str:
@@ -32,6 +33,7 @@ def render_special_reports_page() -> None:
         return
 
     report_type = st.radio("选择报告类型", ["事业专项", "财运专项", "婚恋专项"], horizontal=True)
+    render_loaded_profile_hint(profile, chart)
     if report_type == "事业专项":
         report = generate_career_report(chart)
     elif report_type == "财运专项":

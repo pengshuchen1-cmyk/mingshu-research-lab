@@ -36,25 +36,6 @@ def calculate_tuoluo(year_gan: str) -> dict:
 
 # \u706b\u661f/\u94c3\u661f \u5e74\u652f+\u65f6\u652f\u67e5\u8868
 # Key: (\u5e74\u652f, \u65f6\u652f) -> branch index
-HUOXING_MAP: dict = {
-    ("\u5b50","\u5b50"):0, ("\u5b50","\u4e11"):2, ("\u5b50","\u5bc5"):4, ("\u5b50","\u536f"):6,
-    ("\u5b50","\u8fb0"):8, ("\u5b50","\u5df3"):10,
-    ("\u4e11","\u5b50"):0, ("\u4e11","\u4e11"):2, ("\u4e11","\u5bc5"):4, ("\u4e11","\u536f"):6,
-    ("\u4e11","\u8fb0"):8, ("\u4e11","\u5df3"):10,
-    ("\u5bc5","\u5b50"):2, ("\u5bc5","\u4e11"):4, ("\u5bc5","\u5bc5"):6, ("\u5bc5","\u536f"):8,
-    ("\u5bc5","\u8fb0"):10, ("\u5bc5","\u5df3"):0,
-    ("\u536f","\u5b50"):4, ("\u536f","\u4e11"):6, ("\u536f","\u5bc5"):8, ("\u536f","\u536f"):10,
-    ("\u536f","\u8fb0"):0, ("\u536f","\u5df3"):2,
-}
-
-LINGXING_MAP: dict = {
-    ("\u5b50","\u5b50"):0, ("\u5b50","\u4e11"):4, ("\u5b50","\u5bc5"):8, ("\u5b50","\u536f"):0,
-    ("\u5b50","\u8fb0"):4, ("\u5b50","\u5df3"):8,
-    ("\u4e11","\u5b50"):0, ("\u4e11","\u4e11"):4, ("\u4e11","\u5bc5"):8, ("\u4e11","\u536f"):0,
-    ("\u4e11","\u8fb0"):4, ("\u4e11","\u5df3"):8,
-}
-
-def calculate_huoxing(year_branch: str, hour_branch: str) -> dict:
     key = (year_branch, hour_branch)
     if key in HUOXING_MAP:
         idx = HUOXING_MAP[key]
@@ -105,3 +86,45 @@ def calculate_all_fierce_stars(year_gan: str, year_branch: str, hour_branch: str
         },
         "source_ids": ["ziwei_doushu_quanshu"],
     }
+
+# 火星/铃星 年支+时支查表（完整 12×12 组合）
+# 规则（《紫微斗数全书》）：
+# 火星: 子午卯酉卯宫起、寅申巳亥酉宫起、辰戌丑未子宫起
+# 铃星: 子午卯酉酉宫起、寅申巳亥巳宫起、辰戌丑未午宫起
+
+def _build_huoxing_table():
+    sm = {"子":"卯","午":"卯","卯":"卯","酉":"卯",
+          "寅":"酉","申":"酉","巳":"酉","亥":"酉",
+          "辰":"子","戌":"子","丑":"子","未":"子"}
+    return {(yb, hb): (BRANCHES.index(sm[yb]) + ho) % 12
+            for yb in sm for ho, hb in enumerate(BRANCHES)}
+
+def _build_lingxing_table():
+    sm = {"子":"酉","午":"酉","卯":"酉","酉":"酉",
+          "寅":"巳","申":"巳","巳":"巳","亥":"巳",
+          "辰":"午","戌":"午","丑":"午","未":"午"}
+    return {(yb, hb): (BRANCHES.index(sm[yb]) + ho) % 12
+            for yb in sm for ho, hb in enumerate(BRANCHES)}
+
+HUOXING_MAP = _build_huoxing_table()
+LINGXING_MAP = _build_lingxing_table()
+
+
+def calculate_huoxing(year_branch: str, hour_branch: str) -> dict:
+    key = (year_branch, hour_branch)
+    if key in HUOXING_MAP:
+        idx = HUOXING_MAP[key]
+        return {"star":"火星","branch":BRANCHES[idx],"method":"year_hour_lookup","placement_ready":True,
+                "source_ids":["ziwei_doushu_quanshu"],
+                "basis":"火星基于年支和时支查表。已补全12年支×12时支共144组合。"}
+    return {"star":"火星","placement_ready":False,"note":"火星查表未完全实现"}
+
+
+def calculate_lingxing(year_branch: str, hour_branch: str) -> dict:
+    key = (year_branch, hour_branch)
+    if key in LINGXING_MAP:
+        idx = LINGXING_MAP[key]
+        return {"star":"铃星","branch":BRANCHES[idx],"method":"year_hour_lookup","placement_ready":True,
+                "source_ids":["ziwei_doushu_quanshu"],
+                "basis":"铃星基于年支和时支查表。已补全12年支×12时支共144组合。"}
+    return {"star":"铃星","placement_ready":False,"note":"铃星查表未完全实现"}

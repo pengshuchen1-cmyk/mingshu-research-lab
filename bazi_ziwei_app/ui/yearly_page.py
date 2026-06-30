@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import date
+from html import escape
 
 import pandas as pd
 import streamlit as st
@@ -16,7 +17,9 @@ from core.ten_gods import get_ten_god
 
 
 from ui.styles import ELEMENT_COLORS, card_style
+from core.monthly_event_inference_engine import build_year_monthly_event_results
 from ui.charts import render_yearly_scores_chart
+from ui.bazi_components import CACHE_VERSION, render_loaded_profile_hint
 
 RELATION_COLORS = {
     "喜用相关": "#8BA888",
@@ -28,6 +31,76 @@ RELATION_COLORS = {
 
 def _tags_text(tags):
     return "、".join(tags) if tags else "平稳观察"
+
+
+def format_monthly_event_for_display(event: dict) -> str:
+    """把流月事件 dict 转为用户可读文案，正文不暴露开发字段。"""
+    label = event.get("label", "事件")
+    probability = event.get("probability_level", "需观察")
+    plain_summary = event.get("plain_summary", "")
+    reason = event.get("reason", "本月相关事务容易被引动，建议结合现实进展观察。")
+    advice = event.get("advice", "建议稳妥推进，重要事项留出核实时间。")
+    trigger_factors = event.get("trigger_factors", []) or []
+    real_world_signals = event.get("real_world_signals", []) or []
+    source_titles = event.get("source_titles", []) or event.get("sources", []) or []
+    basis = event.get("basis", "")
+    lines = [
+        f"**{label}｜{probability}**",
+    ]
+    if plain_summary:
+        lines.append(f"一句话：{plain_summary}")
+    lines.append(f"现实表现：{reason}")
+    if real_world_signals:
+        lines.append(f"可能表现：{'、'.join(str(item) for item in real_world_signals[:6])}")
+    if trigger_factors:
+        lines.append(f"触发因素：{'、'.join(str(item) for item in trigger_factors[:6])}")
+    if basis:
+        lines.append(f"命理依据：{basis}")
+    lines.append(f"行动建议：{advice}")
+    if source_titles:
+        lines.append(f"参考来源：{'、'.join(str(item) for item in source_titles[:5])}")
+    return "\n\n".join(lines)
+
+
+def _month_top_event_summary(evt_result: dict) -> str:
+    """生成月卡片首屏可见的 Top 事件摘要。"""
+    top_events = (evt_result or {}).get("top_events", [])[:3]
+    if not top_events:
+        return (
+            '<div style="font-size:13px;color:#8C7A64;margin-top:8px;">'
+            "本月重点事件：需结合现实进展观察</div>"
+        )
+
+    tag_html = ""
+    for event in top_events:
+        label = escape(str(event.get("label", "事件")))
+        prob = escape(str(event.get("probability_level", "需观察")))
+        tag_html += (
+            '<span style="display:inline-block;background:#EDE6DC;color:#3D2B1A;'
+            'border-radius:12px;padding:3px 10px;font-size:12px;margin:2px 4px 2px 0;">'
+            f"{label}｜{prob}</span>"
+        )
+
+    first = top_events[0]
+    summary = first.get("plain_summary") or first.get("reason") or "本月相关事务容易被引动。"
+    return (
+        '<div style="border-top:1px solid #EDE6DC;margin-top:10px;padding-top:10px;">'
+        '<div style="font-size:12px;color:#8C7A64;margin-bottom:5px;">本月重点事件</div>'
+        f'<div>{tag_html}</div>'
+        f'<div style="font-size:13px;color:#5C4A32;line-height:1.6;margin-top:4px;">'
+        f"{escape(str(summary))}</div>"
+        "</div>"
+    )
+
+
+def build_monthly_event_results(
+    chart: dict,
+    monthly_data: list[dict],
+    yearly_data: dict | None = None,
+    luck_data: dict | None = None,
+) -> list[dict]:
+    """年度页面与导出报告共用的全年流月 Top 事件结果。"""
+    return build_year_monthly_event_results(chart, monthly_data, yearly_data, luck_data)
 
 
 def _split_gan_zhi(pillar):
@@ -88,14 +161,25 @@ def render_yearly_page():
         return
 
     profile = chart.get("profile") or st.session_state.get("current_profile", {})
+    if st.session_state.get("cache_version") != CACHE_VERSION:
+        st.session_state["cache_version"] = CACHE_VERSION
+        for key in [
+            "current_yearly_data",
+            "current_monthly_data",
+            "current_monthly_event_results",
+        ]:
+            st.session_state.pop(key, None)
+
     current_year = date.today().year
     target_year = st.number_input("选择分析年份", min_value=1900, max_value=2100, value=current_year, step=1)
     target_year = int(target_year)
     luck_data = st.session_state.get("current_luck_data")
     yearly_data = analyze_yearly_fortune(chart, target_year, luck_data)
     monthly_data = analyze_monthly_fortune(chart, target_year)
+    monthly_event_results = build_monthly_event_results(chart, monthly_data, yearly_data, luck_data)
     st.session_state["current_yearly_data"] = yearly_data
     st.session_state["current_monthly_data"] = monthly_data
+    st.session_state["current_monthly_event_results"] = monthly_event_results
 
     # Build enhanced monthly list with more specific content
     enhanced_months = _build_enhanced_monthly_list(chart, target_year, monthly_data)
@@ -105,6 +189,7 @@ def render_yearly_page():
     st.caption(
         f"命盘：{profile.get('name', '未命名')} | 日主：{chart.get('day_master', '')} | "
         f"流年：{yearly_data.get('pillar', '')}")
+    render_loaded_profile_hint(profile, chart)
     st.divider()
 
     # 年度概要卡片
@@ -286,6 +371,8 @@ def render_yearly_page():
         gan_color = ELEMENT_COLORS.get(gan_el, "#888")
         zhi_color = ELEMENT_COLORS.get(zhi_el, "#888")
         rel_color = RELATION_COLORS.get(relation, "#888")
+        evt_result = monthly_event_results[month_num - 1] if month_num <= len(monthly_event_results) else {}
+        event_summary_html = _month_top_event_summary(evt_result)
 
         border = "2px solid #B85C4A" if has_clash else "1px solid #EDE6DC"
         bg = "#FAF7F4" if not has_clash else "#B85C4A08"
@@ -301,7 +388,8 @@ def render_yearly_page():
             f'<span style="font-size:14px;color:{rel_color};font-weight:600;">{relation}</span>'
             + ('<span style="color:#FF5722;font-weight:700;">⚠六冲</span>' if has_clash else "")
             + f"</div>"
-            f"</div>",
+            + event_summary_html
+            + f"</div>",
             unsafe_allow_html=True,
         )
 
@@ -310,14 +398,32 @@ def render_yearly_page():
         month_basis = monthly_data[month_num - 1].get("basis", "") if monthly_data and month_num <= len(monthly_data) else ""
 
         with st.expander(f"📖 {month_name} 详细分析", expanded=False):
+            # 大概率事件 Top 3（v1.2-F）
+            try:
+                evt_result = monthly_event_results[month_num - 1] if month_num <= len(monthly_event_results) else {}
+                top_events = evt_result.get("top_events", [])
+                if top_events:
+                    st.markdown("#### 📌 本月大概率事件")
+                    for i, e in enumerate(top_events[:3]):
+                        prob = e.get("probability_level", "需观察")
+                        prob_icon = {"较高": "🔴", "中等": "🟡", "需观察": "🟢"}.get(prob, "🟢")
+                        st.markdown(f"{prob_icon} {format_monthly_event_for_display(e)}")
+                        if i < len(top_events[:3]) - 1:
+                            st.divider()
+                    
+                    signal_rows = []
+                    for e in top_events[:3]:
+                        for signal in e.get("real_world_signals", [])[:3]:
+                            signal_rows.append(signal)
+                    if signal_rows:
+                        st.markdown("**本月容易落地的现实对象**")
+                        st.markdown("、".join(dict.fromkeys(signal_rows)))
+            except Exception:
+                pass
+
             # 大方向
             st.markdown(f"#### 🎯 本月大方向")
             st.info(direction)
-
-            # 大概率事件
-            st.markdown(f"#### 📌 大概率事件")
-            for evt in events:
-                st.markdown(f"- {evt}")
 
             # 地支关系提醒
             if branch_rels:
@@ -328,7 +434,10 @@ def render_yearly_page():
             # 行动建议
             st.markdown(f"#### 💡 行动建议")
             for ad in advices:
-                st.markdown(f"- {ad}")
+                if isinstance(ad, dict):
+                    st.markdown(f"- {ad.get('text', str(ad))}")
+                else:
+                    st.markdown(f"- {ad}")
 
             # 天干五行补充
             st.markdown(f"#### 🌿 五行提示")
@@ -364,6 +473,70 @@ def render_yearly_page():
         for em in enhanced_months
     ]
     st.dataframe(pd.DataFrame(df_rows), use_container_width=True, hide_index=True)
+
+    # ====== 流月事件差异化检查（调试折叠区）======
+    with st.expander("🛠 流月事件差异化检查（开发调试）", expanded=False):
+        try:
+            # 获取12个月所有事件
+            all_results = monthly_event_results
+            
+            # 统计 event_type 出现频率
+            from collections import Counter
+            all_event_types = []
+            for r in all_results:
+                for e in r.get("top_events", []):
+                    all_event_types.append(e.get("event_type", ""))
+            type_counts = Counter(all_event_types)
+            most_common = type_counts.most_common(3) if type_counts else []
+            
+            # 连续重复检查
+            repeat_count = 0
+            prev_top = []
+            for r in all_results:
+                curr_top = [e["event_type"] for e in r.get("top_events", [])[:3]]
+                if prev_top and curr_top == prev_top:
+                    repeat_count += 1
+                prev_top = curr_top
+            
+            # 每月独有触发因素
+            unique_triggers = set()
+            for r in all_results:
+                for e in r.get("top_events", []):
+                    for f in e.get("trigger_factors", []):
+                        unique_triggers.add(f)
+            
+            st.markdown("**差异化检查结果**")
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("唯一事件组合", f"{len(set([tuple(e['event_type'] for e in r.get('top_events', [])[:3]) for r in all_results]))}/12")
+            with col2:
+                st.metric("连续重复月数", repeat_count)
+            with col3:
+                st.metric("事件类型数", len(type_counts))
+            
+            if most_common:
+                st.markdown("**最常见事件**")
+                for et, cnt in most_common:
+                    st.markdown(f"- {et}: {cnt}/12 个月")
+            
+            if unique_triggers:
+                st.markdown(f"**触发因素列表（{len(unique_triggers)} 种）**")
+                st.markdown("、".join(list(unique_triggers)[:15]))
+            
+            st.markdown("**12个月事件分布**")
+            for i, r in enumerate(all_results):
+                mn = monthly_data[i].get("month_name", f"月{i+1}")
+                top_types = [e.get("event_type", "") for e in r.get("top_events", [])[:3]]
+                top_labels = [e.get("label", "") for e in r.get("top_events", [])[:3]]
+                triggers = []
+                for event in r.get("top_events", [])[:3]:
+                    triggers.extend(event.get("trigger_factors", []) or [])
+                st.markdown(f"- {mn}: {' | '.join(top_types)}")
+                st.caption(f"事件名称：{' | '.join(top_labels)}")
+                st.caption(f"独有触发因素：{'、'.join(dict.fromkeys(triggers)) or '暂无'}")
+                
+        except Exception as exc:
+            st.markdown(f"差异化检查暂不可用：{exc}")
 
     # 底部导航备注
     st.caption("本报告基于传统命理模型生成，仅供个人兴趣和文化研究参考。")

@@ -27,7 +27,8 @@ def build_bazi_chart(profile: dict) -> dict:
         year, month, day = _parse_birth_date(profile.get("birth_date"))
         hour = int(profile.get("birth_hour", 0))
         minute = int(profile.get("birth_minute", 0))
-        lunar_info = get_lunar_eight_char(year, month, day, hour, minute)
+        longitude = float(profile.get("longitude", 120.0))
+        lunar_info = get_lunar_eight_char(year, month, day, hour, minute, longitude=longitude)
         if lunar_info.get("error"):
             return {"profile": profile, "error": lunar_info["error"]}
 

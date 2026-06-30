@@ -6,6 +6,7 @@ from difflib import SequenceMatcher
 
 from core.bazi_constants import BRANCH_HIDDEN_STEMS, BRANCH_MAIN_ELEMENTS, CONTROLLING, STEM_ELEMENTS
 from core.branch_relations import analyze_year_branch_relations
+from core.chart_fingerprint import build_chart_fingerprint
 from core.ten_gods import get_ten_god
 
 
@@ -356,6 +357,137 @@ def _actions_for_relation(relation: str) -> tuple[list[str], list[str]]:
     )
 
 
+def _yearly_fingerprint_notes(chart: dict, relation: str) -> dict[str, str]:
+    """根据命盘指纹生成年度差异化说明。"""
+    fp = build_chart_fingerprint(chart)
+    counts = (
+        f"财星{fp['wealth_star_count']}、官杀{fp['officer_star_count']}、"
+        f"食伤{fp['output_star_count']}、印星{fp['resource_star_count']}、比劫{fp['peer_star_count']}"
+    )
+    favorable = "、".join(fp["favorable_elements"]) or "阶段平衡"
+    unfavorable = "、".join(fp["unfavorable_elements"]) or "暂无明显集中项"
+    base = (
+        f"命盘指纹显示：{fp['day_master']}{fp['day_master_element']}日主，{fp['strength']}，"
+        f"喜用{favorable}，忌神{unfavorable}，十神分布为{counts}。"
+    )
+    if fp["has_strong_wealth"] and fp["has_strong_officer_killing"]:
+        career = "对这类命盘来说，本年更要把客户收益、岗位责任、项目交付和规则边界放在同一张清单里管理。"
+        wealth = "财务机会不宜只看收入数字，还要看合同、回款、成本和责任压力是否匹配。"
+    elif fp["has_strong_officer_killing"] and fp["strength"] in {"身弱", "从弱"}:
+        career = "对这类命盘来说，本年外部要求容易变强，适合把压力转成流程、资质、履历和明确成果。"
+        wealth = "财务上更适合依托稳定平台、制度收入和长期信用，少做资源不足时的高压冒进。"
+    elif fp["has_strong_output"] and fp["has_strong_peer"]:
+        career = "对这类命盘来说，本年适合靠作品、表达、技术输出和个人标签推进，但合作分工要写清楚。"
+        wealth = "财务上可从技能服务、内容产品或方案输出寻找增量，同时控制人情支出和合伙边界。"
+    elif fp["has_strong_resource"] and fp["has_strong_peer"]:
+        career = "对这类命盘来说，本年适合把学习研究、资质背书和平台资源转成可见成果。"
+        wealth = "财务上宜稳健积累，先提高专业壁垒，再筛选合作与副线机会。"
+    else:
+        career = "对这类命盘来说，本年宜围绕最突出的十神组合选择一个主轴，不要频繁换方向。"
+        wealth = "财务上先守住现金流和预算，再根据实际进展、小额验证结果和现金流记录试探机会。"
+
+    if fp["spouse_palace_element"] in fp["unfavorable_elements"]:
+        relationship = f"关系方面，夫妻宫{fp['day_branch']}属{fp['spouse_palace_element']}且关联忌神，沟通中更要避免把压力带入亲密关系。"
+    elif fp["spouse_palace_element"] in fp["favorable_elements"]:
+        relationship = f"关系方面，夫妻宫{fp['day_branch']}属{fp['spouse_palace_element']}且关联喜用，适合用稳定沟通和现实安排增加信任。"
+    else:
+        relationship = f"关系方面，夫妻宫{fp['day_branch']}属{fp['spouse_palace_element']}，建议结合真实互动观察，不用单一年份直接定性。"
+
+    if relation == "忌神相关":
+        health = f"状态上要特别留意忌神{unfavorable}被引动后的消耗，优先保睡眠、节奏和压力出口。"
+    elif relation == "喜用相关":
+        health = f"状态上可顺着喜用{favorable}建立习惯，把本年的助力转成稳定行动。"
+    else:
+        health = f"状态上以节奏管理为主，结合喜用{favorable}和忌神{unfavorable}分辨机会与消耗。"
+
+    advice = f"年度行动不要只看流年干支，还要回到命盘标签：{'、'.join(fp['chart_summary_tags'][:5])}。"
+    return {"base": base, "career": career, "wealth": wealth, "relationship": relationship, "health": health, "advice": advice}
+
+
+def _monthly_fingerprint_notes(chart: dict, relation: str, month_name: str, pillar: str) -> dict[str, str | list[str]]:
+    """根据命盘指纹生成流月差异化说明。"""
+    fp = build_chart_fingerprint(chart)
+    favorable = "、".join(fp["favorable_elements"]) or "阶段平衡"
+    unfavorable = "、".join(fp["unfavorable_elements"]) or "暂无明显集中项"
+    base_event = (
+        f"{month_name}{pillar}落到此命盘时，要结合{fp['day_master']}{fp['day_master_element']}日主、"
+        f"{fp['strength']}、喜用{favorable}、忌神{unfavorable}来判断。"
+    )
+    pillars = chart.get("pillars", {})
+    pillar_text = "".join(pillars.get(key, {}).get("pillar", "") for key in ["year", "month", "day", "hour"])
+    counts_text = (
+        f"财{fp['wealth_star_count']}官{fp['officer_star_count']}"
+        f"食{fp['output_star_count']}印{fp['resource_star_count']}比{fp['peer_star_count']}"
+    )
+    summary = (
+        f"四柱{pillar_text}；{fp['day_master']}{fp['day_master_element']}日主/{fp['strength']}；"
+        f"{counts_text}；喜用{favorable}；夫妻宫{fp['day_branch']}{fp['spouse_palace_element']}；"
+        f"主标签{'、'.join(fp['chart_summary_tags'][:6])}"
+    )
+    if fp["has_strong_wealth"] and fp["has_strong_officer_killing"]:
+        likely = [
+            f"{month_name}更容易把客户、回款、职责和交付放到同一件事里处理。",
+            f"{month_name}若出现项目机会，重点看合同、节点、责任人和现金流。",
+        ]
+        career = "此命盘财官同现，本月事业重点是把机会纳入流程，避免只追收益不看责任。"
+        wealth = "财务上适合盯住回款、成本、合同和责任边界，不宜只看表面收入。"
+    elif fp["has_strong_officer_killing"] and fp["strength"] in {"身弱", "从弱"}:
+        likely = [
+            f"{month_name}容易感到目标、规则、审批或外界期待变强，需要把压力拆成步骤。",
+            f"{month_name}适合补齐流程、资料、资质或履历，而不是硬扛所有任务。",
+        ]
+        career = "此命盘官杀强而承接偏弱，本月事业适合借助规则和平台，不宜孤军高压推进。"
+        wealth = "财务上更适合稳定收入、制度回报和预算管理，谨慎承接高压项目。"
+    elif fp["has_strong_output"] and fp["has_strong_peer"]:
+        likely = [
+            f"{month_name}适合通过作品、表达、技术方案或个人标签获得反馈。",
+            f"{month_name}同辈互动会影响进展，合作前要讲清分工、署名和收益。",
+        ]
+        career = "此命盘食伤比劫明显，本月事业适合展示能力，但要把合作边界写清楚。"
+        wealth = "财务上可关注技能服务、内容产品或方案报价，同时控制人情支出。"
+    elif fp["has_strong_resource"] and fp["has_strong_peer"]:
+        likely = [
+            f"{month_name}适合整理知识体系、证书资质、方法论和长期专业壁垒。",
+            f"{month_name}合作邀约需要筛选，避免因朋友关系投入过多时间或资金。",
+        ]
+        career = "此命盘印星比劫明显，本月事业宜先沉淀专业，再选择合适平台和合作对象。"
+        wealth = "财务上以长期积累为主，少做未经验证的合伙投入。"
+    else:
+        likely = [
+            f"{month_name}需要围绕{'、'.join(fp['chart_summary_tags'][:4])}观察事件落点。",
+            f"{month_name}建议把机会、消耗和具体事件记录分开整理，避免一概而论。",
+        ]
+        career = "本月事业宜围绕命盘主标签选择一个重点，不宜频繁切换方向。"
+        wealth = "财务上先守预算与现金流，再小步验证机会。"
+
+    if fp["spouse_palace_element"] in fp["unfavorable_elements"]:
+        relationship = f"关系上夫妻宫{fp['day_branch']}关联忌神，{month_name}沟通要减少压力投射。"
+    elif fp["spouse_palace_element"] in fp["favorable_elements"]:
+        relationship = f"关系上夫妻宫{fp['day_branch']}关联喜用，{month_name}适合用具体安排增加信任。"
+    else:
+        relationship = f"关系上夫妻宫{fp['day_branch']}需结合真实互动观察，{month_name}不要只凭情绪下判断。"
+
+    health = f"状态上按喜用{favorable}补能量，按忌神{unfavorable}避开过度消耗。"
+    advice = (
+        f"本月行动要回到命盘依据：{'、'.join(fp['career_pattern_tags'][:3] + fp['wealth_pattern_tags'][:2])}；"
+        f"具体落点为{summary}。"
+    )
+    career = f"{month_name}{pillar}：{career}"
+    wealth = f"{month_name}{pillar}：{wealth}"
+    relationship = f"{month_name}{pillar}：{relationship}"
+    health = f"{month_name}{pillar}：{health}"
+    advice = f"{month_name}{pillar}：{advice}"
+    return {
+        "likely": [base_event, *likely],
+        "summary": summary,
+        "career": career,
+        "wealth": wealth,
+        "relationship": relationship,
+        "health": health,
+        "advice": advice,
+    }
+
+
 def build_luck_stage_narrative(chart: dict, luck_item: dict) -> str:
     """
     根据大运天干、地支、五行、十神、喜忌关系生成大运阶段解释。
@@ -420,31 +552,33 @@ def build_yearly_narrative(chart: dict, yearly_item: dict) -> dict:
     )
     keywords = _unique(list(info["keywords"]) + [branch_ten_god, relation] + [item.get("label", "") for item in branch_relations], 8)
     suitable, avoid = _actions_for_relation(relation)
+    fp_notes = _yearly_fingerprint_notes(chart, relation)
     return {
         "keywords": keywords,
         "annual_keywords": keywords,
         "overall_text": (
             f"{year}年流年为{pillar}，五行侧重{element_text}，天干十神为{ten_god}，"
             f"地支主气可参考{branch_ten_god}。{info['theme']}{relation_note}{branch_text}"
+            f"{fp_notes['base']}"
         ),
         "career_text": (
             f"{info['career']}若年度节奏与现实条件配合，适合围绕"
-            f"{'、'.join(keywords[:3])}推进；同时要把目标、职责和交付边界写清楚。"
+            f"{'、'.join(keywords[:3])}推进；同时要把目标、职责和交付边界写清楚。{fp_notes['career']}"
         ),
         "wealth_text": (
             f"{info['wealth']}这一年更适合关注收入来源、现金流、投入成本和回收周期，"
-            "涉及合作收益时建议保留记录。"
+            f"涉及合作收益时建议保留记录。{fp_notes['wealth']}"
         ),
         "relationship_text": (
             f"{info['relationship']}如果出现节奏不一致，建议先沟通现实安排和情绪需求，"
-            "再讨论承诺或合作。"
+            f"再讨论承诺或合作。{fp_notes['relationship']}"
         ),
         "health_text": (
             f"{info['health']}结合{element_text}气息，需要关注作息、情绪、压力和身体恢复，"
-            "不宜长期透支。"
+            f"不宜长期透支。{fp_notes['health']}"
         ),
         "risk_text": f"风险提醒：{_branch_clash_text(chart, yearly_item.get('zhi', ''))}",
-        "advice_text": f"行动建议：{info['advice']}年度策略上建议：{'；'.join(suitable)}。",
+        "advice_text": f"行动建议：{info['advice']}年度策略上建议：{'；'.join(suitable)}。{fp_notes['advice']}",
         "brief_text": (
             f"{year}年{pillar}以{ten_god}和{branch_ten_god}为主线，"
             f"{relation}，关键词为{'、'.join(keywords[:4])}，适合{'、'.join(suitable[:2])}。"
@@ -466,34 +600,43 @@ def build_monthly_narrative(chart: dict, monthly_item: dict) -> dict:
     month_name = monthly_item.get("month_name", "")
     pillar = monthly_item.get("pillar", "")
     event_tags = monthly_item.get("event_tags", [])
-    raw_likely_events = _unique(list(event_info["likely_events"]) + monthly_item.get("rule_events", []), 6)
+    fp_notes = _monthly_fingerprint_notes(chart, relation, month_name, pillar)
+    raw_likely_events = _unique(
+        list(fp_notes["likely"])
+        + monthly_item.get("rule_events", [])[:2]
+        + list(event_info["likely_events"])[:1],
+        6,
+    )
     likely_events = [f"{month_name}{pillar}：{event}" for event in raw_likely_events]
     suitable, avoid = _actions_for_relation(relation)
     suitable_actions = _unique(list(event_info["suitable"]) + suitable + monthly_item.get("rule_advices", [])[:1], 6)
     actions_to_avoid = _unique(list(event_info["avoid"]) + avoid, 6)
     tag_text = "、".join(event_tags[:4]) or "阶段校准"
     return {
-        "theme": f"{month_name}{pillar}：{tag_text}并行，重点看{ten_god}带来的{info['keywords'][0]}。",
+        "theme": f"{month_name}{pillar}：{tag_text}并行，重点看{ten_god}带来的{info['keywords'][0]}；命盘落点为{fp_notes['summary']}。",
         "event_tendency": (
             f"大概率事件倾向：{month_name}{pillar}的五行关系显示，"
-            f"{_relation_event_text(relation)}本月事件多围绕{tag_text}展开。"
+            f"{_relation_event_text(relation)}本月事件多围绕{tag_text}展开，并会落到{fp_notes['summary']}对应的现实主题。"
         ),
         "likely_events": likely_events,
-        "career_text": f"事业提醒：{info['career']}本月可重点处理{tag_text}相关事项，推进前先确认优先级。",
+        "career_text": (
+            f"事业提醒：{fp_notes['career']}流月十神为{ten_god}，可补充观察{info['keywords'][0]}议题；"
+            f"推进{tag_text}前先确认优先级。"
+        ),
         "wealth_text": (
-            f"财务提醒：{info['wealth']}{month_name}若涉及{tag_text}中的费用、回款或投入，"
+            f"财务提醒：{fp_notes['wealth']}{month_name}若涉及{tag_text}中的费用、回款或投入，"
             "建议提前做预算和记录。"
         ),
         "relationship_text": (
-            f"关系提醒：{info['relationship']}{month_name}围绕{tag_text}沟通时，"
-            f"建议把期待、责任和边界说具体，尤其要留意{ten_god}带来的互动方式。"
+            f"关系提醒：{fp_notes['relationship']}{month_name}围绕{tag_text}沟通时，"
+            f"建议把期待、责任和边界说具体，十神{ten_god}只作为互动方式的辅助参考。"
         ),
-        "health_text": f"健康/状态提醒：{info['health']}结合{month_name}{pillar}节奏，建议留出恢复时间。",
+        "health_text": f"健康/状态提醒：{fp_notes['health']}结合{month_name}{pillar}节奏，建议留出恢复时间。",
         "risk_text": (
-            f"风险提醒：{month_name}{pillar}遇到{tag_text}时，{_relation_event_text(relation)}"
+            f"风险提醒：{month_name}{pillar}遇到{tag_text}时，重点看命盘喜忌落点和现实成本；"
             f"{month_name}处理相关事项时，不宜只凭一时情绪判断。"
         ),
-        "advice_text": f"行动建议：{event_info['advice']}同时建议：{'；'.join(suitable_actions[:3])}。",
+        "advice_text": f"行动建议：{event_info['advice']}同时建议：{'；'.join(suitable_actions[:3])}。{fp_notes['advice']}",
         "suitable_actions": suitable_actions,
         "actions_to_avoid": actions_to_avoid,
     }

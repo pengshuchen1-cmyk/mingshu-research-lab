@@ -23,6 +23,7 @@ from core.bazi_constants import (
 )
 from core.chart_fingerprint import build_chart_fingerprint
 from core.chart_type import classify_chart
+from core.report_diversity import build_chart_signature_text
 from core.romance_star_engine import detect_peach_blossom_stars
 
 RULES_DIR = Path(__file__).resolve().parents[1] / "rules"
@@ -429,12 +430,19 @@ def analyze_life_overview(chart: dict, luck_data: dict | None = None) -> dict:
     romance_texts = _build_romance_text(chart, fp, groups, favorable, r_score, r_reasons, peach)
     health_texts = _build_health_text(chart, fp, groups, elements, el_labels, s, h_score, h_reasons)
     career_texts = _build_career_text(chart, fp, groups, favorable, c_score, c_reasons)
+    signature_text = build_chart_signature_text(chart, "命盘总览差异依据")
+    profile = chart.get("profile", {}) or {}
+    profile_key = (
+        f"{profile.get('name', '')}｜{profile.get('gender', '')}｜"
+        f"{profile.get('birth_date', '')}｜{profile.get('birth_hour', '')}:"
+        f"{profile.get('birth_minute', '')}｜{profile.get('birth_place', '')}"
+    )
 
     return {
         "overall_pattern": pattern,
         "overall_summary": (
-            f"此命局{pattern}，整体{_format_level(overall)}。{keyword_summary(keywords)}"
-            "以下从财富、感情、健康、事业四个维度做趋势分析。"
+            f"{profile_key}。{pattern}，整体{_format_level(overall)}。{keyword_summary(keywords)}\n"
+            f"{signature_text}"
         ),
         "life_keywords": keywords,
         "wealth_overview": wealth_texts,

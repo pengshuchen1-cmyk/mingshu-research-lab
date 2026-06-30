@@ -22,17 +22,7 @@ PDF_FONT_CANDIDATES = [
 
 def _polish_report_text(text: str) -> str:
     """减少导出报告中的低信息量重复标签。"""
-    lines = (text or "").split("\n")
-    seen_refs: set[str] = set()
-    result: list[str] = []
-    for line in lines:
-        stripped = line.strip()
-        if stripped.startswith("- 【参考来源】") or stripped.startswith("  - 【参考来源】"):
-            if stripped in seen_refs:
-                continue
-            seen_refs.add(stripped)
-        result.append(line)
-    return "\n".join(result).replace("平稳观察", "阶段校准")
+    return (text or "").replace("平稳观察", "阶段校准")
 
 
 def _profile_lines(profile: dict, bullet: str = "-") -> list[str]:
@@ -188,12 +178,26 @@ def _yearly_lines(yearly_data: dict | None, bullet: str = "-") -> list[str]:
     ]
 
 
-def _monthly_lines(monthly_data: list[dict] | None, bullet: str = "-") -> list[str]:
-    """生成流月分析行（含命理依据和参考来源）。"""
+def _monthly_lines(
+    monthly_data: list[dict] | None,
+    bullet: str = "-",
+    chart: dict | None = None,
+    yearly_data: dict | None = None,
+    luck_data: dict | None = None,
+) -> list[str]:
+    """生成流月分析行（含大概率事件Top 3和命理依据）。"""
     if not monthly_data:
         return [f"{bullet} 流月分析：当前未生成流月分析。"]
     lines = []
-    for item in monthly_data:
+    event_results = []
+    if chart:
+        try:
+            from core.monthly_event_inference_engine import build_year_monthly_event_results
+            event_results = build_year_monthly_event_results(chart, monthly_data, yearly_data, luck_data)
+        except Exception:
+            event_results = []
+    for index, item in enumerate(monthly_data):
+        month_events = event_results[index].get("top_events", []) if index < len(event_results) else []
         tags = "、".join(item.get("event_tags", []))
         likely_events = item.get("likely_events", [])
         suitable = "、".join(item.get("suitable_actions", [])) or "稳住主线，按计划推进。"
@@ -218,13 +222,26 @@ def _monthly_lines(monthly_data: list[dict] | None, bullet: str = "-") -> list[s
                 f"  {bullet} 不适合做：{avoid}",
             ]
         )
+        # 大概率事件 Top 3
+        if month_events:
+            lines.append(f"  {bullet} 【{item.get('month_name', '')}大概率事件】")
+            for e in month_events[:3]:
+                prob = e.get("probability_level", "")
+                lines.append(f"  {bullet}   {e.get('label','')}（{prob}）：{e.get('reason','')}")
+                triggers = "、".join(e.get("trigger_factors", []) or [])
+                if triggers:
+                    lines.append(f"  {bullet}   触发因素：{triggers}")
+                lines.append(
+                    f"  {bullet}   建议（{item.get('month_name', '')}-{e.get('label', '')}）：{e.get('advice','')}"
+                )
+        
         # Add 命理依据 and 参考来源
         basis = item.get("basis", "")
         source_titles = item.get("source_titles", [])
         if basis:
             lines.append(f"  {bullet} 【命理依据】{basis}")
         if source_titles:
-            lines.append(f"  {bullet} 【参考来源】{'、'.join(source_titles)}")
+            lines.append(f"  {bullet} 【参考来源（{item.get('month_name', '')}）】{'、'.join(source_titles)}")
     return lines
 
 
@@ -316,6 +333,40 @@ def _life_overview_export_lines(chart: dict, report: dict, bullet: str = "-") ->
         return [f"{bullet} 命盘总体结论暂未生成。"]
 
 
+def _build_five_element_deep_section(chart: dict, bullet: str = "-") -> list[str]:
+    """生成五行结构深度分析导出段落。"""
+    try:
+        from report.five_element_deep_report import generate_five_element_deep_report
+        deep = generate_five_element_deep_report(chart)
+        lines = [
+            bullet + " 五行结构总览：" + deep.get("element_overview", ""),
+            bullet + " 强弱平衡：" + deep.get("element_balance_summary", ""),
+            bullet + " 强五行：" + "、".join(deep.get("strong_elements", [])) or "暂无",
+            bullet + " 弱五行：" + "、".join(deep.get("weak_elements", [])) or "暂无",
+            bullet + " 喜用五行：" + "、".join(deep.get("favorable_elements", [])) or "暂无",
+            bullet + " 忌神五行：" + "、".join(deep.get("unfavorable_elements", [])) or "暂无",
+            "",
+            bullet + "【五行对主要领域的影响】",
+        ]
+        ci = deep.get("career_implications", "")
+        wi = deep.get("wealth_implications", "")
+        ri = deep.get("relationship_implications", "")
+        hi = deep.get("health_implications", "")
+        if ci: lines.append(bullet + " 事业影响：" + ci[:200])
+        if wi: lines.append(bullet + " 财富影响：" + wi[:200])
+        if ri: lines.append(bullet + " 感情影响：" + ri[:200])
+        if hi: lines.append(bullet + " 健康影响：" + hi[:200])
+        lines.append(bullet + "【调整建议】")
+        for a in deep.get("adjustment_advice", []):
+            lines.append(bullet + "  * " + a)
+        sources = deep.get("source_titles", [])
+        if sources:
+            lines.append(bullet + "【参考来源】" + "、".join(sources))
+        return lines
+    except Exception:
+        return [bullet + " 五行深度报告暂未生成。"]
+
+
 def build_markdown_report(
     profile: dict,
     chart: dict,
@@ -346,6 +397,10 @@ def build_markdown_report(
         *_five_element_lines(chart),
         "",
         _paragraph(report.get("five_element_text", ""), "五行结构用于观察能力、资源和状态分布，仍需结合现实经历综合判断。"),
+        "",
+        "## 五之二、五行结构深度分析",
+        "",
+        *_build_five_element_deep_section(chart),
         "",
         "## 六、十神结构分析",
         *_ten_god_lines(chart),
@@ -380,7 +435,7 @@ def build_markdown_report(
         *_yearly_lines(yearly_data),
         "",
         "## 十五、十二个月流月趋势",
-        *_monthly_lines(monthly_data),
+        *_monthly_lines(monthly_data, chart=chart, yearly_data=yearly_data, luck_data=luck_data),
         "",
         "## 十六、综合行动建议",
         *_action_advice_lines(report, yearly_data),

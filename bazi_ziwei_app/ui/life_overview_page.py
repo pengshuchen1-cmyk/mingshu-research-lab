@@ -7,6 +7,7 @@ import streamlit as st
 from core.life_overview_engine import analyze_life_overview
 from core.chart_fingerprint import build_chart_fingerprint
 from ui.styles import ELEMENT_COLORS, card_style
+from ui.bazi_components import render_loaded_profile_hint
 
 
 def _level_color(level: str) -> str:
@@ -47,6 +48,7 @@ def render_life_overview_page():
 
     st.title("📊 命盘总览")
     st.caption(f"命盘：{profile.get('name', '未命名')} | {dp['overall_pattern']}")
+    render_loaded_profile_hint(profile, chart)
 
     # ===== 1. 总体类型卡片 =====
     keywords = dp.get("life_keywords", [])

@@ -120,6 +120,36 @@ def list_profiles() -> list[dict]:
     return [dict(row) for row in rows]
 
 
+
+def _ensure_chart_fields(chart: dict) -> dict:
+    """填充旧版本命盘缺失的计算字段（向后兼容）。
+
+    早期版本导出/保存的命盘可能缺少 five_elements、ten_god_counts、
+    day_master_strength 等计算字段，重新补齐以免 UI 页面空显示。
+    """
+    if not chart or not chart.get("pillars"):
+        return chart
+    if "five_elements" not in chart or not chart["five_elements"]:
+        try:
+            from core.five_elements import calculate_five_elements
+            chart["five_elements"] = calculate_five_elements(chart)
+        except Exception:
+            pass
+    if "ten_god_counts" not in chart or not chart["ten_god_counts"]:
+        try:
+            from core.ten_gods import count_ten_gods
+            chart["ten_god_counts"] = count_ten_gods(chart)
+        except Exception:
+            pass
+    if "day_master_strength" not in chart or not chart["day_master_strength"]:
+        try:
+            from core.strength_engine import analyze_day_master_strength
+            chart["day_master_strength"] = analyze_day_master_strength(chart)
+        except Exception:
+            pass
+    return chart
+
+
 def get_profile(profile_id: int) -> dict | None:
     """
     根据 ID 读取命盘档案。
@@ -149,7 +179,7 @@ def get_profile(profile_id: int) -> dict | None:
         return None
     result = dict(profile_row)
     if chart_row:
-        result["chart"] = json.loads(chart_row["chart_json"])
+        result["chart"] = _ensure_chart_fields(json.loads(chart_row["chart_json"]))
         result["report"] = json.loads(chart_row["report_json"])
     else:
         result["chart"] = {}

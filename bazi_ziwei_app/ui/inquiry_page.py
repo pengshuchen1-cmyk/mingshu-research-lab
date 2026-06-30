@@ -9,99 +9,14 @@ import altair as alt
 import streamlit as st
 
 from core.five_elements import element_summary
+from core.report_diversity import build_brief_signature, build_chart_signature_text
 
 from ui.styles import ELEMENT_COLORS, ELEMENT_EMOJIS, card_style, element_tag
-
-PILLAR_NAMES = {
-    "year": "年柱",
-    "month": "月柱",
-    "day": "日柱",
-    "hour": "时柱",
-}
+from ui.bazi_components import render_loaded_profile_hint
 
 
 def _element_list_text(elements: list[str]) -> str:
     return "、".join(elements) if elements else "需结合大运流年进一步判断"
-
-
-def _render_pillar_section(chart: dict) -> None:
-    """四柱大卡片展示。"""
-    pillars = chart.get("pillars", {})
-    day_master = chart.get("day_master", "")
-    lunar_text = chart.get("lunar_text", "")
-
-    st.markdown("### 四柱八字")
-    st.caption(f"农历：{lunar_text}" if lunar_text else "")
-
-    cols = st.columns(5)
-    pillar_keys = ["year", "month", "day", "hour"]
-    for idx, key in enumerate(pillar_keys):
-        p = pillars.get(key, {})
-        gan = p.get("gan", "")
-        zhi = p.get("zhi", "")
-        pillar_str = p.get("pillar", "")
-        name = PILLAR_NAMES.get(key, "")
-
-        # Highlight the day pillar (日主)
-        is_day = key == "day"
-        border_color = "#B8860B" if is_day else "#EDE6DC"
-        bg_color = "B8860B" if is_day else "FAF7F4"
-        with cols[idx]:
-            st.markdown(
-                f'<div style="border:2px solid {border_color};border-radius:12px;'
-                f'padding:14px 6px;text-align:center;background:#{bg_color}15;">'
-                f'<div style="font-size:13px;color:#888;margin-bottom:4px;">{name}</div>'
-                f'<div style="font-size:28px;font-weight:800;letter-spacing:2px;">{pillar_str}</div>'
-                f'<div style="font-size:13px;color:#666;margin-top:4px;">'
-                f'{gan} {ELEMENT_COLORS.get(chart.get("day_master_strength", {}).get("favorable_elements", [""])[0] if False else "", "#888")}'
-                f'{_get_gan_element(gan)}<br>{zhi} {_get_zhi_element(zhi)}'
-                f"</div>"
-                f'<div style="font-size:12px;color:#999;margin-top:2px;">'
-                f'{_get_ten_god_display(chart, key)}'
-                f"</div>"
-                f"</div>",
-                unsafe_allow_html=True,
-            )
-
-    with cols[4]:
-        strength = chart.get("day_master_strength", {})
-        st.markdown(
-            f'<div style="border:2px solid #FF5722;border-radius:12px;'
-            f'padding:14px 6px;text-align:center;background:#FF572215;">'
-            f'<div style="font-size:13px;color:#888;margin-bottom:4px;">日主</div>'
-            f'<div style="font-size:28px;font-weight:800;">{day_master}</div>'
-            f'<div style="font-size:13px;font-weight:600;color:#FF5722;margin-top:4px;">'
-            f'{strength.get("strength", "")}'
-            f"</div>"
-            f'<div style="font-size:11px;color:#999;margin-top:4px;">'
-            f'净评分 {strength.get("net_score", 0):+.1f}'
-            f"</div>"
-            f"</div>",
-            unsafe_allow_html=True,
-        )
-
-
-def _get_gan_element(gan: str) -> str:
-    from core.bazi_constants import STEM_ELEMENTS
-    return STEM_ELEMENTS.get(gan, "")
-
-
-def _get_zhi_element(zhi: str) -> str:
-    from core.bazi_constants import BRANCH_MAIN_ELEMENTS
-    return BRANCH_MAIN_ELEMENTS.get(zhi, "")
-
-
-def _get_ten_god_display(chart: dict, key: str) -> str:
-    ten_gods = chart.get("ten_gods", {}).get(key, {})
-    gan_tg = ten_gods.get("gan", "")
-    hidden = ten_gods.get("hidden_stems", [])
-    hidden_str = "、" . join(
-        f'{h["gan"]}({h.get("ten_god", "")})' for h in hidden[:2]
-    ) if hidden else ""
-    parts = [gan_tg] if gan_tg else []
-    if hidden_str:
-        parts.append(hidden_str)
-    return " | ".join(parts) if parts else ""
 
 
 def _render_profile_card(profile: dict) -> None:
@@ -187,7 +102,7 @@ def _render_donut(five_elements: dict) -> None:
         )
         .properties(height=260)
     )
-    st.altair_chart(chart, use_container_width=True, key='inquiry_element_bar')
+    st.altair_chart(chart, use_container_width=True)
 
 
 def _render_bar(five_elements: dict) -> None:
@@ -217,7 +132,7 @@ def _render_bar(five_elements: dict) -> None:
     text = chart.mark_text(
         align="left", dx=5, fontSize=12, fontWeight="bold",
     ).encode(text=alt.Text("权重:Q", format=".2f"))
-    st.altair_chart(chart + text, use_container_width=True, key='inquiry_element_bar_text')
+    st.altair_chart(chart + text, use_container_width=True)
 
 
 def _render_strength_section(chart: dict) -> None:
@@ -255,7 +170,7 @@ def _render_strength_section(chart: dict) -> None:
         s_col1, s_col2, s_col3 = st.columns(3)
         s_col1.metric("得令", f"{de_ling.get('score', 0):+.1f}")
         s_col2.metric("得地", f"{de_di.get('score', 0):+.1f}")
-        s_col3.metric("得势", f"{de_shi.get('support_score', 0):+.1f}/W{de_shi.get('pressure_score', 0):+.1f}")
+        s_col3.metric("得势", f"{de_shi.get('support_score', 0):+.1f} / 克泄{de_shi.get('pressure_score', 0):+.1f}")
 
 
 def _render_luck_overview(chart: dict) -> None:
@@ -348,7 +263,7 @@ def _render_ten_god_summary(chart: dict) -> None:
         )
         .properties(height=200)
     )
-    st.altair_chart(chart_viz, use_container_width=True, key='inquiry_ten_god_bar')
+    st.altair_chart(chart_viz, use_container_width=True)
 
 
 def _render_chart_tags(chart: dict) -> None:
@@ -413,9 +328,11 @@ def render_inquiry_page() -> None:
     st.title("🧿 综合问盘")
     st.caption("一屏查看命盘所有核心信息，点击快速导航跳转到详细页面。")
 
-    # —— Profile + Four Pillars ——
-    _render_profile_card(profile)
-    _render_pillar_section(chart)
+    # —— 简短命盘提示；完整四柱请到「八字排盘」 ——
+    render_loaded_profile_hint(profile, chart)
+    st.info(build_brief_signature(chart))
+    with st.expander("本盘差异依据", expanded=False):
+        st.write(build_chart_signature_text(chart, "综合问盘差异依据"))
 
     # —— 命盘标签 ——
     _render_chart_tags(chart)

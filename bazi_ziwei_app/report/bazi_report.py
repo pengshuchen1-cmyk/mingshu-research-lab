@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from core.five_elements import element_summary
 from core.life_assessment import life_overview
+from core.report_diversity import build_brief_signature, build_chart_signature_text
 from report.useful_god_report import generate_useful_god_explanation
 
 FAVORABLE_ELEMENT_TEXT: dict[str, str] = {
@@ -83,36 +84,44 @@ def _ten_god_groups(ten_god_counts: dict) -> dict:
 
 def _career_text(groups: dict) -> str:
     """生成事业倾向文本。"""
-    parts = ["事业方面，建议优先选择能长期积累能力和信用的路径。"]
-    if groups["authority"] >= 3:
-        parts.append("官杀较明显，容易面对规则、责任、职位目标和外部压力，也适合在组织、管理、标准化领域发展。")
-    if groups["output"] >= 3:
-        parts.append("食伤较明显，适合通过表达、技术输出、内容、创意和传播创造价值。")
-    if groups["resource"] >= 3:
-        parts.append("印星较明显，学习、证书、系统方法、贵人资源和专业背景会更有帮助。")
-    if groups["peer"] >= 3:
-        parts.append("比劫较明显，独立性和竞争意识较强，适合明确分工和合伙边界。")
-    return " ".join(parts)
+    top = max(groups, key=groups.get) if groups else "output"
+    if top == "authority":
+        return f"事业主轴偏规则责任型：官杀{groups['authority']}个，适合在职位、流程、审批、考核、管理制度中建立信用，压力大时要把目标拆细。"
+    if top == "output":
+        return f"事业主轴偏输出表达型：食伤{groups['output']}个，适合靠技术、内容、方案、教学、展示和作品说话，关键是稳定交付。"
+    if top == "wealth":
+        return f"事业主轴偏资源经营型：财星{groups['wealth']}个，适合围绕客户、订单、预算、项目收益和现实资源做长期经营。"
+    if top == "resource":
+        return f"事业主轴偏学习平台型：印星{groups['resource']}个，证书、贵人、系统方法和专业背景会比单纯冲刺更重要。"
+    return f"事业主轴偏自主竞争型：比劫{groups['peer']}个，适合独立推进或负责关键任务，合作时要先说清分工与收益。"
 
 
 def _wealth_text(groups: dict) -> str:
     """生成财富倾向文本。"""
-    if groups["wealth"] >= 3:
-        return "财富方面，财星较明显，说明你对现实资源、收益机会和商业回报较敏感，但仍建议重视风险边界和现金流节奏。"
-    if groups["output"] >= 3:
-        return "财富方面，适合通过技术、内容、项目输出或专业服务逐步创造收益。"
-    return "财富方面，更适合通过稳定能力、长期信用、预算意识和持续积累来推进。"
+    top = max(groups, key=groups.get) if groups else "wealth"
+    if top == "wealth":
+        return f"财富抓手在财星：财星{groups['wealth']}个，钱多从客户、订单、资源置换、项目收益和预算管理中来，重点是现金流边界。"
+    if top == "output":
+        return f"财富抓手在食伤：食伤{groups['output']}个，更适合把技术、内容、表达、方案或服务做成可收费成果。"
+    if top == "authority":
+        return f"财富抓手在职位规则：官杀{groups['authority']}个，收入更容易跟岗位、责任、平台等级、证照流程和稳定信用绑定。"
+    if top == "resource":
+        return f"财富抓手在印星资源：印星{groups['resource']}个，适合靠专业资质、学习升级、平台背书和长期积累提高收益。"
+    return f"财富抓手在边界管理：比劫{groups['peer']}个，人情、同辈、合伙和竞争会影响钱，越早分账越稳。"
 
 
 def _love_text(groups: dict) -> str:
     """生成关系倾向文本。"""
-    if groups["peer"] >= 3:
-        return "关系方面，自我意识和边界感较明显，建议在亲密关系和合作关系中提前说清期待。"
-    if groups["authority"] >= 3:
-        return "关系方面，容易重视承诺、责任和秩序，也需要给彼此保留弹性与沟通空间。"
-    if groups["output"] >= 3:
-        return "关系方面，表达欲和感受力较明显，建议避免情绪化表达，重要决定宜多沟通。"
-    return "关系方面，建议在表达自我和理解对方之间保持平衡，重要决定宜多留沟通空间。"
+    top = max(groups, key=groups.get) if groups else "peer"
+    if top == "peer":
+        return f"关系重点在边界：比劫{groups['peer']}个，自我意识、朋友同事和合伙议题会影响亲密关系，期待要提前说清。"
+    if top == "authority":
+        return f"关系重点在责任：官杀{groups['authority']}个，容易看重承诺、规则和对方担当，也要给关系保留弹性。"
+    if top == "output":
+        return f"关系重点在表达：食伤{groups['output']}个，适合多沟通、多反馈，但情绪上来时要避免话说太满。"
+    if top == "wealth":
+        return f"关系重点在现实经营：财星{groups['wealth']}个，金钱安排、生活质量、共同目标和资源分配需要讲清楚。"
+    return f"关系重点在安全感：印星{groups['resource']}个，适合稳定陪伴，也要避免把所有不安都交给对方消化。"
 
 
 def _risk_text(groups: dict, strength_info: dict) -> str:
@@ -170,19 +179,24 @@ def generate_basic_bazi_report(chart: dict) -> dict:
         life_wealth = lo.get("wealth", {})
         life_romance = lo.get("romance", {})
         life_health = lo.get("health", {})
+        signature_text = build_chart_signature_text(chart, "命局总论依据")
         life_overview_text = (
+            f"{signature_text}\n"
             f"【财富格局】{life_wealth.get('summary', '暂无法判断。')}\n"
+            f"财富依据：{'；'.join(life_wealth.get('strengths', [])[:3]) or '需结合大运继续观察'}。\n"
             f"【感情趋势】{life_romance.get('summary', '暂无法判断。')}\n"
+            f"感情依据：{'；'.join(life_romance.get('strengths', [])[:3] + life_romance.get('weaknesses', [])[:2]) or '需结合流年引动继续观察'}。\n"
             f"【健康基础】{life_health.get('summary', '暂无法判断。')}\n"
-            f"参考依据：渊海子平、三命通会、子平真诠、穷通宝鉴。"
+            f"健康依据：{'；'.join(life_health.get('organ_attention', [])[:4]) or '五行状态暂无单一突出信号'}。"
         )
     except Exception:
         life_overview_text = ""
 
+    profile = chart.get("profile", {}) or {}
     summary = (
-        f"此命盘日主为{day_master}，日主强弱初判为{strength_info.get('strength', '暂无法判断')}。"
-        "以下解读基于四柱、藏干、五行、十神和日主强弱的基础统计，"
-        "适合作为自我观察和后续深入分析的参考。"
+        f"{profile.get('name', '未命名')}｜{profile.get('gender', '')}｜"
+        f"{profile.get('birth_date', '')}｜{int(profile.get('birth_hour', 0)):02d}:{int(profile.get('birth_minute', 0)):02d}｜"
+        f"{profile.get('birth_place', '')}。{build_brief_signature(chart)}"
     )
     personality_text = strength_text
     career_text = _career_text(groups)

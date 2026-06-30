@@ -9,11 +9,6 @@ if [ ! -d ".venv" ]; then
   exit 1
 fi
 
-# 必须 source activate，不能直接调用 .venv/bin/python3
-# 否则 STREAMLIT 的模块路径解析会出错：
-#   ModuleNotFoundError: No module named 'ui'
-source .venv/bin/activate
-
 echo "正在启动命数研究室..."
 echo "  地址: http://127.0.0.1:8501"
-python -m streamlit run app.py --server.port 8501
+.venv/bin/python -m streamlit run app.py --server.port 8501

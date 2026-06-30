@@ -18,7 +18,6 @@ from utils.database import (
     update_profile_birth_info,
     update_report,
 )
-from ui.styles import card_style
 from utils.validators import validate_profile
 
 
@@ -47,20 +46,11 @@ def render_archive_page() -> None:
 
     profiles = search_profiles(keyword=keyword, gender=gender)
     if not profiles:
-        st.markdown(
-                    '<div style="background:#FAF7F4;border:1px dashed #EDE6DC;'
-                    'border-radius:12px;padding:36px 24px;text-align:center;'
-                    'margin:20px 0;">'
-                    '<div style="font-size:36px;margin-bottom:12px;">📂</div>'
-                    '<div style="font-size:16px;font-weight:600;color:#3D2B1A;margin-bottom:6px;">'
-                    '暂无符合条件的命盘</div>'
-                    '<div style="font-size:13px;color:#8C7A64;line-height:1.6;">'
-                    '请先修改搜索条件，或在「新建命盘」页面创建并保存命盘。</div></div>',
-                    unsafe_allow_html=True)
+        st.info("暂无符合条件的命盘。")
         return
 
     st.markdown("### 已保存命盘")
-    st.dataframe(pd.DataFrame(profiles), use_container_width=True, hide_index=True)
+    st.dataframe(pd.DataFrame(profiles), width='stretch', hide_index=True)
     options = {f"{item['id']}｜{item['name']}｜{item['birth_date']}": item["id"] for item in profiles}
     selected = st.selectbox("选择命盘", list(options.keys()))
     profile_id = options[selected]
@@ -96,7 +86,13 @@ def render_archive_page() -> None:
             }
             st.session_state["current_chart"] = loaded.get("chart", {})
             st.session_state["current_report"] = loaded.get("report", {})
-            st.success("已加载该命盘，可前往八字排盘、五行十神、大运流年或报告导出页面查看。")
+            st.session_state.pop("current_luck_data", None)
+            st.session_state.pop("current_yearly_data", None)
+            st.session_state.pop("current_monthly_data", None)
+            st.session_state.pop("current_monthly_event_results", None)
+            st.session_state["navigate_to"] = "八字排盘"
+            st.success("已加载该命盘，正在打开「八字排盘」。")
+            st.rerun()
 
         if col_report.button("重新生成报告"):
             new_report = generate_basic_bazi_report(loaded.get("chart", {}))
@@ -193,19 +189,13 @@ def render_archive_page() -> None:
                 st.session_state.pop("current_luck_data", None)
                 st.session_state.pop("current_yearly_data", None)
                 st.session_state.pop("current_monthly_data", None)
+                st.session_state.pop("current_monthly_event_results", None)
                 st.success("已重新排盘，并加载为当前命盘。")
                 st.rerun()
 
-        st.markdown(
-                    f'<div style="{card_style()}border:1px solid #B85C4A40;margin-top:20px;padding:16px 20px;">'
-                    '<div style="font-weight:600;color:#B85C4A;font-size:15px;margin-bottom:8px;">'
-                    '⚠ 删除命盘</div>'
-                    '<div style="font-size:13px;color:#5C4A32;margin-bottom:12px;line-height:1.5;">'
-                    '删除操作不可撤销，命盘信息和报告将从本地数据库中永久移除。</div>',
-                    unsafe_allow_html=True)
-        confirm_delete = st.checkbox("我确认要永久删除该命盘", key=f"confirm_delete_{profile_id}")
-        if st.button("删除命盘", disabled=not confirm_delete, type="primary"):
+        st.markdown("### 删除命盘")
+        confirm_delete = st.checkbox("我确认要删除该命盘及相关报告", key=f"confirm_delete_{profile_id}")
+        if st.button("删除命盘", disabled=not confirm_delete):
             delete_profile(profile_id)
             st.success("命盘已删除。")
             st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)

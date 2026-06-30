@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from ui.styles import card_style
 from utils.backup import backup_database, export_profiles_to_json, import_profiles_from_json
 
 
@@ -12,23 +11,13 @@ def render_backup_page() -> None:
     """
     import streamlit as st
 
-    st.markdown(
-        '<div style="background:linear-gradient(135deg,#3D2B1A 0%,#5C4A32 100%);'
-        'border-radius:16px;padding:24px 32px;margin-bottom:24px;'
-        'box-shadow:0 4px 12px rgba(61,43,26,0.15);">'
-        '<h1 style="color:#FCF8F0;font-size:28px;letter-spacing:3px;'
-        'font-weight:700;margin:0 0 4px 0;">数据备份</h1>'
-        '<p style="color:#D4C5B0;font-size:13px;margin:0;">'
-        '命盘数据仅保存在本机，建议定期备份</p></div>',
-        unsafe_allow_html=True)
+    st.title("数据备份")
     st.markdown(
         f'<div style="background:#FAF7F4;border-radius:10px;padding:20px 24px;'
         f'box-shadow:0 1px 3px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.04);">',
         unsafe_allow_html=True,
     )
-    st.warning(
-                    "⚠ 数据安全提醒：导出文件包含出生日期和个人命盘信息，"
-                    "请自行妥善保管，避免泄露个人隐私。")
+    st.warning("导出文件包含出生信息和命盘报告，请自行妥善保存，避免泄露个人隐私。")
 
     payload = export_profiles_to_json()
     st.download_button("导出所有命盘 JSON", payload, "命数研究室_命盘备份.json", "application/json")

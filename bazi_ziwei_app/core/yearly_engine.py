@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from core.bazi_constants import BRANCH_HIDDEN_STEMS, BRANCH_MAIN_ELEMENTS, EARTHLY_BRANCHES, HEAVENLY_STEMS, STEM_ELEMENTS
 from core.branch_relations import analyze_year_branch_relations
+from core.report_diversity import build_chart_signature_text
 from core.ten_gods import get_ten_god
 from report.narrative_engine import build_yearly_narrative
 
@@ -148,9 +149,12 @@ def _current_luck_note(luck_data: dict | None, target_year: int) -> str:
     if not luck_data or not luck_data.get("available"):
         return ""
     for item in luck_data.get("dayun_list", []):
-        start_year = item.get("start_year")
-        end_year = item.get("end_year")
-        if isinstance(start_year, int) and isinstance(end_year, int) and start_year <= target_year <= end_year:
+        try:
+            start_year = int(item.get("start_year", 0))
+            end_year = int(item.get("end_year", 0))
+        except (TypeError, ValueError):
+            continue
+        if start_year <= target_year <= end_year:
             return (
                 f" 当前大运背景为{item.get('pillar', '')}，可把本年变化放在"
                 f"{item.get('start_year', '')}-{item.get('end_year', '')}年的十年阶段中观察。"
@@ -180,8 +184,6 @@ def _month_attention(chart: dict, target_year: int) -> tuple[list[str], list[str
             mixed_candidates.append(label)
         elif item.get("relation_to_favorable") == "平稳观察" and not item.get("branch_relations"):
             steady_candidates.append(label)
-    if not opportunity:
-        opportunity = mixed_candidates[:2] or steady_candidates[:2]
     return high_attention[:4], opportunity[:4]
 
 
@@ -456,11 +458,12 @@ def analyze_yearly_fortune(chart: dict, target_year: int, luck_data: dict | None
         peach_months = []
         career_good = career_bad = wealth_good = wealth_bad = rel_good = rel_bad = []
         health_concerns = []
-        ten_god = ten_god if ten_god else ""
-        relation = relation if relation else ""
-        overall_level = overall_level if overall_level else ""
+        ten_god = yearly_data.get("ten_god", "")
+        relation = yearly_data.get("relation_to_favorable", "")
+        overall_level = yearly_data.get("overall_level", "")
 
-    overall_text = f"{narrative['overall_text']}{luck_note}"
+    signature = build_chart_signature_text(chart, "年度运程差异依据")
+    overall_text = f"{narrative['overall_text']}{luck_note}\n{signature}"
     risk_text = narrative["risk_text"]
     advice_text = narrative["advice_text"]
 
@@ -485,7 +488,7 @@ def analyze_yearly_fortune(chart: dict, target_year: int, luck_data: dict | None
         "health_text": enhanced_health,
         "risk_text": risk_text,
         "advice_text": advice_text,
-        "brief_text": narrative["brief_text"],
+        "brief_text": f"{narrative['brief_text']} {target_year}年{signature.splitlines()[0]}",
         "suitable_actions": narrative["suitable_actions"],
         "actions_to_avoid": narrative["actions_to_avoid"],
         "high_attention_months": high_attention_months,

@@ -1,0 +1,112 @@
+{
+  "version": "v1.0.5-ziwei-validation",
+  "description": "紫微盘例校验数据。盘面预期用于校验命宫、身宫、五行局和主星落宫；真实反馈为空时必须显示待补充，不得伪装成已验证。",
+  "cases": [
+    {
+      "case_id": "zw_known_a",
+      "name": "样例A-已知盘面",
+      "validation_scope": ["算法盘面", "解释可读性"],
+      "profile": {
+        "name": "样例A-已知盘面",
+        "gender": "男",
+        "birth_date": "1990-01-01",
+        "birth_hour": 5,
+        "birth_minute": 0,
+        "birth_place": "上海",
+        "use_solar_time": false
+      },
+      "expected": {
+        "year_gan": "庚",
+        "life_palace": "戌",
+        "body_palace": "辰",
+        "five_element_bureau": "土5局",
+        "main_stars_by_palace": {
+          "命宫": ["天同", "巨门"],
+          "兄弟宫": ["武曲", "天相"],
+          "夫妻宫": ["太阳", "天梁"],
+          "子女宫": ["七杀"],
+          "财帛宫": ["紫微", "天机", "破军"],
+          "田宅宫": ["廉贞"],
+          "福德宫": ["天府", "太阴"],
+          "父母宫": ["贪狼"]
+        }
+      },
+      "real_feedback": [],
+      "source_note": "项目已有已知盘面 fixture，适合做十四主星落宫回归校验。"
+    },
+    {
+      "case_id": "zw_known_b",
+      "name": "样例B-盘面待复核",
+      "validation_scope": ["算法盘面", "差异复核"],
+      "profile": {
+        "name": "样例B-盘面待复核",
+        "gender": "女",
+        "birth_date": "2000-06-15",
+        "birth_hour": 14,
+        "birth_minute": 30,
+        "birth_place": "北京",
+        "use_solar_time": false
+      },
+      "expected": {
+        "year_gan": "庚",
+        "life_palace": "亥",
+        "body_palace": "丑",
+        "five_element_bureau": "土5局"
+      },
+      "real_feedback": [],
+      "source_note": "v1.0.8 复核：庚年亥命宫，经五虎遁得命宫干支丁亥；按纳音表丁亥属土五局，旧预期金4局已修正为土5局。",
+      "correction_note": "已查明旧预期金4局与命宫干支纳音链路不一致，按当前项目采用的《紫微斗数全书》起星诀口径修正。"
+    },
+    {
+      "case_id": "zw_feedback_pending_c",
+      "name": "样例C-事业反馈待补",
+      "validation_scope": ["现实反馈待补", "重点宫位解释"],
+      "profile": {
+        "name": "样例C-事业反馈待补",
+        "gender": "男",
+        "birth_date": "1988-07-26",
+        "birth_hour": 12,
+        "birth_minute": 0,
+        "birth_place": "成都",
+        "use_solar_time": false
+      },
+      "expected": {},
+      "real_feedback": [],
+      "feedback_prompt": ["近三年事业变化", "是否有岗位、管理、创业、专业路线反馈", "事业宫解释是否贴近实际"]
+    },
+    {
+      "case_id": "zw_feedback_pending_d",
+      "name": "样例D-财帛反馈待补",
+      "validation_scope": ["现实反馈待补", "重点宫位解释"],
+      "profile": {
+        "name": "样例D-财帛反馈待补",
+        "gender": "女",
+        "birth_date": "1992-12-26",
+        "birth_hour": 0,
+        "birth_minute": 0,
+        "birth_place": "北京",
+        "use_solar_time": false
+      },
+      "expected": {},
+      "real_feedback": [],
+      "feedback_prompt": ["主要收入方式", "是否偏工资、项目、资源、投资或副业", "财帛宫解释是否贴近实际"]
+    },
+    {
+      "case_id": "zw_feedback_pending_e",
+      "name": "样例E-关系反馈待补",
+      "validation_scope": ["现实反馈待补", "重点宫位解释"],
+      "profile": {
+        "name": "样例E-关系反馈待补",
+        "gender": "男",
+        "birth_date": "1998-04-01",
+        "birth_hour": 6,
+        "birth_minute": 0,
+        "birth_place": "杭州",
+        "use_solar_time": false
+      },
+      "expected": {},
+      "real_feedback": [],
+      "feedback_prompt": ["亲密关系中更看重什么", "关系里常见压力点", "夫妻宫解释是否贴近实际"]
+    }
+  ]
+}

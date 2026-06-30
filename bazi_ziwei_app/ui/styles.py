@@ -193,6 +193,57 @@ def get_global_css() -> str:
         padding-bottom: 2rem !important;
         max-width: 1100px !important;
     }
+
+    /* ===== ZW Page Styles ===== */
+    .zw-hero {
+        background:#FAF7F4; border-radius:14px; padding:16px;
+        border:1px solid #EDE6DC; box-shadow:0 1px 3px rgba(0,0,0,0.04);
+        margin-bottom:12px;
+    }
+    .zw-hero-card {
+        background:#FAF7F4; border-radius:12px; padding:14px;
+        text-align:center; border:1px solid #EDE6DC;
+    }
+    .zw-palace-card {
+        background:#FAF7F4; border-radius:10px; padding:10px 6px;
+        text-align:center; border:1px solid #EDE6DC;
+        box-shadow:0 1px 2px rgba(0,0,0,0.04);
+    }
+    .zw-palace-card.life { border:2px solid #B8860B; }
+    .zw-palace-card.body { border:2px solid #C49A3C; }
+    .zw-star-chip {
+        display:inline-block; border-radius:8px; padding:2px 8px;
+        font-size:11px; margin:1px 2px; font-weight:500;
+    }
+    .zw-main-star { background:#EDE6DC; color:#3D2B1A; }
+    .zw-minor-star { background:#D4C5B0; color:#5C4A32; }
+    .zw-fierce-star { background:#F0DDD6; color:#B85C4A; }
+    .zw-sihua-lu { background:#8BA888; color:#F0F4EC; }
+    .zw-sihua-quan { background:#B8860B; color:#FCF8F0; }
+    .zw-sihua-ke { background:#7A9BAE; color:#F0F4EC; }
+    .zw-sihua-ji { background:#B85C4A; color:#FCF0EC; }
+    .zw-tag {
+        display:inline-block; border-radius:10px; padding:2px 8px;
+        font-size:10px; margin:1px; font-weight:600;
+    }
+    .zw-keyword {
+        display:inline-block; background:#EDE6DC; color:#5C4A32;
+        border-radius:10px; padding:3px 10px; font-size:11px;
+        margin:2px 3px;
+    }
+    .zw-boundary {
+        background:#FAF7F4; border-left:3px solid #B8860B;
+        border-radius:8px; padding:10px 14px; font-size:12px;
+        color:#5C4A32; line-height:1.6;
+    }
+    .zw-triangle-card {
+        background:#FAF7F4; border-radius:12px; padding:14px;
+        border:1px solid #EDE6DC; margin-bottom:8px;
+    }
+    .zw-source-card {
+        background:#FAF7F4; border-radius:8px; padding:8px 12px;
+        margin-bottom:4px; border:1px solid #EDE6DC;
+    }
     """
 
 
@@ -250,56 +301,3 @@ def info_card_html(title: str, rows: list[tuple[str, str]]) -> str:
     )
 
 # ===== ZW Page =====
-def zw_styles() -> str:
-    """返回紫微斗数页面专用 CSS 样式。"""
-    return """
-    .zw-hero {
-        background:#FAF7F4; border-radius:14px; padding:16px;
-        border:1px solid #EDE6DC; box-shadow:0 1px 3px rgba(0,0,0,0.04);
-        margin-bottom:12px;
-    }
-    .zw-hero-card {
-        background:#FAF7F4; border-radius:12px; padding:14px;
-        text-align:center; border:1px solid #EDE6DC;
-    }
-    .zw-palace-card {
-        background:#FAF7F4; border-radius:10px; padding:10px 6px;
-        text-align:center; border:1px solid #EDE6DC;
-        box-shadow:0 1px 2px rgba(0,0,0,0.04);
-    }
-    .zw-palace-card.life { border:2px solid #B8860B; }
-    .zw-palace-card.body { border:2px solid #C49A3C; }
-    .zw-star-chip {
-        display:inline-block; border-radius:8px; padding:2px 8px;
-        font-size:11px; margin:1px 2px; font-weight:500;
-    }
-    .zw-main-star { background:#EDE6DC; color:#3D2B1A; }
-    .zw-minor-star { background:#D4C5B0; color:#5C4A32; }
-    .zw-fierce-star { background:#F0DDD6; color:#B85C4A; }
-    .zw-sihua-lu { background:#8BA888; color:#F0F4EC; }
-    .zw-sihua-quan { background:#B8860B; color:#FCF8F0; }
-    .zw-sihua-ke { background:#7A9BAE; color:#F0F4EC; }
-    .zw-sihua-ji { background:#B85C4A; color:#FCF0EC; }
-    .zw-tag {
-        display:inline-block; border-radius:10px; padding:2px 8px;
-        font-size:10px; margin:1px; font-weight:600;
-    }
-    .zw-keyword {
-        display:inline-block; background:#EDE6DC; color:#5C4A32;
-        border-radius:10px; padding:3px 10px; font-size:11px;
-        margin:2px 3px;
-    }
-    .zw-boundary {
-        background:#FAF7F4; border-left:3px solid #B8860B;
-        border-radius:8px; padding:10px 14px; font-size:12px;
-        color:#5C4A32; line-height:1.6;
-    }
-    .zw-grid {
-        display:grid; grid-template-columns:repeat(4,1fr);
-        gap:8px; margin:8px 0;
-    }
-    .zw-triangle-card {
-        background:#FAF7F4; border-radius:12px; padding:14px;
-        border:1px solid #EDE6DC; margin-bottom:8px;
-    }
-    """

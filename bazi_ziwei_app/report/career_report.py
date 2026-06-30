@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from core.chart_fingerprint import build_chart_fingerprint
+from core.report_diversity import build_chart_signature_text
 from report.export_report import DISCLAIMER
 from report.special_report_common import _section
 
@@ -60,8 +61,55 @@ def _career_portrait(fp: dict) -> str:
     )
 
 
+def _career_differentiator(fp: dict) -> str:
+    """根据命盘指纹生成更明确的差异化事业策略。"""
+    absent = "、".join(fp["weak_ten_gods"][:4]) or "暂无明显空缺"
+    counts = (
+        f"财星{fp['wealth_star_count']}、官杀{fp['officer_star_count']}、"
+        f"食伤{fp['output_star_count']}、印星{fp['resource_star_count']}、比劫{fp['peer_star_count']}"
+    )
+    if fp["has_strong_wealth"] and fp["has_strong_officer_killing"]:
+        strategy = (
+            "财星与官杀同时明显，事业常把收益、客户、责任和管理捆在一起。"
+            "现实策略是把商业机会放进制度化流程中管理，重视合同、交付、回款和团队责任。"
+            "适合项目管理、客户经营、商务运营、资源整合型岗位；不适合只谈机会、不管履约和现金流的模式。"
+        )
+    elif fp["has_strong_officer_killing"] and fp["has_strong_peer"]:
+        strategy = (
+            "官杀强而比劫也明显，事业里容易同时出现外部规则压力和同辈竞争意识。"
+            "现实策略不是单纯服从制度，而是先借平台获得秩序和资源，再把职责边界、协作分工、署名成果说清楚。"
+            "适合在有明确流程的团队中做项目负责人、执行协调或专业骨干，不适合长期处在权责模糊的合伙局。"
+        )
+    elif fp["has_strong_officer_killing"] and fp["strength"] in {"身弱", "从弱"}:
+        strategy = (
+            "官杀强而日主承接力偏弱或从弱，事业压力多来自目标、考核、制度和外界期待。"
+            "现实策略应以稳定组织、清晰流程、可量化目标为主，先把压力转成职位信用和专业履历。"
+            "适合走合规、管理、运营、职能、项目推进等路径，不建议在资源不足时独自承接高压创业。"
+        )
+    elif fp["has_strong_output"] and fp["has_strong_peer"]:
+        strategy = (
+            "食伤与比劫同时明显，事业更像靠个人表达、技术作品和同辈互动打开局面。"
+            "现实策略是建立可展示成果，同时把合作边界、报价和交付标准提前写清楚。"
+        )
+    else:
+        strategy = (
+            "此盘事业更适合从最突出的十神组合出发，先形成一个清晰主轴，再用喜用五行选择发力场景。"
+            "现实中要少做频繁换方向的尝试，多做可复盘、可积累、可被看见的成果。"
+        )
+    return (
+        f"差异化判断依据：{counts}；较少或未见的十神为{absent}；"
+        f"夫妻宫地支为{fp['day_branch']}，五行为{fp['spouse_palace_element']}。{strategy}"
+    )
+
+
 def _career_identity(fp: dict) -> str:
     """事业定位。"""
+    if fp["has_strong_wealth"] and fp["has_strong_officer_killing"]:
+        return "财官并行的项目经营型：适合把客户收益、项目交付、流程责任和团队管理放在同一条事业线上。"
+    if fp["has_strong_officer_killing"] and fp["has_strong_peer"]:
+        return "平台规则中的竞争协调型：适合在明确制度下承担项目、协调资源和处理同辈竞争边界。"
+    if fp["has_strong_officer_killing"] and fp["strength"] in {"身弱", "从弱"}:
+        return "制度压力转信用型：适合把考核、流程、责任和目标压力转化成职位信用与专业履历。"
     if fp["has_strong_output"] and fp["has_strong_wealth"]:
         return "技能输出带动商业转化型：适合用作品、技术、内容或方案连接客户与收益。"
     if fp["has_strong_officer_killing"] and fp["has_strong_resource"]:
@@ -157,6 +205,10 @@ def _action_plan(fp: dict) -> list[str]:
         actions.append("建立客户、报价、合同、回款和复盘表，避免机会来了却留不住收益。")
     if fp["has_strong_officer_killing"]:
         actions.append("把职责、流程、考核目标拆成可执行节点，减少无形压力。")
+    if fp["has_strong_officer_killing"] and fp["has_strong_peer"]:
+        actions.append("对内先明确权责、署名、分工和资源边界，再承接团队任务。")
+    elif fp["has_strong_officer_killing"] and fp["strength"] in {"身弱", "从弱"}:
+        actions.append("优先选择流程清晰、评价标准明确、能沉淀履历的平台。")
     if fp["strength"] == "身弱":
         actions.append("优先借助平台、导师、团队和制度支持，不急着单点硬冲。")
     return actions[:6]
@@ -167,8 +219,10 @@ def generate_career_report(chart: dict) -> dict:
     生成事业专项报告。
     """
     fp = build_chart_fingerprint(chart)
+    signature = build_chart_signature_text(chart, "事业专项差异依据")
     evidence = _evidence(fp)
     portrait = _career_portrait(fp)
+    differentiator = _career_differentiator(fp)
     career_identity = _career_identity(fp)
     suitable_work_modes = _work_modes(fp)
     suitable_industries = _industries(fp)
@@ -181,8 +235,10 @@ def generate_career_report(chart: dict) -> dict:
         f"第三阶段重点观察流年是否引动{'、'.join(fp['top_ten_gods'][:3])}，并顺着喜用五行{'、'.join(fp['favorable_elements']) or '阶段需要'}发力。",
     ]
     sections = [
+        _section("事业专项差异依据", signature),
         _section("命盘依据", " ".join(evidence)),
         _section("事业命盘画像", portrait),
+        _section("差异化事业策略", differentiator),
         _section("事业核心定位", career_identity),
         _section("适合工作模式", "、".join(suitable_work_modes)),
         _section("适合行业方向", "、".join(suitable_industries)),
@@ -196,6 +252,8 @@ def generate_career_report(chart: dict) -> dict:
         "evidence": evidence,
         "career_identity": career_identity,
         "career_portrait": portrait,
+        "career_differentiator": differentiator,
+        "chart_signature": signature,
         "career_evidence": evidence,
         "suitable_work_modes": suitable_work_modes,
         "suitable_industries": suitable_industries,

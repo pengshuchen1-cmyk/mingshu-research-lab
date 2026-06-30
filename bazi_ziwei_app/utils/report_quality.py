@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 from collections import Counter
+from difflib import SequenceMatcher
 
 
 LOW_INFORMATION_PHRASES = [
@@ -29,6 +30,9 @@ FORBIDDEN_WORDS = [
     "必定发财", "一定有钱", "一定贫穷", "必定离婚", "必定长寿", "寿命短",
     "活不长", "必有大病", "一定有灾", "必定婚姻不好",
 ]
+
+READABLE_SIMILARITY_THRESHOLD = 0.55
+STRUCTURAL_SIGNAL_THRESHOLD = 0.50
 
 
 def _result(issues: list[str], suggestions: list[str]) -> dict:
@@ -69,6 +73,50 @@ def check_text_repetition(text: str) -> dict:
         suggestions.append("请减少泛泛的观察语，补充事业、财务、关系、健康和行动建议。")
 
     return _result(issues, suggestions)
+
+
+def text_similarity(left: str, right: str) -> float:
+    """计算普通可读文本相似度。"""
+    return SequenceMatcher(None, left or "", right or "").ratio()
+
+
+def signal_similarity(left: str, right: str) -> float:
+    """按结构标签集合计算相似度，避免中文共字造成误判。"""
+    left_tokens = {item for item in re.split(r"[|,，、\s]+", left or "") if item}
+    right_tokens = {item for item in re.split(r"[|,，、\s]+", right or "") if item}
+    if not left_tokens and not right_tokens:
+        return 1.0
+    return len(left_tokens & right_tokens) / len(left_tokens | right_tokens)
+
+
+def check_cross_sample_similarity(
+    samples: list[str],
+    threshold: float = READABLE_SIMILARITY_THRESHOLD,
+    signal_mode: bool = False,
+) -> dict:
+    """检查多份命盘报告是否过度相似。"""
+    issues: list[str] = []
+    suggestions: list[str] = []
+    if len(samples or []) < 2:
+        return _result([], [])
+    metric = signal_similarity if signal_mode else text_similarity
+    max_score = 0.0
+    max_pair = ""
+    for left in range(len(samples)):
+        for right in range(left + 1, len(samples)):
+            score = metric(samples[left], samples[right])
+            if score > max_score:
+                max_score = score
+                max_pair = f"{left + 1} vs {right + 1}"
+    if max_score > threshold:
+        issues.append(f"不同命盘报告相似度过高：{max_score:.3f}（{max_pair}）。")
+        suggestions.append("请增加日主、强弱、喜忌、十神落位、夫妻宫、时柱和事件焦点等命盘差异依据。")
+    return {
+        **_result(issues, suggestions),
+        "max_similarity": round(max_score, 3),
+        "max_pair": max_pair,
+        "threshold": threshold,
+    }
 
 
 def check_monthly_diversity(monthly_data: list[dict]) -> dict:

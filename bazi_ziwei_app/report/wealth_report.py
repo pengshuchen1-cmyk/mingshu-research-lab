@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from core.chart_fingerprint import build_chart_fingerprint
+from core.report_diversity import build_chart_signature_text
 from report.export_report import DISCLAIMER
 from report.special_report_common import _section
 
@@ -29,6 +30,14 @@ def _evidence(fp: dict) -> list[str]:
 
 def _wealth_identity(fp: dict) -> str:
     """财运定位。"""
+    if fp["has_strong_wealth"] and fp["has_strong_officer_killing"]:
+        return "财官并行收入型：收入更容易来自项目责任、客户资源、职位绩效和管理交付的组合。"
+    if fp["has_strong_peer"] and fp["has_strong_output"]:
+        return "作品技能守边界型：适合靠技术、内容、方案或作品变现，同时要管好合作分工和收益边界。"
+    if fp["has_strong_peer"] and fp["has_strong_resource"]:
+        return "知识资质守边界型：适合靠专业壁垒、平台背书和长期积累提升收入，同时谨慎处理同辈合作。"
+    if fp["has_strong_peer"] and not fp["has_strong_wealth"]:
+        return "合伙边界守财型：比劫明显而财星不足，财务稳定重点在规则、分账、人情支出和现金流边界。"
     if fp["has_strong_output"] and fp["has_strong_wealth"]:
         return "技能项目变现型：更适合用专业输出、方案能力和客户项目形成收入。"
     if fp["has_strong_wealth"] and fp["has_strong_peer"]:
@@ -42,6 +51,52 @@ def _wealth_identity(fp: dict) -> str:
     if fp["has_strong_output"]:
         return "技能作品收入型：适合靠技术、内容、产品、课程或服务持续变现。"
     return "稳健现金流积累型：适合先稳定主业和预算，再逐步探索副业或项目收入。"
+
+
+def _wealth_differentiator(fp: dict) -> str:
+    """根据命盘指纹生成差异化财富策略。"""
+    counts = (
+        f"财星{fp['wealth_star_count']}、官杀{fp['officer_star_count']}、"
+        f"食伤{fp['output_star_count']}、印星{fp['resource_star_count']}、比劫{fp['peer_star_count']}"
+    )
+    if fp["has_strong_wealth"] and fp["has_strong_officer_killing"]:
+        strategy = (
+            "此盘不是单纯工资型财运，财星和官杀同时明显，现实中更容易通过客户项目、责任职位、管理交付获得收入。"
+            "财务关键是合同、回款、成本核算和团队责任同步管理，适合把项目做成可复制流程。"
+        )
+    elif fp["has_strong_peer"] and fp["has_strong_output"]:
+        strategy = (
+            "此盘食伤与比劫同时明显，财务机会多来自个人输出、技能作品、内容方案和同辈协作。"
+            "现实中适合把作品做成可报价服务，但合作前要写清交付范围、署名、分成和复购规则。"
+        )
+    elif fp["has_strong_peer"] and fp["has_strong_resource"]:
+        strategy = (
+            "此盘印星与比劫同时明显，财务提升更依赖知识体系、证书资质、平台背书和长期口碑。"
+            "现实中适合先沉淀专业壁垒，再筛选合作对象，不宜因朋友邀约轻易投入资金或时间。"
+        )
+    elif fp["has_strong_peer"] and not fp["has_strong_wealth"]:
+        strategy = (
+            "此盘比劫明显而财星不强，财务主题不是追逐大项目，而是守住规则、人情和分账边界。"
+            "现实中朋友合作、同业竞争、临时垫付或口头承诺容易影响现金流，适合所有合作先写清投入、收益、退出条件。"
+        )
+    elif fp["has_strong_officer_killing"] and not fp["has_strong_wealth"]:
+        strategy = (
+            "此盘官杀明显但财星不算强，财运更偏职位信用、制度收入、专业履历和长期平台回报。"
+            "现实中不宜急着追高波动项目，更适合先把考核、资质、流程和岗位价值做稳。"
+        )
+    elif fp["has_strong_output"]:
+        strategy = (
+            "此盘食伤较明显，财务提升更适合从技能、作品、技术方案或内容产品入手。"
+            "重点是把输出变成可报价、可交付、可复购的服务，而不是只靠灵感。"
+        )
+    else:
+        strategy = (
+            "此盘财务更适合稳健积累，先保证收入结构清晰、预算稳定，再小步验证额外机会。"
+        )
+    return (
+        f"差异化财富依据：{counts}；喜用五行为{'、'.join(fp['favorable_elements']) or '阶段平衡'}，"
+        f"忌神五行为{'、'.join(fp['unfavorable_elements']) or '阶段平衡'}。{strategy}"
+    )
 
 
 def _main_income_modes(fp: dict) -> list[str]:
@@ -125,8 +180,10 @@ def generate_wealth_report(chart: dict) -> dict:
     生成财运专项报告。
     """
     fp = build_chart_fingerprint(chart)
+    signature = build_chart_signature_text(chart, "财运专项差异依据")
     evidence = _evidence(fp)
     wealth_identity = _wealth_identity(fp)
+    wealth_differentiator = _wealth_differentiator(fp)
     main_income_modes = _main_income_modes(fp)
     secondary_income_modes = _secondary_income_modes(fp)
     money_risks = _money_risks(fp)
@@ -139,8 +196,10 @@ def generate_wealth_report(chart: dict) -> dict:
     ]
     action_plan = _action_plan(fp)
     sections = [
+        _section("财运专项差异依据", signature),
         _section("命盘依据", " ".join(evidence)),
         _section("财运核心定位", wealth_identity),
+        _section("差异化财富策略", wealth_differentiator),
         _section("主要收入方式", "、".join(main_income_modes)),
         _section("辅助收入方式", "、".join(secondary_income_modes)),
         _section("财务风险", " ".join(money_risks)),
@@ -153,6 +212,8 @@ def generate_wealth_report(chart: dict) -> dict:
         "title": "财运专项报告",
         "evidence": evidence,
         "wealth_identity": wealth_identity,
+        "wealth_differentiator": wealth_differentiator,
+        "chart_signature": signature,
         "wealth_evidence": evidence,
         "main_income_modes": main_income_modes,
         "secondary_income_modes": secondary_income_modes,

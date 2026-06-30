@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import date
+from html import escape
 
 from core.luck_engine import get_luck_cycles
 from core.monthly_engine import analyze_monthly_fortune
@@ -16,38 +17,116 @@ def _safe_filename(name: str, suffix: str) -> str:
     return f"命数研究室_{clean_name}_八字报告.{suffix}"
 
 
+def _build_report_preview_cards(markdown: str) -> list[dict]:
+    """把完整 Markdown 报告拆成适合逐张阅读的名片。"""
+    cards: list[dict] = []
+    current_title = ""
+    current_lines: list[str] = []
+    for raw_line in (markdown or "").splitlines():
+        line = raw_line.strip()
+        if line.startswith("# "):
+            continue
+        if line.startswith("## "):
+            if current_title:
+                content = "\n".join(current_lines).strip()
+                cards.append({"title": current_title, "content": content or "本节暂无详细内容。"})
+            current_title = line.replace("## ", "", 1).strip()
+            current_lines = []
+            continue
+        if current_title:
+            current_lines.append(raw_line)
+    if current_title:
+        content = "\n".join(current_lines).strip()
+        cards.append({"title": current_title, "content": content or "本节暂无详细内容。"})
+    return cards
+
+
+def _preview_content_html(content: str) -> str:
+    """把 Markdown 内容转成名片内的安全预览文本。"""
+    lines = []
+    for raw_line in (content or "").splitlines():
+        line = raw_line.strip()
+        if not line:
+            lines.append("<br>")
+            continue
+        if line.startswith("- "):
+            line = "• " + line[2:]
+        elif line.startswith("* "):
+            line = "  · " + line[2:]
+        lines.append(escape(line))
+    return "<br>".join(lines)
+
+
+def _render_report_card(card: dict, index: int, total: int) -> None:
+    """渲染单张报告名片。"""
+    import streamlit as st
+
+    title = escape(card.get("title", "报告内容"))
+    content_html = _preview_content_html(card.get("content", ""))
+    st.markdown(
+        f"""
+        <div style="background:#FAF7F4;border:1px solid #D4C5B0;border-radius:14px;
+            padding:20px 22px;margin:12px 0 10px 0;box-shadow:0 3px 10px rgba(61,43,26,0.08);">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;">
+            <div>
+              <div style="font-size:12px;color:#8C7A64;margin-bottom:3px;">报告名片</div>
+              <div style="font-size:22px;font-weight:800;color:#3D2B1A;">{title}</div>
+            </div>
+            <div style="font-size:13px;color:#8C7A64;white-space:nowrap;">第 {index + 1} / {total} 张</div>
+          </div>
+          <div style="background:#FFFDF8;border-radius:10px;border:1px solid #EDE6DC;
+              padding:14px 16px;max-height:520px;overflow-y:auto;
+              font-size:14px;color:#3D2B1A;line-height:1.85;">
+            {content_html}
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def _render_report_card_carousel(markdown: str) -> None:
+    """渲染报告名片轮播。"""
+    import streamlit as st
+
+    cards = _build_report_preview_cards(markdown)
+    if not cards:
+        st.info("报告预览暂不可用。")
+        return
+
+    key = "report_card_index"
+    st.session_state[key] = int(st.session_state.get(key, 0)) % len(cards)
+    index = st.session_state[key]
+    _render_report_card(cards[index], index, len(cards))
+
+    col_prev, col_mid, col_next = st.columns([1, 2, 1])
+    with col_prev:
+        if st.button("← 上一张", use_container_width=True):
+            st.session_state[key] = (index - 1) % len(cards)
+            st.rerun()
+    with col_mid:
+        st.markdown(
+            f'<div style="text-align:center;color:#8C7A64;font-size:13px;padding-top:8px;">'
+            f'当前：{escape(cards[index].get("title", ""))}</div>',
+            unsafe_allow_html=True,
+        )
+    with col_next:
+        if st.button("下一张 →", use_container_width=True):
+            st.session_state[key] = (index + 1) % len(cards)
+            st.rerun()
+
+
 def render_report_page() -> None:
     """
     渲染报告导出页面。
     """
     import streamlit as st
-    from ui.styles import card_style
 
-    st.markdown(
-        '<div style="background:linear-gradient(135deg,#3D2B1A 0%,#5C4A32 100%);'
-        'border-radius:16px;padding:24px 32px;margin-bottom:24px;'
-        'box-shadow:0 4px 12px rgba(61,43,26,0.15);">'
-        '<h1 style="color:#FCF8F0;font-size:28px;letter-spacing:3px;'
-        'font-weight:700;margin:0 0 4px 0;">报告导出</h1>'
-        '<p style="color:#D4C5B0;font-size:13px;margin:0;">'
-        '支持 Markdown、TXT、PDF 三种格式导出综合分析报告</p></div>',
-        unsafe_allow_html=True,
-    )
+    st.title("报告导出")
     chart = st.session_state.get("current_chart")
     report = st.session_state.get("current_report")
     if not chart or not report:
-        st.markdown(
-                    '<div style="background:#FAF7F4;border:1px dashed #EDE6DC;'
-                    'border-radius:12px;padding:36px 24px;text-align:center;'
-                    'margin:20px 0;">'
-                    '<div style="font-size:36px;margin-bottom:12px;">📄</div>'
-                    '<div style="font-size:16px;font-weight:600;color:#3D2B1A;margin-bottom:6px;">'
-                    '请先新建或加载一个命盘</div>'
-                    '<div style="font-size:13px;color:#8C7A64;line-height:1.6;">'
-                    '在「新建命盘」页面输入个人信息生成命盘，'
-                    '或在「命盘档案」中选择一个已保存的命盘，'
-                    '即可导出完整分析报告。</div></div>',
-                    unsafe_allow_html=True)
+        st.info("请先在新建命盘页面生成命盘，或从命盘档案中选择一个命盘。")
         return
     if chart.get("error"):
         st.error(chart["error"])
@@ -73,26 +152,12 @@ def render_report_page() -> None:
     pdf_report = build_pdf_report(profile, chart, report, luck_data, yearly_data, monthly_data)
     name = profile.get("name", "未命名")
 
-    st.markdown(
-                    f'<div style="{card_style()}margin-bottom:20px;">'
-                    '<div style="display:flex;justify-content:space-between;'
-                    'align-items:center;flex-wrap:wrap;gap:8px;">'
-                    '<div><div style="font-size:12px;color:#8C7A64;margin-bottom:2px;">当前命盘</div>'
-                    f'<div style="font-size:20px;font-weight:700;color:#3D2B1A;">{name}</div></div>'
-                    f'<div style="font-size:14px;color:#5C4A32;">日主 {chart.get("day_master", "")}</div>'
-                    '</div>'
-                    '<div style="font-size:12px;color:#8C7A64;margin-top:8px;line-height:1.5;">'
-                    '报告内容包含：八字排盘 · 五行十神 · 日主强弱 · 喜用五行细化 · '
-                    '基础分析 · 大运流年 · 年度运程 · 流月分析 · 免责声明</div></div>',
-                    unsafe_allow_html=True)
+    st.markdown("### 当前命盘")
+    st.write(f"姓名：{name}｜日主：{chart.get('day_master', '')}")
+    st.caption("报告内容包含八字排盘、五行十神、日主强弱、喜用五行细化、基础分析、大运流年、年度运程、流月分析和免责声明。")
     if not pdf_report.startswith(b"%PDF"):
         st.info("当前环境 PDF 导出暂不可用，请先使用 Markdown 或 TXT 导出。也可以先运行：python -m pip install -r requirements.txt")
 
-    st.markdown(
-                    f'<div style="{card_style()}margin-bottom:20px;padding:20px 24px;">'
-                    '<div style="font-weight:600;color:#3D2B1A;font-size:15px;margin-bottom:14px;">'
-                    '选择导出格式</div></div>',
-                    unsafe_allow_html=True)
     col1, col2, col3 = st.columns(3)
     with col1:
         st.download_button(
@@ -116,8 +181,9 @@ def render_report_page() -> None:
             mime="application/pdf",
         )
 
-    st.markdown("### 报告预览")
-    st.markdown(markdown)
+    st.markdown("### 报告名片预览")
+    st.caption("每一张名片对应完整报告中的一个章节。下方按钮只切换预览名片，下载文件仍包含完整报告。")
+    _render_report_card_carousel(markdown)
 
     with st.expander("查看原始 Markdown 文本"):
         st.text_area("原始 Markdown", markdown, height=360)

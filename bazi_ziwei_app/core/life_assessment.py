@@ -14,6 +14,7 @@ from core.bazi_constants import (
     STEM_ELEMENTS,
 )
 from core.chart_type import classify_chart
+from core.report_diversity import build_chart_signature_text
 
 
 # ============================================================
@@ -537,7 +538,8 @@ def life_overview(chart: dict) -> dict:
     opening = (
         f"此命局日主为{day_master}，命局强弱初判为{strength}。"
         "以下从财富格局、感情趋势、健康基础三个维度进行综合评价，"
-        "适合作为自我观察、人生规划和后续深入分析的参考。"
+        "适合作为自我观察、人生规划和后续深入分析的参考。\n"
+        f"{build_chart_signature_text(chart, '命局总论结构依据')}"
     )
 
     return {

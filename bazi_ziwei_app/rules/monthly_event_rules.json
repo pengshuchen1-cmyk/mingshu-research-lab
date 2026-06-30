@@ -1861,5 +1861,101 @@
     "basis": "基于七杀（意外风险）和伤官（变动因素）在十神中的含义，结合地支冲动，转化为出行安全类提醒。",
     "school": "子平八字",
     "confidence": "中等"
+  },
+  {
+    "id": "v109_vehicle_safety",
+    "tag": "车辆驾驶",
+    "trigger": {
+      "ten_gods": ["七杀", "伤官", "偏财"],
+      "elements": ["金", "火"],
+      "branch_relations": ["冲年支", "冲时支", "地支六冲"],
+      "min_conditions": 2
+    },
+    "text": "本月车辆、骑行、赶路或工具使用需要更稳，适合提前检查车况和行程缓冲。",
+    "advice": "建议避免疲劳驾驶、赶时间和酒后开车，长途出行先确认路线、车况和备用方案。",
+    "source_ids": ["yuan_hai_zi_ping", "san_ming_tong_hui", "yu_zhao_ding_zhen_jing"],
+    "basis": "以七杀压力、地支冲动、火金工具象共同作为触发条件，转化为车辆驾驶与出行安全提醒。",
+    "school": "子平八字",
+    "confidence": "中等"
+  },
+  {
+    "id": "v109_shop_property",
+    "tag": "房子店铺",
+    "trigger": {
+      "ten_gods": ["正财", "偏财", "正印", "偏印"],
+      "elements": ["土"],
+      "branch_relations": ["冲日支", "冲年支"],
+      "min_conditions": 2
+    },
+    "text": "本月店铺、门面、办公室、房子、租约或经营场地类事项更容易被提上日程。",
+    "advice": "建议先算固定成本、押金、租期、装修和退出条件，再决定是否投入。",
+    "source_ids": ["san_ming_tong_hui", "wu_xing_jing_ji", "ming_li_tan_yuan"],
+    "basis": "以土象承载、财星经营、印星固定资源和日支/年支冲动作为触发条件，转化为房店场地类提醒。",
+    "school": "子平八字",
+    "confidence": "中等"
+  },
+  {
+    "id": "v109_contract_official_dispute",
+    "tag": "合同官非",
+    "trigger": {
+      "ten_gods": ["正官", "七杀", "伤官"],
+      "elements": ["金"],
+      "branch_relations": ["冲月支", "地支六冲"],
+      "min_conditions": 2
+    },
+    "text": "本月合同、审批、投诉、罚单、规则合规或口舌争执类事项需要谨慎处理。",
+    "advice": "建议保留证据、减少口头承诺，金额、期限、责任和流程尽量落到文字。",
+    "source_ids": ["yuan_hai_zi_ping", "san_ming_tong_hui", "ming_li_tan_yuan"],
+    "basis": "以官杀规则、伤官表达、金象规则和月支工作位冲动作为触发条件，转化为合同与合规提醒。",
+    "school": "子平八字",
+    "confidence": "中等"
+  },
+  {
+    "id": "v109_illness_symbol_attention",
+    "tag": "病符小疾",
+    "trigger": {
+      "ten_gods": ["七杀", "正官", "偏印", "正印"],
+      "elements": ["火", "土", "金"],
+      "branch_relations": ["地支六冲"],
+      "min_conditions": 2
+    },
+    "text": "本月有小病早看、复查体检、炎症上火或疲劳积累类提醒。",
+    "advice": "建议规律作息，身体有信号时及时休息或做现实检查；健康问题以医生意见为准。",
+    "source_ids": ["qiong_tong_bao_jian", "wu_xing_jing_ji", "xing_ping_hui_hai"],
+    "basis": "以官杀压力、忌神压身、五行偏枯和地支冲动作为触发条件，转化为健康管理提醒。",
+    "school": "调候",
+    "confidence": "基础"
+  },
+  {
+    "id": "v109_social_favor_debt",
+    "tag": "酒局人情破财",
+    "trigger": {
+      "ten_gods": ["比肩", "劫财", "偏财"],
+      "elements": ["木", "火", "金"],
+      "branch_relations": ["冲日支", "桃花地支"],
+      "min_conditions": 2
+    },
+    "text": "本月酒局饭局、朋友求助、人情请托、借支担保或分账不清的概率会变高。",
+    "advice": "建议帮忙前先说明边界，涉及钱、担保、垫款和口头承诺时要特别谨慎。",
+    "source_ids": ["yuan_hai_zi_ping", "san_ming_tong_hui", "xing_ping_hui_hai"],
+    "basis": "以比劫同辈、人情资源、财星受压和日支关系位被动作为触发条件，转化为酒局、人情和破财提醒。",
+    "school": "子平八字",
+    "confidence": "中等"
+  },
+  {
+    "id": "v109_client_payment_relationship_family",
+    "tag": "回款关系家庭",
+    "trigger": {
+      "ten_gods": ["正财", "偏财", "正官", "七杀", "正印", "偏印"],
+      "elements": ["水", "木", "土"],
+      "branch_relations": ["冲日支", "冲年支"],
+      "min_conditions": 2
+    },
+    "text": "本月客户回款、关系推进、家庭长辈或家中安排容易成为现实重点。",
+    "advice": "建议把回款节点、关系节奏和家庭安排分开处理，重要事项不要只靠口头确认。",
+    "source_ids": ["yuan_hai_zi_ping", "san_ming_tong_hui", "ming_li_tan_yuan"],
+    "basis": "以财官关系星、印星家庭承载、日支关系位和年支家庭位被动作为触发条件，转化为回款、关系和家庭事务提醒。",
+    "school": "子平八字",
+    "confidence": "中等"
   }
 ]

@@ -7,6 +7,7 @@ from pathlib import Path
 
 from core.bazi_constants import BRANCH_MAIN_ELEMENTS, EARTHLY_BRANCHES, HEAVENLY_STEMS, STEM_ELEMENTS
 from core.branch_relations import analyze_year_branch_relations
+from core.report_diversity import build_chart_signature_text
 from core.ten_gods import get_ten_god
 from core.yearly_engine import TEN_GOD_THEMES
 from report.narrative_engine import build_monthly_narrative
@@ -222,6 +223,8 @@ def analyze_monthly_fortune(chart: dict, target_year: int) -> list[dict]:
     unfavorable = set(strength.get("unfavorable_elements", []))
     items = []
     rules = _load_event_rules()
+    signature_lines = build_chart_signature_text(chart, "本盘流月差异依据").splitlines()
+    chart_hint = "；".join(line.replace("。", "；").rstrip("；") for line in signature_lines[:7])
     for month in range(1, 13):
         pillar = _get_month_pillar(target_year, month)
         gan = pillar[0] if len(pillar) >= 1 else ""
@@ -270,8 +273,11 @@ def analyze_monthly_fortune(chart: dict, target_year: int) -> list[dict]:
                 "branch_relations": branch_relations,
                 "theme": narrative["theme"],
                 "event_tags": tags,
-                "event_tendency": narrative["event_tendency"],
-                "likely_events": narrative["likely_events"],
+                "event_tendency": f"{narrative['event_tendency']} {MONTH_NAMES[month - 1]}本盘触发依据：{chart_hint}。",
+                "likely_events": [
+                    *narrative["likely_events"],
+                    f"{MONTH_NAMES[month - 1]}本盘校准：{chart_hint}",
+                ],
                 "career_text": narrative["career_text"],
                 "wealth_text": narrative["wealth_text"],
                 "relationship_text": narrative["relationship_text"],

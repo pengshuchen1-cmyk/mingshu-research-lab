@@ -64,7 +64,7 @@ class NarrativeQualityTests(unittest.TestCase):
     def test_luck_age_range_never_uses_negative_age(self):
         from core.luck_engine import _normalize_age_range
 
-        start_age, end_age = _normalize_age_range(-2, 11, 2, 0)
+        start_age, end_age, _warning = _normalize_age_range(-2, 11, 2, 0)
 
         self.assertEqual(start_age, 2)
         self.assertEqual(end_age, 11)

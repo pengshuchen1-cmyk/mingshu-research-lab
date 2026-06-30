@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from core.report_diversity import build_chart_signature_text
+
 TEN_GOD_GROUPS = {
     "财旺格": ["正财", "偏财"],
     "官杀格": ["正官", "七杀"],
@@ -95,6 +97,11 @@ def classify_chart(chart: dict) -> dict:
     # 5. 综合总结
     summary_key = f"{strength_label}{tg_pattern}" if tg_pattern else strength_label
     summary_desc = PATTERN_DESCRIPTIONS.get(summary_key, "")
+    signature = build_chart_signature_text(chart, "命盘类型依据")
+    if summary_desc:
+        summary_desc = f"类型结论：{summary_key}。{summary_desc}\n{signature}"
+    else:
+        summary_desc = signature
 
     return {
         "basic_pattern": basic_pattern,

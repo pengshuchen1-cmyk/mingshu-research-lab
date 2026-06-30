@@ -33,11 +33,32 @@ def _split_pillar(pillar: str) -> tuple[str, str]:
     return "", ""
 
 
-def get_lunar_eight_char(year: int, month: int, day: int, hour: int, minute: int = 0) -> dict:
+def _solar_time_correction(hour: int, minute: int, longitude: float = 120.0) -> tuple[int, int]:
+    """根据出生地经度对钟表时间做真太阳时校正（经度时差部分）。
+
+    北京时间基准为东经 120°E，每差 1° 约差 4 分钟。
+
+    Args:
+        hour: 出生钟表时（24 小时制）
+        minute: 出生钟表分
+        longitude: 出生地经度，东经为正。默认 120.0（北京时间基准）
+
+    Returns:
+        (校正后小时, 校正后分钟)
+    """
+    offset = int(round((longitude - 120.0) * 4))
+    total = hour * 60 + minute + offset
+    return (total // 60) % 24, total % 60
+
+
+def get_lunar_eight_char(year: int, month: int, day: int, hour: int, minute: int = 0, longitude: float = 120.0) -> dict:
     """
     使用 lunar_python 根据公历生日生成八字四柱。
+
+    longitude 参数用于真太阳时校正，默认 120°E（北京时间）。
     """
     try:
+        hour, minute = _solar_time_correction(hour, minute, longitude)
         datetime(year, month, day, hour, minute)
         solar = _build_solar(year, month, day, hour, minute)
         lunar = solar.getLunar()
@@ -47,6 +68,9 @@ def get_lunar_eight_char(year: int, month: int, day: int, hour: int, minute: int
         month_pillar = _call_first(eight_char, ["getMonth", "getMonthInGanZhi"]) or ""
         day_pillar = _call_first(eight_char, ["getDay", "getDayInGanZhi"]) or ""
         hour_pillar = _call_first(eight_char, ["getTime", "getHour", "getTimeInGanZhi"]) or ""
+
+        if not year_pillar or not month_pillar:
+            raise ValueError(f"八字排盘异常：年柱({year_pillar!r})或月柱({month_pillar!r})为空")
 
         year_gan = _call_first(eight_char, ["getYearGan"]) or _split_pillar(year_pillar)[0]
         year_zhi = _call_first(eight_char, ["getYearZhi"]) or _split_pillar(year_pillar)[1]

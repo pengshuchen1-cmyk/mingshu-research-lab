@@ -4,6 +4,13 @@ from __future__ import annotations
 
 from ui.styles import ELEMENT_COLORS, ELEMENT_EMOJIS, card_style
 from ui.charts import render_element_wheel
+from ui.bazi_components import (
+    CACHE_VERSION,
+    compact_pillar_text,
+    render_compact_bazi_summary,
+)
+
+HOME_CACHE_VERSION_LABEL = "v1.0.2-professional-monthly-events"
 
 
 def _five_element_bars(elements):
@@ -27,6 +34,11 @@ def _five_element_bars(elements):
             '</div>'
         )
     return items_html
+
+
+def _compact_pillar_text(chart: dict) -> str:
+    """首页紧凑展示四柱。"""
+    return compact_pillar_text(chart)
 
 
 def _action_tile(icon, label, desc=""):
@@ -63,6 +75,19 @@ def _nav_button(name):
 def render_home():
     import streamlit as st
 
+    if st.session_state.get("cache_version") != CACHE_VERSION:
+        st.session_state["cache_version"] = CACHE_VERSION
+        for key in [
+            "current_yearly_data",
+            "current_monthly_data",
+            "current_monthly_event_results",
+        ]:
+            st.session_state.pop(key, None)
+        try:
+            st.cache_data.clear()
+        except Exception:
+            pass
+
     chart = st.session_state.get("current_chart")
     profile_data = st.session_state.get("current_profile")
 
@@ -85,6 +110,33 @@ def render_home():
         '</div></div>',
         unsafe_allow_html=True,
     )
+
+    st.markdown(
+        '<div style="background:#FAF7F4;border:1px solid #D4C5B0;'
+        'border-radius:12px;padding:14px 18px;margin:-12px 0 22px 0;">'
+        '<div style="font-size:16px;font-weight:700;color:#3D2B1A;">'
+        '当前版本：v1.0.2 专业流月断事增强</div>'
+        '<div style="font-size:13px;color:#5C4A32;line-height:1.8;margin-top:4px;">'
+        '运行端口：8501｜更新时间：2026-06-27｜'
+        '当前重点：流月对象化事件、五行深度解释、报告差异化</div>'
+        f'<div style="font-size:11px;color:#8C7A64;margin-top:2px;">'
+        f'缓存版本：{HOME_CACHE_VERSION_LABEL}</div>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+    if st.button("清理页面缓存并刷新", help="如果刚更新后页面没有变化，可以点击这里清理 Streamlit 缓存。"):
+        try:
+            st.cache_data.clear()
+        except Exception:
+            pass
+        for key in [
+            "current_yearly_data",
+            "current_monthly_data",
+            "current_monthly_event_results",
+        ]:
+            st.session_state.pop(key, None)
+        st.success("缓存已清理，正在刷新页面。")
+        st.rerun()
 
     # Dashboard with wheel chart
     if chart and not chart.get("error"):
@@ -114,6 +166,8 @@ def render_home():
             f'{strength_text}</span></div></div></div>',
             unsafe_allow_html=True,
         )
+
+        render_compact_bazi_summary(chart)
 
         from ui.styles import metric_card_html
 
@@ -242,7 +296,7 @@ def render_home():
         '<div style="display:flex;justify-content:space-between;'
         'align-items:center;flex-wrap:wrap;">'
         '<div style="font-size:14px;font-weight:600;color:#D4C5B0;">'
-        '命数研究室 v1.0</div>'
+        '命数研究室 v1.0.2</div>'
         '<div style="font-size:11px;color:#8C7A64;max-width:600px;line-height:1.6;">'
         '本报告基于传统命理模型生成，'
         '仅供个人兴趣、文化研究和自我规划参考，'

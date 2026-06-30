@@ -8,6 +8,7 @@ from core.bazi_constants import BRANCH_MAIN_ELEMENTS, STEM_ELEMENTS
 from core.stage_engine import analyze_luck_stage
 from core.ten_gods import get_ten_god
 from core.yearly_engine import analyze_yearly_fortune
+from core.calendar_engine import _solar_time_correction
 
 
 def _parse_birth_date(value: object) -> tuple[int, int, int]:
@@ -71,9 +72,11 @@ def _start_text(start_age: int, start_year: int, start_month: object = "") -> st
     return "起运时间为传统命理推算结果，具体起运点可在后续版本结合节气进一步校正。"
 
 
-def _normalize_age_range(raw_start_age: int, raw_end_age: int, reference_start_age: int = 0, index: int = 0) -> tuple[int, int]:
+def _normalize_age_range(raw_start_age: int, raw_end_age: int, reference_start_age: int = 0, index: int = 0) -> tuple[int, int, str]:
     """修正大运年龄区间，避免出现负数或倒挂。"""
+    data_warning = ""
     if raw_start_age < 0:
+        data_warning = "大运起运年龄为负，lunar_python 返回异常"
         start_age = max(0, reference_start_age, raw_end_age - 9)
     elif reference_start_age > 0 and raw_start_age < reference_start_age and index == 0:
         start_age = reference_start_age
@@ -84,7 +87,7 @@ def _normalize_age_range(raw_start_age: int, raw_end_age: int, reference_start_a
         end_age = start_age + 9
     else:
         end_age = raw_end_age
-    return start_age, end_age
+    return start_age, end_age, data_warning
 
 
 def _pillar_year(year: int) -> str:
@@ -144,6 +147,8 @@ def get_luck_cycles(profile: dict, chart: dict | None = None) -> dict:
         year, month, day = _parse_birth_date(profile.get("birth_date"))
         hour = int(profile.get("birth_hour", 0))
         minute = int(profile.get("birth_minute", 0))
+        longitude = float(profile.get("longitude", 120.0))
+        hour, minute = _solar_time_correction(hour, minute, longitude)
         gender_code = 1 if profile.get("gender") == "男" else 0
         solar = _build_solar(year, month, day, hour, minute)
         eight_char = solar.getLunar().getEightChar()
@@ -152,6 +157,7 @@ def get_luck_cycles(profile: dict, chart: dict | None = None) -> dict:
         start_year = _safe_int(_call_first(yun, ["getStartYear"]))
         start_month = _call_first(yun, ["getStartMonth"]) or ""
         start_age = 0
+        data_warnings = []
 
         dayun_list = []
         for item in da_yun_list:
@@ -165,12 +171,14 @@ def get_luck_cycles(profile: dict, chart: dict | None = None) -> dict:
             zhi_element = BRANCH_MAIN_ELEMENTS.get(zhi, "")
             item_start_age = _safe_int(_call_first(item, ["getStartAge"]))
             item_end_age = _safe_int(_call_first(item, ["getEndAge"]))
-            item_start_age, item_end_age = _normalize_age_range(
+            item_start_age, item_end_age, data_warning = _normalize_age_range(
                 item_start_age,
                 item_end_age,
                 max(0, start_age),
                 len(dayun_list),
             )
+            if data_warning:
+                data_warnings.append(data_warning)
             item_start_year = _safe_int(_call_first(item, ["getStartYear"]))
             item_end_year = _safe_int(_call_first(item, ["getEndYear"]))
             if not start_age:
@@ -207,6 +215,7 @@ def get_luck_cycles(profile: dict, chart: dict | None = None) -> dict:
             "start_text": _start_text(start_age, start_year, start_month),
             "dayun_list": dayun_list,
             "yearly_list": _build_yearly_list(chart, 10),
+            "data_warnings": data_warnings,
         }
     except ModuleNotFoundError as exc:
         if exc.name == "lunar_python":

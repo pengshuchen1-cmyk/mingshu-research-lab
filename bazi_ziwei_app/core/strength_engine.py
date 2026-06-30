@@ -180,6 +180,41 @@ def _dedupe_elements(elements: list[str]) -> list[str]:
     return [element for element in FIVE_ELEMENT_ORDER if element in set(elements)]
 
 
+def _detect_special_pattern(pillars: dict, day_element: str) -> str:
+    """检测是否构成特殊格局：从旺格或从弱格。
+
+    从旺格：全局日主五行占比 >= 70%，宜顺其旺势。
+    从弱格：全局日主五行占比 <= 15%，宜顺其弱势。
+
+    Returns:
+        "从旺", "从弱", 或 "无"
+    """
+    element_count: dict[str, float] = {}
+    for pillar in pillars.values():
+        gan = pillar.get("gan", "")
+        zhi = pillar.get("zhi", "")
+        gan_el = STEM_ELEMENTS.get(gan, "")
+        if gan_el:
+            element_count[gan_el] = element_count.get(gan_el, 0) + 1.0
+        hidden = BRANCH_HIDDEN_STEMS.get(zhi, [])
+        for i, h_gan in enumerate(hidden[:3]):
+            h_el = STEM_ELEMENTS.get(h_gan, "")
+            if h_el:
+                weight = HIDDEN_STEM_WEIGHTS[i] if i < len(HIDDEN_STEM_WEIGHTS) else 0.3
+                element_count[h_el] = element_count.get(h_el, 0) + weight
+
+    total = sum(element_count.values())
+    if total <= 0:
+        return "无"
+
+    day_el_ratio = element_count.get(day_element, 0) / total
+    if day_el_ratio >= 0.7:
+        return "从旺"
+    if day_el_ratio <= 0.15:
+        return "从弱"
+    return "无"
+
+
 def analyze_day_master_strength(chart: dict) -> dict:
     """
     根据八字 chart 分析日主强弱。
@@ -202,7 +237,24 @@ def analyze_day_master_strength(chart: dict) -> dict:
         pressure_score = round(de_shi_pressure, 2)
         net_score = round(support_score - pressure_score, 2)
         strength = _judge_strength(net_score)
-        favorable, unfavorable, explanation = _element_preferences(day_element, strength)
+        special_pattern = _detect_special_pattern(chart.get("pillars", {}), day_element)
+
+        if special_pattern == "从旺":
+            favorable = _dedupe_elements([day_element] + [_parent_element(day_element)])
+            unfavorable = _dedupe_elements(
+                [CONTROLLING.get(day_element, ""), GENERATING.get(day_element, ""), _controlling_element(day_element)]
+            )
+            explanation = "从旺格：全局日主五行极旺，宜顺其势，喜生扶，忌克泄耗。"
+            strength = "从旺"
+        elif special_pattern == "从弱":
+            favorable = _dedupe_elements(
+                [CONTROLLING.get(day_element, ""), GENERATING.get(day_element, ""), _controlling_element(day_element)]
+            )
+            unfavorable = _dedupe_elements([day_element] + [_parent_element(day_element)])
+            explanation = "从弱格：全局日主五行极弱，宜顺其势，喜克泄耗，忌生扶。"
+            strength = "从弱"
+        else:
+            favorable, unfavorable, explanation = _element_preferences(day_element, strength)
 
         return {
             "day_master": day_master,
@@ -221,6 +273,7 @@ def analyze_day_master_strength(chart: dict) -> dict:
             "favorable_elements": favorable,
             "unfavorable_elements": unfavorable,
             "explanation": explanation,
+            "special_pattern": special_pattern,
         }
     except Exception as exc:
         return {

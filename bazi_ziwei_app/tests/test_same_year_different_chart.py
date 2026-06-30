@@ -67,8 +67,8 @@ class SameYearDifferentChartTests(unittest.TestCase):
         yearly_reports = [analyze_yearly_fortune(chart, 2026) for chart in charts]
         monthly_reports = [analyze_monthly_fortune(chart, 2026) for chart in charts]
 
-        self.assertLess(text_similarity(yearly_text(yearly_reports[0]), yearly_text(yearly_reports[1])), 0.72)
-        self.assertLess(text_similarity(monthly_text(monthly_reports[0]), monthly_text(monthly_reports[1])), 0.72)
+        self.assertLess(text_similarity(yearly_text(yearly_reports[0]), yearly_text(yearly_reports[1])), 0.55)
+        self.assertLess(text_similarity(monthly_text(monthly_reports[0]), monthly_text(monthly_reports[1])), 0.55)
 
 
 if __name__ == "__main__":

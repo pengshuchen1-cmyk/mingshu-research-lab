@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from core.chart_fingerprint import build_chart_fingerprint
+from core.report_diversity import build_chart_signature_text
 from report.export_report import DISCLAIMER
 from report.special_report_common import _section
 
@@ -52,6 +53,12 @@ def _relationship_pattern(fp: dict, profile: dict) -> str:
     star_count = _partner_star_count(fp, profile)
     if fp["has_strong_peer"] and fp["has_strong_output"]:
         return "自主表达型关系模式：既需要个人空间，也需要高质量沟通，容易在话语方式和边界上拉扯。"
+    if fp["has_strong_peer"] and fp["has_strong_officer_killing"]:
+        return "边界责任拉扯型关系模式：关系里既需要承诺，也需要保留自主空间，容易围绕主导权和责任分配拉扯。"
+    if profile.get("gender") == "女" and fp["has_strong_officer_killing"] and fp["has_strong_wealth"]:
+        return "现实责任并重型关系模式：既看重承诺与担当，也容易把生活经营、资源安排和现实压力带入关系。"
+    if profile.get("gender") == "女" and fp["has_strong_officer_killing"] and fp["spouse_palace_element"] == "水":
+        return "压力安全感型关系模式：容易重视稳定承诺，但也需要分清真正的安全感和外界压力。"
     if fp["has_strong_officer_killing"] and profile.get("gender") == "女":
         return "责任承诺型关系模式：容易重视稳定、规则和对方担当，也要避免把压力等同于安全感。"
     if fp["has_strong_wealth"] and profile.get("gender") == "男":
@@ -61,6 +68,54 @@ def _relationship_pattern(fp: dict, profile: dict) -> str:
     if star_count == 0:
         return f"{star_label}不明显，感情更适合慢观察、慢确认，不宜只凭短期吸引推进承诺。"
     return "渐进磨合型关系模式：适合从相处质量、现实安排和共同成长中慢慢建立稳定感。"
+
+
+def _love_differentiator(fp: dict, profile: dict) -> str:
+    """根据命盘指纹生成差异化婚恋策略。"""
+    star_label = _partner_star_label(profile)
+    star_count = _partner_star_count(fp, profile)
+    counts = (
+        f"{star_label}{star_count}、财星{fp['wealth_star_count']}、官杀{fp['officer_star_count']}、"
+        f"食伤{fp['output_star_count']}、比劫{fp['peer_star_count']}"
+    )
+    if profile.get("gender") == "女" and fp["has_strong_officer_killing"] and fp["has_strong_wealth"]:
+        strategy = (
+            "此盘关系容易把承诺、生活经营和现实资源放在一起考量。"
+            "适合找责任感清楚、财务观念稳定、能共同规划生活的人；风险在于把压力、控制或现实条件误认为稳定。"
+        )
+    elif profile.get("gender") == "女" and fp["has_strong_officer_killing"]:
+        strategy = (
+            "此盘伴侣星强，关系中容易被责任感、承诺感、规则感吸引。"
+            "适合慢慢确认对方是否真正可靠，而不是只看外在标准；风险在于关系压力过早压过真实感受。"
+        )
+    elif profile.get("gender") == "男" and fp["has_strong_wealth"]:
+        strategy = (
+            "此盘男命财星明显，关系常通过现实投入、生活安排和资源经营来表达。"
+            "适合把付出变成共同计划，也要避免只用资源投入代替情绪沟通。"
+        )
+    elif fp["has_strong_peer"] and fp["has_strong_output"]:
+        strategy = (
+            "此盘比劫与食伤同时明显，关系里既要空间，也要表达和反馈。"
+            "现实中适合把想法、感受、朋友边界说具体；风险在于话说太快、太直接，或合作边界含糊。"
+        )
+    elif fp["has_strong_peer"] and fp["has_strong_officer_killing"]:
+        strategy = (
+            "此盘比劫与官杀同时明显，关系里容易同时出现自主需求和责任压力。"
+            "现实中适合把谁主导、谁承担、怎样分工说清楚；风险在于一边想独立，一边又被承诺和规则牵动。"
+        )
+    elif fp["has_strong_peer"]:
+        strategy = (
+            "此盘比劫明显，关系中的自我边界、朋友同辈和独立性很重要。"
+            "适合先谈清空间、金钱、人情和合作边界，再推进长期承诺。"
+        )
+    else:
+        strategy = (
+            "此盘关系适合在相处质量中慢慢观察，不宜只用单一流年或单一十神定性。"
+        )
+    return (
+        f"差异化关系依据：夫妻宫{fp['day_branch']}，五行为{fp['spouse_palace_element']}，"
+        f"藏干十神为{'、'.join(fp['spouse_palace_hidden_ten_gods']) or '暂未读取'}；{counts}。{strategy}"
+    )
 
 
 def _partner_types(fp: dict, profile: dict) -> list[str]:
@@ -102,6 +157,10 @@ def _strengths(fp: dict) -> list[str]:
 def _risks(fp: dict, profile: dict) -> list[str]:
     """关系风险。"""
     risks = []
+    if profile.get("gender") == "女" and fp["has_strong_officer_killing"] and fp["has_strong_wealth"]:
+        risks.append("财官同现时，容易把现实条件、资源投入和责任承诺混在一起，需要区分感情稳定与现实压力。")
+    elif profile.get("gender") == "女" and fp["has_strong_officer_killing"] and fp["spouse_palace_element"] == "水":
+        risks.append("夫妻宫水而官杀强时，容易因安全感、承诺标准或外界评价感到压力，需要确认关系是否真正滋养自己。")
     if fp["has_strong_peer"]:
         risks.append("自我边界强时，容易因为谁主导、谁让步、谁付出更多而拉扯。")
     if fp["has_strong_output"]:
@@ -119,6 +178,10 @@ def _risks(fp: dict, profile: dict) -> list[str]:
 
 def _communication(fp: dict) -> str:
     """沟通建议。"""
+    if fp["has_strong_officer_killing"] and fp["has_strong_wealth"]:
+        return "谈关系时把感情承诺、金钱安排、生活分工分开讨论，避免所有压力都压在同一次沟通里。"
+    if fp["has_strong_officer_killing"] and fp["spouse_palace_element"] == "水":
+        return "谈承诺前先确认自己的真实感受，不把对方外在条件、规则感或压力感直接等同于安全感。"
     if fp["has_strong_output"]:
         return "先表达事实，再表达感受，最后提出可执行请求，避免在情绪高点直接定性对方。"
     if fp["has_strong_peer"]:
@@ -143,6 +206,10 @@ def _action_plan(fp: dict, profile: dict) -> list[str]:
         actions.append("重要沟通先写下重点，避免表达过快造成误解。")
     if fp["has_strong_officer_killing"]:
         actions.append("把责任和承诺拆成双方都能执行的小安排。")
+    if fp["has_strong_officer_killing"] and fp["has_strong_wealth"]:
+        actions.append("讨论长期关系时同步核对金钱观、生活规划和共同责任。")
+    elif fp["has_strong_officer_killing"] and fp["spouse_palace_element"] == "水":
+        actions.append("确认对方是否能提供稳定陪伴，而不是只提供规则、标准或外在压力。")
     return actions[:6]
 
 
@@ -152,21 +219,38 @@ def generate_love_report(chart: dict, profile: dict | None = None) -> dict:
     """
     profile = profile or {}
     fp = build_chart_fingerprint(chart)
+    signature = build_chart_signature_text(chart, "婚恋专项差异依据")
     evidence = _evidence(fp, profile)
     relationship_pattern = _relationship_pattern(fp, profile)
+    love_differentiator = _love_differentiator(fp, profile)
     suitable_partner_type = _partner_types(fp, profile)
     relationship_strengths = _strengths(fp)
     relationship_risks = _risks(fp, profile)
     communication_advice = _communication(fp)
-    next_3_years = [
-        f"第一阶段先观察夫妻宫{fp['day_branch']}代表的相处主题是否被流年冲动。",
-        f"第二阶段重点处理{'、'.join(fp['love_pattern_tags'][:3])}带来的关系议题。",
-        f"第三阶段再看{_partner_star_label(profile)}数量{_partner_star_count(fp, profile)}对应的承诺、投入和现实安排是否稳定。",
-    ]
+    if fp["has_strong_officer_killing"] and fp["has_strong_wealth"]:
+        next_3_years = [
+            f"第一阶段重点观察夫妻宫{fp['day_branch']}是否引出现实经营和生活安排议题。",
+            "第二阶段适合把金钱观、居住规划、家庭责任和共同目标逐项谈清楚。",
+            "第三阶段再判断这段关系能否在现实压力下保持互相支持，而不是只靠责任感维系。",
+        ]
+    elif fp["has_strong_officer_killing"] and fp["spouse_palace_element"] == "水":
+        next_3_years = [
+            f"第一阶段重点观察夫妻宫{fp['day_branch']}带来的安全感、边界和情绪流动。",
+            "第二阶段不急着被承诺推进，先看对方是否稳定、透明、能照顾真实感受。",
+            "第三阶段再判断责任感是否转化为稳定陪伴，而不是持续压力。",
+        ]
+    else:
+        next_3_years = [
+            f"第一阶段先观察夫妻宫{fp['day_branch']}代表的相处主题是否被流年冲动。",
+            f"第二阶段重点处理{'、'.join(fp['love_pattern_tags'][:3])}带来的关系议题。",
+            f"第三阶段再看{_partner_star_label(profile)}数量{_partner_star_count(fp, profile)}对应的承诺、投入和现实安排是否稳定。",
+        ]
     action_plan = _action_plan(fp, profile)
     sections = [
+        _section("婚恋专项差异依据", signature),
         _section("命盘依据", " ".join(evidence)),
         _section("感情模式", relationship_pattern),
+        _section("差异化关系策略", love_differentiator),
         _section("适合伴侣类型", "、".join(suitable_partner_type)),
         _section("恋爱优势", " ".join(relationship_strengths)),
         _section("关系压力点", " ".join(relationship_risks)),
@@ -181,6 +265,8 @@ def generate_love_report(chart: dict, profile: dict | None = None) -> dict:
         "love_identity": relationship_pattern,
         "love_evidence": evidence,
         "relationship_pattern": relationship_pattern,
+        "love_differentiator": love_differentiator,
+        "chart_signature": signature,
         "suitable_partner_type": suitable_partner_type,
         "relationship_strengths": relationship_strengths,
         "relationship_risks": relationship_risks,

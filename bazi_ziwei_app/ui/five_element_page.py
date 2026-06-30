@@ -10,9 +10,9 @@ from core.five_elements import element_summary
 
 
 from ui.charts import render_element_wheel
-from ui.styles import ELEMENT_COLORS
+from ui.styles import ELEMENT_COLORS, element_tag
 
-from ui.styles import ELEMENT_EMOJIS, ELEMENT_METADATA
+from ui.styles import ELEMENT_EMOJIS
 
 ELEMENT_METADATA = {
     "木": {"tian_gan": "甲乙", "direction": "东", "season": "春"},
@@ -60,7 +60,7 @@ def _render_element_bar_chart(five_elements: dict) -> None:
     text = chart.mark_text(
         align="left", dx=6, fontSize=13, fontWeight="bold",
     ).encode(text=alt.Text("权重:Q", format=".2f"))
-    st.altair_chart(chart + text, use_container_width=True, key='five_element_bar')
+    st.altair_chart(chart + text, use_container_width=True)
 
 
 def _render_element_donut_chart(five_elements: dict) -> None:
@@ -89,7 +89,7 @@ def _render_element_donut_chart(five_elements: dict) -> None:
         )
         .properties(height=300)
     )
-    st.altair_chart(chart, use_container_width=True, key='five_element_donut')
+    st.altair_chart(chart, use_container_width=True)
 
 
 def _render_element_cards(summary: dict) -> None:
@@ -159,7 +159,7 @@ def _render_ten_god_chart(counts: dict) -> None:
         )
         .properties(height=240)
     )
-    st.altair_chart(chart, use_container_width=True, key='five_ten_god_bar')
+    st.altair_chart(chart, use_container_width=True)
 
 
 def render_five_element_page() -> None:
@@ -243,9 +243,82 @@ def render_five_element_page() -> None:
             rows = [{"十神": k, "数量": v} for k, v in sorted(counts.items(), key=lambda x: -x[1])]
             st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
 
-    # —— 五行解说 ——
-    st.markdown("### 📖 五行解释")
-    st.write(report.get("five_element_text", ""))
+    # —— 五行结构深度报告（v1.2-F）——
+    st.markdown("### 📖 五行深度解释")
+    try:
+        from report.five_element_deep_report import generate_five_element_deep_report
+        luck_data = st.session_state.get("current_luck_data")
+        deep_report = generate_five_element_deep_report(chart, luck_data)
+        
+        # 五行结构总览
+        st.markdown(
+            f'<div style="background:#FAF7F4;border-radius:10px;padding:12px 16px;margin-bottom:12px;'
+            f'box-shadow:0 1px 2px rgba(0,0,0,0.04);border-left:4px solid #B8860B;">'
+            f'<b>五行结构总览：</b>{deep_report.get("element_overview", "")}'
+            f'<br><br><b>强弱平衡：</b>{deep_report.get("element_balance_summary", "")}'
+            f'<br><br><b>喜用五行：</b>{"、".join(deep_report.get("favorable_elements", [])) or "暂无"}'
+            f'<br><b>忌神五行：</b>{"、".join(deep_report.get("unfavorable_elements", [])) or "暂无"}'
+            f'</div>', unsafe_allow_html=True
+        )
+        
+        # 五行详情卡片
+        st.markdown("#### 五行详情")
+        for element in ["木", "火", "土", "金", "水"]:
+            detail = deep_report.get("element_details", {}).get(element, {})
+            if not detail:
+                continue
+            level = detail.get("level", "")
+            is_fav = detail.get("is_favorable", False)
+            is_unfav = detail.get("is_unfavorable", False)
+            status = f"[{level}]"
+            if is_fav: status += " ✓喜用"
+            if is_unfav: status += " ⚠忌神"
+            with st.expander(f"{element} {status}", expanded=(level == "偏旺")):
+                st.markdown(f"**基础含义：**{detail.get('basic_meaning', '')}")
+                st.markdown(f"**命局情况：**{detail.get('in_this_chart', '')}")
+                st.markdown("---")
+                st.markdown(f"**事业意义：**{detail.get('career_meaning', '')}")
+                st.markdown(f"**财富意义：**{detail.get('wealth_meaning', '')}")
+                st.markdown(f"**感情意义：**{detail.get('relationship_meaning', '')}")
+                st.markdown(f"**健康倾向：**{detail.get('health_tendency', '')}")
+                st.markdown("---")
+                st.markdown(f"**过旺表现：**{detail.get('when_too_strong', '')}")
+                st.markdown(f"**过弱表现：**{detail.get('when_too_weak', '')}")
+                st.markdown("---")
+                st.markdown(f"**喜用建议：**{detail.get('if_favorable', '')}")
+                st.markdown(f"**忌神建议：**{detail.get('if_unfavorable', '')}")
+                advice_items = detail.get("real_life_advice", [])
+                if advice_items:
+                    st.markdown("**行为建议：**")
+                    for a in advice_items:
+                        st.markdown(f"- {a}")
+        
+        # 事业/财富/感情/健康影响
+        st.markdown("#### 五行对主要领域的影响")
+        w_col1, w_col2 = st.columns(2)
+        with w_col1:
+            ci = deep_report.get('career_implications', '')[:200]
+            st.info("**事业影响**\n\n" + ci)
+            wi = deep_report.get('wealth_implications', '')[:200]
+            st.info("**财运影响**\n\n" + wi)
+        with w_col2:
+            ri = deep_report.get('relationship_implications', '')[:200]
+            st.info("**感情影响**\n\n" + ri)
+            hi = deep_report.get('health_implications', '')[:200]
+            st.info("**健康影响**\n\n" + hi)
+        
+        # 调整建议
+        st.markdown("#### 🧭 调整建议")
+        for a in deep_report.get("adjustment_advice", []):
+            st.markdown(f"- {a}")
+        
+        # 参考来源
+        sources = deep_report.get("source_titles", [])
+        if sources:
+            st.markdown(f"**参考来源：**{'、'.join(sources)}")
+            
+    except Exception as exc:
+        st.write(report.get("five_element_text", "五行深度报告暂未生成。"))
 
     # —— 喜用五行细化（含分析引擎输出） ——
     st.markdown("### 🧭 喜用五行细化")
