@@ -11,6 +11,7 @@ def render_compatibility_page() -> None:
     import pandas as pd
     from core.bazi_engine import build_bazi_chart
     from core.compatibility import analyze_compatibility
+    from core.luck_engine import get_luck_cycles
     from utils.database import list_profiles, save_profile
 
     st.markdown("## 💑 合婚匹配")
@@ -64,12 +65,14 @@ def render_compatibility_page() -> None:
 
         chart1 = build_bazi_chart(profile1)
         chart2 = build_bazi_chart(profile2)
+        luck1 = get_luck_cycles(profile1, chart1)
+        luck2 = get_luck_cycles(profile2, chart2)
 
         if chart1.get("error") or chart2.get("error"):
             st.error(f"命盘生成失败：{chart1.get('error', '')} {chart2.get('error', '')}")
             return
 
-        result = analyze_compatibility(chart1, chart2)
+        result = analyze_compatibility(chart1, chart2, luck1, luck2)
 
         show_ = lambda name, chart: f"{name}：{chart.get('day_master','')}日 {'、'.join(p.get('pillar','') for p in chart.get('pillars',{}).values())}"
 
@@ -78,18 +81,71 @@ def render_compatibility_page() -> None:
         # 总分卡片
         score = result["overall_score"]
         level = result["level"]
-        color = "#8BA888" if score >= 70 else "#B8860B" if score >= 55 else "#B85C4A" if score < 40 else "#C4A882"
+        level_colors = {"上佳":"#8BA888","良好":"#B8860B","中等":"#C4A882","较低":"#D48A6A","需关注":"#B85C4A"}
+        color = level_colors.get(level, "#C4A882")
 
         st.markdown(
-            f'<div style="background:#FAF7F4;border-radius:12px;padding:20px;'
-            f'text-align:center;border:2px solid {color};margin-bottom:16px;">'
-            f'<div style="font-size:14px;color:#8C7A64;margin-bottom:4px;">合婚匹配总分</div>'
-            f'<div style="font-size:42px;font-weight:800;color:{color};">{score}</div>'
-            f'<div style="font-size:16px;color:#3D2B1A;font-weight:600;margin:6px 0;">等级：{level}</div>'
-            f'<div style="font-size:13px;color:#5C4A32;margin-top:4px;">{result["summary"]}</div>'
+            f'<div style="background:#FAF7F4;border-radius:12px;padding:16px 20px;'
+            f'text-align:center;border:2px solid {color};margin-bottom:12px;">'
+            f'<div style="font-size:13px;color:#8C7A64;margin-bottom:2px;">合婚匹配总分</div>'
+            f'<div style="font-size:38px;font-weight:800;color:{color};">{score}<span style="font-size:14px;color:#8C7A64;">/100</span></div>'
+            f'<div style="font-size:14px;color:{color};font-weight:600;margin:4px 0;">等级：{level}</div>'
+            f'<div style="font-size:12px;color:#5C4A32;margin-top:4px;">{result["summary"]}</div>'
             f'</div>',
             unsafe_allow_html=True,
         )
+
+        # 重点提醒
+        cautions = result.get("key_cautions", [])
+        if cautions:
+            st.markdown("### ⚠️ 重点提醒")
+            for c in cautions:
+                st.warning(c)
+
+        # ====== 双方命主特质 ======
+        st.markdown("### 🧑 双方命主特质")
+        pa, pb = result.get("person_a", {}), result.get("person_b", {})
+        ca, cb = st.columns(2)
+        for col, person, side in [(ca, pa, "甲方"), (cb, pb, "乙方")]:
+            with col:
+                dm = person.get("day_master", "")
+                typ = person.get("type", "")
+                style = person.get("style", "")
+                desc = person.get("description", "")
+                traits = person.get("core_traits", [])
+                expect = person.get("pair_expectation", "")
+                st.markdown(
+                    f'<div style="background:#FAF7F4;border-radius:10px;padding:12px;'
+                    f'border:1px solid #EDE6DC;height:100%;">'
+                    f'<div style="font-weight:600;color:#3D2B1A;margin-bottom:4px;">{side}<span style="font-size:12px;color:#8C7A64;">({person.get("name","")})</span></div>'
+                    f'<div style="font-size:12px;color:#5C4A32;margin-bottom:2px;">{desc}</div>'
+                    f'<div style="font-size:11px;color:#8C7A64;line-height:1.5;">'
+                    + "<br>".join(f"· {t}" for t in traits if t) +
+                    f'</div>'
+                    f'<div style="font-size:11px;color:#B8860B;margin-top:4px;">{expect}</div>'
+                    f'</div>',
+                    unsafe_allow_html=True,
+                )
+
+        # ====== 为什么合 / 为什么不合 ======
+        c_match, c_conflict = st.columns(2)
+        with c_match:
+            st.markdown("### ✅ 为什么合")
+            for r in result.get("match_reasons", []):
+                st.markdown(f"- {r}")
+        with c_conflict:
+            st.markdown("### ⚠️ 为什么不合")
+            for r in result.get("conflict_reasons", []):
+                st.markdown(f"- {r}")
+
+        # ====== 建议 ======
+        advices = result.get("advice_list", [])
+        if advices:
+            st.markdown("### 📋 建议")
+            for a in advices:
+                st.markdown(f"- {a}")
+
+        st.divider()
 
         # 维度详情
         st.markdown("### 📊 各维度评分")

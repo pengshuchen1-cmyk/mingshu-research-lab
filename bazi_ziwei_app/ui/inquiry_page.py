@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import date
+from html import escape
 
 import pandas as pd
 import altair as alt
@@ -11,12 +12,28 @@ import streamlit as st
 from core.five_elements import element_summary
 from core.report_diversity import build_brief_signature, build_chart_signature_text
 
-from ui.styles import ELEMENT_COLORS, ELEMENT_EMOJIS, card_style, element_tag
+from ui.styles import ELEMENT_COLORS, ELEMENT_EMOJIS
 from ui.bazi_components import render_loaded_profile_hint
 
 
 def _element_list_text(elements: list[str]) -> str:
     return "、".join(elements) if elements else "需结合大运流年进一步判断"
+
+
+def _mini_metric_html(label: str, value: object, detail: str = "") -> str:
+    """统一小指标卡。"""
+    detail_html = f'<div class="ms-bazi-muted" style="margin-top:4px;">{escape(str(detail))}</div>' if detail else ""
+    return (
+        '<div class="ms-mini-metric">'
+        f'<div class="label">{escape(str(label))}</div>'
+        f'<div class="value">{escape(str(value))}</div>'
+        f"{detail_html}</div>"
+    )
+
+
+def _tags_html(items: list, tone: str = "") -> str:
+    class_name = f"ms-tag {tone}".strip()
+    return "".join(f'<span class="{class_name}">{escape(str(item))}</span>' for item in (items or []))
 
 
 def _render_profile_card(profile: dict) -> None:
@@ -30,13 +47,12 @@ def _render_profile_card(profile: dict) -> None:
     minute = profile.get("birth_minute", 0)
     place = profile.get("birth_place", "")
     st.markdown(
-        f'<div style="background:#f8f9fa;border-radius:12px;padding:12px 18px;'
-        f'border:1px solid #e0e0e0;margin-bottom:8px;">'
-        f'<span style="font-size:18px;font-weight:700;">{name}</span>'
-        f'<span style="margin:0 12px;color:#ccc;">|</span>'
-        f'{gender} · {birth} {hour:02d}:{minute:02d}'
-        + (f" · {place}" if place else "")
-        + f"</div>",
+        '<div class="ms-report-panel">'
+        f'<span class="ms-bazi-title">{escape(str(name))}</span>'
+        f'<span class="ms-tag">{escape(str(gender))}</span>'
+        f'<span class="ms-tag info">{escape(str(birth))} {hour:02d}:{minute:02d}</span>'
+        + (f'<span class="ms-tag">{escape(str(place))}</span>' if place else "")
+        + "</div>",
         unsafe_allow_html=True,
     )
 
@@ -48,7 +64,7 @@ def _render_element_visual(chart: dict) -> None:
         return
     summary = element_summary(five_elements)
 
-    st.markdown("### 🌟 五行概览")
+    st.markdown("### 五行概览")
     cards_html = ""
     for element, info in summary.items():
         color = ELEMENT_COLORS.get(element, "#888")
@@ -56,16 +72,14 @@ def _render_element_visual(chart: dict) -> None:
         ratio = info["ratio"]
         strength = info["strength"]
         cards_html += (
-            f'<div style="flex:1;background:{color}15;border:1px solid {color}40;'
-            f'border-radius:10px;padding:8px 4px;text-align:center;margin:0 3px;">'
-            f'<div style="font-size:20px;">{emoji}</div>'
-            f'<div style="font-size:14px;font-weight:700;color:{color};">{element}</div>'
-            f'<div style="font-size:20px;font-weight:800;color:{color};">{ratio}%</div>'
-            f'<div style="font-size:11px;color:#666;">{strength}</div>'
-            f"</div>"
+            '<div class="ms-mini-metric">'
+            f'<div class="label">{emoji} {escape(str(element))}</div>'
+            f'<div class="value" style="color:{color};">{escape(str(ratio))}%</div>'
+            f'<div class="ms-bazi-muted">{escape(str(strength))}</div>'
+            "</div>"
         )
     st.markdown(
-        f'<div style="display:flex;gap:4px;">{cards_html}</div>',
+        f'<div class="ms-action-grid">{cards_html}</div>',
         unsafe_allow_html=True,
     )
     st.caption("")
@@ -141,24 +155,20 @@ def _render_strength_section(chart: dict) -> None:
     if not strength:
         return
 
-    st.markdown("### 🏆 日主强弱与喜忌")
+    st.markdown("### 日主强弱与喜忌")
 
     col1, col2 = st.columns(2)
     with col1:
         st.markdown(
-            f'<div style="background:#FAF7F4;border-radius:10px;padding:14px;box-shadow:0 1px 3px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.04);">'
-            f'<div style="display:flex;justify-content:space-between;margin-bottom:8px;">'
-            f'<span><strong>强度</strong> {strength.get("strength", "")}</span>'
-            f'<span><strong>净评分</strong> {strength.get("net_score", 0):+.1f}</span>'
-            f'<span><strong>生扶</strong> {strength.get("support_score", 0):+.1f}</span>'
-            f'<span><strong>克泄</strong> {strength.get("pressure_score", 0):+.1f}</span>'
+            '<div class="ms-report-panel">'
+            '<div class="ms-luck-stage-head">'
+            f'<span class="ms-luck-stage-pillar">{escape(str(strength.get("strength", "")))}</span>'
+            f'<span class="ms-tag">净评分 {strength.get("net_score", 0):+.1f}</span>'
+            f'<span class="ms-tag success">生扶 {strength.get("support_score", 0):+.1f}</span>'
+            f'<span class="ms-tag danger">克泄 {strength.get("pressure_score", 0):+.1f}</span>'
             f"</div>"
-            f'<div style="margin-top:6px;">'
-            f'<span style="background:#4CAF5020;color:#2E7D32;padding:2px 8px;border-radius:4px;font-size:13px;">'
-            f'喜用 {_element_list_text(strength.get("favorable_elements", []))}</span>&nbsp;'
-            f'<span style="background:#FF572220;color:#BF360C;padding:2px 8px;border-radius:4px;font-size:13px;">'
-            f'忌神 {_element_list_text(strength.get("unfavorable_elements", []))}</span>'
-            f"</div>"
+            f'<div>{_tags_html(["喜用 " + _element_list_text(strength.get("favorable_elements", []))], "success")}'
+            f'{_tags_html(["忌神 " + _element_list_text(strength.get("unfavorable_elements", []))], "danger")}</div>'
             f"</div>",
             unsafe_allow_html=True,
         )
@@ -188,21 +198,20 @@ def _render_luck_overview(chart: dict) -> None:
             current_luck = item
             break
 
-    st.markdown("### 🔮 大运概览")
+    st.markdown("### 大运概览")
 
     if current_luck:
         col1, col2 = st.columns([2, 3])
         with col1:
             st.markdown(
-                f'<div style="background:#FF572215;border:1px solid #FF572240;'
-                f'border-radius:12px;padding:14px;text-align:center;">'
-                f'<div style="font-size:12px;color:#888;">当前大运</div>'
-                f'<div style="font-size:26px;font-weight:800;margin:4px 0;">{current_luck.get("pillar", "")}</div>'
-                f'<div style="font-size:13px;color:#B8860B;font-weight:600;">{current_luck.get("stage_level", "")}</div>'
-                f'<div style="font-size:12px;color:#666;">'
-                f'{current_luck.get("start_age", "")}-{current_luck.get("end_age", "")}岁'
-                f'（{current_luck.get("start_year", "")}-{current_luck.get("end_year", "")}年）'
-                f"</div>"
+                '<div class="ms-luck-stage-card current" style="text-align:center;">'
+                '<div class="ms-bazi-muted">当前大运</div>'
+                f'<div class="ms-luck-stage-pillar">{escape(str(current_luck.get("pillar", "")))}</div>'
+                f'{_tags_html([current_luck.get("stage_level", "")])}'
+                f'<div class="ms-bazi-muted" style="margin-top:6px;">'
+                f'{escape(str(current_luck.get("start_age", "")))}-{escape(str(current_luck.get("end_age", "")))}岁'
+                f'（{escape(str(current_luck.get("start_year", "")))}-{escape(str(current_luck.get("end_year", "")))}年）'
+                "</div>"
                 f"</div>",
                 unsafe_allow_html=True,
             )
@@ -248,7 +257,7 @@ def _render_ten_god_summary(chart: dict) -> None:
     counts = chart.get("ten_god_counts", {})
     if not counts:
         return
-    st.markdown("### 📊 十神分布")
+    st.markdown("### 十神分布")
     df = pd.DataFrame([
         {"十神": k, "数量": v} for k, v in sorted(counts.items(), key=lambda x: -x[1])
     ])
@@ -274,13 +283,10 @@ def _render_chart_tags(chart: dict) -> None:
     tags = fp.get("chart_summary_tags", [])
     if not tags:
         return
-    st.markdown("### 🏷️ 命盘标签")
+    st.markdown("### 命盘标签")
     tag_html = ""
     for tag in tags:
-        tag_html += (
-            f'<span style="display:inline-block;background:#e8f5e9;color:#2E7D32;'
-            f'border-radius:14px;padding:4px 12px;font-size:13px;margin:3px 4px;">{tag}</span>'
-        )
+        tag_html += _tags_html([tag], "success")
     st.markdown(tag_html, unsafe_allow_html=True)
     st.caption("")
 
@@ -295,7 +301,7 @@ def _get_fingerprint(chart: dict) -> dict | None:
 
 def _render_quick_nav() -> None:
     """快速导航到各详细页面。"""
-    st.markdown("### 🔗 快速导航")
+    st.markdown("### 快速导航")
     nav_items = [
         ("📜 八字排盘", "八字排盘"),
         ("♻ 五行喜忌", "五行喜忌"),
@@ -325,12 +331,22 @@ def render_inquiry_page() -> None:
     # Check for navigation from quick nav
     nav_to = st.session_state.pop("_nav_to", None)
 
-    st.title("🧿 综合问盘")
-    st.caption("一屏查看命盘所有核心信息，点击快速导航跳转到详细页面。")
+    st.markdown(
+        """
+        <section class="v106c-page-hero">
+          <div class="v106c-page-eyebrow">INQUIRY DASHBOARD · v1.0.6</div>
+          <div class="v106c-page-title">综合问盘</div>
+          <div class="v106c-page-subtitle">
+            把命盘标签、五行状态、日主喜忌、十神分布和当前大运集中成一页。这里只看重点，完整四柱请进入八字排盘。
+          </div>
+        </section>
+        """,
+        unsafe_allow_html=True,
+    )
 
     # —— 简短命盘提示；完整四柱请到「八字排盘」 ——
     render_loaded_profile_hint(profile, chart)
-    st.info(build_brief_signature(chart))
+    st.markdown(f'<div class="ms-report-panel">{escape(build_brief_signature(chart))}</div>', unsafe_allow_html=True)
     with st.expander("本盘差异依据", expanded=False):
         st.write(build_chart_signature_text(chart, "综合问盘差异依据"))
 

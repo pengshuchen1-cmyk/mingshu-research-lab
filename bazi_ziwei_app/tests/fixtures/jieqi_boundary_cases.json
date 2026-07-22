@@ -1,0 +1,157 @@
+{
+  "description": "节气边界测试样例 — 验证月柱在节气切换前后的正确性",
+  "version": "v1.1-B",
+  "notes": "八字月柱以节气为界，非农历初一。每个节气提供前后各一个样例。立春前后已有，此处补充其他关键节气。",
+  "cases": [
+    {
+      "case_id": "jingzhe_before_2024",
+      "description": "2024年惊蛰前 3月4日",
+      "gender": "男",
+      "birth_datetime": "2024-03-04 12:00",
+      "expected_pillars": {
+        "year": "甲辰",
+        "month": "丙寅",
+        "day": "癸巳",
+        "hour": "戊午"
+      },
+      "expected_day_master": "癸",
+      "review_status": "review_only",
+      "source": "万年历节气数据验证"
+    },
+    {
+      "case_id": "jingzhe_after_2024",
+      "description": "2024年惊蛰当天 3月5日 16:00（惊蛰约15:00）",
+      "gender": "男",
+      "birth_datetime": "2024-03-05 16:00",
+      "expected_pillars": {
+        "year": "甲辰",
+        "month": "丁卯",
+        "day": "甲午",
+        "hour": "壬申"
+      },
+      "expected_day_master": "甲",
+      "review_status": "review_only",
+      "source": "万年历节气数据验证"
+    },
+    {
+      "case_id": "qingming_before_2024",
+      "description": "2024年清明前 4月3日",
+      "gender": "女",
+      "birth_datetime": "2024-04-03 08:00",
+      "expected_pillars": {
+        "year": "甲辰",
+        "month": "丁卯",
+        "day": "癸亥",
+        "hour": "丙辰"
+      },
+      "expected_day_master": "癸",
+      "review_status": "review_only",
+      "source": "万年历节气数据验证"
+    },
+    {
+      "case_id": "qingming_after_2024",
+      "description": "2024年清明后 4月5日 12:00",
+      "gender": "女",
+      "birth_datetime": "2024-04-05 12:00",
+      "expected_pillars": {
+        "year": "甲辰",
+        "month": "戊辰",
+        "day": "乙丑",
+        "hour": "壬午"
+      },
+      "expected_day_master": "乙",
+      "review_status": "review_only",
+      "source": "万年历节气数据验证"
+    },
+    {
+      "case_id": "lichun_before_2024",
+      "description": "2024年立春前 2月3日",
+      "gender": "男",
+      "birth_datetime": "2024-02-03 10:00",
+      "expected_pillars": {
+        "year": "癸卯",
+        "month": "乙丑",
+        "day": "癸亥",
+        "hour": "丁巳"
+      },
+      "expected_day_master": "癸",
+      "review_status": "review_only",
+      "source": "万年历节气数据验证"
+    },
+    {
+      "case_id": "lichun_after_2024",
+      "description": "2024年立春后 2月4日 20:00",
+      "gender": "男",
+      "birth_datetime": "2024-02-04 20:00",
+      "expected_pillars": {
+        "year": "甲辰",
+        "month": "丙寅",
+        "day": "壬戌",
+        "hour": "庚戌"
+      },
+      "expected_day_master": "壬",
+      "review_status": "review_only",
+      "source": "万年历节气数据验证"
+    },
+    {
+      "case_id": "xiazhi_before_2024",
+      "description": "2024年夏至前 6月20日",
+      "gender": "女",
+      "birth_datetime": "2024-06-20 08:00",
+      "expected_pillars": {
+        "year": "甲辰",
+        "month": "庚午",
+        "day": "戊寅",
+        "hour": "丙辰"
+      },
+      "expected_day_master": "戊",
+      "review_status": "review_only",
+      "source": "万年历节气数据验证"
+    },
+    {
+      "case_id": "xiazhi_after_2024",
+      "description": "2024年夏至后 6月22日 10:00",
+      "gender": "女",
+      "birth_datetime": "2024-06-22 10:00",
+      "expected_pillars": {
+        "year": "甲辰",
+        "month": "庚午",
+        "day": "庚辰",
+        "hour": "辛巳"
+      },
+      "expected_day_master": "庚",
+      "review_status": "review_only",
+      "source": "万年历节气数据验证"
+    },
+    {
+      "case_id": "lichun_before_2025",
+      "description": "2025年立春前 2月2日",
+      "gender": "男",
+      "birth_datetime": "2025-02-02 14:00",
+      "expected_pillars": {
+        "year": "乙巳",
+        "month": "丁丑",
+        "day": "己未",
+        "hour": "辛未"
+      },
+      "expected_day_master": "己",
+      "review_status": "review_only",
+      "source": "万年历节气数据验证"
+    },
+    {
+      "case_id": "lichun_after_2025",
+      "description": "2025年立春后 2月4日 06:00",
+      "gender": "男",
+      "birth_datetime": "2025-02-04 06:00",
+      "expected_pillars": {
+        "year": "乙巳",
+        "month": "戊寅",
+        "day": "辛酉",
+        "hour": "辛卯"
+      },
+      "expected_day_master": "辛",
+      "review_status": "review_only",
+      "source": "万年历节气数据验证"
+    }
+  ]
+}

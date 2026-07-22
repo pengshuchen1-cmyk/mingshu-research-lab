@@ -25,7 +25,17 @@ class MonthlyUiFormattingTests(unittest.TestCase):
 
         text = format_monthly_event_for_display(event)
 
-        forbidden = ["{'event_type'", "'source_ids'", "'trigger_factors'", "probability_level':", "'score'"]
+        forbidden = [
+            "{'event_type'",
+            "'source_ids'",
+            "'trigger_factors'",
+            "probability_level':",
+            "'score'",
+            "🔴",
+            "🟡",
+            "🟢",
+            "💡",
+        ]
         for word in forbidden:
             self.assertNotIn(word, text)
 

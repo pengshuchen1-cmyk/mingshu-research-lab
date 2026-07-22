@@ -228,6 +228,7 @@ def render_ziwei_page():
     yg = get_year_gan_from_profile(profile)
     sihua = apply_sihua_to_chart(chart, get_sihua_by_year_gan(yg))
     sbp = sihua.get("sihua_by_palace", {})
+    chart["sihua_by_palace"] = sbp
 
     st.title("紫微斗数")
     st.caption("先看白话名片，再看十二宫和星曜细节。复杂名词都会尽量转成生活里的表达。")
@@ -388,6 +389,28 @@ def render_ziwei_page():
                 ms, shs, tri.get("summary",""),
                 tri.get("opportunity",""), tri.get("risk",""), tri.get("advice","")
             ), unsafe_allow_html=True)
+            st.markdown(
+                f'<div class="zw-readable-text" style="margin:-4px 0 10px 0;">'
+                f'{tri.get("plain_explanation", "")}</div>',
+                unsafe_allow_html=True,
+            )
+            for item in tri.get("relation_cards", []):
+                stars = "".join(render_star_chip(s) for s in item.get("main_stars", []))
+                sihua_html = "".join(render_sihua_chip(s) for s in item.get("sihua", []))
+                st.markdown(
+                    f'<div class="zw-triangle-card">'
+                    f'<div class="zw-triangle-role">{item.get("role", "")}｜{item.get("palace", "")}</div>'
+                    f'<div class="zw-readable-text" style="font-weight:650;margin:4px 0;">{item.get("life_area", "")}</div>'
+                    f'<div>{stars}{sihua_html}</div>'
+                    f'<p>{item.get("plain_text", "")}</p>'
+                    f'<p class="zw-triangle-muted">{item.get("star_text", "")}</p>'
+                    f'<p><b>机会：</b>{item.get("opportunity", "")}</p>'
+                    f'<p><b>注意：</b>{item.get("risk", "")}</p>'
+                    f'<p><b>建议：</b>{item.get("advice", "")}</p>'
+                    f'</div>',
+                    unsafe_allow_html=True,
+                )
+            st.caption(f"参考依据：{tri.get('basis', '')}")
         # 大限基础结构
         daxian = chart.get("daxian", {})
         if daxian.get("daxian_ready"):

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from core.seasonal_adjustment import analyze_seasonal_adjustment
 from core.bazi_constants import (
     BRANCH_HIDDEN_STEMS,
     BRANCH_MAIN_ELEMENTS,
@@ -215,6 +216,15 @@ def _detect_special_pattern(pillars: dict, day_element: str) -> str:
     return "无"
 
 
+
+
+def _season_adjustment_explanation(day_element: str, month_branch: str) -> dict:
+    """生成调候解释层，不改变原强弱评分。"""
+    return analyze_seasonal_adjustment({
+        "day_master": day_element and next((stem for stem, element in STEM_ELEMENTS.items() if element == day_element), ""),
+        "pillars": {"month": {"zhi": month_branch}},
+    })
+
 def analyze_day_master_strength(chart: dict) -> dict:
     """
     根据八字 chart 分析日主强弱。
@@ -238,6 +248,8 @@ def analyze_day_master_strength(chart: dict) -> dict:
         net_score = round(support_score - pressure_score, 2)
         strength = _judge_strength(net_score)
         special_pattern = _detect_special_pattern(chart.get("pillars", {}), day_element)
+
+        season_adjustment = analyze_seasonal_adjustment(chart)
 
         if special_pattern == "从旺":
             favorable = _dedupe_elements([day_element] + [_parent_element(day_element)])
@@ -274,6 +286,7 @@ def analyze_day_master_strength(chart: dict) -> dict:
             "unfavorable_elements": unfavorable,
             "explanation": explanation,
             "special_pattern": special_pattern,
+            "season_adjustment": season_adjustment,
         }
     except Exception as exc:
         return {
@@ -289,4 +302,5 @@ def analyze_day_master_strength(chart: dict) -> dict:
             "favorable_elements": [],
             "unfavorable_elements": [],
             "explanation": f"日主强弱初判暂不可用：{exc}",
+            "season_adjustment": {"plain_text": "调候解释暂无法生成。"},
         }

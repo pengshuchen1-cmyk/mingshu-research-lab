@@ -18,10 +18,15 @@ class VisibleAcceptancePolishTests(unittest.TestCase):
 
     def test_yearly_month_cards_show_top_event_labels(self):
         text = self._read_ui("yearly_page.py")
-        self.assertIn("def _month_top_event_summary", text)
-        self.assertIn("event_summary_html", text)
-        self.assertIn("本月重点事件", text)
+        self.assertIn("def build_month_card_view", text)
+        self.assertIn("def _render_month_card", text)
+        self.assertIn("event_tags", text)
+        self.assertIn("st.button(", text)
+        self.assertIn("button_label", text)
+        self.assertIn('"ms3_active_month_index"', text)
         self.assertIn("top_events", text)
+        self.assertIn("可能性｜", text)
+        self.assertNotIn("def _month_top_event_summary", text)
 
 
 if __name__ == "__main__":

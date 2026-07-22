@@ -1,0 +1,167 @@
+{
+  "description": "命数研究室八字排盘已知样例集",
+  "version": "v1.1-A",
+  "total_cases": 10,
+  "cases": [
+    {
+      "case_id": "before_lichun_1990",
+      "name": "Before_LiChun_1990",
+      "gender": "男",
+      "calendar_type": "solar",
+      "birth_datetime": "1990-01-01 12:00",
+      "expected_pillars": {
+        "year": "己巳",
+        "month": "丙子",
+        "day": "丙寅",
+        "hour": "甲午"
+      },
+      "expected_day_master": "丙",
+      "review_status": "verified",
+      "source": "命数研究室引擎输出+万年历交叉验证"
+    },
+    {
+      "case_id": "lichun_boundary_am",
+      "name": "LiChun_Boundary_AM",
+      "gender": "男",
+      "calendar_type": "solar",
+      "birth_datetime": "1990-02-04 10:00",
+      "expected_pillars": {
+        "year": "己巳",
+        "month": "丁丑",
+        "day": "庚子",
+        "hour": "辛巳"
+      },
+      "expected_day_master": "庚",
+      "review_status": "verified",
+      "source": "命数研究室引擎输出+万年历交叉验证"
+    },
+    {
+      "case_id": "lichun_boundary_pm",
+      "name": "LiChun_Boundary_PM",
+      "gender": "男",
+      "calendar_type": "solar",
+      "birth_datetime": "1990-02-04 16:00",
+      "expected_pillars": {
+        "year": "庚午",
+        "month": "戊寅",
+        "day": "庚子",
+        "hour": "甲申"
+      },
+      "expected_day_master": "庚",
+      "review_status": "verified",
+      "source": "命数研究室引擎输出+万年历交叉验证"
+    },
+    {
+      "case_id": "mid_summer_female",
+      "name": "Mid_Summer_Female",
+      "gender": "女",
+      "calendar_type": "solar",
+      "birth_datetime": "1990-06-15 14:30",
+      "expected_pillars": {
+        "year": "庚午",
+        "month": "壬午",
+        "day": "辛亥",
+        "hour": "乙未"
+      },
+      "expected_day_master": "辛",
+      "review_status": "verified",
+      "source": "命数研究室引擎输出+万年历交叉验证"
+    },
+    {
+      "case_id": "zi_hour_2000",
+      "name": "Zi_Hour_2000",
+      "gender": "男",
+      "calendar_type": "solar",
+      "birth_datetime": "2000-01-01 00:00",
+      "expected_pillars": {
+        "year": "己卯",
+        "month": "丙子",
+        "day": "戊午",
+        "hour": "壬子"
+      },
+      "expected_day_master": "戊",
+      "review_status": "verified",
+      "source": "命数研究室引擎输出+万年历交叉验证"
+    },
+    {
+      "case_id": "winter_solstice",
+      "name": "Winter_Solstice",
+      "gender": "男",
+      "calendar_type": "solar",
+      "birth_datetime": "2023-12-22 23:30",
+      "expected_pillars": {
+        "year": "癸卯",
+        "month": "甲子",
+        "day": "甲寅",
+        "hour": "丙子"
+      },
+      "expected_day_master": "甲",
+      "review_status": "verified",
+      "source": "命数研究室引擎输出+万年历交叉验证"
+    },
+    {
+      "case_id": "late_night_zi",
+      "name": "Late_Night_Zi",
+      "gender": "女",
+      "calendar_type": "solar",
+      "birth_datetime": "1995-08-20 23:45",
+      "expected_pillars": {
+        "year": "乙亥",
+        "month": "甲申",
+        "day": "癸未",
+        "hour": "甲子"
+      },
+      "expected_day_master": "癸",
+      "review_status": "verified",
+      "source": "命数研究室引擎输出+万年历交叉验证"
+    },
+    {
+      "case_id": "spring_male",
+      "name": "Spring_Male",
+      "gender": "男",
+      "calendar_type": "solar",
+      "birth_datetime": "1988-03-15 08:30",
+      "expected_pillars": {
+        "year": "戊辰",
+        "month": "乙卯",
+        "day": "己巳",
+        "hour": "戊辰"
+      },
+      "expected_day_master": "己",
+      "review_status": "verified",
+      "source": "命数研究室引擎输出+万年历交叉验证"
+    },
+    {
+      "case_id": "autumn_female",
+      "name": "Autumn_Female",
+      "gender": "女",
+      "calendar_type": "solar",
+      "birth_datetime": "2001-09-10 16:20",
+      "expected_pillars": {
+        "year": "辛巳",
+        "month": "丁酉",
+        "day": "丙子",
+        "hour": "丙申"
+      },
+      "expected_day_master": "丙",
+      "review_status": "verified",
+      "source": "命数研究室引擎输出+万年历交叉验证"
+    },
+    {
+      "case_id": "deep_winter_male",
+      "name": "Deep_Winter_Male",
+      "gender": "男",
+      "calendar_type": "solar",
+      "birth_datetime": "1975-12-25 06:15",
+      "expected_pillars": {
+        "year": "乙卯",
+        "month": "戊子",
+        "day": "乙巳",
+        "hour": "己卯"
+      },
+      "expected_day_master": "乙",
+      "review_status": "verified",
+      "source": "命数研究室引擎输出+万年历交叉验证"
+    }
+  ]
+}

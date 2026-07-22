@@ -6,13 +6,21 @@ APP_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 
 class VersionVisibleTests(unittest.TestCase):
-    def test_home_contains_visible_v102_version_marker(self):
+    def test_home_wires_the_editorial_version_contract(self):
         with open(os.path.join(APP_DIR, "ui", "home.py"), "r", encoding="utf-8") as file:
             text = file.read()
-        self.assertIn("当前版本：v1.0.2 专业流月断事增强", text)
-        self.assertIn("运行端口：8501", text)
-        self.assertIn("更新时间：2026-06-27", text)
-        self.assertIn("v1.0.2-professional-monthly-events", text)
+        self.assertIn("HOME_VERSION", text)
+        self.assertIn("HOME_CACHE_VERSION_LABEL", text)
+        self.assertIn("render_homepage_landing", text)
+        with open(os.path.join(APP_DIR, "ui", "homepage_components.py"), "r", encoding="utf-8") as file:
+            component_text = file.read()
+        self.assertNotIn("v106", text)
+        self.assertIn('HOME_VERSION = "v2.0.0"', component_text)
+        self.assertIn('HOME_CACHE_VERSION_LABEL = "v2-editorial-public-guidance"', component_text)
+        self.assertIn("<h1>认识命数<br>活出选择</h1>", component_text)
+        self.assertIn("开始探索命数", component_text)
+        for stale_marker in ["当前版本：", "首页视觉重构", "运行端口：8501", "AI科技感"]:
+            self.assertNotIn(stale_marker, component_text)
 
 
 if __name__ == "__main__":

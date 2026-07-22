@@ -9,10 +9,13 @@ from core.luck_engine import get_luck_cycles
 from core.monthly_engine import analyze_monthly_fortune
 from core.yearly_engine import analyze_yearly_fortune
 from report.export_report import build_markdown_report, build_pdf_report, build_text_report
+from utils.runtime_mode import is_public_mode
 
 
 def _safe_filename(name: str, suffix: str) -> str:
     """生成安全文件名。"""
+    if is_public_mode():
+        return f"命数研究室_个人报告.{suffix}"
     clean_name = "".join(ch for ch in name if ch not in r'\/:*?"<>|').strip() or "未命名"
     return f"命数研究室_{clean_name}_八字报告.{suffix}"
 
@@ -65,18 +68,15 @@ def _render_report_card(card: dict, index: int, total: int) -> None:
     content_html = _preview_content_html(card.get("content", ""))
     st.markdown(
         f"""
-        <div style="background:#FAF7F4;border:1px solid #D4C5B0;border-radius:14px;
-            padding:20px 22px;margin:12px 0 10px 0;box-shadow:0 3px 10px rgba(61,43,26,0.08);">
+        <div class="mingshu-report-card">
           <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;">
             <div>
-              <div style="font-size:12px;color:#8C7A64;margin-bottom:3px;">报告名片</div>
-              <div style="font-size:22px;font-weight:800;color:#3D2B1A;">{title}</div>
+              <div class="mingshu-report-eyebrow">报告名片</div>
+              <div class="mingshu-report-title">{title}</div>
             </div>
-            <div style="font-size:13px;color:#8C7A64;white-space:nowrap;">第 {index + 1} / {total} 张</div>
+            <div style="font-size:13px;color:var(--ms-muted-2);white-space:nowrap;">第 {index + 1} / {total} 张</div>
           </div>
-          <div style="background:#FFFDF8;border-radius:10px;border:1px solid #EDE6DC;
-              padding:14px 16px;max-height:520px;overflow-y:auto;
-              font-size:14px;color:#3D2B1A;line-height:1.85;">
+          <div class="mingshu-report-body">
             {content_html}
           </div>
         </div>
@@ -106,7 +106,7 @@ def _render_report_card_carousel(markdown: str) -> None:
             st.rerun()
     with col_mid:
         st.markdown(
-            f'<div style="text-align:center;color:#8C7A64;font-size:13px;padding-top:8px;">'
+            f'<div style="text-align:center;color:var(--ms-muted-2);font-size:13px;padding-top:8px;">'
             f'当前：{escape(cards[index].get("title", ""))}</div>',
             unsafe_allow_html=True,
         )
@@ -116,13 +116,32 @@ def _render_report_card_carousel(markdown: str) -> None:
             st.rerun()
 
 
+def _render_report_summary(report: dict, chart: dict) -> None:
+    """在导出操作前呈现报告要点与阅读建议。"""
+    import streamlit as st
+
+    st.markdown(
+        '<div class="mingshu-panel ms-report-panel" style="background:var(--ms-surface);">'
+        '<div class="mingshu-report-eyebrow">REPORT SUMMARY</div>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown("## 报告摘要")
+    st.write(report.get("summary", "当前报告已生成；你可以先阅读重点，再按需要导出完整文件。"))
+    st.markdown("### 下一步建议")
+    left, right = st.columns(2)
+    with left:
+        st.caption("先从名片式预览理解重点，再打开完整章节。")
+    with right:
+        st.caption(f"当前日主：{chart.get('day_master', '待载入')}。完整依据保留在导出文件中。")
+
+
 def render_report_page() -> None:
     """
     渲染报告导出页面。
     """
     import streamlit as st
 
-    st.title("报告导出")
     chart = st.session_state.get("current_chart")
     report = st.session_state.get("current_report")
     if not chart or not report:
@@ -131,6 +150,19 @@ def render_report_page() -> None:
     if chart.get("error"):
         st.error(chart["error"])
         return
+
+    st.markdown(
+        """
+        <section class="v106c-page-hero">
+          <div class="v106c-page-eyebrow">REPORT EXPORT · v1.0.6</div>
+          <div class="v106c-page-title">报告导出</div>
+          <div class="v106c-page-subtitle">
+            先读摘要，再看依据；需要完整内容时再导出。
+          </div>
+        </section>
+        """,
+        unsafe_allow_html=True,
+    )
 
     profile = chart.get("profile") or st.session_state.get("current_profile", {})
     luck_data = st.session_state.get("current_luck_data")
@@ -152,9 +184,16 @@ def render_report_page() -> None:
     pdf_report = build_pdf_report(profile, chart, report, luck_data, yearly_data, monthly_data)
     name = profile.get("name", "未命名")
 
-    st.markdown("### 当前命盘")
-    st.write(f"姓名：{name}｜日主：{chart.get('day_master', '')}")
-    st.caption("报告内容包含八字排盘、五行十神、日主强弱、喜用五行细化、基础分析、大运流年、年度运程、流月分析和免责声明。")
+    st.markdown(
+        '<div class="mingshu-panel ms-report-panel">'
+        '<div class="mingshu-report-eyebrow">EXPORT</div>'
+        '<div class="mingshu-report-title">报告很长，先用名片看重点</div>'
+        f'<div class="mingshu-muted">当前命盘：{escape(name)}｜日主：{escape(str(chart.get("day_master", "")))}</div>'
+        '<div class="mingshu-muted">报告内容包含八字排盘、五行十神、日主强弱、大运流年、年度运程和 12 个月流月分析；完整文件保留基础四柱信息。</div>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+    _render_report_summary(report, chart)
     if not pdf_report.startswith(b"%PDF"):
         st.info("当前环境 PDF 导出暂不可用，请先使用 Markdown 或 TXT 导出。也可以先运行：python -m pip install -r requirements.txt")
 
@@ -182,7 +221,7 @@ def render_report_page() -> None:
         )
 
     st.markdown("### 报告名片预览")
-    st.caption("每一张名片对应完整报告中的一个章节。下方按钮只切换预览名片，下载文件仍包含完整报告。")
+    st.caption("每一张名片对应完整报告中的一个章节。下方左右按钮只切换预览名片，下载文件仍包含完整报告。")
     _render_report_card_carousel(markdown)
 
     with st.expander("查看原始 Markdown 文本"):

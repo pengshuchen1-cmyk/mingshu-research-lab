@@ -29,6 +29,17 @@ class ZiweiTriangleTests(unittest.TestCase):
     def test_boundary_present(self):
         self.assertIn("module_boundary", self.tri)
 
+    def test_triangle_has_plain_manual_basis_and_sources(self):
+        for field in ["plain_explanation", "relation_cards", "opportunity", "risk", "advice", "source_ids", "basis"]:
+            self.assertIn(field, self.tri)
+        self.assertGreaterEqual(len(self.tri["relation_cards"]), 4)
+        roles = {item.get("role") for item in self.tri["relation_cards"]}
+        self.assertIn("本宫", roles)
+        self.assertIn("三合支援", roles)
+        self.assertIn("对宫照应", roles)
+        self.assertIn("紫微斗数大全", self.tri["basis"])
+        self.assertIn("ziwei_doushu_daquan", self.tri["source_ids"])
+
 
 class ZiweiSihuaTests(unittest.TestCase):
     def test_all_year_gan_have_mapping(self):

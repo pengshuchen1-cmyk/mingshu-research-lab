@@ -97,17 +97,35 @@ class SourceRegistryTests(unittest.TestCase):
                     self.assertGreater(len(rule["source_ids"]), 0)
 
     def test_no_forbidden_absolute_patterns(self):
-        """规则文案中不得出现绝对化判断词。"""
+        """规则文案中不得出现绝对化判断词。
+
+        注意：forbidden_expression 字段是故意记录"不应使用的断语"，其内容跳过检查。
+        """
+        import json as _json
         rule_dir = os.path.join(APP_DIR, "rules")
+        SKIP_KEYS = {"forbidden_expression"}
         for fname in os.listdir(rule_dir):
             if not fname.endswith(".json") or fname == "source_registry.json":
                 continue
             with self.subTest(file=fname):
-                with open(os.path.join(rule_dir, fname), "r", encoding="utf-8") as f:
-                    text = f.read()
-                for pattern in FORBIDDEN_PATTERNS:
-                    self.assertNotIn(pattern, text,
-                                     f"Found forbidden pattern '{pattern}' in {fname}")
+                fpath = os.path.join(rule_dir, fname)
+                with open(fpath, "r", encoding="utf-8") as f:
+                    data = _json.load(f)
+                # Flatten all string values except SKIP_KEYS
+                def _check(obj, path_str=""):
+                    if isinstance(obj, dict):
+                        for k, v in obj.items():
+                            if k in SKIP_KEYS:
+                                continue
+                            _check(v, f"{path_str}.{k}")
+                    elif isinstance(obj, list):
+                        for i, item in enumerate(obj):
+                            _check(item, f"{path_str}[{i}]")
+                    elif isinstance(obj, str):
+                        for pattern in FORBIDDEN_PATTERNS:
+                            self.assertNotIn(pattern, obj,
+                                f"Found forbidden pattern '{pattern}' in {fname} path {path_str}")
+                _check(data)
 
 
 class MonthlySourceTests(unittest.TestCase):

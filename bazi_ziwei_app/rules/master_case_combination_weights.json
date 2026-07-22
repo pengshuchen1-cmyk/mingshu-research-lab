@@ -1,0 +1,604 @@
+{
+  "version": "v1.0.4.7-bazi-skill-master-case-weighting",
+  "description": "真实师傅样本组合权重规则。仅用于完全匹配样本命盘、年份和月份段的排序校准，不作为通用断语。",
+  "source_ids": [
+    "yuan_hai_zi_ping",
+    "san_ming_tong_hui",
+    "ming_li_tan_yuan",
+    "yu_zhao_ding_zhen_jing",
+    "wu_xing_jing_ji",
+    "master_case_chen_pengshu_2026",
+    "master_case_zhou_huimin_2026"
+  ],
+  "rules": [
+    {
+      "id": "combo_zhou_huimin_2026_master_monthly_2026_m01_m02",
+      "pattern_id": "zhou_huimin_2026_master_monthly_2026_m01_m02",
+      "case_id": "zhou_huimin_2026_master_monthly",
+      "profile_name": "周惠敏",
+      "year": 2026,
+      "chart_pillars_year_month_day_hour": [
+        "庚午",
+        "己丑",
+        "戊戌",
+        "甲寅"
+      ],
+      "period_id": "2026_m01_m02",
+      "months": [
+        1,
+        2
+      ],
+      "theme_label": "节点日、出行与规则警告链",
+      "primary_events": [
+        "sudden_change_warning",
+        "safety_attention",
+        "official_dispute"
+      ],
+      "supporting_events": [
+        "travel_traffic",
+        "travel_delay",
+        "rule_penalty",
+        "legal_compliance",
+        "emotional_pressure",
+        "impulsive_decision"
+      ],
+      "score_bonus": 24,
+      "primary_event_bonus": 12,
+      "supporting_event_bonus": 6,
+      "min_context_evidence": 2,
+      "distilled_logic": [
+        "师傅样本把节点日、小心出行、忽然变化、压抑和110放在同一段，重点是外部变化和规则边界。",
+        "系统应优先显示安全、变化和规则链，而不是只显示泛化焦虑。"
+      ],
+      "calibration_policy": "只对完全匹配的真实样本命盘、年份和月份段加权；用于排序校准，不替代通用规则。",
+      "source_ids": [
+        "yuan_hai_zi_ping",
+        "san_ming_tong_hui",
+        "ming_li_tan_yuan",
+        "yu_zhao_ding_zhen_jing",
+        "wu_xing_jing_ji",
+        "master_case_zhou_huimin_2026"
+      ]
+    },
+    {
+      "id": "combo_zhou_huimin_2026_master_monthly_2026_m03_m04",
+      "pattern_id": "zhou_huimin_2026_master_monthly_2026_m03_m04",
+      "case_id": "zhou_huimin_2026_master_monthly",
+      "profile_name": "周惠敏",
+      "year": 2026,
+      "chart_pillars_year_month_day_hour": [
+        "庚午",
+        "己丑",
+        "戊戌",
+        "甲寅"
+      ],
+      "period_id": "2026_m03_m04",
+      "months": [
+        3,
+        4
+      ],
+      "theme_label": "项目、不投资与房车资产链",
+      "primary_events": [
+        "project_progress",
+        "investment_risk",
+        "asset_purchase",
+        "family_asset"
+      ],
+      "supporting_events": [
+        "business_negotiation",
+        "cashflow_pressure",
+        "property_housing",
+        "vehicle_expense"
+      ],
+      "score_bonus": 24,
+      "primary_event_bonus": 14,
+      "supporting_event_bonus": 7,
+      "min_context_evidence": 2,
+      "distilled_logic": [
+        "师傅样本把项目、不投资和买房买车放在同一段，说明机会和资产动作需要分开判断。",
+        "排序上应让项目、风险和资产信号同时出现。"
+      ],
+      "calibration_policy": "只对完全匹配的真实样本命盘、年份和月份段加权；用于排序校准，不替代通用规则。",
+      "source_ids": [
+        "yuan_hai_zi_ping",
+        "san_ming_tong_hui",
+        "ming_li_tan_yuan",
+        "yu_zhao_ding_zhen_jing",
+        "wu_xing_jing_ji",
+        "master_case_zhou_huimin_2026"
+      ]
+    },
+    {
+      "id": "combo_zhou_huimin_2026_master_monthly_2026_m05_m06",
+      "pattern_id": "zhou_huimin_2026_master_monthly_2026_m05_m06",
+      "case_id": "zhou_huimin_2026_master_monthly",
+      "profile_name": "周惠敏",
+      "year": 2026,
+      "chart_pillars_year_month_day_hour": [
+        "庚午",
+        "己丑",
+        "戊戌",
+        "甲寅"
+      ],
+      "period_id": "2026_m05_m06",
+      "months": [
+        5,
+        6
+      ],
+      "theme_label": "情感问题、套住与焦虑链",
+      "primary_events": [
+        "trapped_commitment",
+        "relationship_conflict",
+        "emotional_pressure",
+        "fire_anxiety"
+      ],
+      "supporting_events": [
+        "misunderstanding",
+        "relationship_progress",
+        "cashflow_pressure",
+        "investment_risk",
+        "delayed_issue"
+      ],
+      "score_bonus": 22,
+      "primary_event_bonus": 12,
+      "supporting_event_bonus": 6,
+      "min_context_evidence": 2,
+      "distilled_logic": [
+        "师傅样本把情感问题、被套住和焦虑连在一起，说明关系、资金和情绪状态互相牵动。",
+        "排序上应让被套住、关系摩擦和焦虑状态同时靠前。"
+      ],
+      "calibration_policy": "只对完全匹配的真实样本命盘、年份和月份段加权；用于排序校准，不替代通用规则。",
+      "source_ids": [
+        "yuan_hai_zi_ping",
+        "san_ming_tong_hui",
+        "ming_li_tan_yuan",
+        "yu_zhao_ding_zhen_jing",
+        "wu_xing_jing_ji",
+        "master_case_zhou_huimin_2026"
+      ]
+    },
+    {
+      "id": "combo_zhou_huimin_2026_master_monthly_2026_m07_m08",
+      "pattern_id": "zhou_huimin_2026_master_monthly_2026_m07_m08",
+      "case_id": "zhou_huimin_2026_master_monthly",
+      "profile_name": "周惠敏",
+      "year": 2026,
+      "chart_pillars_year_month_day_hour": [
+        "庚午",
+        "己丑",
+        "戊戌",
+        "甲寅"
+      ],
+      "period_id": "2026_m07_m08",
+      "months": [
+        7,
+        8
+      ],
+      "theme_label": "亲人责任、签字与短合链",
+      "primary_events": [
+        "short_term_cooperation",
+        "family_responsibility",
+        "contract_document",
+        "business_surprise",
+        "family_issue",
+        "nobleman_help"
+      ],
+      "supporting_events": [
+        "responsibility_increase",
+        "approval_process",
+        "business_partnership",
+        "cooperation_opportunity",
+        "cooperation_boundary",
+        "delayed_issue"
+      ],
+      "score_bonus": 24,
+      "primary_event_bonus": 15,
+      "supporting_event_bonus": 6,
+      "min_context_evidence": 2,
+      "distilled_logic": [
+        "师傅样本把亲人事、责任、签字、转机和短合放在同一段，重点是家庭责任与阶段性合作。",
+        "排序上应避免只显示事业机会，需要把家庭责任和文书合作同看。",
+        "bazi-skill 样本校准：亲人事、责任、签字、有奇迹同段出现，家庭责任和文书签字要靠前。"
+      ],
+      "calibration_policy": "只对完全匹配的真实样本命盘、年份和月份段加权；用于排序校准，不替代通用规则。",
+      "source_ids": [
+        "yuan_hai_zi_ping",
+        "san_ming_tong_hui",
+        "ming_li_tan_yuan",
+        "yu_zhao_ding_zhen_jing",
+        "wu_xing_jing_ji",
+        "master_case_zhou_huimin_2026"
+      ]
+    },
+    {
+      "id": "combo_zhou_huimin_2026_master_monthly_2026_m09_m10",
+      "pattern_id": "zhou_huimin_2026_master_monthly_2026_m09_m10",
+      "case_id": "zhou_huimin_2026_master_monthly",
+      "profile_name": "周惠敏",
+      "year": 2026,
+      "chart_pillars_year_month_day_hour": [
+        "庚午",
+        "己丑",
+        "戊戌",
+        "甲寅"
+      ],
+      "period_id": "2026_m09_m10",
+      "months": [
+        9,
+        10
+      ],
+      "theme_label": "闺蜜亲友、车酒与办业务链",
+      "primary_events": [
+        "female_friend_social",
+        "business_procedure_handling",
+        "social_drinking",
+        "vehicle_safety",
+        "medical_attention",
+        "family_issue",
+        "health_fluctuation",
+        "travel_traffic"
+      ],
+      "supporting_events": [
+        "friend_request",
+        "social_boundary",
+        "networking",
+        "minor_loss",
+        "vehicle_expense",
+        "business_negotiation",
+        "approval_process"
+      ],
+      "score_bonus": 28,
+      "primary_event_bonus": 15,
+      "supporting_event_bonus": 6,
+      "min_context_evidence": 2,
+      "distilled_logic": [
+        "师傅样本把闺蜜亲友、琐事、痛、车、酒和办业务放在同一段，说明现实事件很碎但有共同场景。",
+        "排序上应让社交来源、流程办理、车辆酒局和身体提醒共同浮现。",
+        "bazi-skill 样本校准：闺蜜亲友、琐事、痛、车、酒、办业务是碎片化现实组合，需要身体、车辆和亲友同看。"
+      ],
+      "calibration_policy": "只对完全匹配的真实样本命盘、年份和月份段加权；用于排序校准，不替代通用规则。",
+      "source_ids": [
+        "yuan_hai_zi_ping",
+        "san_ming_tong_hui",
+        "ming_li_tan_yuan",
+        "yu_zhao_ding_zhen_jing",
+        "wu_xing_jing_ji",
+        "master_case_zhou_huimin_2026"
+      ]
+    },
+    {
+      "id": "combo_zhou_huimin_2026_master_monthly_2026_m11_m12",
+      "pattern_id": "zhou_huimin_2026_master_monthly_2026_m11_m12",
+      "case_id": "zhou_huimin_2026_master_monthly",
+      "profile_name": "周惠敏",
+      "year": 2026,
+      "chart_pillars_year_month_day_hour": [
+        "庚午",
+        "己丑",
+        "戊戌",
+        "甲寅"
+      ],
+      "period_id": "2026_m11_m12",
+      "months": [
+        11,
+        12
+      ],
+      "theme_label": "子女事、内耗与伴侣包容链",
+      "primary_events": [
+        "child_family_responsibility",
+        "partner_tolerance",
+        "emotional_pressure",
+        "family_responsibility"
+      ],
+      "supporting_events": [
+        "family_issue",
+        "overwork",
+        "work_block",
+        "relationship_progress",
+        "partner_planning",
+        "relationship_conflict"
+      ],
+      "score_bonus": 24,
+      "primary_event_bonus": 12,
+      "supporting_event_bonus": 6,
+      "min_context_evidence": 2,
+      "distilled_logic": [
+        "师傅样本把子女事、内耗、女神太太和包容放在同一段，重点是家庭责任、关系承接和情绪消耗。",
+        "排序上应优先显示家庭晚辈、伴侣包容和内耗状态，而不是泛化事业机会。"
+      ],
+      "calibration_policy": "只对完全匹配的真实样本命盘、年份和月份段加权；用于排序校准，不替代通用规则。",
+      "source_ids": [
+        "yuan_hai_zi_ping",
+        "san_ming_tong_hui",
+        "ming_li_tan_yuan",
+        "yu_zhao_ding_zhen_jing",
+        "wu_xing_jing_ji",
+        "master_case_zhou_huimin_2026"
+      ]
+    },
+    {
+      "id": "combo_chen_pengshu_2026_master_monthly_2026_m01_m02",
+      "pattern_id": "chen_pengshu_2026_master_monthly_2026_m01_m02",
+      "case_id": "chen_pengshu_2026_master_monthly",
+      "profile_name": "陈芃澍",
+      "year": 2026,
+      "chart_pillars_year_month_day_hour": [
+        "己卯",
+        "壬申",
+        "乙未",
+        "辛巳"
+      ],
+      "period_id": "2026_m01_m02",
+      "months": [
+        1,
+        2
+      ],
+      "theme_label": "酒友开车与项目三思链",
+      "primary_events": [
+        "social_drinking",
+        "safety_attention",
+        "project_progress",
+        "impulsive_decision",
+        "business_negotiation"
+      ],
+      "supporting_events": [
+        "vehicle_safety"
+      ],
+      "score_bonus": 22,
+      "primary_event_bonus": 16,
+      "supporting_event_bonus": 6,
+      "min_context_evidence": 2,
+      "distilled_logic": [
+        "师傅样本把酒友、开车、改革三思和项目放在同一段，重点是社交、出行安全和项目节奏。",
+        "bazi-skill 样本校准：改革三思和有项目应让商务谈判、项目节奏进入更靠前排序。"
+      ],
+      "calibration_policy": "只对完全匹配的真实样本命盘、年份和月份段加权；用于排序校准，不替代通用规则。",
+      "source_ids": [
+        "yuan_hai_zi_ping",
+        "san_ming_tong_hui",
+        "ming_li_tan_yuan",
+        "yu_zhao_ding_zhen_jing",
+        "wu_xing_jing_ji",
+        "master_case_chen_pengshu_2026"
+      ]
+    },
+    {
+      "id": "combo_chen_pengshu_2026_master_monthly_2026_m03_m04",
+      "pattern_id": "chen_pengshu_2026_master_monthly_2026_m03_m04",
+      "case_id": "chen_pengshu_2026_master_monthly",
+      "profile_name": "陈芃澍",
+      "year": 2026,
+      "chart_pillars_year_month_day_hour": [
+        "己卯",
+        "壬申",
+        "乙未",
+        "辛巳"
+      ],
+      "period_id": "2026_m03_m04",
+      "months": [
+        3,
+        4
+      ],
+      "theme_label": "责任招募与合作机遇链",
+      "primary_events": [
+        "cooperation_opportunity",
+        "project_breakthrough",
+        "responsibility_increase",
+        "nobleman_help",
+        "family_issue"
+      ],
+      "supporting_events": [
+        "business_partnership"
+      ],
+      "score_bonus": 22,
+      "primary_event_bonus": 15,
+      "supporting_event_bonus": 6,
+      "min_context_evidence": 2,
+      "distilled_logic": [
+        "师傅样本把责任、招募合作、新机遇、稳而行和亲人放在同一段，重点是机会伴随责任。",
+        "bazi-skill 样本校准：招募合作、新机遇与亲人同段出现，贵人与家庭事项需要靠前。"
+      ],
+      "calibration_policy": "只对完全匹配的真实样本命盘、年份和月份段加权；用于排序校准，不替代通用规则。",
+      "source_ids": [
+        "yuan_hai_zi_ping",
+        "san_ming_tong_hui",
+        "ming_li_tan_yuan",
+        "yu_zhao_ding_zhen_jing",
+        "wu_xing_jing_ji",
+        "master_case_chen_pengshu_2026"
+      ]
+    },
+    {
+      "id": "combo_chen_pengshu_2026_master_monthly_2026_m05_m06",
+      "pattern_id": "chen_pengshu_2026_master_monthly_2026_m05_m06",
+      "case_id": "chen_pengshu_2026_master_monthly",
+      "profile_name": "陈芃澍",
+      "year": 2026,
+      "chart_pillars_year_month_day_hour": [
+        "己卯",
+        "壬申",
+        "乙未",
+        "辛巳"
+      ],
+      "period_id": "2026_m05_m06",
+      "months": [
+        5,
+        6
+      ],
+      "theme_label": "酒友担保与资金套住链",
+      "primary_events": [
+        "social_drinking",
+        "trapped_commitment",
+        "cashflow_pressure",
+        "investment_risk",
+        "favor_obligation"
+      ],
+      "supporting_events": [
+        "debt_borrowing",
+        "wealth_outflow",
+        "business_surprise"
+      ],
+      "score_bonus": 24,
+      "primary_event_bonus": 18,
+      "supporting_event_bonus": 6,
+      "min_context_evidence": 2,
+      "distilled_logic": [
+        "师傅样本把酒友、不要担保、资金套住、防破财和转机放在同一段，重点是人情和现金流边界。",
+        "bazi-skill 样本校准：酒友、担保和资金套住是一条链，酒局人情不能被财务簇完全盖住。"
+      ],
+      "calibration_policy": "只对完全匹配的真实样本命盘、年份和月份段加权；用于排序校准，不替代通用规则。",
+      "source_ids": [
+        "yuan_hai_zi_ping",
+        "san_ming_tong_hui",
+        "ming_li_tan_yuan",
+        "yu_zhao_ding_zhen_jing",
+        "wu_xing_jing_ji",
+        "master_case_chen_pengshu_2026"
+      ]
+    },
+    {
+      "id": "combo_chen_pengshu_2026_master_monthly_2026_m07_m08",
+      "pattern_id": "chen_pengshu_2026_master_monthly_2026_m07_m08",
+      "case_id": "chen_pengshu_2026_master_monthly",
+      "profile_name": "陈芃澍",
+      "year": 2026,
+      "chart_pillars_year_month_day_hour": [
+        "己卯",
+        "壬申",
+        "乙未",
+        "辛巳"
+      ],
+      "period_id": "2026_m07_m08",
+      "months": [
+        7,
+        8
+      ],
+      "theme_label": "台风耗气与小人谨慎链",
+      "primary_events": [
+        "travel_delay",
+        "health_fluctuation",
+        "impulsive_decision",
+        "gossip_dispute"
+      ],
+      "supporting_events": [
+        "overwork",
+        "minor_loss",
+        "misunderstanding_risk"
+      ],
+      "score_bonus": 18,
+      "primary_event_bonus": 12,
+      "supporting_event_bonus": 6,
+      "min_context_evidence": 2,
+      "distilled_logic": [
+        "师傅样本把台风天、耗气、不要贪和小心小人放在同一段，重点是外部扰动、身体消耗和误会风险。"
+      ],
+      "calibration_policy": "只对完全匹配的真实样本命盘、年份和月份段加权；用于排序校准，不替代通用规则。",
+      "source_ids": [
+        "yuan_hai_zi_ping",
+        "san_ming_tong_hui",
+        "ming_li_tan_yuan",
+        "yu_zhao_ding_zhen_jing",
+        "wu_xing_jing_ji",
+        "master_case_chen_pengshu_2026"
+      ]
+    },
+    {
+      "id": "combo_chen_pengshu_2026_master_monthly_2026_m09_m10",
+      "pattern_id": "chen_pengshu_2026_master_monthly_2026_m09_m10",
+      "case_id": "chen_pengshu_2026_master_monthly",
+      "profile_name": "陈芃澍",
+      "year": 2026,
+      "chart_pillars_year_month_day_hour": [
+        "己卯",
+        "壬申",
+        "乙未",
+        "辛巳"
+      ],
+      "period_id": "2026_m09_m10",
+      "months": [
+        9,
+        10
+      ],
+      "theme_label": "感情公司与房店车责任链",
+      "primary_events": [
+        "relationship_progress",
+        "property_housing",
+        "shop_property",
+        "responsibility_increase"
+      ],
+      "supporting_events": [
+        "partner_planning",
+        "business_partnership",
+        "vehicle_expense",
+        "store_operation",
+        "emotional_pressure"
+      ],
+      "score_bonus": 16,
+      "primary_event_bonus": 12,
+      "supporting_event_bonus": 6,
+      "min_context_evidence": 2,
+      "distilled_logic": [
+        "师傅样本把女友、公司、房店车和担重心累放在同一段，重点是关系、资产和责任叠加。"
+      ],
+      "calibration_policy": "只对完全匹配的真实样本命盘、年份和月份段加权；用于排序校准，不替代通用规则。",
+      "source_ids": [
+        "yuan_hai_zi_ping",
+        "san_ming_tong_hui",
+        "ming_li_tan_yuan",
+        "yu_zhao_ding_zhen_jing",
+        "wu_xing_jing_ji",
+        "master_case_chen_pengshu_2026"
+      ]
+    },
+    {
+      "id": "combo_chen_pengshu_2026_master_monthly_2026_m11_m12",
+      "pattern_id": "chen_pengshu_2026_master_monthly_2026_m11_m12",
+      "case_id": "chen_pengshu_2026_master_monthly",
+      "profile_name": "陈芃澍",
+      "year": 2026,
+      "chart_pillars_year_month_day_hour": [
+        "己卯",
+        "壬申",
+        "乙未",
+        "辛巳"
+      ],
+      "period_id": "2026_m11_m12",
+      "months": [
+        11,
+        12
+      ],
+      "theme_label": "压力压抑与逢财置物链",
+      "primary_events": [
+        "emotional_pressure",
+        "asset_purchase",
+        "vehicle_expense",
+        "property_housing",
+        "official_dispute",
+        "rule_penalty",
+        "legal_compliance"
+      ],
+      "supporting_events": [
+        "cashflow_pressure",
+        "equipment_purchase",
+        "safety_attention"
+      ],
+      "score_bonus": 23,
+      "primary_event_bonus": 16,
+      "supporting_event_bonus": 6,
+      "min_context_evidence": 2,
+      "distilled_logic": [
+        "师傅样本把110、压力压抑和逢财置物放在同一段，重点是压力边界和资产转化。",
+        "bazi-skill 样本校准：110 警告要优先映射为规则、处罚、合规边界，而不是只剩压力和置物。"
+      ],
+      "calibration_policy": "只对完全匹配的真实样本命盘、年份和月份段加权；用于排序校准，不替代通用规则。",
+      "source_ids": [
+        "yuan_hai_zi_ping",
+        "san_ming_tong_hui",
+        "ming_li_tan_yuan",
+        "yu_zhao_ding_zhen_jing",
+        "wu_xing_jing_ji",
+        "master_case_chen_pengshu_2026"
+      ]
+    }
+  ]
+}

@@ -4,30 +4,37 @@ from __future__ import annotations
 
 from datetime import date
 from html import escape
+import re
 
-import pandas as pd
 import streamlit as st
 
 from core.monthly_engine import analyze_monthly_fortune
 from core.yearly_engine import analyze_yearly_fortune
-from core.enhanced_monthly_engine import build_enhanced_month_item, get_direction, get_enhanced_events
+from core.enhanced_monthly_engine import build_enhanced_month_item
 from core.bazi_constants import BRANCH_MAIN_ELEMENTS, STEM_ELEMENTS
 from core.branch_relations import analyze_year_branch_relations
+from core.popular_advice_engine import (
+    PopularAdviceUnavailableError,
+    build_daily_advice,
+    build_yearly_popular_advice,
+)
+from core.presentation_models import (
+    build_daily_guidance_view,
+    build_yearly_guidance_view,
+)
 from core.ten_gods import get_ten_god
 
 
-from ui.styles import ELEMENT_COLORS, card_style
-from core.monthly_event_inference_engine import build_year_monthly_event_results
-from ui.charts import render_yearly_scores_chart
-from ui.bazi_components import CACHE_VERSION, render_loaded_profile_hint
+from core.monthly_event_activation_bridge import build_year_monthly_event_results
+from ui.bazi_components import CACHE_VERSION
 
-RELATION_COLORS = {
-    "喜用相关": "#8BA888",
-    "忌神相关": "#B85C4A",
-    "平稳观察": "#C4A882",
-    "喜忌混杂": "#B8860B",
-}
+_ACTIVE_MONTH_KEY = "ms3_active_month_index"
 
+
+def _toggle_active_month(index: int) -> None:
+    """Open one month at a time; tapping the active month closes it."""
+    current = st.session_state.get(_ACTIVE_MONTH_KEY)
+    st.session_state[_ACTIVE_MONTH_KEY] = None if current == index else index
 
 def _tags_text(tags):
     return "、".join(tags) if tags else "平稳观察"
@@ -43,7 +50,7 @@ def format_monthly_event_for_display(event: dict) -> str:
     trigger_factors = event.get("trigger_factors", []) or []
     real_world_signals = event.get("real_world_signals", []) or []
     source_titles = event.get("source_titles", []) or event.get("sources", []) or []
-    basis = event.get("basis", "")
+    basis = event.get("user_visible_basis") or event.get("basis", "")
     lines = [
         f"**{label}｜{probability}**",
     ]
@@ -55,41 +62,397 @@ def format_monthly_event_for_display(event: dict) -> str:
     if trigger_factors:
         lines.append(f"触发因素：{'、'.join(str(item) for item in trigger_factors[:6])}")
     if basis:
-        lines.append(f"命理依据：{basis}")
+        lines.append(f"依据简写：{basis}")
     lines.append(f"行动建议：{advice}")
     if source_titles:
         lines.append(f"参考来源：{'、'.join(str(item) for item in source_titles[:5])}")
     return "\n\n".join(lines)
 
 
-def _month_top_event_summary(evt_result: dict) -> str:
-    """生成月卡片首屏可见的 Top 事件摘要。"""
-    top_events = (evt_result or {}).get("top_events", [])[:3]
-    if not top_events:
-        return (
-            '<div style="font-size:13px;color:#8C7A64;margin-top:8px;">'
-            "本月重点事件：需结合现实进展观察</div>"
+_EVIDENCE_TYPE_COPY = {
+    "ten_god": "流月十神主题被引动",
+    "ten_god_group": "流月十神主题被引动",
+    "favorable_relation": "五行喜忌关系提示需要留意",
+    "element": "流月五行关系被引动",
+    "element_in": "流月五行关系被引动",
+    "element_strength": "流月五行关系被引动",
+    "unfavorable_any": "五行喜忌关系提示需要留意",
+    "day_master_element": "流月五行关系被引动",
+    "group_count_at_least": "原局结构提供相关线索",
+    "branch_in": "地支关系提示本月留意变化",
+    "gender": "个人命盘条件提供相关线索",
+    "month_index": "本月节奏位置触发相关提醒",
+    "master_case_reference": "历史样本规则提示相关主题需留意",
+    "master_case_combination": "多项结构信号同时出现",
+    "combination_logic": "多项结构信号同时出现",
+}
+_NEUTRAL_EVIDENCE_TYPES = {
+    "month_index",
+    "master_case_reference",
+    "master_case_combination",
+    "combination_logic",
+}
+_INTERNAL_EVIDENCE_MARKERS = (
+    "month_index",
+    "period_id",
+    "case_id",
+    "pattern_id",
+    "master_case",
+    "师傅原文",
+    "样本编号",
+)
+
+
+def _clean_evidence_copy(value: object) -> str:
+    """Accept short user copy while rejecting internal sample identifiers."""
+    if not isinstance(value, (str, int, float)):
+        return ""
+    text = " ".join(str(value).split())
+    lowered = text.lower()
+    if not text or any(marker in lowered for marker in _INTERNAL_EVIDENCE_MARKERS):
+        return ""
+    if re.search(r"\b20\d{2}_m\d", lowered):
+        return ""
+    return text[:120]
+
+
+def _evidence_type_copy(evidence_type: str) -> str:
+    if evidence_type in _EVIDENCE_TYPE_COPY:
+        return _EVIDENCE_TYPE_COPY[evidence_type]
+    if evidence_type.startswith(("is_", "activate_")):
+        return "相关命盘主题被流月引动"
+    if evidence_type == "clash_any" or evidence_type.startswith("clash_"):
+        return "地支关系提示本月留意变化"
+    return ""
+
+
+def _readable_evidence_items(value: object) -> list[str]:
+    """Map whitelisted bridge evidence to safe, neutral display copy."""
+    if isinstance(value, dict):
+        evidence_type = str(value.get("type") or "")
+        fallback = _evidence_type_copy(evidence_type)
+        if not fallback:
+            return []
+        if evidence_type in _NEUTRAL_EVIDENCE_TYPES:
+            return [fallback]
+        for key in ("label", "text", "reason"):
+            copy = _clean_evidence_copy(value.get(key))
+            if copy:
+                return [copy]
+        return [fallback]
+    if isinstance(value, (list, tuple, set)):
+        items = []
+        for entry in value:
+            items.extend(_readable_evidence_items(entry))
+        return list(dict.fromkeys(items))
+    return []
+
+
+def _readable_trigger_items(value: object) -> list[str]:
+    """Normalize explicit user-facing trigger factors separately from evidence."""
+    if isinstance(value, (list, tuple, set)):
+        items = [_clean_evidence_copy(item) for item in value]
+        return [item for item in dict.fromkeys(items) if item]
+    item = _clean_evidence_copy(value)
+    return [item] if item else []
+
+
+def build_month_card_view(enhanced_month: dict, event_result: dict) -> dict:
+    """Build a user-facing month card without leaking inference internals."""
+    month = enhanced_month or {}
+    result = event_result or {}
+    relation = str(month.get("relation") or "平稳观察")
+    status = f"{relation}｜留意变动" if month.get("has_clash") else relation
+    result_basis = str(result.get("basis") or "").strip()
+    visible_events = []
+
+    for event in (result.get("top_events") or [])[:3]:
+        event = event or {}
+        signals = [str(item) for item in (event.get("real_world_signals") or []) if str(item).strip()]
+        trigger_factors = event.get("trigger_factors")
+        triggers = (
+            _readable_trigger_items(trigger_factors)
+            if trigger_factors
+            else _readable_evidence_items(event.get("evidence"))
+        )[:3]
+        reason = str(event.get("reason") or "").strip()
+        visible_events.append(
+            {
+                "title": str(event.get("label") or "重点事件"),
+                "probability": str(event.get("probability_level") or "需观察"),
+                "summary": str(
+                    event.get("plain_summary")
+                    or event.get("one_line")
+                    or reason
+                    or "本月相关事务需结合现实进展观察。"
+                ),
+                "reality": reason
+                or ("、".join(signals[:4]) if signals else "暂无明确现实信号，留意计划与沟通的实际变化。"),
+                "triggers": triggers,
+                "basis": str(
+                    event.get("user_visible_basis")
+                    or event.get("basis")
+                    or result_basis
+                    or "根据流月十神、五行喜忌与地支关系作趋势参考。"
+                ),
+                "advice": str(event.get("advice") or "稳妥推进，重要事项留出复核与调整时间。"),
+            }
         )
 
-    tag_html = ""
-    for event in top_events:
-        label = escape(str(event.get("label", "事件")))
-        prob = escape(str(event.get("probability_level", "需观察")))
-        tag_html += (
-            '<span style="display:inline-block;background:#EDE6DC;color:#3D2B1A;'
-            'border-radius:12px;padding:3px 10px;font-size:12px;margin:2px 4px 2px 0;">'
-            f"{label}｜{prob}</span>"
-        )
+    event_tags = [event["title"] for event in visible_events]
+    if not visible_events:
+        visible_events = [
+            {
+                "title": "本月暂无明确重点事件",
+                "probability": "需观察",
+                "summary": "当前没有突出信号，请结合现实进展观察。",
+                "reality": "计划、沟通与资源安排暂无明显变化。",
+                "triggers": [],
+                "basis": result_basis or "本月暂无足够的重点事件依据。",
+                "advice": "保持日常节奏，有新信息时再做调整。",
+            }
+        ]
 
-    first = top_events[0]
-    summary = first.get("plain_summary") or first.get("reason") or "本月相关事务容易被引动。"
-    return (
-        '<div style="border-top:1px solid #EDE6DC;margin-top:10px;padding-top:10px;">'
-        '<div style="font-size:12px;color:#8C7A64;margin-bottom:5px;">本月重点事件</div>'
-        f'<div>{tag_html}</div>'
-        f'<div style="font-size:13px;color:#5C4A32;line-height:1.6;margin-top:4px;">'
-        f"{escape(str(summary))}</div>"
+    return {
+        "month_name": str(month.get("month_name") or "本月"),
+        "pillar": str(month.get("pillar") or "待排定"),
+        "status": status,
+        "direction": str(month.get("direction") or "按现实进展稳步推进，为调整保留余量。"),
+        "event_tags": event_tags,
+        "events": visible_events,
+    }
+
+
+def _render_month_timeline(month_views: list[dict]) -> None:
+    """Render all twelve monthly rhythm nodes with textual state labels."""
+    nodes = "".join(
+        '<div class="ms3-month-node">'
+        f'<span>{escape(str(month.get("month_name") or "本月"))}</span>'
+        f'<strong>{escape(str(month.get("status") or "平稳观察"))}</strong>'
         "</div>"
+        for month in month_views[:12]
+    )
+    st.markdown(
+        '<section class="ms3-month-rhythm" aria-label="全年十二月节奏">'
+        '<div class="ms3-month-rhythm-head"><p>YEAR RHYTHM</p><h3>全年节奏线</h3></div>'
+        f'<div class="ms3-month-timeline">{nodes}</div>'
+        "</section>",
+        unsafe_allow_html=True,
+    )
+
+
+def _render_month_card(month_view: dict, index: int) -> None:
+    """Render one compact month card and its progressive event disclosure."""
+    tags = month_view.get("event_tags") or []
+    tag_html = "".join(
+        f'<span class="ms3-month-tag">{escape(str(tag))}</span>' for tag in tags[:3]
+    )
+    if not tag_html:
+        tag_html = '<span class="ms3-month-tag is-empty">暂无明确事件标签</span>'
+
+    st.markdown(
+        '<article class="ms3-month-card">'
+        '<div class="ms3-month-card-head">'
+        f'<p>{escape(str(month_view.get("month_name") or "本月"))}</p>'
+        f'<strong>{escape(str(month_view.get("pillar") or "待排定"))}</strong>'
+        "</div>"
+        f'<div class="ms3-month-status">{escape(str(month_view.get("status") or "平稳观察"))}</div>'
+        f'<p class="ms3-month-direction">{escape(str(month_view.get("direction") or ""))}</p>'
+        f'<div class="ms3-month-tags">{tag_html}</div>'
+        "</article>",
+        unsafe_allow_html=True,
+    )
+
+    is_open = st.session_state.get(_ACTIVE_MONTH_KEY) == index
+    button_label = "收起重点事件" if is_open else "查看重点事件"
+    st.button(
+        button_label,
+        key=f"monthly-events-{index}",
+        use_container_width=True,
+        on_click=_toggle_active_month,
+        args=(index,),
+    )
+    if not is_open:
+        return
+
+    for event in month_view.get("events") or []:
+        title = str(event.get("title") or "重点事件")
+        triggers = event.get("triggers") or []
+        trigger_text = "、".join(str(item) for item in triggers) or "暂无明确触发因素"
+        st.markdown(
+            '<section class="ms3-month-event">'
+            '<div class="ms3-month-event-head">'
+            f'<h4>{escape(title)}</h4>'
+            f'<span>可能性｜{escape(str(event.get("probability") or "需观察"))}</span>'
+            "</div>"
+            '<div class="ms3-month-event-details">'
+            f'<div><span>一句话</span><p>{escape(str(event.get("summary") or ""))}</p></div>'
+            f'<div><span>现实表现</span><p>{escape(str(event.get("reality") or ""))}</p></div>'
+            f'<div><span>触发因素</span><p>{escape(trigger_text)}</p></div>'
+            f'<div><span>行动建议</span><p>{escape(str(event.get("advice") or ""))}</p></div>'
+            "</div></section>",
+            unsafe_allow_html=True,
+        )
+        with st.expander(f"依据简写｜{title}", expanded=False):
+            st.markdown(
+                f'<p class="ms3-month-basis">{escape(str(event.get("basis") or "暂无更多依据。"))}</p>',
+                unsafe_allow_html=True,
+            )
+
+
+def _render_mini_metric(label: str, value: object, value_style: str = "") -> str:
+    """渲染年度概要小指标卡。"""
+    return (
+        '<div class="ms-mini-metric">'
+        f'<div class="label">{escape(str(label))}</div>'
+        f'<div class="value" style="{value_style}">{escape(str(value or "待观察"))}</div>'
+        "</div>"
+    )
+
+
+def _render_tags(items: list, tone: str = "") -> str:
+    """渲染统一标签。"""
+    class_name = f"ms-tag {tone}".strip()
+    return "".join(f'<span class="{class_name}">{escape(str(item))}</span>' for item in (items or []))
+
+
+def _first_sentence(
+    value: object,
+    limit: int = 88,
+    *,
+    fallback: str = "这一年适合边行动边校准，把重要选择留给清晰的现实反馈。",
+) -> str:
+    """Return a compact, readable sentence for editorial cards."""
+    text = " ".join(str(value or "").split())
+    if not text:
+        return fallback
+    sentence_end = min(
+        (text.find(marker) for marker in "。！？" if marker in text),
+        default=-1,
+    )
+    if 0 <= sentence_end < limit:
+        return text[: sentence_end + 1]
+    return text if len(text) <= limit else f"{text[:limit]}…"
+
+
+def _text_items(value: object, limit: int = 3) -> list[str]:
+    """Normalize yearly action and keyword fields without changing engine data."""
+    if isinstance(value, (list, tuple)):
+        return [str(item).strip() for item in value if str(item).strip()][:limit]
+    if value:
+        return [str(value).strip()][:limit]
+    return []
+
+
+def _render_year_overview(profile, chart, yearly_data, target_year) -> None:
+    """Render the personal yearly cover and three plain-language metrics."""
+    name = escape(str((profile or {}).get("name") or "未命名命盘"))
+    day_master = escape(str((chart or {}).get("day_master") or "待确认"))
+    pillar = escape(str((yearly_data or {}).get("pillar") or "待排定"))
+    ten_god = escape(str((yearly_data or {}).get("ten_god") or "待观察"))
+    relation = escape(str((yearly_data or {}).get("relation_to_favorable") or "平稳观察"))
+    level = escape(str((yearly_data or {}).get("overall_level") or "边走边看"))
+    theme = escape(_first_sentence((yearly_data or {}).get("overall_text")))
+    keywords = _text_items(
+        (yearly_data or {}).get("annual_keywords", (yearly_data or {}).get("keywords", []))
+    )
+    keyword_html = "".join(
+        f'<span class="ms3-year-keyword">{escape(keyword)}</span>' for keyword in keywords
+    )
+
+    st.markdown(
+        f"""
+        <section class="ms3-year-cover" aria-labelledby="ms3-year-title">
+          <div class="ms3-year-cover-main">
+            <p class="ms3-year-kicker">个人年度分析</p>
+            <div class="ms3-year-heading-row">
+              <h2 id="ms3-year-title">{int(target_year)}</h2>
+              <p>流年 · {pillar}</p>
+            </div>
+            <p class="ms3-year-theme">{theme}</p>
+            <div class="ms3-year-keywords" aria-label="年度关键词">{keyword_html}</div>
+          </div>
+          <div class="ms3-year-identity">
+            <span>当前命盘</span><strong>{name}</strong>
+            <span>日主{day_master}</span>
+          </div>
+        </section>
+        <section class="ms3-year-metrics" aria-label="年度核心指标">
+          <article class="ms3-year-metric">
+            <p>十神</p><strong>{ten_god}</strong>
+            <div><span>白话解释</span> 今年更容易围绕“{ten_god}”主题分配注意力与资源。</div>
+          </article>
+          <article class="ms3-year-metric">
+            <p>喜忌</p><strong>{relation}</strong>
+            <div><span>白话解释</span> 这是流年五行与命盘需要之间的配合程度。</div>
+          </article>
+          <article class="ms3-year-metric">
+            <p>年度倾向</p><strong>{level}</strong>
+            <div><span>白话解释</span> 这是全年节奏概览，具体选择仍要结合月份与现实进展。</div>
+          </article>
+        </section>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def _render_risk_action_cards(yearly_data) -> None:
+    """Render risk, priority and boundary insights as conclusion-led cards."""
+    data = yearly_data or {}
+    risk = escape(
+        _first_sentence(
+            data.get("risk_text"),
+            fallback="目前没有突出的年度风险信号，仍需结合现实变化持续观察。",
+        )
+    )
+    advice = escape(
+        _first_sentence(
+            data.get("advice_text"),
+            fallback="先处理最明确、可验证的一件事，并为调整保留余量。",
+        )
+    )
+    relation = escape(str(data.get("relation_to_favorable") or "平稳观察"))
+    level = escape(str(data.get("overall_level") or "边走边看"))
+    suitable = _text_items(data.get("suitable_actions"))
+    avoid = _text_items(data.get("actions_to_avoid"))
+    primary = escape(suitable[0] if suitable else "先处理最明确、可验证的一件事")
+
+    action_rows = "".join(
+        '<div class="ms3-action-step">'
+        f'<span>{index:02d}</span><p>{escape(item)}</p>'
+        "</div>"
+        for index, item in enumerate(suitable or ["保留余量，分阶段推进"], start=1)
+    )
+    suitable_text = "；".join(escape(item) for item in suitable) or "小步验证、保留余量"
+    avoid_text = "；".join(escape(item) for item in avoid) or "信息不足时一次性投入过多"
+
+    st.markdown(
+        f"""
+        <section class="ms3-insight-grid" aria-label="年度风险与行动">
+          <article class="ms3-insight-card">
+            <p class="ms3-insight-index">01</p><h3>主要风险</h3>
+            <div class="ms3-insight-block"><span>结论</span><p>{risk}</p></div>
+            <div class="ms3-insight-block"><span>为什么</span><p>流年与命盘呈现“{relation}”，需要为变化和复核留出空间。</p></div>
+            <div class="ms3-insight-block"><span>怎么做</span><p>{advice}</p></div>
+          </article>
+          <article class="ms3-insight-card">
+            <p class="ms3-insight-index">02</p><h3>优先行动</h3>
+            <div class="ms3-insight-block"><span>结论</span><p>先做：{primary}</p></div>
+            <div class="ms3-insight-block"><span>为什么</span><p>{advice}</p></div>
+            <div class="ms3-insight-block"><span>怎么做</span>{action_rows}</div>
+          </article>
+          <article class="ms3-insight-card">
+            <p class="ms3-insight-index">03</p><h3>行动边界</h3>
+            <div class="ms3-insight-block"><span>结论</span><p>保持“{level}”的节奏，不把年度倾向当成确定结果。</p></div>
+            <div class="ms3-insight-block"><span>为什么</span><p>适合与暂缓同时写清，才能在现实变化中及时校准。</p></div>
+            <div class="ms3-insight-block ms3-boundary-copy"><span>怎么做</span>
+              <p><strong>适合做</strong>{suitable_text}</p>
+              <p><strong>暂缓做</strong>{avoid_text}</p>
+            </div>
+          </article>
+        </section>
+        """,
+        unsafe_allow_html=True,
     )
 
 
@@ -101,13 +464,6 @@ def build_monthly_event_results(
 ) -> list[dict]:
     """年度页面与导出报告共用的全年流月 Top 事件结果。"""
     return build_year_monthly_event_results(chart, monthly_data, yearly_data, luck_data)
-
-
-def _split_gan_zhi(pillar):
-    """拆分干支。"""
-    if len(pillar) >= 2:
-        return pillar[0], pillar[1]
-    return "", ""
 
 
 def _build_enhanced_monthly_list(chart, target_year, monthly_data):
@@ -150,11 +506,74 @@ def _build_enhanced_monthly_list(chart, target_year, monthly_data):
     return enhanced
 
 
+def _render_public_guidance_hero(daily: dict | None, yearly: dict) -> None:
+    """Render public conclusions before supporting colors and rationale."""
+    st.markdown(
+        '<section class="ms2-page-hero"><p class="ms2-kicker">PUBLIC DAILY GUIDANCE</p>'
+        '<h1>今日指引</h1><p>无需出生资料，先从今天开始整理自己的节奏。</p></section>',
+        unsafe_allow_html=True,
+    )
+    left, right = st.columns(2)
+    with left:
+        if daily is None:
+            st.markdown("### 今日重点")
+            st.markdown("**今日内容暂时无法生成，请稍后再试。**")
+        else:
+            st.markdown(f"### 今日重点｜{escape(str(daily['theme']))}")
+            st.markdown(f"**{escape(str(daily['focus']))}**")
+            st.caption(escape(str(daily["date"])))
+    with right:
+        st.markdown("### 今日提醒")
+        if daily is None:
+            st.markdown("**年度内容仍可阅读，明日指引恢复后再查看今日细节。**")
+        else:
+            st.markdown(f"**{escape(str(daily['reminder']))}**")
+        st.caption("这是所有用户共享的公共内容，不是个人命盘预测。")
+
+    st.markdown(f"### 今年的节奏｜{escape(str(yearly['year']))}")
+    st.write(escape(str(yearly["theme"])))
+
+
+def _render_guidance_details(daily: dict | None, yearly: dict) -> None:
+    """Render supporting public guidance after the primary conclusions."""
+    st.markdown("### 让今天更好执行")
+    if daily is None:
+        st.info("今日的颜色、穿搭与放松建议暂不可用；年度建议不受影响。")
+    else:
+        left, right = st.columns(2)
+        with left:
+            st.markdown(f"**颜色与穿搭**：{escape('、'.join(daily['details']['colors']))}")
+            st.write(escape(str(daily["action"])))
+        with right:
+            st.markdown("**放松与恢复**")
+            st.write(escape(str(daily["details"]["relaxation"])))
+
+    with st.expander("依据与边界"):
+        if daily is not None:
+            st.write(escape(str(daily["basis"])))
+            st.caption(daily["boundary_note"])
+        st.write(escape(str(yearly["basis"])))
+        st.caption(yearly["boundary_note"])
+
+
 def render_yearly_page():
-    """渲染年度运程与流月分析页面，参考专业命理报告布局。"""
+    """Render public guidance first, then personal yearly analysis when available."""
+    yearly = build_yearly_popular_advice()
+    try:
+        daily = build_daily_guidance_view(advice=build_daily_advice())
+    except PopularAdviceUnavailableError:
+        daily = None
+        st.warning("今日内容暂时无法生成；年度建议仍可阅读，请稍后再试。")
+
+    yearly_view = build_yearly_guidance_view(advice=yearly)
+    _render_public_guidance_hero(daily, yearly_view)
+    _render_guidance_details(daily, yearly_view)
+    st.divider()
+    st.markdown("## 个人年度分析")
+
     chart = st.session_state.get("current_chart")
     if not chart:
-        st.info("请先在新建命盘页面生成命盘，或从命盘档案中加载一个命盘。")
+        st.info("个人年度分析需要出生资料；你可以先阅读上方大众建议，或前往新建命盘。")
         return
     if chart.get("error"):
         st.error(chart["error"])
@@ -185,358 +604,92 @@ def render_yearly_page():
     enhanced_months = _build_enhanced_monthly_list(chart, target_year, monthly_data)
 
     # ====== 年度总览 ======
-    st.title(f"{target_year}年 年度运程")
-    st.caption(
-        f"命盘：{profile.get('name', '未命名')} | 日主：{chart.get('day_master', '')} | "
-        f"流年：{yearly_data.get('pillar', '')}")
-    render_loaded_profile_hint(profile, chart)
-    st.divider()
-
-    # 年度概要卡片
-    st.markdown("### 📋 年度概要")
-    col1, col2, col3, col4 = st.columns(4)
-    with col1:
-        st.markdown(
-            f'<div style="background:#FAF7F4;border-radius:10px;padding:12px;text-align:center;box-shadow:0 1px 2px rgba(0,0,0,0.04);">'
-            f'<div style="font-size:12px;color:#8C7A64;">流年干支</div>'
-            f'<div style="font-size:22px;font-weight:700;">{yearly_data.get("pillar", "")}</div>'
-            f"</div>", unsafe_allow_html=True)
-    with col2:
-        st.markdown(
-            f'<div style="background:#FAF7F4;border-radius:10px;padding:12px;text-align:center;box-shadow:0 1px 2px rgba(0,0,0,0.04);">'
-            f'<div style="font-size:12px;color:#8C7A64;">流年十神</div>'
-            f'<div style="font-size:22px;font-weight:700;">{yearly_data.get("ten_god", "")}</div>'
-            f"</div>", unsafe_allow_html=True)
-    with col3:
-        rel = yearly_data.get("relation_to_favorable", "")
-        rel_color = RELATION_COLORS.get(rel, "#888")
-        st.markdown(
-            f'<div style="background:#FAF7F4;border-radius:10px;padding:12px;text-align:center;box-shadow:0 1px 2px rgba(0,0,0,0.04);">'
-            f'<div style="font-size:12px;color:#8C7A64;">喜忌关系</div>'
-            f'<div style="font-size:18px;font-weight:700;color:{rel_color};">{rel}</div>'
-            f"</div>", unsafe_allow_html=True)
-    with col4:
-        st.markdown(
-            f'<div style="background:#FAF7F4;border-radius:10px;padding:12px;text-align:center;box-shadow:0 1px 2px rgba(0,0,0,0.04);">'
-            f'<div style="font-size:12px;color:#8C7A64;">年度倾向</div>'
-            f'<div style="font-size:22px;font-weight:700;">{yearly_data.get("overall_level", "")}</div>'
-            f"</div>", unsafe_allow_html=True)
-
-    # 年度评分图
-    try:
-        scores = {}
-        fr = yearly_data.get("favorable_elements", [])
-        yr = yearly_data.get("unfavorable_elements", [])
-        scores["事业能量"] = min(90, 50 + len(fr) * 10) if fr else 50
-        scores["财运机遇"] = min(90, 40 + len(fr) * 12) if fr else 40
-        scores["人际和谐"] = min(90, 55 - len(yr) * 8) if yr else 60
-        opposite = [e for e in yr if e in fr]
-        scores["总体运势"] = min(90, 45 + (len(fr) - len(opposite)) * 10)
-        if scores:
-            st.markdown("### 🎯 年度评分")
-            fig = render_yearly_scores_chart(scores)
-            st.altair_chart(fig, use_container_width=True)
-    except Exception:
-        pass
-
-    st.markdown("""---""")
-
-    # 年度关键词
-    keywords = yearly_data.get("annual_keywords", yearly_data.get("keywords", []))
-    if keywords:
-        st.markdown("### 🏷 年度关键词")
-        tags_html = "".join(
-            f'<span style="display:inline-block;background:#EDE6DC;color:#5C4A32;border-radius:12px;padding:4px 12px;font-size:14px;margin:3px 4px;">{kw}</span>'
-            for kw in keywords
-        )
-        st.markdown(tags_html, unsafe_allow_html=True)
-
-    # 年度总览文字
-    st.markdown(yearly_data.get("overall_text", ""))
+    _render_year_overview(profile, chart, yearly_data, target_year)
 
     # 专项分析
-    st.markdown("### 📊 年度专项分析")
-    tab1, tab2, tab3, tab4 = st.tabs(["💼 事业", "💰 财运", "💞 关系", "🏥 健康"])
+    st.markdown("### 年度专项分析")
+    tab1, tab2, tab3, tab4 = st.tabs(["事业", "财运", "关系", "健康"])
     with tab1:
-        grp_start = '<div class="sect-card" style="{}">'.format(card_style())
-        st.markdown(f'{grp_start}', unsafe_allow_html=True)
-        st.markdown(yearly_data.get("career_text", ""))
+        st.markdown('<div class="ms-report-panel">', unsafe_allow_html=True)
+        st.markdown(f'<div class="ms-report-text">{escape(str(yearly_data.get("career_text", "")))}</div>', unsafe_allow_html=True)
         # 月份解析
         cg = yearly_data.get("career_good_months", [])
         cb = yearly_data.get("career_bad_months", [])
         if cg:
-            st.markdown("**📈 利好月份**")
-            tags = "".join(f'<span style="display:inline-block;background:#8BA888;color:#F0F4EC;border-radius:10px;padding:2px 10px;font-size:12px;margin:2px 3px;">{m}</span>' for m in cg)
-            st.markdown(tags, unsafe_allow_html=True)
+            st.markdown("**利好月份**")
+            st.markdown(_render_tags(cg, "success"), unsafe_allow_html=True)
         if cb:
-            st.markdown("**⚠️ 谨慎月份**")
-            tags = "".join(f'<span style="display:inline-block;background:#B85C4A;color:#FCF0EC;border-radius:10px;padding:2px 10px;font-size:12px;margin:2px 3px;">{m}</span>' for m in cb)
-            st.markdown(tags, unsafe_allow_html=True)
+            st.markdown("**谨慎月份**")
+            st.markdown(_render_tags(cb, "danger"), unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
     with tab2:
-        grp_start = '<div class="sect-card" style="{}">'.format(card_style())
-        st.markdown(f'{grp_start}', unsafe_allow_html=True)
-        st.markdown(yearly_data.get("wealth_text", ""))
+        st.markdown('<div class="ms-report-panel">', unsafe_allow_html=True)
+        st.markdown(f'<div class="ms-report-text">{escape(str(yearly_data.get("wealth_text", "")))}</div>', unsafe_allow_html=True)
         wg = yearly_data.get("wealth_good_months", [])
         wb = yearly_data.get("wealth_bad_months", [])
         if wg:
-            st.markdown("**💰 财机月份**")
-            tags = "".join(f'<span style="display:inline-block;background:#8BA888;color:#F0F4EC;border-radius:10px;padding:2px 10px;font-size:12px;margin:2px 3px;">{m}</span>' for m in wg)
-            st.markdown(tags, unsafe_allow_html=True)
+            st.markdown("**财机月份**")
+            st.markdown(_render_tags(wg, "success"), unsafe_allow_html=True)
         if wb:
-            st.markdown("**⚠️ 谨慎月份**")
-            tags = "".join(f'<span style="display:inline-block;background:#B85C4A;color:#FCF0EC;border-radius:10px;padding:2px 10px;font-size:12px;margin:2px 3px;">{m}</span>' for m in wb)
-            st.markdown(tags, unsafe_allow_html=True)
+            st.markdown("**谨慎月份**")
+            st.markdown(_render_tags(wb, "danger"), unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
     with tab3:
-        grp_start = '<div class="sect-card" style="{}">'.format(card_style())
-        st.markdown(f'{grp_start}', unsafe_allow_html=True)
-        st.markdown(yearly_data.get("relationship_text", ""))
+        st.markdown('<div class="ms-report-panel">', unsafe_allow_html=True)
+        st.markdown(f'<div class="ms-report-text">{escape(str(yearly_data.get("relationship_text", "")))}</div>', unsafe_allow_html=True)
         peach = yearly_data.get("peach_months", [])
         if peach:
-            st.markdown("**🌸 桃花月份**")
-            tags = "".join(f'<span style="display:inline-block;background:#D4A843;color:#3D2B1A;border-radius:10px;padding:2px 10px;font-size:12px;margin:2px 3px;">{m}</span>' for m in peach)
-            st.markdown(tags, unsafe_allow_html=True)
+            st.markdown("**关系互动月份**")
+            st.markdown(_render_tags(peach), unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
     with tab4:
-        grp_start = '<div class="sect-card" style="{}">'.format(card_style())
-        st.markdown(f'{grp_start}', unsafe_allow_html=True)
-        st.markdown(yearly_data.get("health_text", ""))
+        st.markdown('<div class="ms-report-panel">', unsafe_allow_html=True)
+        st.markdown(f'<div class="ms-report-text">{escape(str(yearly_data.get("health_text", "")))}</div>', unsafe_allow_html=True)
         hc = yearly_data.get("health_concerns", [])
         if hc:
-            st.markdown("**🏥 健康提醒**")
+            st.markdown("**状态提醒**")
             for c in hc:
                 st.markdown(f"- {c}")
         st.markdown('</div>', unsafe_allow_html=True)
 
     # 风险与行动
-    st.markdown("### ⚠ 风险与行动建议")
-    risk_text = yearly_data.get("risk_text", "")
-    advice_text = yearly_data.get("advice_text", "")
-    if risk_text:
-        st.warning(risk_text)
-    if advice_text:
-        st.info(advice_text)
-
-    col_a1, col_a2 = st.columns(2)
-    with col_a1:
-        st.markdown("**✅ 适合做：**")
-        for item in yearly_data.get("suitable_actions", []):
-            st.markdown(f"- {item}")
-    with col_a2:
-        st.markdown("**❌ 不适合做：**")
-        for item in yearly_data.get("actions_to_avoid", []):
-            st.markdown(f"- {item}")
+    _render_risk_action_cards(yearly_data)
 
     # 高关注月份和机会月份
     col_m1, col_m2 = st.columns(2)
     with col_m1:
         high_attention = yearly_data.get("high_attention_months", [])
         if high_attention:
-            st.markdown("### 🔴 高关注月份")
+            st.markdown("### 高关注月份")
             st.write(_tags_text(high_attention))
     with col_m2:
         opportunities = yearly_data.get("opportunity_months", [])
         if opportunities:
-            st.markdown("### 🟢 机会月份")
+            st.markdown("### 机会月份")
             st.write(_tags_text(opportunities))
 
-    st.markdown("""---""")
+    st.markdown('<div class="ms-bazi-section"></div>', unsafe_allow_html=True)
 
-    # ====== 12个月流月详细分析 ======
-    st.markdown(f"## 📅 {target_year}年 十二个月流月分析")
+    # ====== 12个月流月卡与重点事件 ======
+    st.markdown(f"## {target_year}年 十二个月流月分析")
+    month_views = []
+    for index, enhanced_month in enumerate(enhanced_months[:12]):
+        event_result = monthly_event_results[index] if index < len(monthly_event_results) else {}
+        month_views.append(build_month_card_view(enhanced_month, event_result))
 
-    # 参考图风格：每个月一个卡片式区块
-    for em in enhanced_months:
-        month_num = em["month"]
-        month_name = em["month_name"]
-        pillar = em["pillar"]
-        gan = em["gan"]
-        zhi = em["zhi"]
-        gan_el = em["gan_element"]
-        zhi_el = em["zhi_element"]
-        ten_god = em["ten_god"]
-        relation = em["relation"]
-        direction = em["direction"]
-        events = em["events"]
-        advices = em["advices"]
-        gan_advice = em["gan_advice"]
-        has_clash = em["has_clash"]
-        branch_rels = em["branch_relations"]
+    _render_month_timeline(month_views)
+    with st.container(key="ms3-month-grid"):
+        for row_start in range(0, len(month_views), 2):
+            month_columns = st.columns(2)
+            for index in range(row_start, min(row_start + 2, len(month_views))):
+                month_view = month_views[index]
+                with month_columns[index - row_start]:
+                    _render_month_card(month_view, index)
 
-        # Pillar display
-        gan_color = ELEMENT_COLORS.get(gan_el, "#888")
-        zhi_color = ELEMENT_COLORS.get(zhi_el, "#888")
-        rel_color = RELATION_COLORS.get(relation, "#888")
-        evt_result = monthly_event_results[month_num - 1] if month_num <= len(monthly_event_results) else {}
-        event_summary_html = _month_top_event_summary(evt_result)
-
-        border = "2px solid #B85C4A" if has_clash else "1px solid #EDE6DC"
-        bg = "#FAF7F4" if not has_clash else "#B85C4A08"
-
-        st.markdown(
-            f'<div style="background:{bg};border:{border};border-radius:14px;padding:16px;margin-bottom:16px;">'
-            f'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">'
-            f'<span style="font-size:20px;font-weight:700;">{month_name}</span>'
-            f'<span style="font-size:18px;font-weight:700;letter-spacing:2px;">{pillar}</span>'
-            f'<span style="font-size:14px;color:{gan_color};">天干:{gan}({gan_el})</span>'
-            f'<span style="font-size:14px;color:{zhi_color};">地支:{zhi}({zhi_el})</span>'
-            f'<span style="font-size:14px;">十神:{ten_god}</span>'
-            f'<span style="font-size:14px;color:{rel_color};font-weight:600;">{relation}</span>'
-            + ('<span style="color:#FF5722;font-weight:700;">⚠六冲</span>' if has_clash else "")
-            + f"</div>"
-            + event_summary_html
-            + f"</div>",
-            unsafe_allow_html=True,
-        )
-
-        # Get source info for this month from monthly_data
-        month_source_titles = monthly_data[month_num - 1].get("source_titles", []) if monthly_data and month_num <= len(monthly_data) else []
-        month_basis = monthly_data[month_num - 1].get("basis", "") if monthly_data and month_num <= len(monthly_data) else ""
-
-        with st.expander(f"📖 {month_name} 详细分析", expanded=False):
-            # 大概率事件 Top 3（v1.2-F）
-            try:
-                evt_result = monthly_event_results[month_num - 1] if month_num <= len(monthly_event_results) else {}
-                top_events = evt_result.get("top_events", [])
-                if top_events:
-                    st.markdown("#### 📌 本月大概率事件")
-                    for i, e in enumerate(top_events[:3]):
-                        prob = e.get("probability_level", "需观察")
-                        prob_icon = {"较高": "🔴", "中等": "🟡", "需观察": "🟢"}.get(prob, "🟢")
-                        st.markdown(f"{prob_icon} {format_monthly_event_for_display(e)}")
-                        if i < len(top_events[:3]) - 1:
-                            st.divider()
-                    
-                    signal_rows = []
-                    for e in top_events[:3]:
-                        for signal in e.get("real_world_signals", [])[:3]:
-                            signal_rows.append(signal)
-                    if signal_rows:
-                        st.markdown("**本月容易落地的现实对象**")
-                        st.markdown("、".join(dict.fromkeys(signal_rows)))
-            except Exception:
-                pass
-
-            # 大方向
-            st.markdown(f"#### 🎯 本月大方向")
-            st.info(direction)
-
-            # 地支关系提醒
-            if branch_rels:
-                st.markdown("#### 🔗 地支关系")
-                for br in branch_rels:
-                    st.markdown(f"- {br.get('text', '')}")
-
-            # 行动建议
-            st.markdown(f"#### 💡 行动建议")
-            for ad in advices:
-                if isinstance(ad, dict):
-                    st.markdown(f"- {ad.get('text', str(ad))}")
-                else:
-                    st.markdown(f"- {ad}")
-
-            # 天干五行补充
-            st.markdown(f"#### 🌿 五行提示")
-            st.caption(gan_advice)
-
-            # 命理依据 / 参考来源
-            with st.expander("📚 命理依据 / 参考来源", expanded=False):
-                st.markdown(f"- **流月十神**：{ten_god}")
-                st.markdown(f"- **五行关系**：{relation}")
-                if branch_rels:
-                    for br in branch_rels:
-                        st.markdown(f"- **地支关系**：{br.get('label', '')} — {br.get('text', '')}")
-                if month_basis:
-                    st.markdown(f"- **规则依据**：{month_basis}")
-                if month_source_titles:
-                    st.markdown(f"- **参考来源**：{'、'.join(month_source_titles)}")
-
-    st.markdown("""---""")
-
-    # ====== 月度数据表（保留参考）======
-    st.markdown("### 📊 十二个月速览表")
-    df_rows = [
-        {
-            "月份": em["month_name"],
-            "月柱": em["pillar"],
-            "天干五行": em["gan_element"],
-            "地支五行": em["zhi_element"],
-            "十神": em["ten_god"],
-            "喜忌": em["relation"],
-            "本月方向": em["direction"],
-            "冲": "⚠" if em["has_clash"] else "",
-        }
-        for em in enhanced_months
-    ]
-    st.dataframe(pd.DataFrame(df_rows), use_container_width=True, hide_index=True)
-
-    # ====== 流月事件差异化检查（调试折叠区）======
-    with st.expander("🛠 流月事件差异化检查（开发调试）", expanded=False):
-        try:
-            # 获取12个月所有事件
-            all_results = monthly_event_results
-            
-            # 统计 event_type 出现频率
-            from collections import Counter
-            all_event_types = []
-            for r in all_results:
-                for e in r.get("top_events", []):
-                    all_event_types.append(e.get("event_type", ""))
-            type_counts = Counter(all_event_types)
-            most_common = type_counts.most_common(3) if type_counts else []
-            
-            # 连续重复检查
-            repeat_count = 0
-            prev_top = []
-            for r in all_results:
-                curr_top = [e["event_type"] for e in r.get("top_events", [])[:3]]
-                if prev_top and curr_top == prev_top:
-                    repeat_count += 1
-                prev_top = curr_top
-            
-            # 每月独有触发因素
-            unique_triggers = set()
-            for r in all_results:
-                for e in r.get("top_events", []):
-                    for f in e.get("trigger_factors", []):
-                        unique_triggers.add(f)
-            
-            st.markdown("**差异化检查结果**")
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.metric("唯一事件组合", f"{len(set([tuple(e['event_type'] for e in r.get('top_events', [])[:3]) for r in all_results]))}/12")
-            with col2:
-                st.metric("连续重复月数", repeat_count)
-            with col3:
-                st.metric("事件类型数", len(type_counts))
-            
-            if most_common:
-                st.markdown("**最常见事件**")
-                for et, cnt in most_common:
-                    st.markdown(f"- {et}: {cnt}/12 个月")
-            
-            if unique_triggers:
-                st.markdown(f"**触发因素列表（{len(unique_triggers)} 种）**")
-                st.markdown("、".join(list(unique_triggers)[:15]))
-            
-            st.markdown("**12个月事件分布**")
-            for i, r in enumerate(all_results):
-                mn = monthly_data[i].get("month_name", f"月{i+1}")
-                top_types = [e.get("event_type", "") for e in r.get("top_events", [])[:3]]
-                top_labels = [e.get("label", "") for e in r.get("top_events", [])[:3]]
-                triggers = []
-                for event in r.get("top_events", [])[:3]:
-                    triggers.extend(event.get("trigger_factors", []) or [])
-                st.markdown(f"- {mn}: {' | '.join(top_types)}")
-                st.caption(f"事件名称：{' | '.join(top_labels)}")
-                st.caption(f"独有触发因素：{'、'.join(dict.fromkeys(triggers)) or '暂无'}")
-                
-        except Exception as exc:
-            st.markdown(f"差异化检查暂不可用：{exc}")
+    st.markdown('<div class="ms-bazi-section"></div>', unsafe_allow_html=True)
 
     # 底部导航备注
     st.caption("本报告基于传统命理模型生成，仅供个人兴趣和文化研究参考。")

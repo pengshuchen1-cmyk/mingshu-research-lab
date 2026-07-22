@@ -5,6 +5,7 @@ import os
 import sys
 import unittest
 from difflib import SequenceMatcher
+from pathlib import Path
 
 APP_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if APP_DIR not in sys.path:
@@ -17,6 +18,7 @@ FORBIDDEN_PATTERNS = [
 ]
 
 SOURCE_REGISTRY_PATH = os.path.join(APP_DIR, "rules", "source_registry.json")
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def _make_chart(day_master: str, year_g: str, year_z: str, month_g: str, month_z: str,
@@ -126,7 +128,7 @@ class LifeOverviewDiffTests(unittest.TestCase):
             self.assertNotIn("error", r, f"Chart {i} failed: {r.get('error', '')}")
 
     def test_all_have_required_keys(self):
-        """每个 life_overview 包含 wealth/romance/health/career/evidence/source_ids。"""
+        """每个 life_overview 包含五维、判断依据与内部来源数据。"""
         for i, r in self.results.items():
             with self.subTest(chart=i):
                 self.assertIn("wealth_overview", r, f"Chart {i} missing wealth_overview")
@@ -135,8 +137,10 @@ class LifeOverviewDiffTests(unittest.TestCase):
                 self.assertIn("career_overview", r, f"Chart {i} missing career_overview")
                 self.assertIn("evidence", r, f"Chart {i} missing evidence")
                 self.assertIn("source_ids", r, f"Chart {i} missing source_ids")
+                self.assertIn("source_titles", r, f"Chart {i} missing source_titles")
                 self.assertGreater(len(r["evidence"]), 0, f"Chart {i} has empty evidence")
                 self.assertGreater(len(r["source_ids"]), 0, f"Chart {i} has empty source_ids")
+                self.assertGreater(len(r["source_titles"]), 0, f"Chart {i} has empty source_titles")
 
     def test_health_has_disclaimer(self):
         """健康总览必须包含 medical_disclaimer。"""
@@ -236,3 +240,70 @@ class LifeOverviewDiffTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_life_overview_structural_titles_are_plain_and_mobile_layout_is_css_driven():
+    page_source = (ROOT / "ui" / "life_overview_page.py").read_text(encoding="utf-8")
+    styles_source = (ROOT / "ui" / "styles.py").read_text(encoding="utf-8")
+
+    for heading in ["优势", "隐患", "行动建议", "命理依据"]:
+        assert f'📚 {heading}' not in page_source
+        assert f'✅ {heading}' not in page_source
+        assert f'⚠️ {heading}' not in page_source
+        assert f'📋 {heading}' not in page_source
+
+    assert "ms4-dimension-grid" in styles_source
+    assert "ms4-life-insight-grid" in styles_source
+    assert "@media (max-width: 768px)" in styles_source
+    assert "同一套分数同时呈现等级与白话简评，避免重复评分。" not in page_source
+    assert "short_summary" not in page_source
+
+
+def test_dimension_views_expose_detail_sections_from_existing_overview_fields():
+    from ui.life_overview_page import _build_dimension_views
+
+    views = _build_dimension_views(
+        {
+            "scores": {"wealth": 76},
+            "wealth_overview": {
+                "wealth_summary": "完整财富简评",
+                "wealth_opportunities": ["可核对优势"],
+                "wealth_risks": ["可核对隐患"],
+                "money_management_advice": "可执行建议",
+                "evidence": ["可核对证据"],
+            },
+        }
+    )
+
+    wealth = views[0]
+    assert wealth["summary"] == "完整财富简评"
+    assert wealth["evidence"] == ["可核对证据"]
+    assert wealth["strengths"] == ["可核对优势"]
+    assert wealth["risks"] == ["可核对隐患"]
+    assert wealth["advice"] == ["可执行建议"]
+
+
+def test_life_insight_reasons_use_evidence_not_parallel_conclusions(monkeypatch):
+    import ui.life_overview_page as page
+
+    rendered: list[str] = []
+    monkeypatch.setattr(
+        page.st,
+        "markdown",
+        lambda body, **_kwargs: rendered.append(str(body)),
+    )
+    page._render_life_insight_cards(
+        {
+            "key_strengths": ["优势结论", "第二条优势结论"],
+            "key_risks": ["隐患结论", "第二条隐患结论"],
+            "long_term_advice": ["先稳定节奏", "再逐步扩展"],
+            "evidence": ["优势判断依据", "隐患判断依据"],
+        }
+    )
+    html = "\n".join(rendered)
+
+    assert "优势判断依据" in html
+    assert "隐患判断依据" in html
+    assert "第二条优势结论" not in html
+    assert "第二条隐患结论" not in html
+    assert "建议综合了上述优势、隐患与五维表现" in html

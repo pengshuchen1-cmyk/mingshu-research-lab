@@ -576,6 +576,10 @@ def _enrich_event_payload(
         zhi_element=zhi_element,
         has_clash=has_clash,
     )
+    # v1.3-A2: 变体选择
+    event["evidence"] = event.get("trigger_factors", [])[:]
+    event["trigger_count"] = len(event.get("trigger_factors", []))
+    event = _apply_variant_to_event(event, event.get("trigger_factors", []))
     return event
 
 
@@ -717,8 +721,17 @@ def postprocess_monthly_events(all_results: list[dict]) -> list[dict]:
     # 2. 对超出6次的事件类型进行降分
     overused = {k: v for k, v in event_counts.items() if v > 6}
     if overused:
+        preserved_bridge_types: set[str] = set()
         for r in all_results:
-            r["top_events"] = [e for e in r["top_events"] if e.get("event_type", "") not in overused]
+            retained_events = []
+            for event in r["top_events"]:
+                event_type = str(event.get("event_type", ""))
+                if event_type not in overused:
+                    retained_events.append(event)
+                elif event.get("from_bridge") and event_type not in preserved_bridge_types:
+                    retained_events.append(event)
+                    preserved_bridge_types.add(event_type)
+            r["top_events"] = retained_events
             # 补回被移除事件后的空位
             if len(r["top_events"]) < 2:
                 score_map = r.get("event_score_map", {})
@@ -753,15 +766,56 @@ def postprocess_monthly_events(all_results: list[dict]) -> list[dict]:
                     "advice": _generate_advice(et), "source_ids": ["yuan_hai_zi_ping"],
                 })
 
+    # 4. 相隔较远的月份也不能出现完全相同的 Top 3 组合。
+    seen_top_sets: set[frozenset[str]] = set()
+    for result in all_results:
+        events = list(result.get("top_events", []))
+        if len(events) < 3:
+            continue
+        signature = frozenset(str(event.get("event_type", "")) for event in events[:3])
+        if signature in seen_top_sets:
+            current_types = {str(event.get("event_type", "")) for event in events[:3]}
+            replace_index = min(
+                range(3), key=lambda index: float(events[index].get("score", 0) or 0)
+            )
+            score_map = result.get("event_score_map", {})
+            alternatives = sorted(score_map.items(), key=lambda item: -float(item[1] or 0))
+            for event_type, score in alternatives:
+                if event_type in current_types or float(score or 0) < 20:
+                    continue
+                candidate_types = set(current_types)
+                candidate_types.discard(str(events[replace_index].get("event_type", "")))
+                candidate_types.add(str(event_type))
+                candidate_signature = frozenset(candidate_types)
+                if candidate_signature in seen_top_sets:
+                    continue
+                event_info = EVENT_TYPES.get(event_type, {"label": event_type, "category": "其他"})
+                events[replace_index] = {
+                    "event_type": event_type,
+                    "label": event_info["label"],
+                    "category": event_info["category"],
+                    "probability_level": "需观察",
+                    "score": score,
+                    "reason": "作为全年节奏差异化补充事件。",
+                    "advice": _generate_advice(event_type),
+                    "source_ids": ["yuan_hai_zi_ping"],
+                }
+                result["top_events"] = events
+                signature = candidate_signature
+                break
+        seen_top_sets.add(signature)
+
     for r in all_results:
         r["top_events"] = [
-            _enrich_event_payload(
-                e,
-                ten_god=r.get("ten_god", ""),
-                gan_element=r.get("gan_element", ""),
-                zhi_element=r.get("zhi_element", ""),
-                has_clash=bool(r.get("month_unique_triggers")),
-            )
+            e
+            if e.get("from_bridge")
+            else _enrich_event_payload(
+                    e,
+                    ten_god=r.get("ten_god", ""),
+                    gan_element=r.get("gan_element", ""),
+                    zhi_element=r.get("zhi_element", ""),
+                    has_clash=bool(r.get("month_unique_triggers")),
+                )
             for e in r.get("top_events", [])
         ]
 
@@ -807,16 +861,16 @@ def infer_monthly_likely_events_enhanced(
 
     # ---- Step 1: 十神主事件池（权重优先） ----
     ten_god_pools = {
-        "比肩": ["cooperation", "social_drinking", "cooperation_money", "relationship_conflict"],
-        "劫财": ["social_drinking", "favor_obligation", "debt_loss", "cooperation_money", "wealth_outflow", "relationship_conflict"],
-        "食神": ["public_expression", "business_surprise", "study_exam", "project_progress"],
-        "伤官": ["public_expression", "contract_document", "official_dispute", "relationship_conflict", "legal_compliance"],
-        "正财": ["client_payment", "wealth_inflow", "shop_property", "asset_purchase", "property_housing"],
-        "偏财": ["business_surprise", "client_payment", "wealth_inflow", "cooperation_money", "investment_risk", "debt_loss"],
+        "比肩": ["cooperation", "social_drinking", "cooperation_money", "relationship_conflict", "cooperation_boundary", "old_contact"],
+        "劫财": ["social_drinking", "favor_obligation", "debt_loss", "cooperation_money", "wealth_outflow", "relationship_conflict", "old_contact", "overwork"],
+        "食神": ["public_expression", "business_surprise", "study_exam", "project_progress", "digestion_issue"],
+        "伤官": ["public_expression", "contract_document", "official_dispute", "relationship_conflict", "legal_compliance", "emotional_pressure", "fire_anxiety"],
+        "正财": ["client_payment", "wealth_inflow", "shop_property", "asset_purchase", "property_housing", "investment_risk", "vehicle_expense"],
+        "偏财": ["business_surprise", "client_payment", "wealth_inflow", "cooperation_money", "investment_risk", "debt_loss", "travel_delay", "cashflow_pressure"],
         "正官": ["contract_document", "official_dispute", "boss_pressure", "career_change", "legal_compliance"],
-        "七杀": ["vehicle_safety", "official_dispute", "illness_symbol_attention", "contract_document", "career_change", "medical_attention"],
-        "正印": ["study_exam", "property_housing", "shop_property", "family_issue", "asset_purchase"],
-        "偏印": ["study_exam", "illness_symbol_attention", "property_housing", "medical_attention", "emotional_pressure"],
+        "七杀": ["vehicle_safety", "official_dispute", "illness_symbol_attention", "contract_document", "career_change", "medical_attention", "safety_attention", "emotional_pressure", "fire_anxiety", "respiratory_skin", "overwork", "travel_delay"],
+        "正印": ["study_exam", "property_housing", "shop_property", "family_issue", "asset_purchase", "sleep_issue", "home_repair", "family_asset"],
+        "偏印": ["study_exam", "illness_symbol_attention", "property_housing", "medical_attention", "emotional_pressure", "kidney_fatigue"],
     }
     primary_pool = ten_god_pools.get(ten_god, ["wealth_inflow", "contract_document", "health_fluctuation"])
 
@@ -1175,3 +1229,126 @@ def infer_monthly_likely_events_enhanced(
 
 # 向后兼容别名
 infer_monthly_likely_events = infer_monthly_likely_events_enhanced
+
+# ====== v1.3-A2 事件变体池 + 证据链校验 ======
+
+import json as _json
+import os as _os
+
+# 变体池加载
+_VARIANT_POOLS: dict = {}
+
+
+def _load_variant_pools() -> dict:
+    import json, os
+    path = os.path.join(os.path.dirname(__file__), "..", "rules", "monthly_event_variants.json")
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+_VARIANT_POOLS = _load_variant_pools()
+
+# v1.3-A3: 规则库加载
+import json as _json
+import os as _os
+
+_ONTOLOGY: dict = {}
+_TRIGGER_RULES: list = []
+_SPECIFIC_RULES: list = []
+
+def _load_event_ontology() -> dict:
+    path = _os.path.join(_os.path.dirname(__file__), "..", "rules", "monthly_event_ontology.json")
+    try:
+        with open(path, encoding="utf-8") as f:
+            return _json.load(f)
+    except Exception:
+        return {}
+
+def _load_trigger_rules() -> list:
+    path = _os.path.join(_os.path.dirname(__file__), "..", "rules", "monthly_event_trigger_rules.json")
+    try:
+        with open(path, encoding="utf-8") as f:
+            return _json.load(f)
+    except Exception:
+        return []
+
+def _load_specific_rules() -> list:
+    path = _os.path.join(_os.path.dirname(__file__), "..", "rules", "monthly_specific_event_rules.json")
+    try:
+        with open(path, encoding="utf-8") as f:
+            return _json.load(f)
+    except Exception:
+        return []
+
+def _reload_all_rules():
+    global _ONTOLOGY, _TRIGGER_RULES, _SPECIFIC_RULES
+    _ONTOLOGY = _load_event_ontology()
+    _TRIGGER_RULES = _load_trigger_rules()
+    _SPECIFIC_RULES = _load_specific_rules()
+
+_ONTOLOGY = _load_event_ontology()
+_TRIGGER_RULES = _load_trigger_rules()
+_SPECIFIC_RULES = _load_specific_rules()
+for _event_type, _event_info in _ONTOLOGY.items():
+    EVENT_TYPES[_event_type] = {
+        "label": _event_info.get("label", _event_type),
+        "category": _event_info.get("category", "其他"),
+    }
+
+def _match_rules_for_event(event_type: str, context: dict) -> list:
+    """匹配触发规则，返回命中的规则列表。"""
+    hits = []
+    for rule in _TRIGGER_RULES:
+        if rule.get("target_event_type") == event_type:
+            conditions = rule.get("trigger_conditions", [])
+            matched = 0
+            for cond in conditions:
+                ctype = cond.get("type", "")
+                cval = cond.get("value", [])
+                if ctype == "ten_god" and context.get("ten_god", "") in cval:
+                    matched += 1
+                elif ctype == "favorable_relation" and context.get("relation_to_favorable", "") == cval:
+                    matched += 1
+            if matched >= rule.get("min_trigger_count", 1):
+                hits.append(rule)
+    return hits
+
+def _get_source_ids_for_event(event_type: str, context: dict) -> list:
+    """从命中的规则获取 source_ids。"""
+    rules = _match_rules_for_event(event_type, context)
+    if rules:
+        return rules[0].get("source_ids", [])
+    ontology = _ONTOLOGY.get(event_type, {})
+    return ontology.get("source_ids", ["yuanhai_ziping", "sanming_tonghui", "mingli_tanyuan"])
+
+
+def _select_event_variant(event_type: str, evidence: list) -> dict | None:
+    """根据证据链选择匹配的变体，无匹配则返回默认变体。"""
+    variants = _VARIANT_POOLS.get(event_type, [])
+    if not variants:
+        return None
+    # 精确匹配：变体的 trigger_pattern 中所有项都出现在 evidence 中
+    for v in variants:
+        pattern = v.get("trigger_pattern", [])
+        if pattern and any(pat in "|".join(evidence) for pat in pattern):
+            return v
+    # 默认：使用第一个 variant（通常是 trigger_pattern 为空的通用版）
+    if variants:
+        return variants[0]
+    return None
+
+
+def _apply_variant_to_event(event: dict, evidence: list) -> dict:
+    """将变体数据应用到事件对象。"""
+    variant = _select_event_variant(event.get("event_type", ""), evidence)
+    if variant:
+        event["one_line"] = variant.get("one_line", event.get("plain_summary", ""))
+        if not event.get("plain_summary"):
+            event["plain_summary"] = variant.get("one_line", "")
+        event["real_world_signals"] = variant.get("real_world_signals", event.get("real_world_signals", []))
+        event["risk_points"] = variant.get("risk_points", event.get("risk_points", []))
+        event["advice"] = variant.get("advice", event.get("advice", ""))
+        event["variant_id"] = variant.get("variant_id", "")
+    return event

@@ -17,17 +17,23 @@ class YearlyPageMonthlyEventTests(unittest.TestCase):
             "label": "健康状态波动",
             "probability_level": "中等",
             "score": 55.0,
+            "plain_summary": "本月宜先稳住作息，再推进关键事项。",
             "reason": "流月为忌神，状态容易波动。",
+            "real_world_signals": ["睡眠节奏", "体力恢复"],
             "advice": "建议注意作息，重要事项留出缓冲。",
             "trigger_factors": ["流月为忌神", "冲+忌神健康"],
+            "user_visible_basis": "流月喜忌与地支关系共同引动状态主题。",
             "source_ids": ["yuanhai_ziping"],
         }
 
         text = format_monthly_event_for_display(event)
 
         self.assertIn("健康状态波动｜中等", text)
+        self.assertIn("一句话：本月宜先稳住作息，再推进关键事项。", text)
         self.assertIn("现实表现：流月为忌神，状态容易波动。", text)
+        self.assertIn("可能表现：睡眠节奏、体力恢复", text)
         self.assertIn("触发因素：流月为忌神、冲+忌神健康", text)
+        self.assertIn("依据简写：流月喜忌与地支关系共同引动状态主题。", text)
         self.assertIn("行动建议：建议注意作息，重要事项留出缓冲。", text)
         self.assertNotIn("{'event_type'", text)
         self.assertNotIn("source_ids", text)

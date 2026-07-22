@@ -19,25 +19,87 @@ from ui.life_overview_page import render_life_overview_page
 from ui.home import render_home
 from ui.luck_page import render_luck_page
 from ui.profile_form import render_profile_form
+from ui.privacy_center_page import render_privacy_center_page
 from ui.report_page import render_report_page
 from ui.settings_page import render_settings_page
+from ui.sixty_jiazi_page import render_sixty_jiazi_page
 from ui.special_reports_page import render_special_reports_page
 from ui.styles import get_global_css
 from ui.yearly_page import render_yearly_page
 from ui.ziwei_page import render_ziwei_page
 from utils.database import init_db
+from utils.runtime_mode import is_public_mode
+from utils.release_privacy import assert_public_release_safe
+from utils.session_privacy import maintain_private_session
+
+
+PUBLIC_PAGE_NAMES = ("首页", "今日/年度建议", "个人命盘", "简明报告", "设置/档案")
+PRODUCT_NAV_ITEMS = (
+    ("今日", "今日/年度建议"),
+    ("命盘", "个人命盘"),
+    ("报告", "简明报告"),
+    ("我的", "设置/档案"),
+)
+
+
+def _request_navigation(target: str) -> None:
+    import streamlit as st
+    st.session_state["navigate_to"] = target
+    st.rerun()
+
+
+def _resolve_active_page(
+    navigation_target: str | None,
+    persisted_active_page: str | None,
+    sidebar_selection: str,
+    pages: dict,
+    sidebar_pages: dict,
+    *,
+    sidebar_changed: bool = False,
+) -> str:
+    """Keep internal routes stable across reruns unless the user changes sidebar page."""
+    if navigation_target in pages:
+        return navigation_target
+    if (
+        persisted_active_page in pages
+        and not sidebar_changed
+        and persisted_active_page not in sidebar_pages
+    ):
+        return persisted_active_page
+    return sidebar_selection if sidebar_selection in pages else "首页"
+
+
+def render_product_navigation(active_page: str | None) -> None:
+    import streamlit as st
+    if active_page in (None, "首页"):
+        return
+    home, *items = st.columns([1.35, 1, 1, 1, 1])
+    with home:
+        if st.button("命数研究室", key="editorial_nav_home", use_container_width=True):
+            _request_navigation("首页")
+    for column, (label, target) in zip(items, PRODUCT_NAV_ITEMS):
+        with column:
+            if st.button(label, key=f"editorial_nav_{target}",
+                         type="primary" if target == active_page else "secondary",
+                         use_container_width=True):
+                _request_navigation(target)
 
 
 def get_pages() -> dict:
-    """返回左侧导航页面。"""
-    return {
+    """返回全部可访问页面。"""
+    pages = {
         "首页": render_home,
+        "今日/年度建议": render_yearly_page,
+        "个人命盘": render_life_overview_page,
+        "简明报告": render_report_page,
+        "设置/档案": render_privacy_center_page if is_public_mode() else render_archive_page,
         "验收中心": render_acceptance_page,
         "新建命盘": render_profile_form,
         "八字排盘": render_bazi_page,
         "命盘总览": render_life_overview_page,
         "综合问盘": render_inquiry_page,
         "五行喜忌": render_five_element_page,
+        "六十甲子": render_sixty_jiazi_page,
         "大运流年": render_luck_page,
         "年度运程": render_yearly_page,
         "专项报告": render_special_reports_page,
@@ -48,17 +110,33 @@ def get_pages() -> dict:
         "数据备份": render_backup_page,
         "设置": render_settings_page,
     }
+    if is_public_mode():
+        for local_only_page in ("命盘档案", "数据备份"):
+            pages.pop(local_only_page, None)
+    return pages
+
+
+def get_sidebar_pages(pages: dict) -> dict:
+    """返回大众使用版左侧导航页面。"""
+    return {name: pages[name] for name in PUBLIC_PAGE_NAMES}
 
 
 def main() -> None:
     """启动 Streamlit 应用。"""
     st.set_page_config(page_title="命数研究室", layout="wide", page_icon="✦")
-    init_db()
+    if is_public_mode():
+        from pathlib import Path
+
+        assert_public_release_safe(Path(__file__).resolve().parent)
+        maintain_private_session(st.session_state)
+    else:
+        init_db()
 
     # 注入全局 CSS
     st.markdown(f"<style>{get_global_css()}</style>", unsafe_allow_html=True)
 
     pages = get_pages()
+    sidebar_pages = get_sidebar_pages(pages)
 
     # 自定义侧边栏标题
     st.sidebar.markdown(
@@ -67,20 +145,33 @@ def main() -> None:
         unsafe_allow_html=True,
     )
 
-    # 支持首页快捷按钮导航，同时始终保留左侧导航。
+    # 产品导航通过 session state 使用命名页面键，侧栏仅保留键盘回退。
     nav_target = st.session_state.pop("navigate_to", None)
-    if nav_target and nav_target in pages:
+    if nav_target in sidebar_pages:
         st.session_state["sidebar_navigation"] = nav_target
-    elif st.session_state.get("sidebar_navigation") not in pages:
-        st.session_state["sidebar_navigation"] = list(pages.keys())[0]
+    elif st.session_state.get("sidebar_navigation") not in sidebar_pages:
+        st.session_state["sidebar_navigation"] = list(sidebar_pages.keys())[0]
 
+    previous_sidebar = st.session_state.get("last_sidebar_navigation")
     selected = st.sidebar.radio(
         "导航",
-        list(pages.keys()),
+        list(sidebar_pages.keys()),
         key="sidebar_navigation",
         label_visibility="collapsed",
     )
-    pages[selected]()
+    sidebar_changed = previous_sidebar is not None and selected != previous_sidebar
+    st.session_state["last_sidebar_navigation"] = selected
+    active_page = _resolve_active_page(
+        nav_target,
+        st.session_state.get("active_product_page"),
+        selected,
+        pages,
+        sidebar_pages,
+        sidebar_changed=sidebar_changed,
+    )
+    st.session_state["active_product_page"] = active_page
+    render_product_navigation(active_page)
+    pages[active_page]()
 
 
 if __name__ == "__main__":

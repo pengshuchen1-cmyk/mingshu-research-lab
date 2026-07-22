@@ -1,0 +1,107 @@
+{
+  "description": "农历闰月输入测试样例 — 验证闰月转换与排盘正确性",
+  "version": "v1.1-B",
+  "notes": "农历闰月输入使用负值月份（如 -2 表示闰二月）。lunar_python 将 leap month 存储为负值 month。",
+  "cases": [
+    {
+      "case_id": "leap_2023_02",
+      "description": "2023年农历闰二月十五",
+      "gender": "男",
+      "calendar_type": "lunar",
+      "lunar_year": 2023,
+      "lunar_month": -2,
+      "is_leap_month": true,
+      "lunar_day": 15,
+      "birth_datetime": "2023-04-05 10:00",
+      "expected_pillars": {
+        "year": "癸卯",
+        "month": "丙辰",
+        "day": "乙丑",
+        "hour": "辛巳"
+      },
+      "expected_day_master": "乙",
+      "review_status": "review_only",
+      "source": "2023年闰二月十五对应阳历2023-04-05（清明前后）"
+    },
+    {
+      "case_id": "leap_2017_06",
+      "description": "2017年农历闰六月廿二",
+      "gender": "女",
+      "calendar_type": "lunar",
+      "lunar_year": 2017,
+      "lunar_month": -6,
+      "is_leap_month": true,
+      "lunar_day": 22,
+      "birth_datetime": "2017-08-13 08:00",
+      "expected_pillars": {
+        "year": "丁酉",
+        "month": "戊申",
+        "day": "戊子",
+        "hour": "丙辰"
+      },
+      "expected_day_master": "戊",
+      "review_status": "review_only",
+      "source": "2017年闰六月廿二对应阳历约2017-08-13"
+    },
+    {
+      "case_id": "leap_2014_09",
+      "description": "2014年农历闰九月初五",
+      "gender": "男",
+      "calendar_type": "lunar",
+      "lunar_year": 2014,
+      "lunar_month": -9,
+      "is_leap_month": true,
+      "lunar_day": 5,
+      "birth_datetime": "2014-10-28 06:00",
+      "expected_pillars": {
+        "year": "甲午",
+        "month": "甲戌",
+        "day": "乙未",
+        "hour": "己卯"
+      },
+      "expected_day_master": "乙",
+      "review_status": "review_only",
+      "source": "2014年闰九月初五对应阳历约2014-10-28"
+    },
+    {
+      "case_id": "regular_2023_02",
+      "description": "2023年农历二月十五（非闰月）",
+      "gender": "男",
+      "calendar_type": "lunar",
+      "lunar_year": 2023,
+      "lunar_month": 2,
+      "is_leap_month": false,
+      "lunar_day": 15,
+      "birth_datetime": "2023-03-06 12:00",
+      "expected_pillars": {
+        "year": "癸卯",
+        "month": "乙卯",
+        "day": "庚子",
+        "hour": "壬午"
+      },
+      "expected_day_master": "庚",
+      "review_status": "review_only",
+      "source": "2023年二月十五对应阳历约2023-03-06"
+    },
+    {
+      "case_id": "regular_2017_06_nonleap",
+      "description": "2017年农历六月廿二（非闰月）",
+      "gender": "女",
+      "calendar_type": "lunar",
+      "lunar_year": 2017,
+      "lunar_month": 6,
+      "is_leap_month": false,
+      "lunar_day": 22,
+      "birth_datetime": "2017-07-14 16:00",
+      "expected_pillars": {
+        "year": "丁酉",
+        "month": "丁未",
+        "day": "癸酉",
+        "hour": "庚申"
+      },
+      "expected_day_master": "癸",
+      "review_status": "review_only",
+      "source": "2017年六月廿二对应阳历约2017-07-14"
+    }
+  ]
+}

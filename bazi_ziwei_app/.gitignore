@@ -3,5 +3,8 @@ __pycache__/
 **/__pycache__/
 *.pyc
 .DS_Store
-data/profiles.db
+data/*.db
+data/*backup*.db
+logs/
+*.log
 .streamlit/

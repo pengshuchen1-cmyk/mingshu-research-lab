@@ -1,0 +1,1014 @@
+[
+  {
+    "id": "wealth_01",
+    "title": "稳定工资型",
+    "dimension": "wealth",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "稳定工资型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "wealth_02",
+    "title": "项目回款型",
+    "dimension": "wealth",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "项目回款型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "wealth_03",
+    "title": "资源变现型",
+    "dimension": "wealth",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "资源变现型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "wealth_04",
+    "title": "销售成交型",
+    "dimension": "wealth",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "销售成交型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "wealth_05",
+    "title": "投资波动型",
+    "dimension": "wealth",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "投资波动型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "wealth_06",
+    "title": "合伙分账型",
+    "dimension": "wealth",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "合伙分账型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "wealth_07",
+    "title": "技术输出型",
+    "dimension": "wealth",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "技术输出型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "wealth_08",
+    "title": "内容流量型",
+    "dimension": "wealth",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "内容流量型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "wealth_09",
+    "title": "经营现金流型",
+    "dimension": "wealth",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "经营现金流型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "wealth_10",
+    "title": "家庭资产型",
+    "dimension": "wealth",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "家庭资产型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "wealth_11",
+    "title": "人情破耗型",
+    "dimension": "wealth",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "人情破耗型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "wealth_12",
+    "title": "现金流压力型",
+    "dimension": "wealth",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "现金流压力型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "romance_01",
+    "title": "稳定陪伴型",
+    "dimension": "romance",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "稳定陪伴型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "romance_02",
+    "title": "桃花社交型",
+    "dimension": "romance",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "桃花社交型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "romance_03",
+    "title": "旧人回流型",
+    "dimension": "romance",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "旧人回流型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "romance_04",
+    "title": "慢热观察型",
+    "dimension": "romance",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "慢热观察型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "romance_05",
+    "title": "家庭介入型",
+    "dimension": "romance",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "家庭介入型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "romance_06",
+    "title": "合作生情型",
+    "dimension": "romance",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "合作生情型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "romance_07",
+    "title": "关系摩擦型",
+    "dimension": "romance",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "关系摩擦型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "romance_08",
+    "title": "价值观磨合型",
+    "dimension": "romance",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "价值观磨合型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "romance_09",
+    "title": "远距离/节奏差型",
+    "dimension": "romance",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "远距离/节奏差型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "romance_10",
+    "title": "婚姻规划型",
+    "dimension": "romance",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "婚姻规划型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "health_01",
+    "title": "睡眠恢复型",
+    "dimension": "health",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "睡眠恢复型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "health_02",
+    "title": "脾胃消化型",
+    "dimension": "health",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "脾胃消化型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "health_03",
+    "title": "情绪压力型",
+    "dimension": "health",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "情绪压力型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "health_04",
+    "title": "肝胆筋骨型",
+    "dimension": "health",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "肝胆筋骨型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "health_05",
+    "title": "呼吸皮肤型",
+    "dimension": "health",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "呼吸皮肤型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "health_06",
+    "title": "腰肾精力型",
+    "dimension": "health",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "腰肾精力型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "health_07",
+    "title": "过劳疲劳型",
+    "dimension": "health",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "过劳疲劳型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "health_08",
+    "title": "湿气代谢型",
+    "dimension": "health",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "湿气代谢型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "health_09",
+    "title": "心火焦虑型",
+    "dimension": "health",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "心火焦虑型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "health_10",
+    "title": "体检复查型",
+    "dimension": "health",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "体检复查型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "career_01",
+    "title": "职场晋升型",
+    "dimension": "career",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "职场晋升型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "career_02",
+    "title": "项目突破型",
+    "dimension": "career",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "项目突破型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "career_03",
+    "title": "技术专业型",
+    "dimension": "career",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "技术专业型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "career_04",
+    "title": "内容表达型",
+    "dimension": "career",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "内容表达型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "career_05",
+    "title": "管理责任型",
+    "dimension": "career",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "管理责任型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "career_06",
+    "title": "创业经营型",
+    "dimension": "career",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "创业经营型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "career_07",
+    "title": "客户销售型",
+    "dimension": "career",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "客户销售型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "career_08",
+    "title": "合同文书型",
+    "dimension": "career",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "合同文书型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "career_09",
+    "title": "资源整合型",
+    "dimension": "career",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "资源整合型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "career_10",
+    "title": "学习转型型",
+    "dimension": "career",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "学习转型型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "career_11",
+    "title": "团队协作型",
+    "dimension": "career",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "团队协作型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  },
+  {
+    "id": "career_12",
+    "title": "独立发展型",
+    "dimension": "career",
+    "condition": {
+      "min_evidence_count": 2,
+      "driven_by": [
+        "日主强弱",
+        "十神分布",
+        "五行喜忌",
+        "宫位/地支关系"
+      ]
+    },
+    "text": "独立发展型需要结合命盘指纹判断，不以单一十神或单一五行直接下结论。",
+    "advice": "用作命局总论的差异化类型标签，输出时必须附带命盘依据和现实建议。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ]
+  }
+]

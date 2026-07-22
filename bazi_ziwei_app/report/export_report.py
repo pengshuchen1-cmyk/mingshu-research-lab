@@ -9,6 +9,7 @@ from core.five_elements import element_summary
 from report.narrative_engine import build_luck_stage_narrative, remove_repetitive_sentences
 from report.useful_god_report import generate_useful_god_explanation
 from report.special_report_common import build_special_markdown
+from report.sixty_jiazi_report import build_sixty_jiazi_markdown
 
 DISCLAIMER = "本报告基于传统命理模型生成，仅供个人兴趣、文化研究和自我规划参考，不应作为医疗、法律、投资、婚姻等重大决策的唯一依据。"
 
@@ -192,7 +193,7 @@ def _monthly_lines(
     event_results = []
     if chart:
         try:
-            from core.monthly_event_inference_engine import build_year_monthly_event_results
+            from core.monthly_event_activation_bridge import build_year_monthly_event_results
             event_results = build_year_monthly_event_results(chart, monthly_data, yearly_data, luck_data)
         except Exception:
             event_results = []
@@ -392,6 +393,8 @@ def build_markdown_report(
         "",
         "## 四、八字排盘",
         *_pillar_lines(chart),
+        "",
+        build_sixty_jiazi_markdown(chart),
         "",
         "## 五、五行结构分析",
         *_five_element_lines(chart),

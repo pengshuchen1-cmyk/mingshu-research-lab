@@ -8,12 +8,14 @@ import shutil
 from datetime import datetime
 
 from utils import database
+from utils.runtime_mode import require_local_storage
 
 
 def export_profiles_to_json() -> str:
     """
     导出所有命盘为 JSON 字符串。
     """
+    require_local_storage()
     items = []
     for profile in database.list_profiles():
         loaded = database.get_profile(profile["id"])
@@ -31,6 +33,7 @@ def import_profiles_from_json(payload: str) -> dict:
     """
     从 JSON 字符串导入命盘。
     """
+    require_local_storage()
     try:
         data = json.loads(payload)
     except json.JSONDecodeError as exc:
@@ -57,6 +60,7 @@ def backup_database(target_path: str | None = None) -> dict:
     """
     备份 SQLite 数据库文件。
     """
+    require_local_storage()
     if not os.path.exists(database.DB_PATH):
         return {"ok": False, "message": "当前还没有可备份的数据库。"}
     target_path = target_path or os.path.join(
@@ -71,6 +75,7 @@ def restore_database(source_path: str) -> dict:
     """
     从 SQLite 文件恢复数据库。
     """
+    require_local_storage()
     if not os.path.exists(source_path):
         return {"ok": False, "message": "未找到要恢复的数据库文件。"}
     os.makedirs(os.path.dirname(database.DB_PATH), exist_ok=True)

@@ -39,8 +39,9 @@ def _render_element_bar_chart(five_elements: dict) -> None:
         {"五行": elem, "权重": round(float(score), 2)}
         for elem, score in _sorted_elements(five_elements)
     ])
+    base = alt.Chart(df).properties(height=240)
     chart = (
-        alt.Chart(df)
+        base
         .mark_bar(cornerRadiusTopLeft=4, cornerRadiusTopRight=4, size=36)
         .encode(
             x=alt.X("权重:Q", title=None),
@@ -55,12 +56,26 @@ def _render_element_bar_chart(five_elements: dict) -> None:
             ),
             tooltip=["五行", alt.Tooltip("权重:Q", format=".2f")],
         )
-        .properties(height=240)
     )
-    text = chart.mark_text(
-        align="left", dx=6, fontSize=13, fontWeight="bold",
-    ).encode(text=alt.Text("权重:Q", format=".2f"))
-    st.altair_chart(chart + text, use_container_width=True)
+    text = base.mark_text(
+        align="left", dx=6, fontSize=13, fontWeight="bold", color="#E8E2D2",
+    ).encode(
+        x=alt.X("权重:Q", title=None),
+        y=alt.Y("五行:N", sort="-x", title=None),
+        text=alt.Text("权重:Q", format=".2f"),
+    )
+    final_chart = (
+        (chart + text)
+        .properties(background='transparent')
+        .configure_axis(
+            labelColor="#C9D2D0",
+            gridColor="rgba(216, 185, 106, 0.10)",
+            domainColor="rgba(216, 185, 106, 0.18)",
+            tickColor="rgba(216, 185, 106, 0.18)",
+        )
+        .configure_view(strokeWidth=0)
+    )
+    st.altair_chart(final_chart, use_container_width=True)
 
 
 def _render_element_donut_chart(five_elements: dict) -> None:
@@ -72,7 +87,7 @@ def _render_element_donut_chart(five_elements: dict) -> None:
     ])
     chart = (
         alt.Chart(df)
-        .mark_arc(innerRadius=55, outerRadius=110, stroke="#FFFFFF", strokeWidth=2)
+        .mark_arc(innerRadius=55, outerRadius=110, stroke="#0D161B", strokeWidth=2)
         .encode(
             theta=alt.Theta("分数:Q").stack(True),
             color=alt.Color(
@@ -87,7 +102,9 @@ def _render_element_donut_chart(five_elements: dict) -> None:
             ),
             tooltip=["五行", "分数", alt.Tooltip("占比:Q", format=".1f")],
         )
-        .properties(height=300)
+        .properties(height=300, background='transparent')
+        .configure_legend(labelColor="#C9D2D0", titleColor="#E8E2D2")
+        .configure_view(strokeWidth=0)
     )
     st.altair_chart(chart, use_container_width=True)
 
@@ -106,13 +123,12 @@ def _render_element_cards(summary: dict) -> None:
         season = meta.get("season", "")
         with cols[idx]:
             card_html = (
-                f'<div style="background:{color}15;border:1px solid {color}40;'
-                f'border-radius:14px;padding:14px 6px;text-align:center;">'
+                f'<div class="ms-element-card" style="border-color:{color}55;">'
                 f'<div style="font-size:28px;line-height:1.2;">{emoji}</div>'
-                f'<div style="font-size:18px;font-weight:700;color:{color};margin:6px 0;">{element}</div>'
-                f'<div style="font-size:26px;font-weight:800;color:{color};">{ratio}%</div>'
-                f'<div style="font-size:13px;color:#555;margin-top:2px;">{strength}</div>'
-                f'<div style="font-size:11px;color:#999;margin-top:4px;">{tian_gan} · {direction} · {season}</div>'
+                f'<div class="ms-element-label" style="color:{color};">{element}</div>'
+                f'<div class="ms-element-ratio" style="color:{color};">{ratio}%</div>'
+                f'<div class="ms-element-meta">{strength}</div>'
+                f'<div class="ms-element-meta">{tian_gan} · {direction} · {season}</div>'
                 f"</div>"
             )
             st.markdown(card_html, unsafe_allow_html=True)
@@ -133,10 +149,10 @@ def _render_strength_bars(five_elements: dict) -> None:
             bar_html = (
                 f'<div style="text-align:center;padding:6px 2px;">'
                 f'<div style="font-size:15px;margin-bottom:4px;">{emoji} <strong>{element}</strong></div>'
-                f'<div style="width:100%;height:10px;background:#eee;border-radius:5px;overflow:hidden;">'
+                f'<div style="width:100%;height:10px;background:var(--ms-surface-2);border:1px solid var(--ms-border);border-radius:5px;overflow:hidden;">'
                 f'<div style="width:{min(100, norm)}%;height:100%;background:{color};border-radius:5px;"></div>'
                 f"</div>"
-                f'<div style="font-size:12px;color:#666;margin-top:3px;">{label} · {norm:.0f}%</div>'
+                f'<div style="font-size:12px;color:var(--ms-muted);margin-top:3px;">{label} · {norm:.0f}%</div>'
                 f"</div>"
             )
             st.markdown(bar_html, unsafe_allow_html=True)
@@ -157,7 +173,14 @@ def _render_ten_god_chart(counts: dict) -> None:
             color=alt.Color("数量:Q", scale=alt.Scale(scheme="bluegreen"), legend=None),
             tooltip=["十神", "数量"],
         )
-        .properties(height=240)
+        .properties(height=240, background='transparent')
+        .configure_axis(
+            labelColor="#C9D2D0",
+            gridColor="rgba(216, 185, 106, 0.10)",
+            domainColor="rgba(216, 185, 106, 0.18)",
+            tickColor="rgba(216, 185, 106, 0.18)",
+        )
+        .configure_view(strokeWidth=0)
     )
     st.altair_chart(chart, use_container_width=True)
 
@@ -190,15 +213,13 @@ def render_five_element_page() -> None:
     col_left, col_right = st.columns([4, 3])
     with col_left:
         st.markdown(
-            '<div style="font-weight:600;color:#3D2B1A;font-size:16px;'
-            'margin-bottom:8px;text-align:center;">🌀 五行能量轮盘</div>',
+            '<div class="ms-chart-title" style="text-align:center;">五行能量轮盘</div>',
             unsafe_allow_html=True,
         )
         render_element_wheel(five_elements, key="five_el_wheel", width=420, animated=False)
     with col_right:
         st.markdown(
-            '<div style="font-weight:600;color:#3D2B1A;font-size:15px;'
-            'margin-bottom:12px;">📊 五行细分数值</div>',
+            '<div class="ms-chart-title">五行细分数值</div>',
             unsafe_allow_html=True,
         )
         _render_element_bar_chart(five_elements)
@@ -252,8 +273,7 @@ def render_five_element_page() -> None:
         
         # 五行结构总览
         st.markdown(
-            f'<div style="background:#FAF7F4;border-radius:10px;padding:12px 16px;margin-bottom:12px;'
-            f'box-shadow:0 1px 2px rgba(0,0,0,0.04);border-left:4px solid #B8860B;">'
+            f'<div class="ms-readable-panel" style="margin-bottom:12px;border-left:4px solid var(--ms-accent);">'
             f'<b>五行结构总览：</b>{deep_report.get("element_overview", "")}'
             f'<br><br><b>强弱平衡：</b>{deep_report.get("element_balance_summary", "")}'
             f'<br><br><b>喜用五行：</b>{"、".join(deep_report.get("favorable_elements", [])) or "暂无"}'
@@ -327,9 +347,7 @@ def render_five_element_page() -> None:
         useful = analyze_useful_god(chart)
         summary = useful.get("summary", "")
         if summary:
-            st.markdown(f'<div style="background:#FAF7F4;border-radius:10px;padding:14px 18px;margin-bottom:12px;'
-                        f'box-shadow:0 1px 2px rgba(0,0,0,0.04);font-size:14px;color:#3D2B1A;'
-                        f'border-left:4px solid #B8860B;">{summary}</div>',
+            st.markdown(f'<div class="ms-readable-panel" style="margin-bottom:12px;border-left:4px solid var(--ms-accent);">{summary}</div>',
                         unsafe_allow_html=True)
         for item in useful.get("details", []):
             with st.expander(f"喜{item.get('element', '')}：{'、'.join(item.get('keywords', []))}"):

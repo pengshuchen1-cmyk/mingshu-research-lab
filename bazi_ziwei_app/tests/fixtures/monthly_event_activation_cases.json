@@ -1,0 +1,106 @@
+{
+  "cases": [
+    {
+      "case_id": "activate_cooperation_money_001",
+      "target_event_type": "cooperation_money",
+      "description": "劫财月合作资金触发",
+      "context_overrides": {
+        "is_peer_month": true,
+        "month_ten_god": "劫财",
+        "favorable_relation": "平稳观察"
+      },
+      "expected_min_trigger_count": 2
+    },
+    {
+      "case_id": "activate_digestion_issue_001",
+      "target_event_type": "digestion_issue",
+      "description": "土旺食伤泄身触发脾胃",
+      "context_overrides": {
+        "month_element": "土",
+        "month_zhi_element": "未",
+        "is_output_month": true,
+        "is_peer_month": false
+      },
+      "expected_min_trigger_count": 2
+    },
+    {
+      "case_id": "activate_kidney_fatigue_001",
+      "target_event_type": "kidney_fatigue",
+      "description": "水被引动七杀压力触发腰肾",
+      "context_overrides": {
+        "month_element": "水",
+        "month_zhi_element": "亥",
+        "month_ten_god": "七杀",
+        "favorable_relation": "忌神相关"
+      },
+      "expected_min_trigger_count": 2
+    },
+    {
+      "case_id": "activate_legal_compliance_001",
+      "target_event_type": "legal_compliance",
+      "description": "官杀月规则事务触发",
+      "context_overrides": {
+        "is_officer_month": true,
+        "month_ten_god": "七杀",
+        "favorable_relation": "忌神相关"
+      },
+      "expected_min_trigger_count": 2
+    },
+    {
+      "case_id": "activate_overwork_001",
+      "target_event_type": "overwork",
+      "description": "官杀月过劳触发",
+      "context_overrides": {
+        "month_ten_god": "七杀",
+        "is_officer_month": true,
+        "is_peer_month": false
+      },
+      "expected_min_trigger_count": 2
+    },
+    {
+      "case_id": "activate_safety_attention_001",
+      "target_event_type": "safety_attention",
+      "description": "七杀月冲动交通安全",
+      "context_overrides": {
+        "month_ten_god": "七杀",
+        "clash_any": true,
+        "favorable_relation": "忌神相关"
+      },
+      "expected_min_trigger_count": 2
+    },
+    {
+      "case_id": "activate_travel_traffic_001",
+      "target_event_type": "travel_traffic",
+      "description": "七杀动象出行",
+      "context_overrides": {
+        "month_ten_god": "七杀",
+        "clash_any": true,
+        "favorable_relation": "忌神相关"
+      },
+      "expected_min_trigger_count": 2
+    },
+    {
+      "case_id": "activate_vehicle_expense_001",
+      "target_event_type": "vehicle_expense",
+      "description": "偏财月车辆支出",
+      "context_overrides": {
+        "is_wealth_month": true,
+        "month_ten_god": "偏财",
+        "favorable_relation": "忌神相关"
+      },
+      "expected_min_trigger_count": 2
+    },
+    {
+      "case_id": "activate_wealth_outflow_001",
+      "target_event_type": "wealth_outflow",
+      "description": "劫财月支出触发",
+      "context_overrides": {
+        "month_ten_god": "劫财",
+        "is_peer_month": true,
+        "is_wealth_month": false,
+        "favorable_relation": "平稳观察"
+      },
+      "expected_min_trigger_count": 2
+    }
+  ]
+}

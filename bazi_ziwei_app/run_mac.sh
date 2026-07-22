@@ -39,4 +39,4 @@ fi
 
 echo "正在启动命数研究室..."
 echo "  地址: http://127.0.0.1:8501"
-.venv/bin/python -m streamlit run app.py --server.port 8501
+MINGSHU_RUNTIME_MODE=local .venv/bin/python -m streamlit run app.py --server.port 8501

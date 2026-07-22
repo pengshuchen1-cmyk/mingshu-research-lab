@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from html import escape
 
 import pandas as pd
 import streamlit as st
@@ -13,6 +14,22 @@ from core.luck_engine import get_luck_cycles
 from ui.charts import STAGE_COLORS
 
 CURRENT_YEAR = datetime.now().year
+
+
+def _mini_metric_html(label: str, value: object, suffix: str = "") -> str:
+    """统一小指标卡。"""
+    return (
+        '<div class="ms-mini-metric">'
+        f'<div class="label">{escape(str(label))}</div>'
+        f'<div class="value">{escape(str(value or "待观察"))}{escape(str(suffix))}</div>'
+        "</div>"
+    )
+
+
+def _tag_html(label: object, tone: str = "") -> str:
+    """统一标签。"""
+    class_name = f"ms-tag {tone}".strip()
+    return f'<span class="{class_name}">{escape(str(label or "平稳观察"))}</span>'
 
 
 def _current_luck_item(dayun_list):
@@ -42,65 +59,58 @@ def render_luck_page():
     profile = chart.get("profile", {})
     day_master = chart.get("day_master", "")
 
-    st.title("🔮 大运流年分析")
-    st.caption(
-        f"命盘：{profile.get('name', '未命名')} | "
-        f"日主：{day_master} | "
-        f"当前年份：{CURRENT_YEAR}年"
+    st.markdown(
+        f"""
+        <section class="v106c-page-hero">
+          <div class="v106c-page-eyebrow">LUCK CYCLES · v1.0.6</div>
+          <div class="v106c-page-title">大运流年分析</div>
+          <div class="v106c-page-subtitle">
+            当前命盘：{escape(str(profile.get('name', '未命名')))}｜日主：{escape(str(day_master))}
+            ｜当前年份：{CURRENT_YEAR}年。这里重点看十年阶段、当前大运与未来流年的节奏变化。
+          </div>
+        </section>
+        """,
+        unsafe_allow_html=True,
     )
-    st.divider()
 
     # ====== 起运信息 ======
-    st.markdown("### 📌 起运信息")
+    st.markdown("### 起运信息")
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.markdown(
-            f'<div style="background:#FAF7F4;border-radius:10px;padding:12px;text-align:center;box-shadow:0 1px 2px rgba(0,0,0,0.04);">'
-            f'<div style="font-size:12px;color:#8C7A64;">起运年龄</div>'
-            f'<div style="font-size:24px;font-weight:700;">{result.get("start_age", "")}岁</div>'
-            f"</div>", unsafe_allow_html=True)
+        st.markdown(_mini_metric_html("起运年龄", result.get("start_age", ""), "岁"), unsafe_allow_html=True)
     with col2:
-        st.markdown(
-            f'<div style="background:#FAF7F4;border-radius:10px;padding:12px;text-align:center;box-shadow:0 1px 2px rgba(0,0,0,0.04);">'
-            f'<div style="font-size:12px;color:#8C7A64;">起运年份</div>'
-            f'<div style="font-size:24px;font-weight:700;">{result.get("start_year", "")}年</div>'
-            f"</div>", unsafe_allow_html=True)
+        st.markdown(_mini_metric_html("起运年份", result.get("start_year", ""), "年"), unsafe_allow_html=True)
     with col3:
-        st.markdown(
-            f'<div style="background:#FAF7F4;border-radius:10px;padding:12px;text-align:center;box-shadow:0 1px 2px rgba(0,0,0,0.04);">'
-            f'<div style="font-size:12px;color:#8C7A64;">起运月份</div>'
-            f'<div style="font-size:24px;font-weight:700;">{result.get("start_month", "")}月</div>'
-            f"</div>", unsafe_allow_html=True)
-    st.write(result.get("start_text", ""))
-
-    st.divider()
+        st.markdown(_mini_metric_html("起运月份", result.get("start_month", ""), "月"), unsafe_allow_html=True)
+    start_text = result.get("start_text", "")
+    if start_text:
+        st.markdown(f'<div class="ms-report-panel">{escape(str(start_text))}</div>', unsafe_allow_html=True)
 
     # ====== 当前大运高亮卡片 ======
     dayun_list = result.get("dayun_list", [])
     current_luck = _current_luck_item(dayun_list)
 
-    st.markdown("### ⏳ 当前大运")
+    st.markdown("### 当前大运")
     if current_luck:
         stage_level = current_luck.get("stage_level", "")
-        stage_color = STAGE_COLORS.get(stage_level, "#888")
         st.markdown(
-            f'<div style="background:{stage_color}15;border:2px solid {stage_color};'
-            f'border-radius:14px;padding:18px;margin-bottom:12px;">'
-            f'<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;">'
-            f'<div><span style="font-size:24px;font-weight:800;letter-spacing:2px;">{current_luck.get("pillar", "")}</span>'
-            f'<span style="font-size:14px;color:#666;margin-left:12px;">{current_luck.get("ten_god", "")}</span></div>'
-            f'<div><span style="font-size:14px;color:#666;">{current_luck.get("start_year", "")} - {current_luck.get("end_year", "")}年</span>'
-            f'<span style="font-size:14px;color:#666;margin-left:12px;">{current_luck.get("start_age", "")} - {current_luck.get("end_age", "")}岁</span></div>'
-            f'<div><span style="display:inline-block;background:{stage_color};color:white;padding:3px 10px;border-radius:8px;font-size:13px;font-weight:600;">{stage_level}</span></div>'
+            '<div class="ms-luck-stage-card current">'
+            '<div class="ms-luck-stage-head">'
+            f'<div><span class="ms-luck-stage-pillar">{escape(str(current_luck.get("pillar", "")))}</span>'
+            f'{_tag_html(current_luck.get("ten_god", ""), "info")}</div>'
+            f'<div class="ms-bazi-muted">{escape(str(current_luck.get("start_year", "")))} - {escape(str(current_luck.get("end_year", "")))}年'
+            f'｜{escape(str(current_luck.get("start_age", "")))} - {escape(str(current_luck.get("end_age", "")))}岁</div>'
+            f'<div>{_tag_html(stage_level)}</div>'
             f"</div>"
-            f'<div style="margin-top:10px;font-size:14px;color:#333;">{current_luck.get("stage_text", "")}</div>'
-            f"</div>", unsafe_allow_html=True,
+            f'<div class="ms-report-text">{escape(str(current_luck.get("stage_text", "")))}</div>'
+            f"</div>",
+            unsafe_allow_html=True,
         )
     else:
         st.info("当前年份暂未匹配到大运阶段，可结合完整大运表继续观察。")
 
     # ====== 完整大运表 ======
-    st.markdown("### 📋 完整大运表")
+    st.markdown("### 完整大运表")
     dayun_rows = []
     stage_map = {"偏助力": "🟢", "小有助力": "🔵", "平稳观察": "🟡", "略有压力": "🟠", "压力较明显": "🔴"}
     for item in dayun_list:
@@ -125,10 +135,9 @@ def render_luck_page():
     st.dataframe(styled_df, width='stretch', hide_index=True)
 
     # ====== 大运阶段详解 ======
-    st.markdown("### 🔍 大运各阶段详解")
+    st.markdown("### 大运各阶段详解")
     for item in dayun_list:
         stage_level = item.get("stage_level", "")
-        stage_color = STAGE_COLORS.get(stage_level, "#888")
         is_current = (current_luck and item.get("pillar") == current_luck.get("pillar"))
         label = " [当前大运]" if is_current else ""
 
@@ -139,11 +148,11 @@ def render_luck_page():
         with st.expander(title, expanded=is_current):
             # Stage level badge
             st.markdown(
-                f'<span style="display:inline-block;background:{stage_color};color:white;padding:3px 10px;border-radius:8px;font-size:13px;font-weight:600;">{stage_level}</span>',
+                f'<div class="ms-report-panel">{_tag_html(stage_level)}'
+                f'<div class="ms-report-text" style="margin-top:10px;">'
+                f'{escape(str(item.get("stage_summary", item.get("stage_text", ""))))}</div></div>',
                 unsafe_allow_html=True,
             )
-            st.write("")
-            st.write(item.get("stage_summary", item.get("stage_text", "")))
             # 根据年龄调整章节标签
             end_age = int(item.get("end_age", 99))
             if end_age <= 15:
@@ -191,10 +200,10 @@ def render_luck_page():
                 st.markdown("**💡 行动建议：**")
                 st.write(item.get("action_advice", ""))
 
-    st.divider()
+    st.markdown('<div class="ms-bazi-section"></div>', unsafe_allow_html=True)
 
     # ====== 未来十年流年 ======
-    st.markdown("### 📅 未来十年流年速览")
+    st.markdown("### 未来十年流年速览")
     yearly_rows = [
         {
             "年份": item.get("year", ""),

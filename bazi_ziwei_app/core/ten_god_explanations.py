@@ -65,6 +65,20 @@ TEN_GOD_EXPLANATIONS: dict[str, dict[str, str]] = {
     },
 }
 
+# 术语词典只保存标识映射，释义仍以 TEN_GOD_EXPLANATIONS 为唯一来源。
+TEN_GOD_TERM_IDS: dict[str, str] = {
+    "正官": "ten-god-direct-officer",
+    "七杀": "ten-god-seven-killings",
+    "正印": "ten-god-direct-resource",
+    "偏印": "ten-god-indirect-resource",
+    "正财": "ten-god-direct-wealth",
+    "偏财": "ten-god-indirect-wealth",
+    "食神": "ten-god-eating-god",
+    "伤官": "ten-god-hurting-officer",
+    "比肩": "ten-god-peer",
+    "劫财": "ten-god-rob-wealth",
+}
+
 
 def get_ten_god_explanation(ten_god: str) -> dict[str, str]:
     return TEN_GOD_EXPLANATIONS.get(ten_god, {})
@@ -84,9 +98,9 @@ def get_ten_god_html(ten_god: str) -> str:
     a = info["advice"]
     m = info["meaning"]
     return (
-        f'<div style="font-weight:600;color:#3D2B1A;font-size:15px;margin-bottom:6px;">{ten_god}</div>'
-        f'<p style="color:#5C4A32;font-size:13px;margin:0 0 8px 0;line-height:1.6;">{m}</p>'
-        f'<div style="font-size:12px;color:#5C4A32;line-height:1.7;">'
+        f'<div class="ms-bazi-title" style="font-size:15px;margin-bottom:6px;">{ten_god}</div>'
+        f'<p class="ms-bazi-text" style="font-size:13px;margin:0 0 8px 0;line-height:1.6;">{m}</p>'
+        f'<div class="ms-bazi-text" style="font-size:12px;line-height:1.7;">'
         f'<strong>性格：</strong>{p}<br>'
         f'<strong>职业：</strong>{c}<br>'
         f'<strong>建议：</strong>{a}'

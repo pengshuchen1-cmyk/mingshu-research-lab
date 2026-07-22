@@ -5,6 +5,20 @@ from __future__ import annotations
 from datetime import datetime
 
 
+def _ensure_float(value, field_name: str = "longitude", default: float = 120.0) -> float:
+    """Safely convert to float, fallback to default on failure."""
+    if value is None:
+        return default
+    if isinstance(value, (int, float)):
+        return float(value)
+    if isinstance(value, str):
+        try:
+            return float(value.strip())
+        except (ValueError, TypeError):
+            pass
+    return default
+
+
 def _call_first(obj: object, method_names: list[str]) -> str | None:
     """尝试调用第一个可用方法。"""
     for name in method_names:
@@ -51,16 +65,39 @@ def _solar_time_correction(hour: int, minute: int, longitude: float = 120.0) -> 
     return (total // 60) % 24, total % 60
 
 
-def get_lunar_eight_char(year: int, month: int, day: int, hour: int, minute: int = 0, longitude: float = 120.0) -> dict:
+
+
+def get_zi_time_boundary_note(hour: int, minute: int = 0) -> str:
+    """返回早晚子时边界提示。
+
+    这里只做用户可见提醒，不改变既有排盘规则。23:00-00:59 属于子时，
+    传统流派对 23:00 后是否换日有不同处理，靠近这个区间时适合复核。
+    """
+    try:
+        total = int(hour) * 60 + int(minute)
+    except (TypeError, ValueError):
+        return ""
+    if total >= 23 * 60 or total < 60:
+        return (
+            "出生时间处在子时边界。传统命理中早晚子时、23:00 后是否换日存在不同流派，"
+            "如果现实反馈与命盘差异较大，建议把子时换日作为复核点。"
+        )
+    return ""
+
+def get_lunar_eight_char(year: int, month: int, day: int, hour: int, minute: int = 0, longitude: float = 120.0, **extra) -> dict:
     """
     使用 lunar_python 根据公历生日生成八字四柱。
 
     longitude 参数用于真太阳时校正，默认 120°E（北京时间）。
+    **extra 用于安全吸收未命名参数（如 gender 字符串误传入）。
     """
     try:
-        hour, minute = _solar_time_correction(hour, minute, longitude)
+        safe_longitude = _ensure_float(longitude, default=120.0)
+        adjusted_hour, adjusted_minute = _solar_time_correction(hour, minute, safe_longitude)
         datetime(year, month, day, hour, minute)
-        solar = _build_solar(year, month, day, hour, minute)
+        orig_hour, orig_minute = hour, minute
+        hour, minute = orig_hour, orig_minute
+        solar = _build_solar(year, month, day, adjusted_hour, adjusted_minute)
         lunar = solar.getLunar()
         eight_char = lunar.getEightChar()
 
@@ -112,6 +149,14 @@ def get_lunar_eight_char(year: int, month: int, day: int, hour: int, minute: int
         tai_xi = _call_first(eight_char, ["getTaiXi"]) or ""
 
         return {
+            "time_mode": "standard_time" if safe_longitude == 120.0 else "true_solar_time",
+            "original_longitude": safe_longitude,
+            "true_solar_time_applied": safe_longitude != 120.0,
+            "original_birth_hour": orig_hour,
+            "original_birth_minute": orig_minute,
+            "adjusted_birth_hour": adjusted_hour,
+            "adjusted_birth_minute": adjusted_minute,
+            "zi_time_boundary_note": get_zi_time_boundary_note(adjusted_hour, adjusted_minute),
             "solar": solar_text,
             "lunar_text": lunar_text,
             "year_pillar": year_pillar,

@@ -27,12 +27,24 @@ class BaziDisplayDeduplicationTests(unittest.TestCase):
         self.assertIn("render_full_bazi_chart", text)
         self.assertIn("唯一完整展示四柱", text)
 
-    def test_overview_yearly_special_pages_use_loaded_profile_hint(self):
-        for filename in ["life_overview_page.py", "yearly_page.py", "special_reports_page.py"]:
-            with self.subTest(filename=filename):
-                text = self._read_ui(filename)
-                self.assertIn("render_loaded_profile_hint", text)
-                self.assertNotIn("render_full_bazi_chart", text)
+    def test_overview_yearly_use_compact_identity_and_special_uses_loaded_hint(self):
+        life_text = self._read_ui("life_overview_page.py")
+        self.assertIn("命盘：", life_text)
+        self.assertIn('profile.get("name"', life_text)
+        self.assertIn('dp["overall_pattern"]', life_text)
+        self.assertNotIn("render_loaded_profile_hint", life_text)
+        self.assertNotIn("render_full_bazi_chart", life_text)
+
+        yearly_text = self._read_ui("yearly_page.py")
+        self.assertIn("ms3-year-identity", yearly_text)
+        self.assertIn("当前命盘", yearly_text)
+        self.assertIn("日主{day_master}", yearly_text)
+        self.assertNotIn("render_loaded_profile_hint", yearly_text)
+        self.assertNotIn("render_full_bazi_chart", yearly_text)
+
+        special_text = self._read_ui("special_reports_page.py")
+        self.assertIn("render_loaded_profile_hint", special_text)
+        self.assertNotIn("render_full_bazi_chart", special_text)
 
     def test_report_page_may_keep_full_chart_for_export(self):
         text = self._read_ui("report_page.py")

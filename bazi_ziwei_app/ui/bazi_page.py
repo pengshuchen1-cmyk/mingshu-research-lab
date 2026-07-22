@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import streamlit as st
+
 from ui.styles import (
     ELEMENT_COLORS, ELEMENT_EMOJIS, card_style, element_tag,
     info_card_html, metric_card_html,
@@ -10,7 +12,21 @@ from core.ten_god_explanations import get_ten_god_explanation, get_ten_god_html
 from core.chart_type import classify_chart, get_combination_html
 from core.di_shi_explanations import get_di_shi_explanation, get_di_shi_color
 from core.life_assessment import life_overview
+from core.bazi_engine import ensure_bazi_analysis_fields
+from report.sixty_jiazi_report import (
+    build_four_pillar_jiazi_cards,
+    compare_nayin_with_chart_elements,
+)
 from ui.bazi_components import render_full_bazi_chart
+
+def _pick(text: str, max_len: int = 60) -> str:
+    """取第一句，超长截断。"""
+    if not text:
+        return ""
+    dot = text.find("。")
+    if 10 < dot < len(text) - 3:
+        return text[:dot + 1]
+    return text[:max_len] + "…" if len(text) > max_len else text
 
 
 def _render_element_donut(five_elements: dict, col) -> None:
@@ -24,7 +40,7 @@ def _render_element_donut(five_elements: dict, col) -> None:
     ])
     chart = (
         alt.Chart(df)
-        .mark_arc(innerRadius=45, outerRadius=90, stroke="#FAF7F4", strokeWidth=2)
+        .mark_arc(innerRadius=45, outerRadius=90, stroke="#0D161B", strokeWidth=2)
         .encode(
             theta=alt.Theta("分数:Q").stack(True),
             color=alt.Color(
@@ -37,7 +53,9 @@ def _render_element_donut(five_elements: dict, col) -> None:
             ),
             tooltip=["五行", alt.Tooltip("占比:Q", format=".1f")],
         )
-        .properties(height=240)
+        .properties(height=240, background="transparent")
+        .configure_view(strokeWidth=0)
+        .configure_legend(labelColor="#C9D2D0", titleColor="#E8E2D2")
     )
     col.altair_chart(chart, use_container_width=True)
 
@@ -53,7 +71,7 @@ def _render_ten_god_donut(counts: dict, col) -> None:
     ])
     chart = (
         alt.Chart(df)
-        .mark_arc(innerRadius=40, outerRadius=85, stroke="#FAF7F4", strokeWidth=2)
+        .mark_arc(innerRadius=40, outerRadius=85, stroke="#0D161B", strokeWidth=2)
         .encode(
             theta=alt.Theta("数量:Q").stack(True),
             color=alt.Color(
@@ -63,7 +81,9 @@ def _render_ten_god_donut(counts: dict, col) -> None:
             ),
             tooltip=["十神", alt.Tooltip("占比:Q", format=".1f")],
         )
-        .properties(height=220)
+        .properties(height=220, background="transparent")
+        .configure_view(strokeWidth=0)
+        .configure_legend(labelColor="#C9D2D0", titleColor="#E8E2D2")
     )
     col.altair_chart(chart, use_container_width=True)
 
@@ -81,13 +101,13 @@ def _render_current_luck_snapshot(chart: dict, col) -> None:
                 stage = d.get("stage_level", "")
                 col.markdown(
                     f'<div style="{card_style()}text-align:center;padding:12px;">'
-                    f'<div style="font-size:11px;color:#8C7A64;">当前大运</div>'
-                    f'<div style="font-size:18px;font-weight:700;color:#3D2B1A;'
+                    f'<div class="ms-bazi-label">当前大运</div>'
+                    f'<div class="ms-bazi-value" style="font-size:18px;letter-spacing:1px;'
                     f'font-family:\'Noto Serif SC\',serif;">{d.get("pillar", "")}</div>'
-                    f'<div style="font-size:12px;color:#5C4A32;">'
+                    f'<div class="ms-bazi-muted">'
                     f'{d.get("start_age","")}-{d.get("end_age","")}岁'
                     f'（{d.get("start_year","")}-{d.get("end_year","")}年）</div>'
-                    f'<div style="font-size:11px;color:#B8860B;margin-top:2px;">{stage}</div>'
+                    f'<div class="ms-bazi-accent" style="font-size:11px;margin-top:2px;">{stage}</div>'
                     f'</div>',
                     unsafe_allow_html=True,
                 )
@@ -108,10 +128,85 @@ def _short_lunar_text(lunar_text: str) -> str:
     return str(lunar_text or "").split(" 纳音[")[0][:32]
 
 
+def _render_sixty_jiazi_cards(chart: dict) -> None:
+    """展示四柱甲子名片和纳音/原局五行对比。"""
+    cards = build_four_pillar_jiazi_cards(chart)
+    if not cards:
+        return
+    st.markdown("### 四柱甲子名片")
+    st.caption("把四柱转成更容易理解的命数名片：看每一柱对应的人生领域、纳音象意和现实提醒。纳音只作辅助理解，不单独断事。")
+    cols = st.columns(4)
+    for idx, card in enumerate(cards):
+        keywords = "、".join(card.get("keywords", [])) or "传统象意"
+        with cols[idx]:
+            st.markdown(
+                f"""
+                <div class="ms-report-panel" style="height:100%;padding:14px;">
+                  <div class="ms-section-kicker">{card["label"]} · {card["life_area"]}</div>
+                  <div class="ms-bazi-value" style="font-size:24px;margin:4px 0;">{card["pillar"]}</div>
+                  <div class="ms-bazi-accent">纳音：{card["nayin"]}</div>
+                  <div class="ms-bazi-text" style="font-size:12px;margin-top:8px;">{card["user_explanation"]}</div>
+                  <div class="ms-bazi-muted" style="font-size:12px;margin-top:8px;">现实关键词：{keywords}</div>
+                  <div class="ms-bazi-risk" style="margin-top:8px;">提醒：{card["advice"]}</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+    comparison = compare_nayin_with_chart_elements(chart)
+    nayin_text = "｜".join(f"{k}{v}" for k, v in comparison["nayin_distribution"].items())
+    chart_text = "｜".join(
+        f"{k}{v['ratio']}%" for k, v in comparison["chart_distribution"].items()
+    )
+    st.markdown(
+        f"""
+        <div class="ms-report-panel" style="margin-top:12px;">
+          <div class="ms-section-kicker">纳音与原局五行对比</div>
+          <div class="ms-mini-metric-grid">
+            <div class="ms-mini-metric"><span>纳音五行</span><strong>{nayin_text}</strong></div>
+            <div class="ms-mini-metric"><span>原局五行</span><strong>{chart_text}</strong></div>
+          </div>
+          <p>{comparison["explanation"]}</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def _render_empty_bazi_state() -> None:
+    """未载入命盘时，展示八字排盘页的新能力和入口。"""
+    st.markdown(
+        """
+        <section class="v106c-page-hero">
+          <div class="v106c-page-eyebrow">BAZI STRUCTURE</div>
+          <div class="v106c-page-title">八字排盘</div>
+          <div class="v106c-page-subtitle">
+            当前还没有载入命盘。生成命盘后会显示完整四柱、日主强弱、格局调候、四柱甲子名片，以及纳音与原局五行对比。
+          </div>
+        </section>
+        <div class="ms-report-panel">
+          <div class="ms-section-kicker">新增能力</div>
+          <h3 style="margin:6px 0 8px;color:var(--ms-text-strong);">四柱甲子名片</h3>
+          <p>把年柱、月柱、日柱、时柱转成普通用户能看懂的命数名片：每一柱对应什么人生领域、纳音代表什么文化象意、现实里可以怎么理解。</p>
+          <p class="ms-bazi-muted">提示：纳音是辅助解释层，不单独断事；真正判断仍以日主强弱、十神、喜忌、大运流年为主。</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    c1, c2 = st.columns(2)
+    with c1:
+        if st.button("去新建命盘", use_container_width=True, key="empty_bazi_new_profile"):
+            st.session_state["navigate_to"] = "新建命盘"
+            st.rerun()
+    with c2:
+        if st.button("查看六十甲子知识库", use_container_width=True, key="empty_bazi_sixty_jiazi"):
+            st.session_state["navigate_to"] = "六十甲子"
+            st.rerun()
+
+
 def render_pillar_card(col, pillar: dict, ten_god_gan: str, hidden_stems: list,
                        is_day: bool = False) -> None:
     """单柱卡片渲染。"""
-    border = "2px solid #B8860B" if is_day else "1px solid #EDE6DC"
     na_yin = pillar.get("na_yin", "")
     xun_kong = pillar.get("xun_kong", "")
     di_shi = pillar.get("di_shi", "")
@@ -123,33 +218,31 @@ def render_pillar_card(col, pillar: dict, ten_god_gan: str, hidden_stems: list,
         for h in hidden_stems:
             items.append(f'{h["gan"]}({h["ten_god"]})')
         hidden_html = (
-            f'<div style="font-size:11px;color:#5C4A32;margin-top:4px;line-height:1.5;">'
+            f'<div class="ms-bazi-text" style="font-size:11px;margin-top:4px;line-height:1.5;">'
             f'藏：{"、".join(items)}</div>'
         )
 
     extra_html = ""
     if na_yin:
-        extra_html += f'<span style="font-size:11px;color:#B8860B;">{na_yin}</span>'
+        extra_html += f'<span class="ms-bazi-accent" style="font-size:11px;">{na_yin}</span>'
     if xun_kong:
-        extra_html += f'<span style="font-size:10px;color:#8C7A64;margin-left:6px;">空{xun_kong}</span>'
+        extra_html += f'<span class="ms-bazi-muted" style="font-size:10px;margin-left:6px;">空{xun_kong}</span>'
     if di_shi:
         extra_html += (
             f'<span style="font-size:10px;color:{di_shi_color};margin-left:6px;">'
             f'{di_shi}</span>'
         )
 
-    day_label = '<div style="font-size:10px;color:#B8860B;margin-top:2px;">★ 日主</div>' if is_day else ""
+    day_label = '<div class="ms-bazi-accent" style="font-size:10px;margin-top:2px;">★ 日主</div>' if is_day else ""
+    card_class = "ms-bazi-pillar-card day" if is_day else "ms-bazi-pillar-card"
 
     html = (
-        f'<div style="background:#FAF7F4;border-radius:10px;padding:14px 8px;'
-        f'text-align:center;{border}box-shadow:0 1px 3px rgba(0,0,0,0.06),'
-        f'0 1px 2px rgba(0,0,0,0.04);">'
-        f'<div style="font-size:12px;color:#8C7A64;margin-bottom:2px;">{pillar["name"]}</div>'
-        f'<div style="font-size:24px;font-weight:700;color:#3D2B1A;'
-        f'font-family:\'Noto Serif SC\',serif;letter-spacing:4px;">'
+        f'<div class="{card_class}">'
+        f'<div class="ms-bazi-label" style="margin-bottom:2px;">{pillar["name"]}</div>'
+        f'<div class="ms-bazi-value" style="font-size:24px;">'
         f'{pillar["pillar"]}</div>'
         f'<div style="margin:2px 0 4px;">{extra_html}</div>'
-        f'<div style="font-size:12px;color:#B8860B;font-weight:500;">{ten_god_gan}</div>'
+        f'<div class="ms-bazi-accent" style="font-size:12px;">{ten_god_gan}</div>'
         f'{hidden_html}'
         f'{day_label}'
         f'</div>'
@@ -159,19 +252,31 @@ def render_pillar_card(col, pillar: dict, ten_god_gan: str, hidden_stems: list,
 
 def render_bazi_page() -> None:
     """渲染八字排盘页面。"""
-    import streamlit as st
     import pandas as pd
 
     chart = st.session_state.get("current_chart")
     report = st.session_state.get("current_report", {})
     if not chart:
-        st.info("请先在「新建命盘」页面生成命盘。")
+        _render_empty_bazi_state()
         return
     if chart.get("error"):
         st.error(chart["error"])
         return
+    chart = ensure_bazi_analysis_fields(chart)
+    st.session_state["current_chart"] = chart
 
     profile = chart.get("profile", {})
+
+    st.markdown(
+        '<section class="v106c-page-hero">'
+        '<div class="v106c-page-eyebrow">BAZI STRUCTURE</div>'
+        '<div class="v106c-page-title">八字排盘</div>'
+        '<div class="v106c-page-subtitle">'
+        '集中查看四柱、日主强弱、格局调候、五行十神与现实倾向。页面采用和首页一致的黑金视觉，重点信息优先展示，专业细节放入折叠区。'
+        '</div>'
+        '</section>',
+        unsafe_allow_html=True,
+    )
 
     # ============== 1. 基础信息 ==============
     rows = [
@@ -194,17 +299,15 @@ def render_bazi_page() -> None:
         overview = life_overview(chart)
         if overview.get("opening"):
             st.markdown(
-                f'<div style="background:#FAF7F4;border-radius:8px;padding:10px 14px;'
-                f'border-left:3px solid #B8860B;font-size:13px;color:#3D2B1A;'
-                f'line-height:1.6;margin-bottom:12px;">{overview["opening"]}</div>',
+                f'<div class="ms-bazi-note">{_pick(overview["opening"], 80)}</div>',
                 unsafe_allow_html=True,
             )
 
         col_w, col_r, col_h = st.columns(3)
         assessments = [
-            (col_w, "💰 财富格局", overview.get("wealth", {}), "#8BA888"),
-            (col_r, "💞 桃花·感情", overview.get("romance", {}), "#D4A843"),
-            (col_h, "🏥 健康·长寿", overview.get("health", {}), "#7A9BAE"),
+            (col_w, "💰 财富格局", overview.get("wealth", {}), "var(--ms-success)"),
+            (col_r, "💞 桃花·感情", overview.get("romance", {}), "var(--ms-accent)"),
+            (col_h, "🏥 健康·长期养护", overview.get("health", {}), "var(--ms-info)"),
         ]
         for col, title, data, accent in assessments:
             with col:
@@ -216,28 +319,26 @@ def render_bazi_page() -> None:
                 detail = data.get("detail", [])
                 longevity = data.get("longevity", [])
 
-                html = f'<div style="background:#FAF7F4;border-radius:12px;padding:14px;'
-                html += f'border:1px solid #EDE6DC;box-shadow:0 1px 2px rgba(0,0,0,0.04);'
-                html += f'margin-bottom:8px;height:100%;">'
-                html += f'<div style="font-size:15px;font-weight:600;color:#3D2B1A;margin-bottom:6px;">{title}</div>'
+                html = f'<div class="ms-bazi-card" style="height:100%;">'
+                html += f'<div class="ms-bazi-title">{title}</div>'
                 if level:
                     html += f'<div style="font-size:12px;color:{accent};font-weight:600;margin-bottom:6px;">评估：{level}</div>'
                 if summary:
-                    html += f'<div style="font-size:12px;color:#5C4A32;line-height:1.6;margin-bottom:6px;">{summary}</div>'
+                    html += f'<div class="ms-bazi-text" style="font-size:12px;margin-bottom:4px;">{_pick(summary, 60)}</div>'
                 if strengths:
-                    html += '<div style="font-size:11px;color:#5C4A32;line-height:1.5;margin-bottom:4px;"><strong>优势：</strong><br>'
-                    html += '<br>'.join(f"· {s}" for s in strengths[:3])
+                    html += '<div class="ms-bazi-text" style="font-size:11px;margin-bottom:4px;"><strong>优势：</strong><br>'
+                    html += '<br>'.join(f"· {s[:40] + '…' if len(s) > 40 else s}" for s in strengths[:2])
                     html += '</div>'
                 if weaknesses:
-                    html += '<div style="font-size:11px;color:#B85C4A;line-height:1.5;margin-bottom:4px;"><strong>需注意：</strong><br>'
-                    html += '<br>'.join(f"· {s}" for s in weaknesses[:2])
+                    html += '<div class="ms-bazi-risk" style="margin-bottom:4px;"><strong>需注意：</strong><br>'
+                    html += '<br>'.join(f"· {s[:40] + '…' if len(s) > 40 else s}" for s in weaknesses[:2])
                     html += '</div>'
                 if advices:
-                    html += '<div style="font-size:11px;color:#8C7A64;line-height:1.5;"><strong>建议：</strong><br>'
-                    html += '<br>'.join(f"· {s}" for s in advices[:2])
+                    html += '<div class="ms-bazi-muted"><strong>建议：</strong><br>'
+                    html += '<br>'.join(f"· {s[:40] + '…' if len(s) > 40 else s}" for s in advices[:2])
                     html += '</div>'
                 if longevity:
-                    html += '<div style="font-size:11px;color:#7A9BAE;line-height:1.5;margin-top:4px;"><br>'.join(longevity)
+                    html += '<div style="font-size:11px;color:var(--ms-info);line-height:1.5;margin-top:4px;"><br>'.join(l[:40] + '…' if len(l) > 40 else l for l in longevity[:2])
                     html += '</div>'
                 html += '</div>'
                 col.markdown(html, unsafe_allow_html=True)
@@ -246,7 +347,7 @@ def render_bazi_page() -> None:
         w_basis = overview.get("wealth", {}).get("basis", "")
         r_basis = overview.get("romance", {}).get("basis", "")
         h_basis = overview.get("health", {}).get("basis", "")
-        st.caption(f"参考依据：{w_basis} {r_basis} {h_basis}")
+        st.caption(f"参考依据：{_pick(w_basis+' '+r_basis+' '+h_basis, 100)}")
     except Exception as e:
         st.caption(f"命局总论生成中遇到问题，不影响其他内容。详情：{e}")
 
@@ -256,6 +357,7 @@ def render_bazi_page() -> None:
     st.markdown("## 八字排盘")
     st.caption("八字排盘页是唯一完整展示四柱的主要页面。")
     render_full_bazi_chart(chart)
+    _render_sixty_jiazi_cards(chart)
 
     # ============== 3. 日主总览 ==============
     strength = chart.get("day_master_strength", {})
@@ -263,7 +365,7 @@ def render_bazi_page() -> None:
     day_element = ELEMENT_COLORS.get(
         {"甲": "木", "乙": "木", "丙": "火", "丁": "火",
          "戊": "土", "己": "土", "庚": "金", "辛": "金",
-         "壬": "水", "癸": "水"}.get(day_master, ""), "#3D2B1A"
+         "壬": "水", "癸": "水"}.get(day_master, ""), "var(--ms-text-strong)"
     )
     day_emoji = {"甲": "🌳", "乙": "🌿", "丙": "🔥", "丁": "✨",
                  "戊": "⛰️", "己": "🌱", "庚": "⚔️", "辛": "💎",
@@ -275,7 +377,7 @@ def render_bazi_page() -> None:
         st.markdown(
             f'<div style="{card_style()}text-align:center;">'
             f'<div style="font-size:32px;margin-bottom:4px;">{day_emoji}</div>'
-            f'<div style="font-size:14px;font-weight:600;color:#3D2B1A;">{day_master}</div>'
+            f'<div class="ms-bazi-title" style="font-size:14px;">{day_master}</div>'
             f'<div style="font-size:22px;font-weight:700;color:{day_element};">'
             f'{"甲乙丙丁戊己庚辛壬癸".index(day_master) // 2 if day_master in "甲乙丙丁戊己庚辛壬癸" else ""}'
             f'</div>'
@@ -309,8 +411,8 @@ def render_bazi_page() -> None:
         unfav_html = "".join(f'<span style="{element_tag(e)}">{e}</span>' for e in unfavorable)
         st.markdown(
             f'<div style="margin:8px 0;font-size:13px;line-height:2;">'
-            f'<span style="color:#5C4A32;">喜用：</span>{fav_html}'
-            f'<span style="color:#5C4A32;margin-left:20px;">忌神：</span>{unfav_html}'
+            f'<span class="ms-bazi-muted">喜用：</span>{fav_html}'
+            f'<span class="ms-bazi-muted" style="margin-left:20px;">忌神：</span>{unfav_html}'
             f'</div>',
             unsafe_allow_html=True,
         )
@@ -323,6 +425,48 @@ def render_bazi_page() -> None:
 
     # ============== 4. 命盘类型 ==============
     st.markdown("### 命盘类型")
+    pattern_info = chart.get("pattern_analysis", {})
+    seasonal_info = chart.get("seasonal_adjustment", {})
+    if pattern_info or seasonal_info:
+        col_pattern, col_season = st.columns(2)
+        with col_pattern:
+            if pattern_info:
+                st.markdown(
+                    f'<div style="{card_style()}padding:12px 14px;">'
+                    f'<div class="ms-bazi-label">格局初判</div>'
+                    f'<div class="ms-bazi-title" style="font-size:18px;">'
+                    f'{pattern_info.get("pattern", "—")}｜{pattern_info.get("quality", "")}</div>'
+                    f'<div class="ms-bazi-text" style="font-size:12px;margin-top:6px;">'
+                    f'{_pick(pattern_info.get("plain_text", ""), 120)}</div>'
+                    f'</div>',
+                    unsafe_allow_html=True,
+                )
+        with col_season:
+            if seasonal_info:
+                primary = "、".join(seasonal_info.get("primary_useful_stems", [])) or "—"
+                supporting = "、".join(seasonal_info.get("supporting_stems", [])) or "—"
+                st.markdown(
+                    f'<div style="{card_style()}padding:12px 14px;">'
+                    f'<div class="ms-bazi-label">调候用神</div>'
+                    f'<div class="ms-bazi-title" style="font-size:18px;">先看 {primary}</div>'
+                    f'<div class="ms-bazi-text" style="font-size:12px;margin-top:4px;">'
+                    f'辅助：{supporting}<br>{_pick(seasonal_info.get("plain_text", ""), 120)}</div>'
+                    f'</div>',
+                    unsafe_allow_html=True,
+                )
+        with st.expander("格局与调候依据", expanded=False):
+            if pattern_info.get("evidence"):
+                st.markdown("**格局依据**")
+                for item in pattern_info.get("evidence", [])[:8]:
+                    st.markdown(f"- {item}")
+            if seasonal_info.get("evidence"):
+                st.markdown("**调候依据**")
+                for item in seasonal_info.get("evidence", [])[:8]:
+                    st.markdown(f"- {item}")
+            if pattern_info.get("basis"):
+                st.caption(pattern_info.get("basis"))
+            if seasonal_info.get("basis"):
+                st.caption(seasonal_info.get("basis"))
     try:
         ct = classify_chart(chart)
         tags = []
@@ -336,9 +480,7 @@ def render_bazi_page() -> None:
             tags.append(sc)
 
         tag_html = "".join(
-            f'<span style="display:inline-block;background:#EDE6DC;color:#3D2B1A;'
-            f'border-radius:12px;padding:3px 12px;font-size:13px;margin:3px 4px;'
-            f'font-weight:500;">{t}</span>'
+            f'<span class="ms-bazi-pill">{t}</span>'
             for t in tags
         )
         st.markdown(
@@ -348,9 +490,7 @@ def render_bazi_page() -> None:
         summary = ct.get("summary", "")
         if summary:
             st.markdown(
-                f'<div style="background:#FAF7F4;border-radius:8px;padding:10px 14px;'
-                f'border-left:3px solid #B8860B;font-size:13px;color:#3D2B1A;'
-                f'line-height:1.6;">{summary}</div>',
+                f'<div class="ms-bazi-note">{_pick(summary, 80)}</div>',
                 unsafe_allow_html=True,
             )
     except Exception:
@@ -377,10 +517,9 @@ def render_bazi_page() -> None:
         yp = get_year_pillar(cy)
         st.markdown(
             f'<div style="{card_style()}text-align:center;padding:12px;">'
-            f'<div style="font-size:11px;color:#8C7A64;">当前流年</div>'
-            f'<div style="font-size:18px;font-weight:700;color:#3D2B1A;'
-            f'font-family:\'Noto Serif SC\',serif;">{yp}</div>'
-            f'<div style="font-size:12px;color:#5C4A32;">{cy}年</div>'
+            f'<div class="ms-bazi-label">当前流年</div>'
+            f'<div class="ms-bazi-value" style="font-size:18px;letter-spacing:1px;">{yp}</div>'
+            f'<div class="ms-bazi-muted">{cy}年</div>'
             f'</div>',
             unsafe_allow_html=True,
         )
@@ -401,15 +540,15 @@ def render_bazi_page() -> None:
             bar_html_parts = []
             for elem, score in sorted_els:
                 pct = round(float(score) / total * 100, 1)
-                color = ELEMENT_COLORS.get(elem, "#8C7A64")
+                color = ELEMENT_COLORS.get(elem, "var(--ms-muted)")
                 emoji = ELEMENT_EMOJIS.get(elem, "")
                 bar_html_parts.append(
                     f'<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">'
                     f'<span style="width:28px;font-size:13px;text-align:right;">{emoji}</span>'
-                    f'<span style="width:16px;font-size:12px;color:#5C4A32;">{elem}</span>'
-                    f'<div style="flex:1;height:10px;background:#EDE6DC;border-radius:5px;overflow:hidden;">'
+                    f'<span class="ms-bazi-text" style="width:16px;font-size:12px;">{elem}</span>'
+                    f'<div class="ms-bazi-bar">'
                     f'<div style="width:{pct}%;height:100%;background:{color};border-radius:5px;"></div></div>'
-                    f'<span style="width:36px;font-size:11px;color:#5C4A32;text-align:right;">{pct}%</span>'
+                    f'<span class="ms-bazi-muted" style="width:36px;font-size:11px;text-align:right;">{pct}%</span>'
                     f'</div>'
                 )
             st.markdown(
@@ -455,8 +594,7 @@ def render_bazi_page() -> None:
                     html = get_ten_god_html(tg)
                     if html:
                         st.markdown(
-                            f'<div style="background:#FAF7F4;border-radius:8px;padding:10px 12px;'
-                            f'margin-bottom:6px;box-shadow:0 1px 2px rgba(0,0,0,0.03);">'
+                            f'<div class="ms-bazi-card" style="padding:10px 12px;margin-bottom:6px;">'
                             f'{html}</div>',
                             unsafe_allow_html=True,
                         )
@@ -482,7 +620,7 @@ def render_bazi_page() -> None:
             stems = chart.get("hidden_stems", {}).get(key, [])
             if stems:
                 st.markdown(
-                    f'<span style="color:#5C4A32;font-weight:500;">'
+                    f'<span class="ms-bazi-accent">'
                     f'{chart["pillars"][key]["name"]}：</span>{_hidden_text(stems)}',
                     unsafe_allow_html=True,
                 )

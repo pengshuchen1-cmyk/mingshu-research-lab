@@ -50,6 +50,14 @@ class ZiweiPageReadabilityTest(unittest.TestCase):
         self.assertIn("大限复核", text)
         self.assertIn("仍需真实盘例继续校验", text)
 
+    def test_ziwei_page_exposes_plain_triangle_manual(self) -> None:
+        text = (PROJECT_ROOT / "ui" / "ziwei_page.py").read_text(encoding="utf-8")
+
+        self.assertIn("relation_cards", text)
+        self.assertIn("plain_explanation", text)
+        self.assertIn("zw-triangle-role", text)
+        self.assertIn("参考依据", text)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -31,13 +31,24 @@ def _parse_date(value: object) -> date:
         return date.today()
 
 
+def _render_archive_empty_state() -> None:
+    """引导首次使用者创建本机保存的命盘。"""
+    import streamlit as st
+
+    st.markdown("## 我的命盘")
+    st.write("数据仅保存在本机。建立命盘后，你可以在这里加载、编辑或删除自己的资料。")
+    if st.button("开始个人分析", type="primary", use_container_width=True):
+        st.session_state["navigate_to"] = "新建命盘"
+        st.rerun()
+
+
 def render_archive_page() -> None:
     """
     渲染命盘档案页面。
     """
     import streamlit as st
 
-    st.title("命盘档案")
+    st.title("我的命盘")
     init_db()
     st.markdown("### 搜索命盘")
     col1, col2 = st.columns([2, 1])
@@ -46,7 +57,7 @@ def render_archive_page() -> None:
 
     profiles = search_profiles(keyword=keyword, gender=gender)
     if not profiles:
-        st.info("暂无符合条件的命盘。")
+        _render_archive_empty_state()
         return
 
     st.markdown("### 已保存命盘")
@@ -94,13 +105,13 @@ def render_archive_page() -> None:
             st.success("已加载该命盘，正在打开「八字排盘」。")
             st.rerun()
 
-        if col_report.button("重新生成报告"):
+        if col_report.button("重新生成"):
             new_report = generate_basic_bazi_report(loaded.get("chart", {}))
             update_report(profile_id, new_report)
             st.session_state["current_report"] = new_report
             st.success("报告已重新生成。")
 
-        st.markdown("### 编辑基础信息")
+        st.markdown("### 编辑资料")
         with st.form(f"edit_profile_{profile_id}"):
             new_name = st.text_input("姓名", value=loaded.get("name", ""))
             new_birth_place = st.text_input("出生地点", value=loaded.get("birth_place", "") or "")
@@ -122,6 +133,8 @@ def render_archive_page() -> None:
             rebuild_birth_date = st.date_input(
                 "出生日期",
                 value=_parse_date(loaded.get("birth_date")),
+                min_value=date(1900, 1, 1),
+                max_value=date.today(),
                 key=f"rebuild_birth_date_{profile_id}",
             )
             col_hour, col_minute = st.columns(2)
@@ -194,7 +207,7 @@ def render_archive_page() -> None:
                 st.rerun()
 
         st.markdown("### 删除命盘")
-        confirm_delete = st.checkbox("我确认要删除该命盘及相关报告", key=f"confirm_delete_{profile_id}")
+        confirm_delete = st.checkbox("确认删除：我了解这会删除该命盘及相关报告", key=f"confirm_delete_{profile_id}")
         if st.button("删除命盘", disabled=not confirm_delete):
             delete_profile(profile_id)
             st.success("命盘已删除。")

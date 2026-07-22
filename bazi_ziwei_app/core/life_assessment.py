@@ -528,6 +528,50 @@ def life_overview(chart: dict) -> dict:
 
     返回财富、桃花/感情、健康长寿三个维度的评估。
     """
+    try:
+        from core.life_overview_engine import analyze_life_overview
+
+        dp = analyze_life_overview(chart)
+        wealth = dp.get("wealth_overview", {})
+        romance = dp.get("romance_overview", {})
+        health = dp.get("health_overview", {})
+        return {
+            "opening": dp.get("overall_summary", ""),
+            "wealth": {
+                "level": wealth.get("wealth_level", ""),
+                "summary": wealth.get("wealth_summary", ""),
+                "strengths": wealth.get("wealth_opportunities", []) + wealth.get("income_modes", [])[:1],
+                "weaknesses": wealth.get("wealth_risks", []),
+                "advice": [wealth.get("money_management_advice", "")],
+                "detail": wealth.get("income_modes", []),
+                "basis": "依据财星、食伤、比劫、日主强弱和喜忌五行综合判断。",
+                "source_titles": ["渊海子平", "三命通会", "子平真诠"],
+            },
+            "romance": {
+                "level": romance.get("romance_level", ""),
+                "summary": romance.get("romance_summary", ""),
+                "strengths": romance.get("relationship_strengths", []) + romance.get("attraction_points", [])[:1],
+                "weaknesses": romance.get("relationship_risks", []),
+                "advice": [romance.get("communication_advice", "")],
+                "detail": romance.get("suitable_partner_type", []),
+                "basis": "依据夫妻宫、配偶星、桃花、日支冲合和十神结构综合判断。",
+                "source_titles": ["渊海子平", "三命通会", "命理探源"],
+            },
+            "health": {
+                "level": health.get("health_stability_level", ""),
+                "summary": health.get("health_summary", ""),
+                "strengths": health.get("body_system_tendencies", [])[:2],
+                "weaknesses": health.get("lifestyle_risks", []),
+                "advice": health.get("long_term_care_advice", []),
+                "detail": health.get("sensitive_elements", []),
+                "longevity": [health.get("medical_disclaimer", "")],
+                "basis": "依据五行偏旺偏弱、日主强弱和压力结构做状态参考，不作医学诊断。",
+                "source_titles": ["穷通宝鉴", "三命通会", "滴天髓阐微"],
+            },
+        }
+    except Exception:
+        pass
+
     wealth = assess_wealth(chart)
     romance = assess_romance(chart)
     health = assess_health(chart)

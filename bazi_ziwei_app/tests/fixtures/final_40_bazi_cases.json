@@ -1,0 +1,942 @@
+[
+  {
+    "case_id": "样例-001",
+    "synthetic": true,
+    "boundary_tags": [
+      "立春前",
+      "子时边界"
+    ],
+    "profile": {
+      "name": "样例-001",
+      "gender": "男",
+      "birth_date": "2024-02-03",
+      "birth_hour": 23,
+      "birth_minute": 30,
+      "calendar_type": "solar",
+      "use_true_solar_time": false
+    },
+    "expected": {
+      "pillars": "癸卯|乙丑|丁酉|壬子",
+      "day_master": "丁",
+      "day_master_element": "火",
+      "hour_branch": "子",
+      "strength": "从弱",
+      "strength_bucket": "身弱",
+      "fingerprint": "20151184cfc95a8c2c3f"
+    }
+  },
+  {
+    "case_id": "样例-002",
+    "synthetic": true,
+    "boundary_tags": [
+      "立春后"
+    ],
+    "profile": {
+      "name": "样例-002",
+      "gender": "女",
+      "birth_date": "2024-02-04",
+      "birth_hour": 20,
+      "birth_minute": 30,
+      "calendar_type": "solar",
+      "use_true_solar_time": false
+    },
+    "expected": {
+      "pillars": "甲辰|丙寅|戊戌|壬戌",
+      "day_master": "戊",
+      "day_master_element": "土",
+      "hour_branch": "戌",
+      "strength": "身强",
+      "strength_bucket": "身强",
+      "fingerprint": "faa5ebb4290797af33aa"
+    }
+  },
+  {
+    "case_id": "样例-003",
+    "synthetic": true,
+    "boundary_tags": [
+      "惊蛰交接日"
+    ],
+    "profile": {
+      "name": "样例-003",
+      "gender": "男",
+      "birth_date": "2024-03-05",
+      "birth_hour": 10,
+      "birth_minute": 0,
+      "calendar_type": "solar",
+      "use_true_solar_time": false
+    },
+    "expected": {
+      "pillars": "甲辰|丙寅|戊辰|丁巳",
+      "day_master": "戊",
+      "day_master_element": "土",
+      "hour_branch": "巳",
+      "strength": "身强",
+      "strength_bucket": "身强",
+      "fingerprint": "e49da59c4b6d3b14c742"
+    }
+  },
+  {
+    "case_id": "样例-004",
+    "synthetic": true,
+    "boundary_tags": [
+      "清明交接日"
+    ],
+    "profile": {
+      "name": "样例-004",
+      "gender": "女",
+      "birth_date": "2024-04-04",
+      "birth_hour": 16,
+      "birth_minute": 0,
+      "calendar_type": "solar",
+      "use_true_solar_time": false
+    },
+    "expected": {
+      "pillars": "甲辰|戊辰|戊戌|庚申",
+      "day_master": "戊",
+      "day_master_element": "土",
+      "hour_branch": "申",
+      "strength": "身强",
+      "strength_bucket": "身强",
+      "fingerprint": "d5264cc9dbc60b282d00"
+    }
+  },
+  {
+    "case_id": "样例-005",
+    "synthetic": true,
+    "boundary_tags": [
+      "立夏交接日"
+    ],
+    "profile": {
+      "name": "样例-005",
+      "gender": "男",
+      "birth_date": "2024-05-05",
+      "birth_hour": 8,
+      "birth_minute": 0,
+      "calendar_type": "solar",
+      "use_true_solar_time": false
+    },
+    "expected": {
+      "pillars": "甲辰|戊辰|己巳|戊辰",
+      "day_master": "己",
+      "day_master_element": "土",
+      "hour_branch": "辰",
+      "strength": "身强",
+      "strength_bucket": "身强",
+      "fingerprint": "36d612f0ff36e4d62126"
+    }
+  },
+  {
+    "case_id": "样例-006",
+    "synthetic": true,
+    "boundary_tags": [
+      "芒种交接日"
+    ],
+    "profile": {
+      "name": "样例-006",
+      "gender": "女",
+      "birth_date": "2024-06-05",
+      "birth_hour": 12,
+      "birth_minute": 0,
+      "calendar_type": "solar",
+      "use_true_solar_time": false
+    },
+    "expected": {
+      "pillars": "甲辰|己巳|庚子|壬午",
+      "day_master": "庚",
+      "day_master_element": "金",
+      "hour_branch": "午",
+      "strength": "从弱",
+      "strength_bucket": "身弱",
+      "fingerprint": "748de97920d6ab1d5eee"
+    }
+  },
+  {
+    "case_id": "样例-007",
+    "synthetic": true,
+    "boundary_tags": [
+      "真太阳时跨午巳"
+    ],
+    "profile": {
+      "name": "样例-007",
+      "gender": "男",
+      "birth_date": "1991-07-19",
+      "birth_hour": 11,
+      "birth_minute": 10,
+      "calendar_type": "solar",
+      "use_true_solar_time": true,
+      "birth_longitude": 100.0
+    },
+    "expected": {
+      "pillars": "辛未|乙未|庚寅|辛巳",
+      "day_master": "庚",
+      "day_master_element": "金",
+      "hour_branch": "巳",
+      "strength": "身强",
+      "strength_bucket": "身强",
+      "fingerprint": "f336b5653dab61af988d"
+    }
+  },
+  {
+    "case_id": "样例-008",
+    "synthetic": true,
+    "boundary_tags": [
+      "真太阳时跨子亥",
+      "子时边界"
+    ],
+    "profile": {
+      "name": "样例-008",
+      "gender": "女",
+      "birth_date": "2001-11-09",
+      "birth_hour": 23,
+      "birth_minute": 10,
+      "calendar_type": "solar",
+      "use_true_solar_time": true,
+      "birth_longitude": 105.0
+    },
+    "expected": {
+      "pillars": "辛巳|己亥|丙子|己亥",
+      "day_master": "丙",
+      "day_master_element": "火",
+      "hour_branch": "亥",
+      "strength": "身弱",
+      "strength_bucket": "身弱",
+      "fingerprint": "cb4133b6d2dc1098569d"
+    }
+  },
+  {
+    "case_id": "样例-009",
+    "synthetic": true,
+    "boundary_tags": [],
+    "profile": {
+      "name": "样例-009",
+      "gender": "男",
+      "birth_date": "1985-02-04",
+      "birth_hour": 0,
+      "birth_minute": 0,
+      "calendar_type": "solar",
+      "use_true_solar_time": false
+    },
+    "expected": {
+      "pillars": "甲子|丁丑|甲戌|甲子",
+      "day_master": "甲",
+      "day_master_element": "木",
+      "hour_branch": "子",
+      "strength": "中和",
+      "strength_bucket": "中和",
+      "fingerprint": "b9e93b6c3737965ec414"
+    }
+  },
+  {
+    "case_id": "样例-010",
+    "synthetic": true,
+    "boundary_tags": [],
+    "profile": {
+      "name": "样例-010",
+      "gender": "女",
+      "birth_date": "1986-04-10",
+      "birth_hour": 4,
+      "birth_minute": 0,
+      "calendar_type": "solar",
+      "use_true_solar_time": false
+    },
+    "expected": {
+      "pillars": "丙寅|壬辰|甲申|丙寅",
+      "day_master": "甲",
+      "day_master_element": "木",
+      "hour_branch": "寅",
+      "strength": "中和",
+      "strength_bucket": "中和",
+      "fingerprint": "f1a8c42dd98fb1beea45"
+    }
+  },
+  {
+    "case_id": "样例-011",
+    "synthetic": true,
+    "boundary_tags": [],
+    "profile": {
+      "name": "样例-011",
+      "gender": "男",
+      "birth_date": "1987-04-15",
+      "birth_hour": 6,
+      "birth_minute": 0,
+      "calendar_type": "solar",
+      "use_true_solar_time": false
+    },
+    "expected": {
+      "pillars": "丁卯|甲辰|甲午|丁卯",
+      "day_master": "甲",
+      "day_master_element": "木",
+      "hour_branch": "卯",
+      "strength": "中和",
+      "strength_bucket": "中和",
+      "fingerprint": "6bcb7e503fe7af3180cd"
+    }
+  },
+  {
+    "case_id": "样例-012",
+    "synthetic": true,
+    "boundary_tags": [],
+    "profile": {
+      "name": "样例-012",
+      "gender": "女",
+      "birth_date": "1988-11-15",
+      "birth_hour": 12,
+      "birth_minute": 0,
+      "calendar_type": "solar",
+      "use_true_solar_time": false
+    },
+    "expected": {
+      "pillars": "戊辰|癸亥|甲戌|庚午",
+      "day_master": "甲",
+      "day_master_element": "木",
+      "hour_branch": "午",
+      "strength": "中和",
+      "strength_bucket": "中和",
+      "fingerprint": "05e9b1a3f8dd9f483f80"
+    }
+  },
+  {
+    "case_id": "样例-013",
+    "synthetic": true,
+    "boundary_tags": [],
+    "profile": {
+      "name": "样例-013",
+      "gender": "男",
+      "birth_date": "1989-10-22",
+      "birth_hour": 16,
+      "birth_minute": 0,
+      "calendar_type": "solar",
+      "use_true_solar_time": false
+    },
+    "expected": {
+      "pillars": "己巳|甲戌|乙卯|甲申",
+      "day_master": "乙",
+      "day_master_element": "木",
+      "hour_branch": "申",
+      "strength": "中和",
+      "strength_bucket": "中和",
+      "fingerprint": "3c746e84e49cc40b07fd"
+    }
+  },
+  {
+    "case_id": "样例-014",
+    "synthetic": true,
+    "boundary_tags": [],
+    "profile": {
+      "name": "样例-014",
+      "gender": "女",
+      "birth_date": "1990-07-19",
+      "birth_hour": 20,
+      "birth_minute": 0,
+      "calendar_type": "solar",
+      "use_true_solar_time": false
+    },
+    "expected": {
+      "pillars": "庚午|癸未|乙酉|丙戌",
+      "day_master": "乙",
+      "day_master_element": "木",
+      "hour_branch": "戌",
+      "strength": "从弱",
+      "strength_bucket": "身弱",
+      "fingerprint": "04fd5ec03d392edd80af"
+    }
+  },
+  {
+    "case_id": "样例-015",
+    "synthetic": true,
+    "boundary_tags": [],
+    "profile": {
+      "name": "样例-015",
+      "gender": "男",
+      "birth_date": "1991-08-13",
+      "birth_hour": 4,
+      "birth_minute": 0,
+      "calendar_type": "solar",
+      "use_true_solar_time": false
+    },
+    "expected": {
+      "pillars": "辛未|丙申|乙卯|戊寅",
+      "day_master": "乙",
+      "day_master_element": "木",
+      "hour_branch": "寅",
+      "strength": "身弱",
+      "strength_bucket": "身弱",
+      "fingerprint": "fa5186ff5688a9bad408"
+    }
+  },
+  {
+    "case_id": "样例-016",
+    "synthetic": true,
+    "boundary_tags": [],
+    "profile": {
+      "name": "样例-016",
+      "gender": "女",
+      "birth_date": "1992-09-16",
+      "birth_hour": 0,
+      "birth_minute": 0,
+      "calendar_type": "solar",
+      "use_true_solar_time": false
+    },
+    "expected": {
+      "pillars": "壬申|己酉|乙未|丙子",
+      "day_master": "乙",
+      "day_master_element": "木",
+      "hour_branch": "子",
+      "strength": "从弱",
+      "strength_bucket": "身弱",
+      "fingerprint": "b19a496cac1249faa671"
+    }
+  },
+  {
+    "case_id": "样例-017",
+    "synthetic": true,
+    "boundary_tags": [],
+    "profile": {
+      "name": "样例-017",
+      "gender": "男",
+      "birth_date": "1994-02-09",
+      "birth_hour": 4,
+      "birth_minute": 0,
+      "calendar_type": "solar",
+      "use_true_solar_time": false
+    },
+    "expected": {
+      "pillars": "甲戌|丙寅|丙寅|庚寅",
+      "day_master": "丙",
+      "day_master_element": "火",
+      "hour_branch": "寅",
+      "strength": "身强",
+      "strength_bucket": "身强",
+      "fingerprint": "51ea9345a52a2e860c54"
+    }
+  },
+  {
+    "case_id": "样例-018",
+    "synthetic": true,
+    "boundary_tags": [],
+    "profile": {
+      "name": "样例-018",
+      "gender": "女",
+      "birth_date": "1995-05-15",
+      "birth_hour": 8,
+      "birth_minute": 0,
+      "calendar_type": "solar",
+      "use_true_solar_time": false
+    },
+    "expected": {
+      "pillars": "乙亥|辛巳|丙午|壬辰",
+      "day_master": "丙",
+      "day_master_element": "火",
+      "hour_branch": "辰",
+      "strength": "身强",
+      "strength_bucket": "身强",
+      "fingerprint": "617e39b46e0f9378d2e1"
+    }
+  },
+  {
+    "case_id": "样例-019",
+    "synthetic": true,
+    "boundary_tags": [],
+    "profile": {
+      "name": "样例-019",
+      "gender": "男",
+      "birth_date": "1996-02-19",
+      "birth_hour": 14,
+      "birth_minute": 0,
+      "calendar_type": "solar",
+      "use_true_solar_time": false
+    },
+    "expected": {
+      "pillars": "丙子|庚寅|丙戌|乙未",
+      "day_master": "丙",
+      "day_master_element": "火",
+      "hour_branch": "未",
+      "strength": "身强",
+      "strength_bucket": "身强",
+      "fingerprint": "ac30be8360d9e184248a"
+    }
+  },
+  {
+    "case_id": "样例-020",
+    "synthetic": true,
+    "boundary_tags": [],
+    "profile": {
+      "name": "样例-020",
+      "gender": "女",
+      "birth_date": "1997-02-04",
+      "birth_hour": 18,
+      "birth_minute": 0,
+      "calendar_type": "solar",
+      "use_true_solar_time": false
+    },
+    "expected": {
+      "pillars": "丁丑|壬寅|丁丑|己酉",
+      "day_master": "丁",
+      "day_master_element": "火",
+      "hour_branch": "酉",
+      "strength": "中和",
+      "strength_bucket": "中和",
+      "fingerprint": "44eaa2196af16db26633"
+    }
+  },
+  {
+    "case_id": "样例-021",
+    "synthetic": true,
+    "boundary_tags": [],
+    "profile": {
+      "name": "样例-021",
+      "gender": "男",
+      "birth_date": "1998-02-19",
+      "birth_hour": 22,
+      "birth_minute": 0,
+      "calendar_type": "solar",
+      "use_true_solar_time": false
+    },
+    "expected": {
+      "pillars": "戊寅|甲寅|丁酉|辛亥",
+      "day_master": "丁",
+      "day_master_element": "火",
+      "hour_branch": "亥",
+      "strength": "中和",
+      "strength_bucket": "中和",
+      "fingerprint": "cea30cd9f5a1ffed6e18"
+    }
+  },
+  {
+    "case_id": "样例-022",
+    "synthetic": true,
+    "boundary_tags": [],
+    "profile": {
+      "name": "样例-022",
+      "gender": "女",
+      "birth_date": "1999-04-25",
+      "birth_hour": 6,
+      "birth_minute": 0,
+      "calendar_type": "solar",
+      "use_true_solar_time": false
+    },
+    "expected": {
+      "pillars": "己卯|戊辰|丁未|癸卯",
+      "day_master": "丁",
+      "day_master_element": "火",
+      "hour_branch": "卯",
+      "strength": "中和",
+      "strength_bucket": "中和",
+      "fingerprint": "9a0d4968d10260fe5477"
+    }
+  },
+  {
+    "case_id": "样例-023",
+    "synthetic": true,
+    "boundary_tags": [],
+    "profile": {
+      "name": "样例-023",
+      "gender": "男",
+      "birth_date": "2000-08-18",
+      "birth_hour": 2,
+      "birth_minute": 0,
+      "calendar_type": "solar",
+      "use_true_solar_time": false
+    },
+    "expected": {
+      "pillars": "庚辰|甲申|戊申|癸丑",
+      "day_master": "戊",
+      "day_master_element": "土",
+      "hour_branch": "丑",
+      "strength": "中和",
+      "strength_bucket": "中和",
+      "fingerprint": "379c43f99fc6bb7f69d7"
+    }
+  },
+  {
+    "case_id": "样例-024",
+    "synthetic": true,
+    "boundary_tags": [],
+    "profile": {
+      "name": "样例-024",
+      "gender": "女",
+      "birth_date": "2001-06-05",
+      "birth_hour": 4,
+      "birth_minute": 0,
+      "calendar_type": "solar",
+      "use_true_solar_time": false
+    },
+    "expected": {
+      "pillars": "辛巳|癸巳|己亥|丙寅",
+      "day_master": "己",
+      "day_master_element": "土",
+      "hour_branch": "寅",
+      "strength": "中和",
+      "strength_bucket": "中和",
+      "fingerprint": "2645cbe94a6aec8dd03e"
+    }
+  },
+  {
+    "case_id": "样例-025",
+    "synthetic": true,
+    "boundary_tags": [],
+    "profile": {
+      "name": "样例-025",
+      "gender": "男",
+      "birth_date": "2003-03-07",
+      "birth_hour": 8,
+      "birth_minute": 0,
+      "calendar_type": "solar",
+      "use_true_solar_time": false
+    },
+    "expected": {
+      "pillars": "癸未|乙卯|己卯|戊辰",
+      "day_master": "己",
+      "day_master_element": "土",
+      "hour_branch": "辰",
+      "strength": "身弱",
+      "strength_bucket": "身弱",
+      "fingerprint": "0b232a23c5339bddc242"
+    }
+  },
+  {
+    "case_id": "样例-026",
+    "synthetic": true,
+    "boundary_tags": [],
+    "profile": {
+      "name": "样例-026",
+      "gender": "女",
+      "birth_date": "2004-03-01",
+      "birth_hour": 14,
+      "birth_minute": 0,
+      "calendar_type": "solar",
+      "use_true_solar_time": false
+    },
+    "expected": {
+      "pillars": "甲申|丙寅|己卯|辛未",
+      "day_master": "己",
+      "day_master_element": "土",
+      "hour_branch": "未",
+      "strength": "身弱",
+      "strength_bucket": "身弱",
+      "fingerprint": "a498c230e924edbd4025"
+    }
+  },
+  {
+    "case_id": "样例-027",
+    "synthetic": true,
+    "boundary_tags": [],
+    "profile": {
+      "name": "样例-027",
+      "gender": "男",
+      "birth_date": "2005-06-15",
+      "birth_hour": 18,
+      "birth_minute": 0,
+      "calendar_type": "solar",
+      "use_true_solar_time": false
+    },
+    "expected": {
+      "pillars": "乙酉|壬午|庚午|乙酉",
+      "day_master": "庚",
+      "day_master_element": "金",
+      "hour_branch": "酉",
+      "strength": "身弱",
+      "strength_bucket": "身弱",
+      "fingerprint": "696dff4611519c14d300"
+    }
+  },
+  {
+    "case_id": "样例-028",
+    "synthetic": true,
+    "boundary_tags": [],
+    "profile": {
+      "name": "样例-028",
+      "gender": "女",
+      "birth_date": "2005-10-03",
+      "birth_hour": 22,
+      "birth_minute": 0,
+      "calendar_type": "solar",
+      "use_true_solar_time": false
+    },
+    "expected": {
+      "pillars": "乙酉|乙酉|庚申|丁亥",
+      "day_master": "庚",
+      "day_master_element": "金",
+      "hour_branch": "亥",
+      "strength": "身强",
+      "strength_bucket": "身强",
+      "fingerprint": "8100777cf4193c8bb01a"
+    }
+  },
+  {
+    "case_id": "样例-029",
+    "synthetic": true,
+    "boundary_tags": [],
+    "profile": {
+      "name": "样例-029",
+      "gender": "男",
+      "birth_date": "2006-10-29",
+      "birth_hour": 2,
+      "birth_minute": 0,
+      "calendar_type": "solar",
+      "use_true_solar_time": false
+    },
+    "expected": {
+      "pillars": "丙戌|戊戌|辛卯|己丑",
+      "day_master": "辛",
+      "day_master_element": "金",
+      "hour_branch": "丑",
+      "strength": "身强",
+      "strength_bucket": "身强",
+      "fingerprint": "962657f907f64de6d076"
+    }
+  },
+  {
+    "case_id": "样例-030",
+    "synthetic": true,
+    "boundary_tags": [],
+    "profile": {
+      "name": "样例-030",
+      "gender": "女",
+      "birth_date": "2008-01-22",
+      "birth_hour": 6,
+      "birth_minute": 0,
+      "calendar_type": "solar",
+      "use_true_solar_time": false
+    },
+    "expected": {
+      "pillars": "丁亥|癸丑|辛酉|辛卯",
+      "day_master": "辛",
+      "day_master_element": "金",
+      "hour_branch": "卯",
+      "strength": "身强",
+      "strength_bucket": "身强",
+      "fingerprint": "d4fa07bc927e9d97515c"
+    }
+  },
+  {
+    "case_id": "样例-031",
+    "synthetic": true,
+    "boundary_tags": [],
+    "profile": {
+      "name": "样例-031",
+      "gender": "男",
+      "birth_date": "2009-01-06",
+      "birth_hour": 10,
+      "birth_minute": 0,
+      "calendar_type": "solar",
+      "use_true_solar_time": false
+    },
+    "expected": {
+      "pillars": "戊子|乙丑|辛亥|癸巳",
+      "day_master": "辛",
+      "day_master_element": "金",
+      "hour_branch": "巳",
+      "strength": "中和",
+      "strength_bucket": "中和",
+      "fingerprint": "5de179222be4732e80ce"
+    }
+  },
+  {
+    "case_id": "样例-032",
+    "synthetic": true,
+    "boundary_tags": [],
+    "profile": {
+      "name": "样例-032",
+      "gender": "女",
+      "birth_date": "2010-02-10",
+      "birth_hour": 14,
+      "birth_minute": 0,
+      "calendar_type": "solar",
+      "use_true_solar_time": false
+    },
+    "expected": {
+      "pillars": "庚寅|戊寅|辛卯|乙未",
+      "day_master": "辛",
+      "day_master_element": "金",
+      "hour_branch": "未",
+      "strength": "中和",
+      "strength_bucket": "中和",
+      "fingerprint": "6eab783382784f5673d1"
+    }
+  },
+  {
+    "case_id": "样例-033",
+    "synthetic": true,
+    "boundary_tags": [],
+    "profile": {
+      "name": "样例-033",
+      "gender": "男",
+      "birth_date": "2011-04-27",
+      "birth_hour": 18,
+      "birth_minute": 0,
+      "calendar_type": "solar",
+      "use_true_solar_time": false
+    },
+    "expected": {
+      "pillars": "辛卯|壬辰|壬子|己酉",
+      "day_master": "壬",
+      "day_master_element": "水",
+      "hour_branch": "酉",
+      "strength": "中和",
+      "strength_bucket": "中和",
+      "fingerprint": "3f2cb493575bb24267b3"
+    }
+  },
+  {
+    "case_id": "样例-034",
+    "synthetic": true,
+    "boundary_tags": [],
+    "profile": {
+      "name": "样例-034",
+      "gender": "女",
+      "birth_date": "2012-04-21",
+      "birth_hour": 0,
+      "birth_minute": 0,
+      "calendar_type": "solar",
+      "use_true_solar_time": false
+    },
+    "expected": {
+      "pillars": "壬辰|甲辰|壬子|庚子",
+      "day_master": "壬",
+      "day_master_element": "水",
+      "hour_branch": "子",
+      "strength": "中和",
+      "strength_bucket": "中和",
+      "fingerprint": "d14e656ce32ae989a265"
+    }
+  },
+  {
+    "case_id": "样例-035",
+    "synthetic": true,
+    "boundary_tags": [],
+    "profile": {
+      "name": "样例-035",
+      "gender": "男",
+      "birth_date": "2013-05-16",
+      "birth_hour": 2,
+      "birth_minute": 0,
+      "calendar_type": "solar",
+      "use_true_solar_time": false
+    },
+    "expected": {
+      "pillars": "癸巳|丁巳|壬午|辛丑",
+      "day_master": "壬",
+      "day_master_element": "水",
+      "hour_branch": "丑",
+      "strength": "身弱",
+      "strength_bucket": "身弱",
+      "fingerprint": "b73f9536e9edf08427fe"
+    }
+  },
+  {
+    "case_id": "样例-036",
+    "synthetic": true,
+    "boundary_tags": [],
+    "profile": {
+      "name": "样例-036",
+      "gender": "女",
+      "birth_date": "2014-06-20",
+      "birth_hour": 6,
+      "birth_minute": 0,
+      "calendar_type": "solar",
+      "use_true_solar_time": false
+    },
+    "expected": {
+      "pillars": "甲午|庚午|壬戌|癸卯",
+      "day_master": "壬",
+      "day_master_element": "水",
+      "hour_branch": "卯",
+      "strength": "身弱",
+      "strength_bucket": "身弱",
+      "fingerprint": "015a1ece598e2b5213b2"
+    }
+  },
+  {
+    "case_id": "样例-037",
+    "synthetic": true,
+    "boundary_tags": [],
+    "profile": {
+      "name": "样例-037",
+      "gender": "男",
+      "birth_date": "2015-07-16",
+      "birth_hour": 12,
+      "birth_minute": 0,
+      "calendar_type": "solar",
+      "use_true_solar_time": false
+    },
+    "expected": {
+      "pillars": "乙未|癸未|癸巳|戊午",
+      "day_master": "癸",
+      "day_master_element": "水",
+      "hour_branch": "午",
+      "strength": "身弱",
+      "strength_bucket": "身弱",
+      "fingerprint": "468e40518b52aebe7af2"
+    }
+  },
+  {
+    "case_id": "样例-038",
+    "synthetic": true,
+    "boundary_tags": [],
+    "profile": {
+      "name": "样例-038",
+      "gender": "女",
+      "birth_date": "2016-10-28",
+      "birth_hour": 16,
+      "birth_minute": 0,
+      "calendar_type": "solar",
+      "use_true_solar_time": false
+    },
+    "expected": {
+      "pillars": "丙申|戊戌|癸未|庚申",
+      "day_master": "癸",
+      "day_master_element": "水",
+      "hour_branch": "申",
+      "strength": "身弱",
+      "strength_bucket": "身弱",
+      "fingerprint": "7d557d5750270d6fc180"
+    }
+  },
+  {
+    "case_id": "样例-039",
+    "synthetic": true,
+    "boundary_tags": [],
+    "profile": {
+      "name": "样例-039",
+      "gender": "男",
+      "birth_date": "2017-09-23",
+      "birth_hour": 20,
+      "birth_minute": 0,
+      "calendar_type": "solar",
+      "use_true_solar_time": false
+    },
+    "expected": {
+      "pillars": "丁酉|己酉|癸丑|壬戌",
+      "day_master": "癸",
+      "day_master_element": "水",
+      "hour_branch": "戌",
+      "strength": "身强",
+      "strength_bucket": "身强",
+      "fingerprint": "e1ea1e817d798a1b78c9"
+    }
+  },
+  {
+    "case_id": "样例-040",
+    "synthetic": true,
+    "boundary_tags": [],
+    "profile": {
+      "name": "样例-040",
+      "gender": "女",
+      "birth_date": "2018-11-17",
+      "birth_hour": 2,
+      "birth_minute": 0,
+      "calendar_type": "solar",
+      "use_true_solar_time": false
+    },
+    "expected": {
+      "pillars": "戊戌|癸亥|癸丑|癸丑",
+      "day_master": "癸",
+      "day_master_element": "水",
+      "hour_branch": "丑",
+      "strength": "身强",
+      "strength_bucket": "身强",
+      "fingerprint": "f6225c022e241ad6017a"
+    }
+  }
+]
