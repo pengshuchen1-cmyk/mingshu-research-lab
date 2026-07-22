@@ -9,3 +9,6 @@ data/*backup*.db
 logs/
 *.log
 .streamlit/
+.env
+.env.*
+acceptance_runs/
