@@ -1,0 +1,75 @@
+from __future__ import annotations
+
+from pathlib import Path
+
+import pytest
+
+
+@pytest.mark.parametrize(
+    ("year", "gender", "expected"),
+    [
+        (1994, "male", "forward"),
+        (1994, "female", "reverse"),
+        (1995, "male", "reverse"),
+        (1995, "female", "forward"),
+    ],
+)
+def test_dayun_direction_uses_gender_and_year_stem_yinyang(year, gender, expected):
+    from core.bazi_calendar_adapter import BirthInput
+    from core.dayun_rule_engine import calculate_dayun
+
+    basis = calculate_dayun(BirthInput("solar", year, 9, 23, 10, 0, gender))
+
+    assert basis.direction == expected
+    assert "DAYUN-DIRECTION" in basis.rule_ids
+
+
+def test_dayun_uses_next_jie_for_forward_and_previous_for_reverse():
+    from core.bazi_calendar_adapter import BirthInput
+    from core.dayun_rule_engine import calculate_dayun
+
+    forward = calculate_dayun(BirthInput("solar", 1994, 9, 23, 10, 0, "male"))
+    reverse = calculate_dayun(BirthInput("solar", 1994, 9, 23, 10, 0, "female"))
+
+    assert forward.boundary_name == "寒露"
+    assert reverse.boundary_name == "白露"
+    assert forward.interval_seconds > 0
+    assert reverse.interval_seconds > 0
+
+
+def test_three_days_convert_to_one_start_age_year():
+    from core.dayun_rule_engine import interval_to_start_age
+
+    assert interval_to_start_age(3 * 24 * 60 * 60) == (1, 0, 0)
+    assert interval_to_start_age(24 * 60 * 60) == (0, 4, 0)
+
+
+def test_get_luck_cycles_is_an_adapter_without_eight_char_dependency():
+    source = (Path(__file__).resolve().parents[1] / "core" / "luck_engine.py").read_text(
+        encoding="utf-8"
+    )
+
+    assert "getEightChar" not in source
+    assert "getYun" not in source
+
+
+def test_luck_cycles_expose_direction_start_and_ten_year_periods():
+    from core.bazi_engine import build_bazi_chart
+    from core.luck_engine import get_luck_cycles
+
+    profile = {
+        "gender": "男",
+        "calendar_type": "solar",
+        "birth_date": "1994-09-23",
+        "birth_hour": 18,
+        "birth_minute": 0,
+    }
+    chart = build_bazi_chart(profile)
+    luck = get_luck_cycles(profile, chart)
+
+    assert luck["available"] is True
+    assert luck["direction"] == "forward"
+    assert luck["direction_label"] == "顺排"
+    assert luck["start_text"]
+    assert len(luck["dayun_list"]) == 10
+    assert all(item["end_age"] - item["start_age"] == 9 for item in luck["dayun_list"])
