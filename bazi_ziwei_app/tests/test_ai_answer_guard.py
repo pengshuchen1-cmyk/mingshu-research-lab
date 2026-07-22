@@ -1,0 +1,56 @@
+from __future__ import annotations
+
+
+def _context():
+    from core.ai_models import AIRequestContext
+
+    return AIRequestContext(
+        question="财运如何？",
+        category="wealth",
+        requires_timing=False,
+        chart_facts={
+            "pillars": ["甲戌", "癸酉", "壬子", "己酉"],
+            "day_master": "壬",
+            "strength": {"classification": "身强", "evidence": ["月令生扶"]},
+            "pattern": {"classification": "正印格", "evidence": ["月令主气"]},
+            "wealth": {"summary": "重视现金流", "evidence": ["财星可见"]},
+        },
+        rule_evidence=[
+            {"id": "WEALTH-CAPACITY", "statement": "承财能力要结合日主强弱"}
+        ],
+        history=[],
+    )
+
+
+def _answer(text, chart_evidence=None):
+    from core.ai_models import BaziAIAnswer
+
+    return BaziAIAnswer(
+        answer=text,
+        chart_evidence=chart_evidence or ["壬日主，命局身强"],
+        rule_evidence=["承财能力要结合日主强弱"],
+        uncertainty=["现实收入仍取决于选择"],
+        cautions=["控制现金流风险"],
+    )
+
+
+def test_guard_accepts_consistent_evidence():
+    from core.ai_answer_guard import validate_ai_answer
+
+    result = validate_ai_answer(_answer("壬日主身强，财务宜控制现金流。"), _context())
+
+    assert result.accepted is True
+    assert result.violations == ()
+
+
+def test_guard_rejects_wrong_pillar_and_guarantee_language():
+    from core.ai_answer_guard import validate_ai_answer
+
+    result = validate_ai_answer(
+        _answer("乙巳日主一定会肯定发财。", ["日柱乙巳"]),
+        _context(),
+    )
+
+    assert result.accepted is False
+    assert "chart_fact_contradiction" in result.violations
+    assert "deterministic_claim" in result.violations
