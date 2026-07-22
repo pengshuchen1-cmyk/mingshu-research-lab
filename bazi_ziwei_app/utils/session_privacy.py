@@ -21,6 +21,10 @@ PRIVATE_SESSION_KEYS = (
     "life_overview_expanded_term_id",
     "life_overview_term_focus_return",
     "report_card_index",
+    "bazi_chat_messages",
+    "bazi_chat_profile_fingerprint",
+    "bazi_chat_last_activity",
+    "bazi_chat_request_state",
     LAST_ACTIVE_KEY,
 )
 

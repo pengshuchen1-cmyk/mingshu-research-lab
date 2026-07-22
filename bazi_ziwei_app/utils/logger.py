@@ -21,6 +21,12 @@ _EVENT_CODES = {
     "privacy_clear",
     "request_error",
 }
+_AI_EVENT_CODES = {
+    "AI_QA_REQUESTED",
+    "AI_QA_VALIDATED",
+    "AI_QA_FALLBACK",
+    "AI_QA_CLEARED",
+}
 
 
 def _sanitize_log_value(value: object, fallback: str = "unknown") -> str:
@@ -46,6 +52,40 @@ def build_safe_log_record(
         "success": bool(success),
         "error_type": (_ERROR_TYPE.match(str(error_type or "")) or _ERROR_TYPE.match("none")).group(0),
     }
+
+
+def _latency_bucket(latency_ms: float) -> str:
+    value = max(0.0, float(latency_ms or 0.0))
+    if value < 1000:
+        return "under-1s"
+    if value < 3000:
+        return "1-3s"
+    if value < 10000:
+        return "3-10s"
+    return "over-10s"
+
+
+def build_ai_log_record(
+    *,
+    event_code: str,
+    category: str = "other",
+    model_alias: str = "local",
+    latency_ms: float = 0.0,
+    reason_code: str = "none",
+    **_forbidden_fields,
+) -> dict:
+    """Return a strict metadata-only AI audit record."""
+    return {
+        "event_code": event_code if event_code in _AI_EVENT_CODES else "AI_QA_UNKNOWN",
+        "category": _sanitize_log_value(category),
+        "model_alias": _sanitize_log_value(model_alias),
+        "latency_bucket": _latency_bucket(latency_ms),
+        "reason_code": _sanitize_log_value(reason_code, "none"),
+    }
+
+
+def log_ai_event(**metadata: object) -> None:
+    get_logger().info("%s", build_ai_log_record(**metadata))
 
 
 def get_logger() -> logging.Logger:

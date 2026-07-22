@@ -37,6 +37,7 @@ PUBLIC_PAGE_NAMES = ("首页", "今日/年度建议", "个人命盘", "简明报
 PRODUCT_NAV_ITEMS = (
     ("今日", "今日/年度建议"),
     ("命盘", "个人命盘"),
+    ("问答", "AI问答"),
     ("报告", "简明报告"),
     ("我的", "设置/档案"),
 )
@@ -73,7 +74,7 @@ def render_product_navigation(active_page: str | None) -> None:
     import streamlit as st
     if active_page in (None, "首页"):
         return
-    home, *items = st.columns([1.35, 1, 1, 1, 1])
+    home, *items = st.columns([1.35] + [1] * len(PRODUCT_NAV_ITEMS))
     with home:
         if st.button("命数研究室", key="editorial_nav_home", use_container_width=True):
             _request_navigation("首页")
@@ -92,6 +93,7 @@ def get_pages() -> dict:
         "今日/年度建议": render_yearly_page,
         "个人命盘": render_life_overview_page,
         "简明报告": render_report_page,
+        "AI问答": render_inquiry_page,
         "设置/档案": render_privacy_center_page if is_public_mode() else render_archive_page,
         "验收中心": render_acceptance_page,
         "新建命盘": render_profile_form,

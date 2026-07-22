@@ -1,0 +1,42 @@
+from __future__ import annotations
+
+from datetime import datetime, timedelta, timezone
+
+
+def test_chat_is_cleared_on_profile_switch_and_expiry():
+    from core.ai_session import initialize_chat_for_chart, expire_chat_session
+
+    now = datetime(2026, 7, 22, 10, 0, tzinfo=timezone.utc)
+    state = {}
+    initialize_chat_for_chart(state, "chart-a", now)
+    state["bazi_chat_messages"] = [{"role": "user", "content": "旧问题"}]
+
+    assert initialize_chat_for_chart(state, "chart-b", now) is True
+    assert state["bazi_chat_messages"] == []
+    assert state["bazi_chat_profile_fingerprint"] == "chart-b"
+
+    state["bazi_chat_messages"] = [{"role": "assistant", "content": "旧回答"}]
+    assert expire_chat_session(state, now + timedelta(minutes=31)) is True
+    assert "bazi_chat_messages" not in state
+
+
+def test_chat_keeps_twenty_display_messages_and_sends_six_recent_messages():
+    from core.ai_session import append_chat_message, recent_context_messages
+
+    state = {}
+    for index in range(24):
+        append_chat_message(state, "user", f"message-{index}")
+
+    assert len(state["bazi_chat_messages"]) == 20
+    assert state["bazi_chat_messages"][0]["content"] == "message-4"
+    assert [item.content for item in recent_context_messages(state)] == [
+        f"message-{index}" for index in range(18, 24)
+    ]
+
+
+def test_question_validation_rejects_blank_and_more_than_five_hundred_chars():
+    from core.ai_session import validate_question
+
+    assert validate_question("  ")[0] is False
+    assert validate_question("甲" * 501)[0] is False
+    assert validate_question("这个八字的财运怎么样？") == (True, "")

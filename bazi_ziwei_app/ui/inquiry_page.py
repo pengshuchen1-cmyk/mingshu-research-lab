@@ -1,374 +1,202 @@
-"""综合问盘页面 —— 一屏展示命盘所有核心信息。"""
+"""Privacy-aware AI Q&A grounded in the local Four Pillars rule engine."""
 
 from __future__ import annotations
 
-from datetime import date
-from html import escape
+import hashlib
+import json
+import time
 
-import pandas as pd
-import altair as alt
 import streamlit as st
 
-from core.five_elements import element_summary
-from core.report_diversity import build_brief_signature, build_chart_signature_text
-
-from ui.styles import ELEMENT_COLORS, ELEMENT_EMOJIS
-from ui.bazi_components import render_loaded_profile_hint
-
-
-def _element_list_text(elements: list[str]) -> str:
-    return "、".join(elements) if elements else "需结合大运流年进一步判断"
-
-
-def _mini_metric_html(label: str, value: object, detail: str = "") -> str:
-    """统一小指标卡。"""
-    detail_html = f'<div class="ms-bazi-muted" style="margin-top:4px;">{escape(str(detail))}</div>' if detail else ""
-    return (
-        '<div class="ms-mini-metric">'
-        f'<div class="label">{escape(str(label))}</div>'
-        f'<div class="value">{escape(str(value))}</div>'
-        f"{detail_html}</div>"
-    )
+from core.ai_context import classify_question
+from core.ai_models import AIConfig, AnswerResult
+from core.ai_orchestrator import answer_question
+from core.ai_session import (
+    CHAT_MESSAGES_KEY,
+    append_chat_message,
+    clear_chat_session,
+    expire_chat_session,
+    initialize_chat_for_chart,
+    recent_context_messages,
+    validate_question,
+)
+from ui.bazi_components import render_rule_summary
+from utils.logger import log_ai_event
+from utils.session_privacy import touch_private_session
 
 
-def _tags_html(items: list, tone: str = "") -> str:
-    class_name = f"ms-tag {tone}".strip()
-    return "".join(f'<span class="{class_name}">{escape(str(item))}</span>' for item in (items or []))
+SUGGESTED_QUESTIONS = (
+    "请概括这个八字的强弱和格局，证据是什么？",
+    "这个八字的财运和事业适合怎么发展？",
+    "这个八字的姻缘桃花与婚姻建议是什么？",
+    "未来一年需要重点注意什么？",
+)
 
 
-def _render_profile_card(profile: dict) -> None:
-    """个人信息卡片。"""
-    if not profile:
-        return
-    name = profile.get("name", "未命名")
-    gender = profile.get("gender", "")
-    birth = profile.get("birth_date", "")
-    hour = profile.get("birth_hour", 0)
-    minute = profile.get("birth_minute", 0)
-    place = profile.get("birth_place", "")
-    st.markdown(
-        '<div class="ms-report-panel">'
-        f'<span class="ms-bazi-title">{escape(str(name))}</span>'
-        f'<span class="ms-tag">{escape(str(gender))}</span>'
-        f'<span class="ms-tag info">{escape(str(birth))} {hour:02d}:{minute:02d}</span>'
-        + (f'<span class="ms-tag">{escape(str(place))}</span>' if place else "")
-        + "</div>",
-        unsafe_allow_html=True,
-    )
+def answer_source_label(source: str) -> str:
+    if source == "cloud_validated":
+        return "AI综合分析·本地规则校验"
+    return "本地规则分析"
 
 
-def _render_element_visual(chart: dict) -> None:
-    """五行可视化区块：环图 + 柱状图。"""
-    five_elements = chart.get("five_elements", {})
-    if not five_elements:
-        return
-    summary = element_summary(five_elements)
-
-    st.markdown("### 五行概览")
-    cards_html = ""
-    for element, info in summary.items():
-        color = ELEMENT_COLORS.get(element, "#888")
-        emoji = ELEMENT_EMOJIS.get(element, "")
-        ratio = info["ratio"]
-        strength = info["strength"]
-        cards_html += (
-            '<div class="ms-mini-metric">'
-            f'<div class="label">{emoji} {escape(str(element))}</div>'
-            f'<div class="value" style="color:{color};">{escape(str(ratio))}%</div>'
-            f'<div class="ms-bazi-muted">{escape(str(strength))}</div>'
-            "</div>"
-        )
-    st.markdown(
-        f'<div class="ms-action-grid">{cards_html}</div>',
-        unsafe_allow_html=True,
-    )
-    st.caption("")
-
-    # Donut + Bar side by side
-    col_l, col_r = st.columns(2)
-    with col_l:
-        _render_donut(five_elements)
-    with col_r:
-        _render_bar(five_elements)
-
-
-def _render_donut(five_elements: dict) -> None:
-    """五行环图。"""
-    total = sum(float(v) for v in five_elements.values()) or 1
-    df = pd.DataFrame([
-        {"五行": elem, "分数": float(score), "占比": round(float(score) / total * 100, 1)}
-        for elem, score in sorted(five_elements.items(), key=lambda x: -float(x[1]))
-    ])
-    chart = (
-        alt.Chart(df)
-        .mark_arc(innerRadius=50, outerRadius=100, stroke="#FFFFFF", strokeWidth=2)
-        .encode(
-            theta=alt.Theta("分数:Q").stack(True),
-            color=alt.Color(
-                "五行:N",
-                scale=alt.Scale(
-                    domain=list(ELEMENT_COLORS.keys()),
-                    range=list(ELEMENT_COLORS.values()),
-                ),
-                legend=alt.Legend(orient="right", title=None, labelFontSize=12, symbolSize=160),
-            ),
-            tooltip=["五行", "分数", alt.Tooltip("占比:Q", format=".1f")],
-        )
-        .properties(height=260)
-    )
-    st.altair_chart(chart, use_container_width=True)
-
-
-def _render_bar(five_elements: dict) -> None:
-    """五行柱状图。"""
-    df = pd.DataFrame([
-        {"五行": elem, "权重": round(float(score), 2)}
-        for elem, score in sorted(five_elements.items(), key=lambda x: -float(x[1]))
-    ])
-    chart = (
-        alt.Chart(df)
-        .mark_bar(cornerRadiusTopLeft=4, cornerRadiusTopRight=4, size=32)
-        .encode(
-            x=alt.X("权重:Q", title=None),
-            y=alt.Y("五行:N", sort="-x", title=None),
-            color=alt.Color(
-                "五行:N",
-                scale=alt.Scale(
-                    domain=list(ELEMENT_COLORS.keys()),
-                    range=list(ELEMENT_COLORS.values()),
-                ),
-                legend=None,
-            ),
-            tooltip=["五行", alt.Tooltip("权重:Q", format=".2f")],
-        )
-        .properties(height=260)
-    )
-    text = chart.mark_text(
-        align="left", dx=5, fontSize=12, fontWeight="bold",
-    ).encode(text=alt.Text("权重:Q", format=".2f"))
-    st.altair_chart(chart + text, use_container_width=True)
-
-
-def _render_strength_section(chart: dict) -> None:
-    """日主强弱与喜忌。"""
-    strength = chart.get("day_master_strength", {})
-    if not strength:
-        return
-
-    st.markdown("### 日主强弱与喜忌")
-
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown(
-            '<div class="ms-report-panel">'
-            '<div class="ms-luck-stage-head">'
-            f'<span class="ms-luck-stage-pillar">{escape(str(strength.get("strength", "")))}</span>'
-            f'<span class="ms-tag">净评分 {strength.get("net_score", 0):+.1f}</span>'
-            f'<span class="ms-tag success">生扶 {strength.get("support_score", 0):+.1f}</span>'
-            f'<span class="ms-tag danger">克泄 {strength.get("pressure_score", 0):+.1f}</span>'
-            f"</div>"
-            f'<div>{_tags_html(["喜用 " + _element_list_text(strength.get("favorable_elements", []))], "success")}'
-            f'{_tags_html(["忌神 " + _element_list_text(strength.get("unfavorable_elements", []))], "danger")}</div>'
-            f"</div>",
-            unsafe_allow_html=True,
-        )
-
-    with col2:
-        de_ling = strength.get("de_ling", {})
-        de_di = strength.get("de_di", {})
-        de_shi = strength.get("de_shi", {})
-        s_col1, s_col2, s_col3 = st.columns(3)
-        s_col1.metric("得令", f"{de_ling.get('score', 0):+.1f}")
-        s_col2.metric("得地", f"{de_di.get('score', 0):+.1f}")
-        s_col3.metric("得势", f"{de_shi.get('support_score', 0):+.1f} / 克泄{de_shi.get('pressure_score', 0):+.1f}")
-
-
-def _render_luck_overview(chart: dict) -> None:
-    """大运概览：当前大运 + 未来大运简表。"""
-    from core.luck_engine import get_luck_cycles
-    result = get_luck_cycles(chart.get("profile", {}), chart)
-    if not result.get("available"):
-        return
-
-    dayun_list = result.get("dayun_list", [])
-    current_year = date.today().year
-    current_luck = None
-    for item in dayun_list:
-        if int(item.get("start_year", 0)) <= current_year <= int(item.get("end_year", 0)):
-            current_luck = item
-            break
-
-    st.markdown("### 大运概览")
-
-    if current_luck:
-        col1, col2 = st.columns([2, 3])
-        with col1:
-            st.markdown(
-                '<div class="ms-luck-stage-card current" style="text-align:center;">'
-                '<div class="ms-bazi-muted">当前大运</div>'
-                f'<div class="ms-luck-stage-pillar">{escape(str(current_luck.get("pillar", "")))}</div>'
-                f'{_tags_html([current_luck.get("stage_level", "")])}'
-                f'<div class="ms-bazi-muted" style="margin-top:6px;">'
-                f'{escape(str(current_luck.get("start_age", "")))}-{escape(str(current_luck.get("end_age", "")))}岁'
-                f'（{escape(str(current_luck.get("start_year", "")))}-{escape(str(current_luck.get("end_year", "")))}年）'
-                "</div>"
-                f"</div>",
-                unsafe_allow_html=True,
-            )
-        with col2:
-            st.info(current_luck.get("stage_text", ""))
-    else:
-        st.caption("当前年份暂未匹配到大运阶段，可查看下方大运表。")
-
-    with st.expander("📋 完整大运表"):
-        rows = [
-            {
-                "大运": item.get("pillar", ""),
-                "年龄": f'{item.get("start_age", "")}-{item.get("end_age", "")}',
-                "年份": f'{item.get("start_year", "")}-{item.get("end_year", "")}',
-                "天干": item.get("gan_element", ""),
-                "地支": item.get("zhi_element", ""),
-                "十神": item.get("ten_god", ""),
-                "阶段": item.get("stage_level", ""),
-            }
-            for item in dayun_list
-        ]
-        st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
-
-    # Brief yearly list
-    yearly_list = result.get("yearly_list", [])
-    if yearly_list:
-        with st.expander("📅 未来十年流年速览"):
-            yr_rows = [
-                {
-                    "年份": item.get("year", ""),
-                    "流年": item.get("pillar", ""),
-                    "五行": f'{item.get("gan_element", "")}/{item.get("zhi_element", "")}',
-                    "十神": item.get("ten_god", ""),
-                    "喜忌": item.get("relation_to_favorable", ""),
-                }
-                for item in yearly_list
-            ]
-            st.dataframe(pd.DataFrame(yr_rows), use_container_width=True, hide_index=True)
-
-
-def _render_ten_god_summary(chart: dict) -> None:
-    """十神统计摘要。"""
-    counts = chart.get("ten_god_counts", {})
-    if not counts:
-        return
-    st.markdown("### 十神分布")
-    df = pd.DataFrame([
-        {"十神": k, "数量": v} for k, v in sorted(counts.items(), key=lambda x: -x[1])
-    ])
-    chart_viz = (
-        alt.Chart(df)
-        .mark_bar(cornerRadiusTopLeft=4, cornerRadiusTopRight=4, size=24)
-        .encode(
-            x=alt.X("数量:Q", title=None),
-            y=alt.Y("十神:N", sort="-x", title=None),
-            color=alt.Color("数量:Q", scale=alt.Scale(scheme="bluegreen"), legend=None),
-            tooltip=["十神", "数量"],
-        )
-        .properties(height=200)
-    )
-    st.altair_chart(chart_viz, use_container_width=True)
-
-
-def _render_chart_tags(chart: dict) -> None:
-    """命盘摘要标签。"""
-    fp = _get_fingerprint(chart)
-    if not fp:
-        return
-    tags = fp.get("chart_summary_tags", [])
-    if not tags:
-        return
-    st.markdown("### 命盘标签")
-    tag_html = ""
-    for tag in tags:
-        tag_html += _tags_html([tag], "success")
-    st.markdown(tag_html, unsafe_allow_html=True)
-    st.caption("")
-
-
-def _get_fingerprint(chart: dict) -> dict | None:
-    try:
-        from core.chart_fingerprint import build_chart_fingerprint
-        return build_chart_fingerprint(chart)
-    except Exception:
-        return None
-
-
-def _render_quick_nav() -> None:
-    """快速导航到各详细页面。"""
-    st.markdown("### 快速导航")
-    nav_items = [
-        ("📜 八字排盘", "八字排盘"),
-        ("♻ 五行喜忌", "五行喜忌"),
-        ("🔮 大运流年", "大运流年"),
-        ("📅 年度运程", "年度运程"),
-        ("📖 专项报告", "专项报告"),
+def _chart_session_fingerprint(chart: dict) -> str:
+    existing = chart.get("chart_fingerprint_v2")
+    if existing:
+        return str(existing)
+    pillars = chart.get("pillars", {}) or {}
+    values = [
+        str((pillars.get(key, {}) or {}).get("pillar", ""))
+        for key in ("year", "month", "day", "hour")
     ]
-    cols = st.columns(len(nav_items))
-    for idx, (label, page_name) in enumerate(nav_items):
-        with cols[idx]:
-            if st.button(label, key=f"nav_{idx}", use_container_width=True):
-                st.session_state["_nav_to"] = page_name
+    return hashlib.sha256(json.dumps(values, ensure_ascii=False).encode("utf-8")).hexdigest()
+
+
+def _render_supporting_details(item: dict) -> None:
+    details = item.get("details", {}) or {}
+    chart_evidence = details.get("chart_evidence", [])
+    rule_evidence = details.get("rule_evidence", [])
+    uncertainty = details.get("uncertainty", [])
+    cautions = details.get("cautions", [])
+    if not any((chart_evidence, rule_evidence, uncertainty, cautions)):
+        return
+    with st.expander("查看依据与限制", expanded=False):
+        if chart_evidence:
+            st.markdown("**命盘证据**")
+            for text in chart_evidence:
+                st.write(f"• {text}")
+        if rule_evidence:
+            st.markdown("**规则依据**")
+            for text in rule_evidence:
+                st.write(f"• {text}")
+        if uncertainty:
+            st.markdown("**不确定性**")
+            for text in uncertainty:
+                st.write(f"• {text}")
+        if cautions:
+            st.markdown("**需要注意**")
+            for text in cautions:
+                st.write(f"• {text}")
+
+
+def _render_message(item: dict) -> None:
+    role = item.get("role", "assistant")
+    with st.chat_message(role):
+        st.markdown(str(item.get("content", "")))
+        if role == "assistant":
+            st.caption(answer_source_label(str(item.get("source", "local_rules"))))
+            _render_supporting_details(item)
+
+
+def _save_answer(state, result: AnswerResult) -> None:
+    append_chat_message(
+        state,
+        "assistant",
+        result.answer,
+        source=result.source,
+        details={
+            "chart_evidence": list(result.chart_evidence),
+            "rule_evidence": list(result.rule_evidence),
+            "uncertainty": list(result.uncertainty),
+            "cautions": list(result.cautions),
+        },
+    )
+
+
+def _answer(chart: dict, question: str) -> None:
+    valid, error = validate_question(question)
+    if not valid:
+        st.warning(error)
+        return
+    text = question.strip()
+    history = recent_context_messages(st.session_state)
+    category = classify_question(text).category
+    config = AIConfig.from_environment()
+    model_alias = "configured-ai" if config.enabled else "local"
+    log_ai_event(
+        event_code="AI_QA_REQUESTED",
+        category=category,
+        model_alias=model_alias,
+    )
+    append_chat_message(st.session_state, "user", text)
+    started = time.monotonic()
+    try:
+        with st.spinner("正在根据本地四柱规则整理回答…"):
+            result = answer_question(chart, text, history, config=config)
+    except Exception:
+        log_ai_event(
+            event_code="AI_QA_FALLBACK",
+            category=category,
+            model_alias=model_alias,
+            latency_ms=(time.monotonic() - started) * 1000,
+            reason_code="unexpected_error",
+        )
+        st.error("本次回答未能完成，请稍后再试。")
+        return
+    _save_answer(st.session_state, result)
+    elapsed = (time.monotonic() - started) * 1000
+    if result.source == "cloud_validated":
+        log_ai_event(
+            event_code="AI_QA_VALIDATED",
+            category=category,
+            model_alias=model_alias,
+            latency_ms=elapsed,
+        )
+    else:
+        log_ai_event(
+            event_code="AI_QA_FALLBACK",
+            category=category,
+            model_alias=model_alias,
+            latency_ms=elapsed,
+            reason_code="local_rules",
+        )
+    touch_private_session(st.session_state)
+    _render_message(st.session_state[CHAT_MESSAGES_KEY][-1])
 
 
 def render_inquiry_page() -> None:
-    """渲染综合问盘页面。"""
+    """Render the customer-facing Bazi AI chat."""
     chart = st.session_state.get("current_chart")
-    profile = st.session_state.get("current_profile", {})
-
     if not chart:
-        st.info('请先在「新建命盘」页面生成命盘，或从命盘档案中加载一个命盘。')
+        st.title("AI问答")
+        st.info("请先新建或选择一个命盘，AI 问答才能读取本地四柱规则结论。")
+        if st.button("新建命盘", type="primary"):
+            st.session_state["navigate_to"] = "新建命盘"
+            st.rerun()
         return
     if chart.get("error"):
-        st.error(chart["error"])
+        st.error("当前命盘未能完整生成，请重新排盘。")
         return
 
-    # Check for navigation from quick nav
-    nav_to = st.session_state.pop("_nav_to", None)
+    expire_chat_session(st.session_state)
+    switched = initialize_chat_for_chart(st.session_state, _chart_session_fingerprint(chart))
+    if switched:
+        log_ai_event(event_code="AI_QA_CLEARED", reason_code="profile_switch")
 
-    st.markdown(
-        """
-        <section class="v106c-page-hero">
-          <div class="v106c-page-eyebrow">INQUIRY DASHBOARD · v1.0.6</div>
-          <div class="v106c-page-title">综合问盘</div>
-          <div class="v106c-page-subtitle">
-            把命盘标签、五行状态、日主喜忌、十神分布和当前大运集中成一页。这里只看重点，完整四柱请进入八字排盘。
-          </div>
-        </section>
-        """,
-        unsafe_allow_html=True,
-    )
+    st.title("AI问答")
+    st.caption("基于当前命盘的本地四柱规则事实回答；AI 不能确认现实婚姻状态，也不会保证投资结果。")
 
-    # —— 简短命盘提示；完整四柱请到「八字排盘」 ——
-    render_loaded_profile_hint(profile, chart)
-    st.markdown(f'<div class="ms-report-panel">{escape(build_brief_signature(chart))}</div>', unsafe_allow_html=True)
-    with st.expander("本盘差异依据", expanded=False):
-        st.write(build_chart_signature_text(chart, "综合问盘差异依据"))
+    with st.expander("当前命盘的本地规则摘要", expanded=False):
+        render_rule_summary(chart)
 
-    # —— 命盘标签 ——
-    _render_chart_tags(chart)
+    if st.button("清空对话", use_container_width=False):
+        clear_chat_session(st.session_state)
+        initialize_chat_for_chart(st.session_state, _chart_session_fingerprint(chart))
+        log_ai_event(event_code="AI_QA_CLEARED", reason_code="user_clear")
+        st.success("本次对话已清空。")
+        st.rerun()
 
-    # —— 五行可视化 ——
-    _render_element_visual(chart)
+    for item in st.session_state.get(CHAT_MESSAGES_KEY, []):
+        _render_message(item)
 
-    # —— 日主强弱 + 喜忌 ——
-    _render_strength_section(chart)
+    st.markdown("#### 你可以这样问")
+    columns = st.columns(2)
+    suggested = None
+    for index, prompt in enumerate(SUGGESTED_QUESTIONS):
+        with columns[index % 2]:
+            if st.button(prompt, key=f"ai_suggestion_{index}", use_container_width=True):
+                suggested = prompt
 
-    # —— 十神分布 ——
-    _render_ten_god_summary(chart)
-
-    # —— 大运概览 ——
-    _render_luck_overview(chart)
-
-    # —— 快速导航 ——
-    st.divider()
-    _render_quick_nav()
-
-    # Handle navigation
-    if nav_to:
-        st.info(f"可切换到「{nav_to}」页面查看详细信息。")
+    typed = st.chat_input("请输入关于强弱、格局、财运、事业、姻缘或流年的问题（最多 500 字）")
+    question = suggested or typed
+    if question is not None:
+        _answer(chart, question)
