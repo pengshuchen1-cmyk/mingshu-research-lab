@@ -22,6 +22,8 @@ class ChartFacts:
     dayun_start: str
     strength: str
     strength_evidence: tuple[str, ...]
+    favorable_elements: tuple[str, ...]
+    unfavorable_elements: tuple[str, ...]
     pattern: str
     pattern_evidence: tuple[str, ...]
     wealth: str
@@ -51,6 +53,8 @@ class ChartFacts:
             "strength": {
                 "classification": self.strength,
                 "evidence": list(self.strength_evidence),
+                "favorable_elements": list(self.favorable_elements),
+                "unfavorable_elements": list(self.unfavorable_elements),
             },
             "pattern": {
                 "classification": self.pattern,
@@ -154,6 +158,8 @@ def build_chart_facts(chart: dict) -> ChartFacts:
         dayun_start=str(dayun.get("start_text", "待计算")),
         strength=str(strength.get("strength", "暂无法判断")),
         strength_evidence=strength_evidence,
+        favorable_elements=tuple(strength.get("favorable_elements", [])),
+        unfavorable_elements=tuple(strength.get("unfavorable_elements", [])),
         pattern=str(pattern.get("plain_text") or pattern.get("pattern", "暂无法判断")),
         pattern_evidence=_evidence_texts(pattern.get("evidence", [])),
         wealth=str(wealth.get("public_text", "待分析")),
@@ -162,6 +168,12 @@ def build_chart_facts(chart: dict) -> ChartFacts:
         relationship_evidence=_evidence_texts(relationship.get("evidence", [])),
         internal_rule_version=str(chart.get("rule_version", "")),
         rule_ids=tuple(chart.get("pillar_evidence", {}).get("rule_ids", [])),
+        current_context_json=json.dumps(
+            chart.get("current_context", {}),
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ),
     )
 
 

@@ -116,6 +116,7 @@ def get_luck_cycles(profile: dict, chart: dict | None = None) -> dict:
             "start_age_days": basis.start_age_days,
             "start_datetime": basis.start_datetime.isoformat(sep=" "),
             "start_text": basis.start_text,
+            "time_is_estimated": basis.time_is_estimated,
             "rule_ids": list(basis.rule_ids),
         }
         if chart:

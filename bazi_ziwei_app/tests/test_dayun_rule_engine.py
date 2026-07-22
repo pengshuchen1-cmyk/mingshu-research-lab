@@ -73,3 +73,29 @@ def test_luck_cycles_expose_direction_start_and_ten_year_periods():
     assert luck["start_text"]
     assert len(luck["dayun_list"]) == 10
     assert all(item["end_age"] - item["start_age"] == 9 for item in luck["dayun_list"])
+
+
+def test_period_calendar_year_starts_from_actual_start_datetime_for_u05():
+    from core.bazi_calendar_adapter import BirthInput
+    from core.dayun_rule_engine import build_dayun_periods, calculate_dayun
+    from core.four_pillars_engine import calculate_four_pillars
+
+    birth = BirthInput("solar", 1996, 9, 4, 23, 45, "female")
+    pillars = calculate_four_pillars(birth)
+    basis = calculate_dayun(birth, pillars)
+    periods = build_dayun_periods(pillars.month.text, basis, 1996)
+
+    assert basis.start_datetime.date().isoformat() == "2006-02-24"
+    assert periods[0]["start_year"] == 2006
+    assert periods[0]["start_date"] == "2006-02-24"
+    assert periods[1]["start_date"] == "2016-02-24"
+
+
+def test_unknown_time_marks_dayun_start_as_estimate():
+    from core.bazi_calendar_adapter import BirthInput
+    from core.dayun_rule_engine import calculate_dayun
+
+    basis = calculate_dayun(BirthInput("solar", 1994, 9, 23, None, None, "male"))
+
+    assert basis.time_is_estimated is True
+    assert "时辰不详" in basis.start_text

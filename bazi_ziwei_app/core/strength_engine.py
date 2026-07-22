@@ -144,8 +144,19 @@ def _score_influence(day_element: str, chart: dict) -> tuple[float, float, str]:
     return round(support_score, 2), round(pressure_score, 2), f"{text}{detail}"
 
 
-def _judge_strength(net_score: float) -> str:
-    """根据净评分判断日主强弱。"""
+def _judge_strength(
+    net_score: float,
+    *,
+    season_score: float = 0.0,
+    root_score: float = 0.0,
+    support_score: float = 0.0,
+    pressure_score: float = 0.0,
+) -> str:
+    """综合月令、根气和生克力量判断，净分只作为明显失衡的兜底。"""
+    if season_score > 0 and root_score > 0 and support_score >= pressure_score:
+        return "身强"
+    if season_score < 0 and root_score <= 0 and pressure_score > support_score:
+        return "身弱"
     if net_score >= 3:
         return "身强"
     if net_score <= -2:
@@ -191,6 +202,7 @@ def _detect_special_pattern(pillars: dict, day_element: str) -> str:
         "从旺", "从弱", 或 "无"
     """
     element_count: dict[str, float] = {}
+    same_element_root_count = 0
     for pillar in pillars.values():
         gan = pillar.get("gan", "")
         zhi = pillar.get("zhi", "")
@@ -203,15 +215,19 @@ def _detect_special_pattern(pillars: dict, day_element: str) -> str:
             if h_el:
                 weight = HIDDEN_STEM_WEIGHTS[i] if i < len(HIDDEN_STEM_WEIGHTS) else 0.3
                 element_count[h_el] = element_count.get(h_el, 0) + weight
+                if h_el == day_element:
+                    same_element_root_count += 1
 
     total = sum(element_count.values())
     if total <= 0:
         return "无"
 
     day_el_ratio = element_count.get(day_element, 0) / total
-    if day_el_ratio >= 0.7:
+    resource_ratio = element_count.get(_parent_element(day_element), 0) / total
+    controller_ratio = element_count.get(_controlling_element(day_element), 0) / total
+    if day_el_ratio >= 0.7 and controller_ratio <= 0.1:
         return "从旺"
-    if day_el_ratio <= 0.15:
+    if day_el_ratio <= 0.15 and same_element_root_count == 0 and resource_ratio <= 0.2:
         return "从弱"
     return "无"
 
@@ -246,7 +262,13 @@ def analyze_day_master_strength(chart: dict) -> dict:
         support_score = round(de_ling_score + de_di_score + de_shi_support, 2)
         pressure_score = round(de_shi_pressure, 2)
         net_score = round(support_score - pressure_score, 2)
-        strength = _judge_strength(net_score)
+        strength = _judge_strength(
+            net_score,
+            season_score=de_ling_score,
+            root_score=de_di_score,
+            support_score=support_score,
+            pressure_score=pressure_score,
+        )
         special_pattern = _detect_special_pattern(chart.get("pillars", {}), day_element)
 
         season_adjustment = analyze_seasonal_adjustment(chart)

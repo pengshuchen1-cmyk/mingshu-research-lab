@@ -215,6 +215,25 @@ def _action_plan(fp: dict, profile: dict) -> list[str]:
 
 def _relationship_structure_detail(chart: dict, profile: dict) -> str:
     """展开本盘夫妻宫与各柱十神落位，避免通用化婚恋文案。"""
+    facts = chart.get("facts")
+    if isinstance(facts, dict):
+        labels = ("年柱", "月柱", "夫妻宫", "时柱")
+        keys = ("year", "month", "day", "hour")
+        pillars = facts.get("pillars", []) or []
+        ten_gods = facts.get("ten_gods", {}) or {}
+        parts = []
+        for label, key, pillar in zip(labels, keys, pillars):
+            item = ten_gods.get(key, {}) or {}
+            hidden = "、".join(
+                f"{value.get('gan', '')}{value.get('ten_god', '')}"
+                for value in (item.get("hidden_stems", []) or [])
+                if isinstance(value, dict)
+            ) or "无"
+            parts.append(f"{label}{pillar}：透干{item.get('gan', '未知')}，藏干{hidden}")
+        return (
+            f"{profile.get('gender', '未填性别')}命关系结构：" + "；".join(parts)
+            + "。这些落位用于观察关系模式，不用于确认现实婚姻状态。"
+        )
     labels = {"year": "年柱", "month": "月柱", "day": "夫妻宫", "hour": "时柱"}
     parts: list[str] = []
     for key in ("year", "month", "day", "hour"):

@@ -84,3 +84,7 @@ def test_build_bazi_chart_attaches_single_facts_projection():
     assert chart["relationship_analysis"]["formation_signals"]
     assert chart["public_summary"]["财运"] != "待分析"
     assert chart["public_summary"]["姻缘"] != "待分析"
+    assert chart["public_summary"]["起运方向"] in {"顺排", "逆排"}
+    assert chart["public_summary"]["起运时间"] != "待计算"
+    assert chart["facts"]["current_context"]["year"]
+    assert chart["facts"]["current_context"]["year_pillar"]

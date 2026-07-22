@@ -464,8 +464,148 @@ def _pillar_story(chart: dict) -> str:
     return "逐柱现实信号：" + "；".join(parts) + "。"
 
 
-def build_chart_signature_text(chart: dict, prefix: str = "本盘差异依据") -> str:
+def project_chart_facts_for_report(chart: dict) -> dict:
+    """Create the legacy-shaped read view exclusively from attached canonical facts."""
+    facts = chart.get("facts")
+    if not isinstance(facts, dict):
+        return chart
+    projected = dict(chart)
+    pillar_keys = ("year", "month", "day", "hour")
+    pillar_texts = list(facts.get("pillars", []) or [])
+    projected["pillars"] = {
+        key: {
+            "pillar": str(pillar_texts[index]) if index < len(pillar_texts) else "",
+            "gan": str(pillar_texts[index])[:1] if index < len(pillar_texts) else "",
+            "zhi": str(pillar_texts[index])[1:2] if index < len(pillar_texts) else "",
+        }
+        for index, key in enumerate(pillar_keys)
+    }
+    projected["day_master"] = str(facts.get("day_master", ""))
+    projected["five_elements"] = dict(facts.get("element_counts", {}) or {})
+    projected["ten_gods"] = facts.get("ten_gods", {}) or {}
+    counts: dict[str, int] = {}
+    for item in projected["ten_gods"].values():
+        if not isinstance(item, dict):
+            continue
+        visible = item.get("gan")
+        if visible and visible != "日主":
+            counts[str(visible)] = counts.get(str(visible), 0) + 1
+        for hidden in item.get("hidden_stems", []) or []:
+            if isinstance(hidden, dict) and hidden.get("ten_god"):
+                name = str(hidden["ten_god"])
+                counts[name] = counts.get(name, 0) + 1
+    projected["ten_god_counts"] = counts
+    projected["hidden_stems"] = {
+        key: list((projected["ten_gods"].get(key, {}) or {}).get("hidden_stems", []) or [])
+        for key in pillar_keys
+    }
+    strength = facts.get("strength", {}) or {}
+    projected["day_master_strength"] = {
+        "strength": strength.get("classification", "暂无法判断"),
+        "favorable_elements": list(strength.get("favorable_elements", [])),
+        "unfavorable_elements": list(strength.get("unfavorable_elements", [])),
+        "public_evidence": list(strength.get("evidence", [])),
+        "net_score": 0.0,
+    }
+    projected["pattern_analysis"] = {
+        "pattern": (facts.get("pattern", {}) or {}).get("classification", "暂无法判断"),
+        "plain_text": (facts.get("pattern", {}) or {}).get("classification", "暂无法判断"),
+        "evidence": list((facts.get("pattern", {}) or {}).get("evidence", [])),
+    }
+    projected.pop("facts", None)
+    return projected
+
+
+def _build_chart_signature_text_impl(chart: dict, prefix: str = "本盘差异依据") -> str:
     """生成一段可直接放进报告的差异化依据。"""
+    facts = chart.get("facts")
+    if isinstance(facts, dict):
+        fp = build_chart_fingerprint(chart)
+        strength = facts.get("strength", {}) or {}
+        pillars = facts.get("pillars", []) or []
+        elements = facts.get("element_counts", {}) or {}
+        ten_gods = facts.get("ten_gods", {}) or {}
+        pillar_names = ("年柱", "月柱", "日柱", "时柱")
+        pillar_keys = ("year", "month", "day", "hour")
+        structure: list[str] = []
+        stem_signal = {
+            "甲": "主动开拓与规划", "乙": "协作生长与细节", "丙": "表达行动与曝光", "丁": "专注表达与持续投入",
+            "戊": "承接统筹与稳定", "己": "整理运营与落地", "庚": "执行规则与决断", "辛": "精修标准与边界",
+            "壬": "资源流动与全局", "癸": "信息观察与适应",
+        }
+        branch_signal = {
+            "子": "信息、安全感与流动", "丑": "积蓄、库存与耐心", "寅": "启动、学习与开拓", "卯": "合作、审美与关系",
+            "辰": "资源库与复杂协调", "巳": "技术、热度与变化", "午": "表达、行动与影响", "未": "承接、家庭与细节",
+            "申": "规则、技术与奔波", "酉": "标准、财务与精修", "戌": "责任、收尾与复盘", "亥": "人脉、远方与思路",
+        }
+        position_signal: list[str] = []
+        for label, key, pillar in zip(pillar_names, pillar_keys, pillars):
+            item = ten_gods.get(key, {}) if isinstance(ten_gods, dict) else {}
+            hidden = "、".join(
+                f"{value.get('gan', '')}{value.get('ten_god', '')}"
+                for value in (item.get("hidden_stems", []) or [])
+                if isinstance(value, dict)
+            ) or "无"
+            structure.append(
+                f"{label}{pillar}：透干{item.get('gan', '未知')}，藏干{hidden}"
+            )
+            pillar_text = str(pillar)
+            gan = pillar_text[:1]
+            zhi = pillar_text[1:2]
+            position_signal.append(
+                f"{prefix}｜{label}{pillar_text}：天干侧重{stem_signal.get(gan, '阶段作用')}，"
+                f"地支侧重{branch_signal.get(zhi, '现实承接')}。"
+            )
+        element_focus = {
+            "木": "木的主轴偏向学习、生长、策划、教育与长期建设，现实判断要看计划能否持续落地。",
+            "火": "火的主轴偏向表达、传播、技术热度、审美与行动，现实判断要看曝光能否转成稳定成果。",
+            "土": "土的主轴偏向承接、运营、组织、空间与存量，现实判断要看资源是否形成稳定底盘。",
+            "金": "金的主轴偏向规则、技术、合同、执行与精修，现实判断要看标准能否提高交付质量。",
+            "水": "水的主轴偏向信息、沟通、贸易、流动与资源调度，现实判断要看变化中能否守住边界。",
+        }
+        ten_god_focus = {
+            "比肩": "比肩突出时，重点是个人能力、同辈竞争和自主推进，合作前应先明确分工。",
+            "劫财": "劫财突出时，重点是合作、人情和资源分配，账目、投入和退出规则需要前置。",
+            "食神": "食神突出时，重点是稳定输出、产品、服务与口碑，适合把经验做成可复用成果。",
+            "伤官": "伤官突出时，重点是创意、表达和技术突破，同时要处理好规则与沟通分寸。",
+            "正财": "正财突出时，重点是稳定客户、预算、现金流与现实积累，收益需要可持续核算。",
+            "偏财": "偏财突出时，重点是项目机会、商业判断与资源整合，每个机会都要核对成本。",
+            "正官": "正官突出时，重点是责任、职位、流程与长期信用，适合用秩序承接目标。",
+            "七杀": "七杀突出时，重点是竞争、目标压力与执行突破，需要同步建立风险控制。",
+            "正印": "正印突出时，重点是学习、资质、系统和稳定支持，先补底层能力再扩大成果。",
+            "偏印": "偏印突出时，重点是研究、策略、复盘和专业深化，想法需要通过小步验证落地。",
+        }
+        intro = (
+            f"{prefix}：日主为{fp['day_master']}{fp['day_master_element']}，"
+            f"强弱为{fp['strength']}；喜用{_join(fp['favorable_elements'], '暂需结合大运判断')}，"
+            f"忌神{_join(fp['unfavorable_elements'], '暂不明显')}。"
+        )
+        detail_lines = [
+            f"{prefix}｜四柱结构：{'；'.join(structure)}。",
+            f"{prefix}｜五行权重：{'、'.join(f'{key}{float(value):.1f}' for key, value in sorted(elements.items()))}。",
+            f"{prefix}｜强弱证据：{_join(strength.get('evidence', []), '证据待补')}。",
+            f"{prefix}｜格局：{facts.get('pattern', {}).get('classification', '暂无法判断')}；证据：{_join(facts.get('pattern', {}).get('evidence', []), '证据待补')}。",
+            (
+                f"{prefix}｜十神分组：财星{fp['wealth_star_count']}、官杀{fp['officer_star_count']}、"
+                f"食伤{fp['output_star_count']}、印星{fp['resource_star_count']}、比劫{fp['peer_star_count']}。"
+            ),
+            (
+                f"{prefix}｜夫妻宫：{fp['day_branch']}{fp['spouse_palace_element']}，"
+                f"藏干十神{_join(fp['spouse_palace_hidden_ten_gods'], '暂未读取')}。"
+            ),
+            f"{prefix}｜差异标签：{_join(fp.get('chart_summary_tags', []) + fp.get('career_pattern_tags', []) + fp.get('wealth_pattern_tags', []) + fp.get('love_pattern_tags', []))}。",
+            f"{prefix}｜五行主轴：{element_focus.get(fp['top_elements'][0] if fp['top_elements'] else '', '五行主轴需结合结构继续观察')}",
+            f"{prefix}｜十神主轴：{ten_god_focus.get(fp['top_ten_gods'][0] if fp['top_ten_gods'] else '', '十神主轴需结合结构继续观察')}",
+            *position_signal,
+        ]
+        branch_order = "子丑寅卯辰巳午未申酉戌亥"
+        month_branch = str(pillars[1])[1:2] if len(pillars) > 1 else ""
+        offset = (
+            (branch_order.find(month_branch) if month_branch in branch_order else 0)
+            + ("甲乙丙丁戊己庚辛壬癸".find(fp["day_master"]) % len(detail_lines))
+        ) % len(detail_lines)
+        detail_lines = detail_lines[offset:] + detail_lines[:offset]
+        return "\n".join([intro, *detail_lines])
     fp = build_chart_fingerprint(chart)
     strength = chart.get("day_master_strength", {})
     day_master = chart.get("day_master", "")
@@ -527,13 +667,17 @@ def build_chart_signature_text(chart: dict, prefix: str = "本盘差异依据") 
     return "\n".join(lines)
 
 
+def build_chart_signature_text(chart: dict, prefix: str = "本盘差异依据") -> str:
+    """Render a report signature from the canonical ChartFacts projection."""
+    return _build_chart_signature_text_impl(project_chart_facts_for_report(chart), prefix)
+
+
 def build_brief_signature(chart: dict) -> str:
     """生成较短的页面摘要，用于综合问盘等页面。"""
     fp = build_chart_fingerprint(chart)
-    strength = chart.get("day_master_strength", {})
     return (
         f"本盘重点：{fp.get('day_master', '')}{fp.get('day_master_element', '')}日主，"
-        f"{strength.get('strength', '暂无法判断')}，喜用{_join(fp.get('favorable_elements', []))}，"
+        f"{fp.get('strength', '暂无法判断')}，喜用{_join(fp.get('favorable_elements', []))}，"
         f"忌神{_join(fp.get('unfavorable_elements', []))}；"
         f"事业看{_join(fp.get('career_pattern_tags', [])[:4])}，"
         f"财运看{_join(fp.get('wealth_pattern_tags', [])[:4])}，"

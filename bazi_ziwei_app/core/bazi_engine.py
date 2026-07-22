@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime
 
 from core.bazi_calendar_adapter import BirthInput, normalize_birth_input
 from core.bazi_constants import (
@@ -15,6 +15,7 @@ from core.bazi_rulebook import load_rulebook
 from core.chart_facts import attach_chart_facts
 from core.five_elements import calculate_five_elements
 from core.four_pillars_engine import calculate_four_pillars
+from core.dayun_rule_engine import calculate_dayun
 from core.pattern_engine import analyze_pattern
 from core.seasonal_adjustment import analyze_seasonal_adjustment
 from core.strength_engine import analyze_day_master_strength
@@ -229,6 +230,31 @@ def build_bazi_chart(profile: dict) -> dict:
         ensure_bazi_analysis_fields(chart)
         chart["wealth_analysis"] = analyze_wealth(chart).to_dict()
         chart["relationship_analysis"] = analyze_relationship(chart).to_dict()
+        dayun = calculate_dayun(birth, result)
+        chart["dayun_basis"] = {
+            "direction": dayun.direction,
+            "direction_label": dayun.direction_label,
+            "boundary_name": dayun.boundary_name,
+            "boundary_datetime": dayun.boundary_datetime.isoformat(sep=" "),
+            "interval_seconds": dayun.interval_seconds,
+            "start_age_years": dayun.start_age_years,
+            "start_age_months": dayun.start_age_months,
+            "start_age_days": dayun.start_age_days,
+            "start_datetime": dayun.start_datetime.isoformat(sep=" "),
+            "start_text": dayun.start_text,
+            "time_is_estimated": dayun.time_is_estimated,
+            "rule_ids": list(dayun.rule_ids),
+        }
+        now = datetime.now()
+        current = calculate_four_pillars(
+            BirthInput("solar", now.year, now.month, now.day, now.hour, now.minute, birth.gender)
+        )
+        chart["current_context"] = {
+            "year": now.year,
+            "year_pillar": current.year.text,
+            "month_pillar": current.month.text,
+            "day_pillar": current.day.text,
+        }
         attach_chart_facts(chart)
         return chart
     except Exception as exc:

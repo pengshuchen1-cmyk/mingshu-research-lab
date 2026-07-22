@@ -177,6 +177,26 @@ def _action_plan(fp: dict) -> list[str]:
 
 def _financial_structure_detail(chart: dict) -> str:
     """把四柱落位、透干十神和藏干十神写成本盘专属的财富结构摘要。"""
+    facts = chart.get("facts")
+    if isinstance(facts, dict):
+        labels = ("年柱", "月柱", "日柱", "时柱")
+        keys = ("year", "month", "day", "hour")
+        pillars = facts.get("pillars", []) or []
+        ten_gods = facts.get("ten_gods", {}) or {}
+        lines = []
+        for label, key, pillar in zip(labels, keys, pillars):
+            item = ten_gods.get(key, {}) or {}
+            hidden = "、".join(
+                f"{value.get('gan', '')}{value.get('ten_god', '')}"
+                for value in (item.get("hidden_stems", []) or [])
+                if isinstance(value, dict)
+            ) or "无"
+            lines.append(f"{label}{pillar}：透干{item.get('gan', '未知')}，藏干{hidden}")
+        element_text = "、".join(
+            f"{name}{float(score):.1f}"
+            for name, score in sorted((facts.get("element_counts", {}) or {}).items())
+        )
+        return "；".join(lines) + f"。五行权重：{element_text}。"
     labels = {"year": "年柱", "month": "月柱", "day": "日柱", "hour": "时柱"}
     lines: list[str] = []
     for key in ("year", "month", "day", "hour"):

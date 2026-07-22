@@ -27,6 +27,67 @@ def _count_group(counts: dict, names: set[str]) -> int:
     return int(sum(int(counts.get(name, 0)) for name in names))
 
 
+def _ten_god_counts_from_facts(ten_gods: dict) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for pillar in ten_gods.values():
+        if not isinstance(pillar, dict):
+            continue
+        visible = pillar.get("gan")
+        if visible and visible != "日主":
+            counts[str(visible)] = counts.get(str(visible), 0) + 1
+        for item in pillar.get("hidden_stems", []) or []:
+            if isinstance(item, dict) and item.get("ten_god"):
+                name = str(item["ten_god"])
+                counts[name] = counts.get(name, 0) + 1
+    return counts
+
+
+def _canonical_inputs(chart: dict) -> tuple[dict, dict, dict, str, list[str], list[str], str, list[str]]:
+    """Read the attached immutable fact projection when present."""
+    facts = chart.get("facts")
+    if isinstance(facts, dict):
+        raw_strength = facts.get("strength", {}) or {}
+        strength = {
+            "strength": raw_strength.get("classification", "暂无法判断"),
+            "favorable_elements": list(raw_strength.get("favorable_elements", [])),
+            "unfavorable_elements": list(raw_strength.get("unfavorable_elements", [])),
+        }
+        ten_gods = facts.get("ten_gods", {}) or {}
+        pillars = facts.get("pillars", []) or []
+        day_pillar = str(pillars[2]) if len(pillars) > 2 else ""
+        day_branch = day_pillar[1:2]
+        day_hidden = ten_gods.get("day", {}) if isinstance(ten_gods, dict) else {}
+        hidden_names = [
+            str(item.get("ten_god"))
+            for item in (day_hidden.get("hidden_stems", []) or [])
+            if isinstance(item, dict) and item.get("ten_god")
+        ]
+        return (
+            strength,
+            _ten_god_counts_from_facts(ten_gods),
+            facts.get("element_counts", {}) or {},
+            str(facts.get("day_master", "")),
+            list(strength.get("favorable_elements", [])),
+            list(strength.get("unfavorable_elements", [])),
+            day_branch,
+            hidden_names,
+        )
+    strength = chart.get("day_master_strength", {})
+    day_master = chart.get("day_master", "")
+    day_branch = chart.get("pillars", {}).get("day", {}).get("zhi", "")
+    spouse_hidden = get_hidden_stem_ten_gods(day_master, day_branch)
+    return (
+        strength,
+        chart.get("ten_god_counts", {}),
+        chart.get("five_elements", {}),
+        day_master,
+        list(strength.get("favorable_elements", [])),
+        list(strength.get("unfavorable_elements", [])),
+        day_branch,
+        [item.get("ten_god", "") for item in spouse_hidden if item.get("ten_god")],
+    )
+
+
 def _element_tags(top_elements: list[str], weak_elements: list[str]) -> list[str]:
     """生成五行摘要标签。"""
     tags: list[str] = []
@@ -103,13 +164,17 @@ def build_chart_fingerprint(chart: dict) -> dict:
     """
     提取命盘的核心差异特征，用于驱动报告个性化。
     """
-    strength_info = chart.get("day_master_strength", {})
-    counts = chart.get("ten_god_counts", {})
-    five_elements = chart.get("five_elements", {})
-    day_master = chart.get("day_master", "")
+    (
+        strength_info,
+        counts,
+        five_elements,
+        day_master,
+        favorable,
+        unfavorable,
+        day_branch,
+        spouse_hidden_ten_gods,
+    ) = _canonical_inputs(chart)
     day_master_element = STEM_ELEMENTS.get(day_master, "")
-    favorable = list(strength_info.get("favorable_elements", []))
-    unfavorable = list(strength_info.get("unfavorable_elements", []))
 
     top_elements = _sorted_keys_by_value(five_elements, True)[:3]
     weak_elements = _sorted_keys_by_value(five_elements, False)[:3]
@@ -124,10 +189,7 @@ def build_chart_fingerprint(chart: dict) -> dict:
         "peer": _count_group(counts, PEER_STARS),
     }
 
-    day_branch = chart.get("pillars", {}).get("day", {}).get("zhi", "")
     spouse_element = BRANCH_MAIN_ELEMENTS.get(day_branch, "")
-    spouse_hidden = get_hidden_stem_ten_gods(day_master, day_branch)
-    spouse_hidden_ten_gods = [item.get("ten_god", "") for item in spouse_hidden if item.get("ten_god")]
 
     career_tags = _career_tags(groups, strength_info.get("strength", ""), favorable)
     wealth_tags = _wealth_tags(groups, favorable, unfavorable)

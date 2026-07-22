@@ -4,7 +4,11 @@ from __future__ import annotations
 
 from core.five_elements import element_summary
 from core.life_assessment import life_overview
-from core.report_diversity import build_brief_signature, build_chart_signature_text
+from core.report_diversity import (
+    build_brief_signature,
+    build_chart_signature_text,
+    project_chart_facts_for_report,
+)
 from report.useful_god_report import generate_useful_god_explanation
 
 FAVORABLE_ELEMENT_TEXT: dict[str, str] = {
@@ -162,6 +166,8 @@ def generate_basic_bazi_report(chart: dict) -> dict:
             "risk_text": "命盘生成成功后可查看风险提醒。",
             "advice": "请检查出生信息后重新生成命盘。",
         }
+
+    chart = project_chart_facts_for_report(chart)
 
     day_master = chart.get("day_master", "")
     strength_info = chart.get("day_master_strength", {})

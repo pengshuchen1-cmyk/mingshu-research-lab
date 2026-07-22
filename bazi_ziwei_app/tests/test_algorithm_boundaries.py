@@ -88,6 +88,43 @@ class AlgorithmBoundaryTests(unittest.TestCase):
         result = _detect_special_pattern(pillars, "木")
         self.assertEqual(result, "无")
 
+    def test_detect_special_pattern_rejects_cong_ruo_when_day_master_has_root(self):
+        """占比很低但地支仍有同类根气时，不得仅凭比例判成从弱。"""
+        from core.strength_engine import _detect_special_pattern
+
+        pillars = {
+            "year": {"gan": "庚", "zhi": "申"},
+            "month": {"gan": "庚", "zhi": "申"},
+            "day": {"gan": "甲", "zhi": "辰"},
+            "hour": {"gan": "庚", "zhi": "申"},
+        }
+
+        self.assertEqual(_detect_special_pattern(pillars, "木"), "无")
+
+    def test_strength_classification_uses_season_root_and_pressure_dimensions(self):
+        from core.strength_engine import _judge_strength
+
+        self.assertEqual(
+            _judge_strength(
+                0.5,
+                season_score=2.0,
+                root_score=2.0,
+                support_score=5.0,
+                pressure_score=4.5,
+            ),
+            "身强",
+        )
+        self.assertEqual(
+            _judge_strength(
+                -0.5,
+                season_score=-3.0,
+                root_score=0.0,
+                support_score=3.0,
+                pressure_score=3.5,
+            ),
+            "身弱",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

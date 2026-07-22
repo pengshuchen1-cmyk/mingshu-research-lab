@@ -23,6 +23,7 @@ class DayunBasis:
     start_age_days: int
     start_datetime: datetime
     start_text: str
+    time_is_estimated: bool
     rule_ids: tuple[str, ...]
 
 
@@ -58,6 +59,7 @@ def calculate_dayun(
     pillars = pillars or calculate_four_pillars(birth)
     calendar = normalize_birth_input(birth)
     at = calendar.civil_datetime
+    time_is_estimated = at is None
     if at is None:
         at = datetime.combine(calendar.converted_solar_date, datetime.min.time()) + timedelta(hours=12)
 
@@ -77,6 +79,8 @@ def calculate_dayun(
     start_datetime = at + timedelta(days=age_years * 365.2425)
     direction_label = "顺排" if forward else "逆排"
     start_text = (
+        ("时辰不详，暂按12:00估算；" if time_is_estimated else "")
+        +
         f"{direction_label}，取{boundary.name}（{boundary.at:%Y-%m-%d %H:%M:%S}）折算，"
         f"约{years}年{months}个月{days}天起运（约{start_datetime:%Y-%m-%d}）。"
     )
@@ -91,6 +95,7 @@ def calculate_dayun(
         start_age_days=days,
         start_datetime=start_datetime,
         start_text=start_text,
+        time_is_estimated=time_is_estimated,
         rule_ids=("DAYUN-DIRECTION", "DAYUN-START-DIV3"),
     )
 
@@ -122,6 +127,16 @@ def build_dayun_periods(
     for index in range(count):
         pillar = cycle[(month_index + step * (index + 1)) % 60]
         start_age = initial_age + index * 10
+        target_year = basis.start_datetime.year + index * 10
+        try:
+            period_start = basis.start_datetime.replace(year=target_year)
+        except ValueError:
+            period_start = basis.start_datetime.replace(year=target_year, day=28)
+        next_year = period_start.year + 10
+        try:
+            next_start = period_start.replace(year=next_year)
+        except ValueError:
+            next_start = period_start.replace(year=next_year, day=28)
         periods.append(
             {
                 "index": index + 1,
@@ -130,8 +145,10 @@ def build_dayun_periods(
                 "zhi": pillar[1],
                 "start_age": start_age,
                 "end_age": start_age + 9,
-                "start_year": birth_year + start_age,
-                "end_year": birth_year + start_age + 9,
+                "start_year": period_start.year,
+                "end_year": period_start.year + 9,
+                "start_date": period_start.date().isoformat(),
+                "end_date": next_start.date().isoformat(),
             }
         )
     return periods
