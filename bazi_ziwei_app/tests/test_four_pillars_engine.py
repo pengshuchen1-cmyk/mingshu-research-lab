@@ -151,3 +151,16 @@ def test_bazi_engine_does_not_import_legacy_eight_char_path():
 
     assert "get_lunar_eight_char" not in source
     assert "getEightChar" not in source
+
+
+def test_all_bazi_consumers_use_explicit_engine_not_legacy_eight_char():
+    root = Path(__file__).resolve().parents[1] / "core"
+    for filename in (
+        "calendar_engine.py",
+        "yearly_engine.py",
+        "monthly_engine.py",
+        "popular_advice_engine.py",
+    ):
+        source = (root / filename).read_text(encoding="utf-8")
+        assert "getEightChar" not in source, filename
+        assert "from lunar_python" not in source, filename

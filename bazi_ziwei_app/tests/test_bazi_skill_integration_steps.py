@@ -22,7 +22,7 @@ class BaziSkillIntegrationStepsTests(unittest.TestCase):
         note = get_zi_time_boundary_note(23, 20)
         self.assertIn("子时", note)
         self.assertIn("换日", note)
-        self.assertIn("复核", note)
+        self.assertIn("统一", note)
 
     def test_normal_time_has_no_zi_warning(self):
         from core.calendar_engine import get_zi_time_boundary_note
@@ -43,7 +43,8 @@ class BaziSkillIntegrationStepsTests(unittest.TestCase):
             }
         )
         self.assertIn("zi_time_boundary_note", chart)
-        self.assertIn("子时", chart["zi_time_boundary_note"])
+        self.assertIn("23:00", chart["zi_time_boundary_note"])
+        self.assertIn("次日", chart["zi_time_boundary_note"])
 
     def test_strength_result_has_season_adjustment_explanation(self):
         from core.bazi_engine import build_bazi_chart

@@ -75,23 +75,12 @@ def _split_pillar(pillar: str) -> tuple[str, str]:
 def _get_day_pillar(target_date: date) -> str:
     """Return the verified day pillar or fail without inventing a value."""
     try:
-        from lunar_python import Solar
+        from core.bazi_calendar_adapter import day_pillar_seed
 
-        try:
-            solar = Solar(target_date.year, target_date.month, target_date.day, 12, 0, 0)
-        except TypeError:
-            solar = Solar.fromYmdHms(target_date.year, target_date.month, target_date.day, 12, 0, 0)
-        eight_char = solar.getLunar().getEightChar()
-        for method_name in ["getDay", "getDayInGanZhi"]:
-            method = getattr(eight_char, method_name, None)
-            if callable(method):
-                value = method()
-                if value:
-                    return str(value)
+        gan, zhi = day_pillar_seed(target_date)
+        return f"{gan}{zhi}"
     except Exception as exc:
         raise PopularAdviceUnavailableError("今日干支暂时无法计算") from exc
-
-    raise PopularAdviceUnavailableError("今日干支暂时无法计算")
 
 
 def _today_in_shanghai() -> date:

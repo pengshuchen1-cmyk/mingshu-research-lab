@@ -70,26 +70,8 @@ def _fallback_year_pillar(year: int) -> str:
 
 
 def get_year_pillar(target_year: int) -> str:
-    """获取某年的流年干支。"""
-    try:
-        from lunar_python import Solar
-
-        try:
-            solar = Solar(target_year, 2, 4, 12, 0, 0)
-        except TypeError:
-            solar = Solar.fromYmdHms(target_year, 2, 4, 12, 0, 0)
-        eight_char = solar.getLunar().getEightChar()
-        for method_name in ["getYear", "getYearInGanZhi"]:
-            method = getattr(eight_char, method_name, None)
-            if callable(method):
-                value = method()
-                if value:
-                    return str(value)
-        gan = getattr(eight_char, "getYearGan", lambda: "")()
-        zhi = getattr(eight_char, "getYearZhi", lambda: "")()
-        return f"{gan}{zhi}" if gan and zhi else _fallback_year_pillar(target_year)
-    except Exception:
-        return _fallback_year_pillar(target_year)
+    """按 1984 甲子年的六十甲子循环取流年干支。"""
+    return _fallback_year_pillar(int(target_year))
 
 
 def _split_pillar(pillar: str) -> tuple[str, str]:

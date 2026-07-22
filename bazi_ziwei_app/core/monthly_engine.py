@@ -67,26 +67,14 @@ def _fallback_month_pillar(target_year: int, month: int) -> str:
 
 
 def _get_month_pillar(target_year: int, month: int) -> str:
-    """获取目标月份的月柱。"""
-    try:
-        from lunar_python import Solar
+    """用本地节气定月与五虎遁规则取每月 15 日的月柱。"""
+    from core.bazi_calendar_adapter import BirthInput
+    from core.four_pillars_engine import calculate_four_pillars
 
-        try:
-            solar = Solar(target_year, month, 15, 12, 0, 0)
-        except TypeError:
-            solar = Solar.fromYmdHms(target_year, month, 15, 12, 0, 0)
-        eight_char = solar.getLunar().getEightChar()
-        for method_name in ["getMonth", "getMonthInGanZhi"]:
-            method = getattr(eight_char, method_name, None)
-            if callable(method):
-                value = method()
-                if value:
-                    return str(value)
-        gan = getattr(eight_char, "getMonthGan", lambda: "")()
-        zhi = getattr(eight_char, "getMonthZhi", lambda: "")()
-        return f"{gan}{zhi}" if gan and zhi else _fallback_month_pillar(target_year, month)
-    except Exception:
-        return _fallback_month_pillar(target_year, month)
+    result = calculate_four_pillars(
+        BirthInput("solar", int(target_year), int(month), 15, 12, 0, "male")
+    )
+    return result.month.text
 
 
 def _relation(elements: list[str], favorable: set[str], unfavorable: set[str]) -> str:

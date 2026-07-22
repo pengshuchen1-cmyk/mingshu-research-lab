@@ -68,7 +68,10 @@ class PopularAdviceEngineTests(unittest.TestCase):
             _get_day_pillar,
         )
 
-        with patch("lunar_python.Solar", side_effect=RuntimeError("solar unavailable")):
+        with patch(
+            "core.bazi_calendar_adapter.day_pillar_seed",
+            side_effect=RuntimeError("calendar unavailable"),
+        ):
             with self.assertRaises(PopularAdviceUnavailableError) as raised:
                 _get_day_pillar(dt.date(2026, 7, 11))
 
