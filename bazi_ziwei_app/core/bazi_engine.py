@@ -12,12 +12,15 @@ from core.bazi_constants import (
     STEM_ELEMENTS,
 )
 from core.bazi_rulebook import load_rulebook
+from core.chart_facts import attach_chart_facts
 from core.five_elements import calculate_five_elements
 from core.four_pillars_engine import calculate_four_pillars
 from core.pattern_engine import analyze_pattern
 from core.seasonal_adjustment import analyze_seasonal_adjustment
 from core.strength_engine import analyze_day_master_strength
 from core.ten_gods import count_ten_gods, get_hidden_stem_ten_gods, get_ten_god
+from core.relationship_analysis import analyze_relationship
+from core.wealth_analysis import analyze_wealth
 
 
 def _parse_birth_date(value: object) -> tuple[int, int, int]:
@@ -224,6 +227,9 @@ def build_bazi_chart(profile: dict) -> dict:
                 "message": f"日主强弱分析暂不可用：{exc}",
             }
         ensure_bazi_analysis_fields(chart)
+        chart["wealth_analysis"] = analyze_wealth(chart).to_dict()
+        chart["relationship_analysis"] = analyze_relationship(chart).to_dict()
+        attach_chart_facts(chart)
         return chart
     except Exception as exc:
         return {"profile": profile, "error": f"生成八字命盘失败：{exc}"}
