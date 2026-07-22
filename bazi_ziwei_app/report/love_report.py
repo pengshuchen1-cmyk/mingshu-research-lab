@@ -213,6 +213,26 @@ def _action_plan(fp: dict, profile: dict) -> list[str]:
     return actions[:6]
 
 
+def _relationship_structure_detail(chart: dict, profile: dict) -> str:
+    """展开本盘夫妻宫与各柱十神落位，避免通用化婚恋文案。"""
+    labels = {"year": "年柱", "month": "月柱", "day": "夫妻宫", "hour": "时柱"}
+    parts: list[str] = []
+    for key in ("year", "month", "day", "hour"):
+        pillar = chart.get("pillars", {}).get(key, {}) or {}
+        ten_god = chart.get("ten_gods", {}).get(key, {}) or {}
+        hidden = ten_god.get("hidden_stems", []) or []
+        hidden_text = "、".join(
+            f"{item.get('gan', '')}{item.get('ten_god', '')}" for item in hidden
+        ) or "无"
+        parts.append(
+            f"{labels[key]}{pillar.get('pillar', '未知')}：透干{ten_god.get('gan', '未知')}，藏干{hidden_text}"
+        )
+    return (
+        f"{profile.get('gender', '未填性别')}命关系结构：" + "；".join(parts)
+        + "。这些落位用于观察关系模式，不用于确认现实婚姻状态。"
+    )
+
+
 def generate_love_report(chart: dict, profile: dict | None = None) -> dict:
     """
     生成婚恋专项报告。
@@ -246,9 +266,11 @@ def generate_love_report(chart: dict, profile: dict | None = None) -> dict:
             f"第三阶段再看{_partner_star_label(profile)}数量{_partner_star_count(fp, profile)}对应的承诺、投入和现实安排是否稳定。",
         ]
     action_plan = _action_plan(fp, profile)
+    relationship_structure = _relationship_structure_detail(chart, profile)
     sections = [
         _section("婚恋专项差异依据", signature),
         _section("命盘依据", " ".join(evidence)),
+        _section("本盘关系结构明细", relationship_structure),
         _section("感情模式", relationship_pattern),
         _section("差异化关系策略", love_differentiator),
         _section("适合伴侣类型", "、".join(suitable_partner_type)),
@@ -266,6 +288,7 @@ def generate_love_report(chart: dict, profile: dict | None = None) -> dict:
         "love_evidence": evidence,
         "relationship_pattern": relationship_pattern,
         "love_differentiator": love_differentiator,
+        "relationship_structure": relationship_structure,
         "chart_signature": signature,
         "suitable_partner_type": suitable_partner_type,
         "relationship_strengths": relationship_strengths,
@@ -277,5 +300,4 @@ def generate_love_report(chart: dict, profile: dict | None = None) -> dict:
         "advice": " ".join(action_plan),
         "disclaimer": DISCLAIMER,
         "public_summary": chart.get("public_summary", {}),
-        "rule_analysis": chart.get("relationship_analysis", {}),
     }

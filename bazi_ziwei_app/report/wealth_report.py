@@ -175,6 +175,27 @@ def _action_plan(fp: dict) -> list[str]:
     return actions[:6]
 
 
+def _financial_structure_detail(chart: dict) -> str:
+    """把四柱落位、透干十神和藏干十神写成本盘专属的财富结构摘要。"""
+    labels = {"year": "年柱", "month": "月柱", "day": "日柱", "hour": "时柱"}
+    lines: list[str] = []
+    for key in ("year", "month", "day", "hour"):
+        pillar = chart.get("pillars", {}).get(key, {}) or {}
+        ten_god = chart.get("ten_gods", {}).get(key, {}) or {}
+        hidden = ten_god.get("hidden_stems", []) or []
+        hidden_text = "、".join(
+            f"{item.get('gan', '')}{item.get('ten_god', '')}" for item in hidden
+        ) or "无"
+        lines.append(
+            f"{labels[key]}{pillar.get('pillar', '未知')}：透干{ten_god.get('gan', '未知')}，藏干{hidden_text}"
+        )
+    elements = chart.get("five_elements", {}) or {}
+    element_text = "、".join(
+        f"{name}{float(score):.1f}" for name, score in sorted(elements.items())
+    )
+    return "；".join(lines) + f"。五行权重：{element_text}。"
+
+
 def generate_wealth_report(chart: dict) -> dict:
     """
     生成财运专项报告。
@@ -195,9 +216,11 @@ def generate_wealth_report(chart: dict) -> dict:
         f"第三阶段重点观察流年是否引动{'、'.join(fp['wealth_pattern_tags'][:3])}，再决定扩张或收缩。",
     ]
     action_plan = _action_plan(fp)
+    financial_structure = _financial_structure_detail(chart)
     sections = [
         _section("财运专项差异依据", signature),
         _section("命盘依据", " ".join(evidence)),
+        _section("本盘财富结构明细", financial_structure),
         _section("财运核心定位", wealth_identity),
         _section("差异化财富策略", wealth_differentiator),
         _section("主要收入方式", "、".join(main_income_modes)),
@@ -213,6 +236,7 @@ def generate_wealth_report(chart: dict) -> dict:
         "evidence": evidence,
         "wealth_identity": wealth_identity,
         "wealth_differentiator": wealth_differentiator,
+        "financial_structure": financial_structure,
         "chart_signature": signature,
         "wealth_evidence": evidence,
         "main_income_modes": main_income_modes,
@@ -226,5 +250,4 @@ def generate_wealth_report(chart: dict) -> dict:
         "advice": " ".join(action_plan),
         "disclaimer": DISCLAIMER,
         "public_summary": chart.get("public_summary", {}),
-        "rule_analysis": chart.get("wealth_analysis", {}),
     }

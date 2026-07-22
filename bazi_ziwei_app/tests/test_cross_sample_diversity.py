@@ -27,7 +27,13 @@ def report_text(report: dict) -> str:
     parts = [
         report.get("title", ""),
         " ".join(report.get("evidence", [])),
-        " ".join(str(value) for key, value in report.items() if key not in {"title", "sections", "disclaimer"}),
+        # public_summary is intentionally the same eight-field contract on every report;
+        # diversity is measured on report-specific conclusions and sections instead.
+        " ".join(
+            str(value)
+            for key, value in report.items()
+            if key not in {"title", "sections", "disclaimer", "public_summary"}
+        ),
     ]
     for section in report.get("sections", []):
         parts.append(section.get("title", ""))

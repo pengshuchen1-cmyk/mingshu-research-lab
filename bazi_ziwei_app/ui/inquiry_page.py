@@ -20,7 +20,7 @@ from core.ai_session import (
     recent_context_messages,
     validate_question,
 )
-from ui.bazi_components import render_rule_summary
+from ui.bazi_components import render_loaded_profile_hint, render_rule_summary
 from utils.logger import log_ai_event
 from utils.session_privacy import touch_private_session
 
@@ -172,8 +172,22 @@ def render_inquiry_page() -> None:
     if switched:
         log_ai_event(event_code="AI_QA_CLEARED", reason_code="profile_switch")
 
-    st.title("AI问答")
-    st.caption("基于当前命盘的本地四柱规则事实回答；AI 不能确认现实婚姻状态，也不会保证投资结果。")
+    st.markdown(
+        """
+        <section class="v106c-page-hero">
+          <div class="v106c-page-eyebrow">LOCAL RULES · AI Q&amp;A</div>
+          <div class="v106c-page-title">AI问答</div>
+          <div class="v106c-page-subtitle">用当前命盘的本地四柱事实回答，并显示依据与不确定性。</div>
+        </section>
+        <div class="ms-report-panel">
+          <span class="ms-mini-metric">对话最多保留 20 条</span>
+          <span class="ms-tag">本地规则校验</span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    render_loaded_profile_hint(st.session_state.get("current_profile", {}), chart)
+    st.caption("AI 不能确认现实婚姻状态，也不会保证投资结果。")
 
     with st.expander("当前命盘的本地规则摘要", expanded=False):
         render_rule_summary(chart)

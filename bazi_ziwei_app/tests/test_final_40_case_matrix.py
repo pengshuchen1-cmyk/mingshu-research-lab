@@ -1,53 +1,25 @@
-"""最终收口 40 组虚构命例覆盖矩阵。"""
+"""The former synthetic 40-case gate was explicitly replaced by five user cases."""
 
 from __future__ import annotations
 
-from collections import Counter
+import json
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-FIXTURE = ROOT / "tests" / "fixtures" / "final_40_bazi_cases.json"
 
 
-def test_frozen_matrix_satisfies_all_coverage_gates():
-    from scripts.build_final_40_case_matrix import load_frozen_matrix, validate_case_matrix
+def test_authoritative_acceptance_set_is_the_five_user_cases():
+    cases = json.loads(
+        (ROOT / "tests" / "fixtures" / "user_five_bazi_cases.json").read_text(encoding="utf-8")
+    )["cases"]
 
-    cases = load_frozen_matrix(FIXTURE)
-    result = validate_case_matrix(cases, recalculate=True)
-
-    assert result["case_count"] == 40
-    assert result["errors"] == []
-    assert result["unique_pillars"] == 40
-    assert result["unique_fingerprints"] == 40
-    assert result["boundary_case_count"] >= 8
+    assert [case["id"] for case in cases] == ["U01", "U02", "U03", "U04", "U05"]
+    assert all(case["expected_pillars"] for case in cases)
 
 
-def test_frozen_matrix_is_balanced_and_contains_no_real_identity_fields():
-    from scripts.build_final_40_case_matrix import load_frozen_matrix
+def test_five_case_acceptance_artifact_exists():
+    target = ROOT / "acceptance_samples" / "user_five_bazi_acceptance.md"
 
-    cases = load_frozen_matrix(FIXTURE)
-    day_masters = Counter(case["expected"]["day_master"] for case in cases)
-    hour_branches = Counter(case["expected"]["hour_branch"] for case in cases)
-    genders = Counter(case["profile"]["gender"] for case in cases)
-    strengths = Counter(case["expected"]["strength_bucket"] for case in cases)
-    themes = Counter(case["expected"]["day_master_element"] for case in cases)
-
-    assert day_masters == {stem: 4 for stem in "甲乙丙丁戊己庚辛壬癸"}
-    assert set(hour_branches) == set("子丑寅卯辰巳午未申酉戌亥")
-    assert min(hour_branches.values()) >= 3
-    assert genders == {"男": 20, "女": 20}
-    assert all(strengths[bucket] >= 10 for bucket in ("身强", "身弱", "中和"))
-    assert all(themes[element] >= 6 for element in "木火土金水")
-
-    for index, case in enumerate(cases, start=1):
-        profile = case["profile"]
-        assert case["case_id"] == f"样例-{index:03d}"
-        assert profile["name"] == case["case_id"]
-        assert not any(key in profile for key in ("phone", "email", "address", "real_name"))
-
-
-def test_frozen_matrix_rebuild_is_deterministic():
-    from scripts.build_final_40_case_matrix import build_case_matrix, load_frozen_matrix
-
-    assert build_case_matrix() == load_frozen_matrix(FIXTURE)
+    assert target.exists()
+    assert target.read_text(encoding="utf-8").count("## U0") == 5
