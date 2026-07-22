@@ -1,0 +1,74 @@
+{
+  "rules": [
+    {
+      "id": "CAL-YEAR-LICHUN",
+      "section": "calendar",
+      "statement": "年柱以出生时刻是否越过当年立春为界，不以农历正月初一换年。",
+      "citations": ["bazi-skill:calendar-boundary", "san_ming_tong_hui"],
+      "priority": 100
+    },
+    {
+      "id": "CAL-MONTH-JIE",
+      "section": "calendar",
+      "statement": "月柱按十二节交接，依次以立春、惊蛰、清明、立夏、芒种、小暑、立秋、白露、寒露、立冬、大雪、小寒换月。",
+      "citations": ["bazi-skill:calendar-boundary", "san_ming_tong_hui"],
+      "priority": 100
+    },
+    {
+      "id": "CAL-DAY-ZI23",
+      "section": "calendar",
+      "statement": "北京时间23:00起按次日命理日期计算日柱。",
+      "citations": ["bazi-skill:time-boundary"],
+      "priority": 100
+    },
+    {
+      "id": "CAL-TIME-CST",
+      "section": "calendar",
+      "statement": "未提供可核验出生地经度时统一使用中国标准时间，不默认施加真太阳时修正。",
+      "citations": ["bazi-skill:time-boundary"],
+      "priority": 100
+    },
+    {
+      "id": "PILLAR-MONTH-FIVETIGER",
+      "section": "pillars",
+      "statement": "月干依年干按五虎遁推得，月支由最近已过的节确定。",
+      "citations": ["bazi-skill:pillar-formula", "yuan_hai_zi_ping"],
+      "priority": 100
+    },
+    {
+      "id": "PILLAR-HOUR-FIVERAT",
+      "section": "pillars",
+      "statement": "时支按两个小时一个时辰划分，时干依换日后的日干按五鼠遁推得。",
+      "citations": ["bazi-skill:pillar-formula", "yuan_hai_zi_ping"],
+      "priority": 100
+    },
+    {
+      "id": "DAYUN-DIRECTION",
+      "section": "dayun",
+      "statement": "阳年男、阴年女顺排，阴年男、阳年女逆排。",
+      "citations": ["bazi-skill:dayun", "san_ming_tong_hui"],
+      "priority": 100
+    },
+    {
+      "id": "DAYUN-START-DIV3",
+      "section": "dayun",
+      "statement": "顺排取出生后下一个节，逆排取出生前上一个节，以三日折一年推算起运年龄。",
+      "citations": ["bazi-skill:dayun", "san_ming_tong_hui"],
+      "priority": 100
+    },
+    {
+      "id": "SAFETY-NONDETERMINISTIC",
+      "section": "safety",
+      "statement": "命理结论表达为结构倾向、触发条件和行动建议，不作结果保证。",
+      "citations": ["bazi-skill:safety"],
+      "priority": 100
+    },
+    {
+      "id": "SAFETY-STATUS-UNKNOWN",
+      "section": "safety",
+      "statement": "命盘不能单独证明当事人当前婚姻、资产、健康或法律状态。",
+      "citations": ["bazi-skill:safety"],
+      "priority": 100
+    }
+  ]
+}
