@@ -92,10 +92,10 @@
       "expected_pillars": {
         "year": "癸卯",
         "month": "甲子",
-        "day": "甲寅",
+        "day": "乙卯",
         "hour": "丙子"
       },
-      "expected_day_master": "甲",
+      "expected_day_master": "乙",
       "review_status": "verified",
       "source": "命数研究室引擎输出+万年历交叉验证"
     },
@@ -108,10 +108,10 @@
       "expected_pillars": {
         "year": "乙亥",
         "month": "甲申",
-        "day": "癸未",
+        "day": "甲申",
         "hour": "甲子"
       },
-      "expected_day_master": "癸",
+      "expected_day_master": "甲",
       "review_status": "verified",
       "source": "命数研究室引擎输出+万年历交叉验证"
     },
