@@ -117,7 +117,7 @@ class BaziReferenceCaseTests(unittest.TestCase):
         self.assertEqual(case.get("standard_time_chart", {}).get("pillars", {}).get("hour"), "丁亥")
         self.assertEqual(case.get("standard_time_chart", {}).get("day_master"), "庚")
         self.assertEqual(case.get("standard_time_chart", {}).get("pattern"), "伤官格带财官")
-        self.assertIn("从弱倾向", case.get("research_tags", []))
+        self.assertIn("身弱有根", case.get("research_tags", []))
         self.assertIn("女命官杀透出", case.get("research_tags", []))
 
     def test_ren_yujie_night_zi_reference_case_is_registered(self):

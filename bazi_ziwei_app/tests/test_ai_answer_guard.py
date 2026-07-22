@@ -116,3 +116,18 @@ def test_structured_answer_rejects_blank_evidence_items():
             chart_evidence=[""],
             rule_evidence=[""],
         )
+
+
+def test_guard_rejects_common_wealth_and_spouse_synonym_claims():
+    from core.ai_answer_guard import validate_ai_answer
+
+    for text in (
+        "此命财星是金，妻星为印星。",
+        "此命以印星为妻星，属于男命。",
+        "此命财星五行为金，配偶星属印星。",
+    ):
+        result = validate_ai_answer(_answer(text), _context())
+        assert result.accepted is False
+        assert {"wealth_element_contradiction", "spouse_star_contradiction"} & set(
+            result.violations
+        )

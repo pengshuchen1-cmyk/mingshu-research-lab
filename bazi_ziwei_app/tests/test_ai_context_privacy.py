@@ -104,3 +104,25 @@ def test_unlabelled_chinese_identity_date_and_city_never_leave_as_raw_text():
     assert '"year":1996' not in payload
     assert context.question == "问题类别：财运；时间维度：是；目标年份：2026年"
     assert context.history[0].content == "此前用户询问：事业"
+
+
+def test_birth_year_shorthand_is_never_mistaken_for_forecast_year():
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    facts = build_chart_facts(
+        build_bazi_chart(
+            {"gender": "男", "birth_date": "1994-09-23", "birth_hour": 18, "birth_minute": 0}
+        )
+    )
+    for question in (
+        "我是1996年生，想看2026年财运",
+        "生于1996年，想看2026年财运",
+        "1996年属鼠，想看2026年财运",
+    ):
+        context = build_ai_context(facts, question, [])
+        assert context.question == "问题类别：财运；时间维度：是；目标年份：2026年"
+        assert context.chart_facts["target_years"] == [
+            {"year": 2026, "year_pillar": "丙午"}
+        ]

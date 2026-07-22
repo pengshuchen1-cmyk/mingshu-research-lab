@@ -86,7 +86,10 @@ def validate_ai_answer(answer: BaziAIAnswer, context: AIRequestContext) -> Guard
         wealth_element = ""
     claimed_wealth_elements = {
         value
-        for match in re.findall(r"财星为([木火土金水])(?:也为([木火土金水]))?", combined)
+        for match in re.findall(
+            r"财星(?:的?五行)?(?:为|是|属)([木火土金水])(?:也为([木火土金水]))?",
+            combined,
+        )
         for value in match
         if value
     }
@@ -96,14 +99,23 @@ def validate_ai_answer(answer: BaziAIAnswer, context: AIRequestContext) -> Guard
     spouse_claims = {
         value
         for match in re.findall(
-            r"配偶星为(财星|官杀|印星|食伤|比劫)(?:也为(财星|官杀|印星|食伤|比劫))?",
+            r"(?:配偶星|妻星|夫星)(?:为|是|属)(财星|官杀|官星|印星|食伤|比劫)"
+            r"(?:也为(财星|官杀|官星|印星|食伤|比劫))?",
             combined,
         )
         for value in match
         if value
     }
+    spouse_claims.update(
+        re.findall(r"以(财星|官杀|官星|印星|食伤|比劫)为(?:配偶星|妻星|夫星)", combined)
+    )
+    spouse_claims = {"官杀" if value == "官星" else value for value in spouse_claims}
     expected_spouse = "官杀" if expected_gender == "female" else "财星"
-    if spouse_claims and spouse_claims != {expected_spouse}:
+    wrong_relation_label = (
+        ("妻星" in combined and expected_gender == "female")
+        or ("夫星" in combined and expected_gender == "male")
+    )
+    if wrong_relation_label or (spouse_claims and spouse_claims != {expected_spouse}):
         violations.append("spouse_star_contradiction")
 
     strength = context.chart_facts.get("strength", {})

@@ -47,16 +47,25 @@ CATEGORY_LABELS = {
 }
 
 
+def _strip_birth_expressions(value: object) -> str:
+    """Remove Chinese birth-date/year expressions before extracting forecast years."""
+    text = str(value or "")
+    patterns = (
+        r"(?:19|20)\d{2}年\d{1,2}月\d{1,2}日(?:出生|生人|出生于[^，。；;\s]*)?",
+        r"(?:我是|本人)?\s*(?:19|20)\d{2}年(?:出生|生人|生|属[鼠牛虎兔龙蛇马羊猴鸡狗猪])",
+        r"生于\s*(?:19|20)\d{2}年",
+    )
+    for pattern in patterns:
+        text = re.sub(pattern, "", text)
+    return text
+
+
 def _canonical_question(question: str, routed: RoutedQuestion) -> str:
     """Turn arbitrary customer prose into an allowlisted intent, never raw text."""
     text = str(question or "")
     parts = [f"问题类别：{CATEGORY_LABELS[routed.category]}"]
     parts.append(f"时间维度：{'是' if routed.requires_timing else '否'}")
-    timing_text = re.sub(
-        r"(?:19|20)\d{2}年\d{1,2}月\d{1,2}日(?:出生)?",
-        "",
-        text,
-    )
+    timing_text = _strip_birth_expressions(text)
     years = list(dict.fromkeys(re.findall(r"(?:19|20)\d{2}(?=年)", timing_text)))[:4]
     if years:
         parts.append("目标年份：" + "、".join(f"{year}年" for year in years))
@@ -76,16 +85,7 @@ def _canonical_question(question: str, routed: RoutedQuestion) -> str:
 
 def _target_year_facts(question: str) -> list[dict[str, object]]:
     """Extract explicit forecast years and calculate only their year pillars."""
-    text = re.sub(
-        r"(?:19|20)\d{2}年\d{1,2}月\d{1,2}日(?:出生|生人|出生于[^，。；;\s]*)?",
-        "",
-        str(question or ""),
-    )
-    text = re.sub(
-        r"(?:我是|本人)?\s*(?:19|20)\d{2}年(?:出生|生人)",
-        "",
-        text,
-    )
+    text = _strip_birth_expressions(question)
     years = list(dict.fromkeys(int(value) for value in re.findall(r"((?:19|20)\d{2})(?=年)", text)))[:4]
     return [
         {
