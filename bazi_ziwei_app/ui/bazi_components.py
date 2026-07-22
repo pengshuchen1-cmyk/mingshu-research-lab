@@ -56,6 +56,20 @@ def render_compact_bazi_summary(chart: dict) -> None:
     )
 
 
+def render_rule_summary(chart: dict) -> None:
+    """Render the eight approved customer-facing rule conclusions."""
+    summary = chart.get("public_summary", {}) if chart else {}
+    if not summary:
+        return
+    st.markdown("### 四柱规则摘要")
+    for label, value in summary.items():
+        if isinstance(value, list):
+            text = "；".join(str(item) for item in value if item) or "待分析"
+        else:
+            text = str(value or "待分析")
+        st.markdown(f"**{label}**：{text}")
+
+
 def render_loaded_profile_hint(profile: dict | None, chart: dict) -> None:
     """在非排盘页显示简短命盘提示，不重复完整四柱。"""
     profile = profile or chart.get("profile", {}) or {}

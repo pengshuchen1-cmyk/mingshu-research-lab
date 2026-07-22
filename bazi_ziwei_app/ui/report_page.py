@@ -10,6 +10,7 @@ from core.monthly_engine import analyze_monthly_fortune
 from core.yearly_engine import analyze_yearly_fortune
 from report.export_report import build_markdown_report, build_pdf_report, build_text_report
 from utils.runtime_mode import is_public_mode
+from ui.bazi_components import render_rule_summary
 
 
 def _safe_filename(name: str, suffix: str) -> str:
@@ -194,6 +195,7 @@ def render_report_page() -> None:
         unsafe_allow_html=True,
     )
     _render_report_summary(report, chart)
+    render_rule_summary(chart)
     if not pdf_report.startswith(b"%PDF"):
         st.info("当前环境 PDF 导出暂不可用，请先使用 Markdown 或 TXT 导出。也可以先运行：python -m pip install -r requirements.txt")
 

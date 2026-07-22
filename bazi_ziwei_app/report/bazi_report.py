@@ -193,9 +193,16 @@ def generate_basic_bazi_report(chart: dict) -> dict:
         life_overview_text = ""
 
     profile = chart.get("profile", {}) or {}
+    if profile.get("birth_hour") is None:
+        birth_time = "时辰不详"
+    else:
+        birth_time = (
+            f"{int(profile.get('birth_hour', 0)):02d}:"
+            f"{int(profile.get('birth_minute', 0)):02d}"
+        )
     summary = (
         f"{profile.get('name', '未命名')}｜{profile.get('gender', '')}｜"
-        f"{profile.get('birth_date', '')}｜{int(profile.get('birth_hour', 0)):02d}:{int(profile.get('birth_minute', 0)):02d}｜"
+        f"{profile.get('birth_date', '')}｜{birth_time}｜"
         f"{profile.get('birth_place', '')}。{build_brief_signature(chart)}"
     )
     personality_text = strength_text
@@ -224,4 +231,5 @@ def generate_basic_bazi_report(chart: dict) -> dict:
         "love_text": love_text,
         "risk_text": risk_text,
         "advice": advice,
+        "public_summary": chart.get("public_summary", {}),
     }

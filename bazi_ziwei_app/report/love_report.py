@@ -276,4 +276,6 @@ def generate_love_report(chart: dict, profile: dict | None = None) -> dict:
         "sections": sections,
         "advice": " ".join(action_plan),
         "disclaimer": DISCLAIMER,
+        "public_summary": chart.get("public_summary", {}),
+        "rule_analysis": chart.get("relationship_analysis", {}),
     }

@@ -22,6 +22,7 @@ from ui.chart_visual_components import (
     render_element_distribution,
     render_four_pillars_matrix,
 )
+from ui.bazi_components import render_rule_summary
 
 
 _ELEMENT_PATTERN_NAMES = {
@@ -634,18 +635,14 @@ def render_life_overview_page():
     st.caption(f'命盘：{profile.get("name", "未命名")} | {dp["overall_pattern"]}')
     identity_card = _build_life_identity_card(chart, dp)
     _render_life_identity_card(identity_card)
+    render_rule_summary(chart)
 
     evidence = list(dp.get("evidence", []))
     pattern_info = chart.get("pattern_analysis", {})
-    seasonal_info = chart.get("seasonal_adjustment", {})
     if pattern_info.get("pattern"):
         evidence.append(
             f'格局初判：{pattern_info.get("pattern")}，{pattern_info.get("quality", "")}。'
         )
-    if seasonal_info.get("primary_useful_stems"):
-        primary = "、".join(seasonal_info.get("primary_useful_stems", []))
-        support = "、".join(seasonal_info.get("supporting_stems", [])) or "原局配合"
-        evidence.append(f"调候用神：先看{primary}，辅助{support}。")
     term_ids = collect_term_ids(
         identity_card["term_ids"],
         [identity_card["summary"], dp.get("overall_pattern", ""), *evidence],

@@ -225,4 +225,6 @@ def generate_wealth_report(chart: dict) -> dict:
         "sections": sections,
         "advice": " ".join(action_plan),
         "disclaimer": DISCLAIMER,
+        "public_summary": chart.get("public_summary", {}),
+        "rule_analysis": chart.get("wealth_analysis", {}),
     }

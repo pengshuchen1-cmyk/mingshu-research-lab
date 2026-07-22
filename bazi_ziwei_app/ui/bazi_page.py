@@ -17,7 +17,7 @@ from report.sixty_jiazi_report import (
     build_four_pillar_jiazi_cards,
     compare_nayin_with_chart_elements,
 )
-from ui.bazi_components import render_full_bazi_chart
+from ui.bazi_components import render_full_bazi_chart, render_rule_summary
 
 def _pick(text: str, max_len: int = 60) -> str:
     """取第一句，超长截断。"""
@@ -272,17 +272,18 @@ def render_bazi_page() -> None:
         '<div class="v106c-page-eyebrow">BAZI STRUCTURE</div>'
         '<div class="v106c-page-title">八字排盘</div>'
         '<div class="v106c-page-subtitle">'
-        '集中查看四柱、日主强弱、格局调候、五行十神与现实倾向。页面采用和首页一致的黑金视觉，重点信息优先展示，专业细节放入折叠区。'
+        '集中查看四柱、日主强弱、格局证据、五行十神与现实倾向。重点信息优先展示，专业细节放入折叠区。'
         '</div>'
         '</section>',
         unsafe_allow_html=True,
     )
 
     # ============== 1. 基础信息 ==============
+    birth_time = "时辰不详" if profile.get("birth_hour") is None else f'{profile.get("birth_hour", 0):02d}:{profile.get("birth_minute", 0):02d}'
     rows = [
         ("姓名", profile.get("name", "") or "未命名"),
         ("性别", profile.get("gender", "")),
-        ("公历", f'{profile.get("birth_date", "")} {profile.get("birth_hour", 0):02d}:{profile.get("birth_minute", 0):02d}'),
+        ("公历", f'{profile.get("birth_date", "")} {birth_time}'),
     ]
     lunar = chart.get("lunar_text", "")
     if lunar:
@@ -291,6 +292,7 @@ def render_bazi_page() -> None:
     if lunar:
         with st.expander("专业历法细节", expanded=False):
             st.write(lunar)
+    render_rule_summary(chart)
 
     # ============== 1.5 命局总论 ==============
     st.markdown("## 命局总论")
@@ -426,47 +428,24 @@ def render_bazi_page() -> None:
     # ============== 4. 命盘类型 ==============
     st.markdown("### 命盘类型")
     pattern_info = chart.get("pattern_analysis", {})
-    seasonal_info = chart.get("seasonal_adjustment", {})
-    if pattern_info or seasonal_info:
-        col_pattern, col_season = st.columns(2)
-        with col_pattern:
-            if pattern_info:
-                st.markdown(
-                    f'<div style="{card_style()}padding:12px 14px;">'
-                    f'<div class="ms-bazi-label">格局初判</div>'
-                    f'<div class="ms-bazi-title" style="font-size:18px;">'
-                    f'{pattern_info.get("pattern", "—")}｜{pattern_info.get("quality", "")}</div>'
-                    f'<div class="ms-bazi-text" style="font-size:12px;margin-top:6px;">'
-                    f'{_pick(pattern_info.get("plain_text", ""), 120)}</div>'
-                    f'</div>',
-                    unsafe_allow_html=True,
-                )
-        with col_season:
-            if seasonal_info:
-                primary = "、".join(seasonal_info.get("primary_useful_stems", [])) or "—"
-                supporting = "、".join(seasonal_info.get("supporting_stems", [])) or "—"
-                st.markdown(
-                    f'<div style="{card_style()}padding:12px 14px;">'
-                    f'<div class="ms-bazi-label">调候用神</div>'
-                    f'<div class="ms-bazi-title" style="font-size:18px;">先看 {primary}</div>'
-                    f'<div class="ms-bazi-text" style="font-size:12px;margin-top:4px;">'
-                    f'辅助：{supporting}<br>{_pick(seasonal_info.get("plain_text", ""), 120)}</div>'
-                    f'</div>',
-                    unsafe_allow_html=True,
-                )
-        with st.expander("格局与调候依据", expanded=False):
+    if pattern_info:
+        st.markdown(
+            f'<div style="{card_style()}padding:12px 14px;">'
+            f'<div class="ms-bazi-label">格局初判</div>'
+            f'<div class="ms-bazi-title" style="font-size:18px;">'
+            f'{pattern_info.get("pattern", "—")}｜{pattern_info.get("quality", "")}</div>'
+            f'<div class="ms-bazi-text" style="font-size:12px;margin-top:6px;">'
+            f'{_pick(pattern_info.get("plain_text", ""), 120)}</div>'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
+        with st.expander("格局依据", expanded=False):
             if pattern_info.get("evidence"):
                 st.markdown("**格局依据**")
                 for item in pattern_info.get("evidence", [])[:8]:
                     st.markdown(f"- {item}")
-            if seasonal_info.get("evidence"):
-                st.markdown("**调候依据**")
-                for item in seasonal_info.get("evidence", [])[:8]:
-                    st.markdown(f"- {item}")
             if pattern_info.get("basis"):
                 st.caption(pattern_info.get("basis"))
-            if seasonal_info.get("basis"):
-                st.caption(seasonal_info.get("basis"))
     try:
         ct = classify_chart(chart)
         tags = []
