@@ -1,0 +1,51 @@
+{
+  "cases": [
+    {
+      "id": "U01",
+      "calendar": "lunar",
+      "date": "1986-07-10",
+      "time": "10:00",
+      "gender": "female",
+      "expected_solar_date": "1986-08-15",
+      "expected_pillars": ["丙寅", "丙申", "辛卯", "癸巳"]
+    },
+    {
+      "id": "U02",
+      "calendar": "lunar",
+      "date": "1977-09-29",
+      "time": "19:30",
+      "gender": "male",
+      "expected_solar_date": "1977-11-10",
+      "expected_pillars": ["丁巳", "辛亥", "辛未", "戊戌"]
+    },
+    {
+      "id": "U03",
+      "calendar": "lunar",
+      "date": "1974-06-17",
+      "time": "14:00",
+      "gender": "male",
+      "expected_solar_date": "1974-08-04",
+      "expected_pillars": ["甲寅", "辛未", "丁丑", "丁未"],
+      "time_range_note": "原始时间为13:00–15:00，按未时验收"
+    },
+    {
+      "id": "U04",
+      "calendar": "solar",
+      "date": "1994-09-23",
+      "time": "18:00",
+      "gender": "male",
+      "expected_solar_date": "1994-09-23",
+      "expected_pillars": ["甲戌", "癸酉", "壬子", "己酉"]
+    },
+    {
+      "id": "U05",
+      "calendar": "solar",
+      "date": "1996-09-04",
+      "time": "23:45",
+      "gender": "female",
+      "expected_solar_date": "1996-09-04",
+      "expected_pillars": ["丙子", "丙申", "乙巳", "丙子"],
+      "boundary_note": "23:00后按次日命理日期取日柱"
+    }
+  ]
+}
