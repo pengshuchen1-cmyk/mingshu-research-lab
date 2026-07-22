@@ -12,6 +12,11 @@ from utils.runtime_mode import require_local_storage
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 DB_PATH = os.path.join(BASE_DIR, "data", "profiles.db")
+PROFILE_SELECT_FIELDS = (
+    "id, name, gender, calendar_type, birth_date, lunar_birth_date, "
+    "birth_hour, birth_minute, birth_place, is_leap_month, time_mode, "
+    "time_known, use_solar_time, note, created_at"
+)
 
 
 def _optional_int(value: object) -> int | None:
@@ -27,11 +32,20 @@ def _connect() -> sqlite3.Connection:
     return conn
 
 
-def _ensure_profile_note_column(conn: sqlite3.Connection) -> None:
-    """确保 profiles 表存在 note 字段。"""
+def _ensure_profile_columns(conn: sqlite3.Connection) -> None:
+    """补齐新规则引擎重建命盘必需的输入语义。"""
     columns = [row["name"] for row in conn.execute("PRAGMA table_info(profiles)").fetchall()]
-    if "note" not in columns:
-        conn.execute("ALTER TABLE profiles ADD COLUMN note TEXT")
+    definitions = {
+        "note": "TEXT",
+        "calendar_type": "TEXT NOT NULL DEFAULT 'solar'",
+        "lunar_birth_date": "TEXT",
+        "is_leap_month": "INTEGER NOT NULL DEFAULT 0",
+        "time_mode": "TEXT NOT NULL DEFAULT 'china_standard'",
+        "time_known": "INTEGER NOT NULL DEFAULT 1",
+    }
+    for name, definition in definitions.items():
+        if name not in columns:
+            conn.execute(f"ALTER TABLE profiles ADD COLUMN {name} {definition}")
 
 
 def init_db() -> None:
@@ -45,10 +59,15 @@ def init_db() -> None:
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT,
                 gender TEXT,
+                calendar_type TEXT NOT NULL DEFAULT 'solar',
                 birth_date TEXT,
+                lunar_birth_date TEXT,
                 birth_hour INTEGER,
                 birth_minute INTEGER,
                 birth_place TEXT,
+                is_leap_month INTEGER NOT NULL DEFAULT 0,
+                time_mode TEXT NOT NULL DEFAULT 'china_standard',
+                time_known INTEGER NOT NULL DEFAULT 1,
                 use_solar_time INTEGER,
                 note TEXT,
                 created_at TEXT
@@ -66,7 +85,7 @@ def init_db() -> None:
             )
             """
         )
-        _ensure_profile_note_column(conn)
+        _ensure_profile_columns(conn)
         conn.commit()
     migrate_rule_engine_v2(DB_PATH)
 
@@ -144,16 +163,23 @@ def save_profile(profile: dict, chart: dict, report: dict) -> int:
         cursor = conn.execute(
             """
             INSERT INTO profiles
-            (name, gender, birth_date, birth_hour, birth_minute, birth_place, use_solar_time, note, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (name, gender, calendar_type, birth_date, lunar_birth_date,
+             birth_hour, birth_minute, birth_place, is_leap_month, time_mode,
+             time_known, use_solar_time, note, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 profile.get("name", ""),
                 profile.get("gender", ""),
+                "lunar" if profile.get("calendar_type") == "lunar" else "solar",
                 str(profile.get("birth_date", "")),
+                profile.get("lunar_birth_date"),
                 _optional_int(profile.get("birth_hour", 0)),
                 _optional_int(profile.get("birth_minute", 0)),
                 profile.get("birth_place", ""),
+                1 if profile.get("is_leap_month") else 0,
+                "china_standard",
+                1 if profile.get("birth_hour") is not None else 0,
                 1 if profile.get("use_solar_time") else 0,
                 profile.get("note", ""),
                 created_at,
@@ -183,8 +209,8 @@ def list_profiles() -> list[dict]:
     init_db()
     with _connect() as conn:
         rows = conn.execute(
-            """
-            SELECT id, name, gender, birth_date, birth_hour, birth_minute, birth_place, use_solar_time, note, created_at
+            f"""
+            SELECT {PROFILE_SELECT_FIELDS}
             FROM profiles
             ORDER BY id DESC
             """
@@ -200,8 +226,8 @@ def get_profile(profile_id: int) -> dict | None:
     init_db()
     with _connect() as conn:
         profile_row = conn.execute(
-            """
-            SELECT id, name, gender, birth_date, birth_hour, birth_minute, birth_place, use_solar_time, note, created_at
+            f"""
+            SELECT {PROFILE_SELECT_FIELDS}
             FROM profiles
             WHERE id = ?
             """,
@@ -257,7 +283,7 @@ def search_profiles(keyword: str = "", gender: str | None = None) -> list[dict]:
     with _connect() as conn:
         rows = conn.execute(
             f"""
-            SELECT id, name, gender, birth_date, birth_hour, birth_minute, birth_place, use_solar_time, note, created_at
+            SELECT {PROFILE_SELECT_FIELDS}
             FROM profiles
             {where}
             ORDER BY id DESC
@@ -329,10 +355,15 @@ def update_profile_birth_info(profile_id: int, profile: dict) -> None:
             UPDATE profiles
             SET name = ?,
                 gender = ?,
+                calendar_type = ?,
                 birth_date = ?,
+                lunar_birth_date = ?,
                 birth_hour = ?,
                 birth_minute = ?,
                 birth_place = ?,
+                is_leap_month = ?,
+                time_mode = ?,
+                time_known = ?,
                 use_solar_time = ?,
                 note = ?
             WHERE id = ?
@@ -340,10 +371,15 @@ def update_profile_birth_info(profile_id: int, profile: dict) -> None:
             (
                 profile.get("name", ""),
                 profile.get("gender", ""),
+                "lunar" if profile.get("calendar_type") == "lunar" else "solar",
                 str(profile.get("birth_date", "")),
+                profile.get("lunar_birth_date"),
                 _optional_int(profile.get("birth_hour", 0)),
                 _optional_int(profile.get("birth_minute", 0)),
                 profile.get("birth_place", ""),
+                1 if profile.get("is_leap_month") else 0,
+                "china_standard",
+                1 if profile.get("birth_hour") is not None else 0,
                 1 if profile.get("use_solar_time") else 0,
                 profile.get("note", ""),
                 profile_id,

@@ -31,6 +31,41 @@ def _parse_date(value: object) -> date:
         return date.today()
 
 
+def _build_rebuild_profile(
+    *,
+    name: str,
+    gender: str,
+    calendar_label: str,
+    birth_date: date,
+    birth_hour: int,
+    birth_minute: int,
+    birth_place: str,
+    is_leap_month: bool,
+    time_known: bool,
+    note: str,
+) -> dict:
+    """Build a rebuild payload without losing lunar/leap-month semantics."""
+    calendar_type = "lunar" if calendar_label == "农历" else "solar"
+    profile = {
+        "name": name,
+        "gender": gender,
+        "calendar_type": calendar_type,
+        "birth_date": birth_date.isoformat(),
+        "birth_hour": int(birth_hour) if time_known else None,
+        "birth_minute": int(birth_minute) if time_known else None,
+        "birth_place": birth_place,
+        "is_leap_month": bool(is_leap_month and calendar_type == "lunar"),
+        "time_mode": "china_standard",
+        "time_known": bool(time_known),
+        "use_solar_time": False,
+        "use_true_solar_time": False,
+        "note": note,
+    }
+    if calendar_type == "lunar":
+        profile["lunar_birth_date"] = birth_date.isoformat()
+    return profile
+
+
 def _render_archive_empty_state() -> None:
     """引导首次使用者创建本机保存的命盘。"""
     import streamlit as st
@@ -87,10 +122,15 @@ def render_archive_page() -> None:
                 for key in [
                     "name",
                     "gender",
+                    "calendar_type",
                     "birth_date",
+                    "lunar_birth_date",
                     "birth_hour",
                     "birth_minute",
                     "birth_place",
+                    "is_leap_month",
+                    "time_mode",
+                    "time_known",
                     "use_solar_time",
                     "note",
                 ]
@@ -130,12 +170,38 @@ def render_archive_page() -> None:
             gender_value = loaded.get("gender", "男")
             gender_index = gender_options.index(gender_value) if gender_value in gender_options else 0
             rebuild_gender = st.selectbox("性别", gender_options, index=gender_index, key=f"rebuild_gender_{profile_id}")
+            calendar_options = ["公历", "农历"]
+            calendar_index = 1 if loaded.get("calendar_type") == "lunar" else 0
+            rebuild_calendar_label = st.radio(
+                "出生日期类型",
+                calendar_options,
+                index=calendar_index,
+                horizontal=True,
+                key=f"rebuild_calendar_{profile_id}",
+            )
+            rebuild_is_leap_month = False
+            if rebuild_calendar_label == "农历":
+                rebuild_is_leap_month = st.checkbox(
+                    "是否闰月",
+                    value=bool(loaded.get("is_leap_month")),
+                    key=f"rebuild_leap_{profile_id}",
+                )
+            source_date = (
+                loaded.get("lunar_birth_date")
+                if rebuild_calendar_label == "农历"
+                else loaded.get("birth_date")
+            )
             rebuild_birth_date = st.date_input(
                 "出生日期",
-                value=_parse_date(loaded.get("birth_date")),
+                value=_parse_date(source_date),
                 min_value=date(1900, 1, 1),
                 max_value=date.today(),
                 key=f"rebuild_birth_date_{profile_id}",
+            )
+            rebuild_time_known = not st.checkbox(
+                "出生时辰不详",
+                value=not bool(loaded.get("time_known", loaded.get("birth_hour") is not None)),
+                key=f"rebuild_time_unknown_{profile_id}",
             )
             col_hour, col_minute = st.columns(2)
             rebuild_hour = col_hour.number_input(
@@ -159,11 +225,7 @@ def render_archive_page() -> None:
                 value=loaded.get("birth_place", "") or "",
                 key=f"rebuild_place_{profile_id}",
             )
-            rebuild_use_solar_time = st.checkbox(
-                "使用真太阳时校正（当前版本仅保存选项，后续继续完善）",
-                value=bool(loaded.get("use_solar_time")),
-                key=f"rebuild_solar_{profile_id}",
-            )
+            st.caption("排盘统一采用中国标准时间（北京时间）。")
             rebuild_note = st.text_area(
                 "备注",
                 value=loaded.get("note", "") or "",
@@ -176,16 +238,18 @@ def render_archive_page() -> None:
             )
             rebuild_submitted = st.form_submit_button("重新排盘")
         if rebuild_submitted:
-            new_profile = {
-                "name": rebuild_name,
-                "gender": rebuild_gender,
-                "birth_date": rebuild_birth_date.isoformat(),
-                "birth_hour": int(rebuild_hour),
-                "birth_minute": int(rebuild_minute),
-                "birth_place": rebuild_birth_place,
-                "use_solar_time": rebuild_use_solar_time,
-                "note": rebuild_note,
-            }
+            new_profile = _build_rebuild_profile(
+                name=rebuild_name,
+                gender=rebuild_gender,
+                calendar_label=rebuild_calendar_label,
+                birth_date=rebuild_birth_date,
+                birth_hour=int(rebuild_hour),
+                birth_minute=int(rebuild_minute),
+                birth_place=rebuild_birth_place,
+                is_leap_month=rebuild_is_leap_month,
+                time_known=rebuild_time_known,
+                note=rebuild_note,
+            )
             ok, message = validate_profile(new_profile)
             if not confirm_rebuild:
                 st.error("请先确认：重新排盘会覆盖当前命盘结果。")

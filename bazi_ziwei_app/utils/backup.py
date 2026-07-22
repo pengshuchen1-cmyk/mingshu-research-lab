@@ -44,11 +44,15 @@ def import_profiles_from_json(payload: str) -> dict:
         profile = {
             "name": item.get("name", ""),
             "gender": item.get("gender", ""),
+            "calendar_type": item.get("calendar_type", "solar"),
             "birth_date": item.get("birth_date", ""),
+            "lunar_birth_date": item.get("lunar_birth_date"),
             "birth_hour": item.get("birth_hour", 0),
             "birth_minute": item.get("birth_minute", 0),
             "birth_place": item.get("birth_place", ""),
-            "use_solar_time": bool(item.get("use_solar_time")),
+            "is_leap_month": bool(item.get("is_leap_month")),
+            "time_mode": "china_standard",
+            "use_solar_time": False,
             "note": item.get("note", ""),
         }
         database.save_profile(profile, item.get("chart", {}), item.get("report", {}))
