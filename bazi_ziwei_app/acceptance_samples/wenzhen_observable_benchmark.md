@@ -390,8 +390,8 @@
         "ten_god_counts": {"比肩": 1, "劫财": 1, "食神": 1, "伤官": 1, "偏财": 3, "七杀": 2, "正官": 2, "偏印": 2},
         "hidden_stems": {"year": ["戊", "辛", "丁"], "month": ["癸"], "day": ["甲", "丙", "戊"], "hour": ["壬", "甲"]},
         "five_elements": {"木": 2.5, "火": 2.8, "土": 1.3, "金": 1.5, "水": 4.0},
-        "day_master_strength": "从弱",
-        "relationship_signature": {"spouse_palace": {"branch": "寅", "element": "木", "role": "喜用"}, "spouse_relations": {"clashes": [], "combinations": ["时支寅亥合"]}, "spouse_star": {"basis": "官杀", "total": 4, "proper": 2, "indirect": 2}, "ten_god_support": {"output": 2, "peer": 2, "resource": 2}, "peach_blossom": {"count": 0, "positions": []}, "strength_preference": {"strength": "从弱"}}
+        "day_master_strength": "身弱",
+        "relationship_signature": {"spouse_palace": {"branch": "寅", "element": "木", "role": "忌神"}, "spouse_relations": {"clashes": [], "combinations": ["时支寅亥合"]}, "spouse_star": {"basis": "官杀", "total": 4, "proper": 2, "indirect": 2}, "ten_god_support": {"output": 2, "peer": 2, "resource": 2}, "peach_blossom": {"count": 0, "positions": []}, "strength_preference": {"strength": "身弱"}}
       },
       "comparison": {
         "comparison_order": ["四柱", "十神", "强弱", "关系解释"],

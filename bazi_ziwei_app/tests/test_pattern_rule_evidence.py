@@ -23,3 +23,23 @@ def test_pattern_reports_month_command_success_and_risk_evidence():
         "PATTERN-SPECIAL-STRICT",
     ]
     assert pattern["public_text"] == pattern["plain_text"]
+
+
+def test_accepted_special_pattern_is_the_single_public_pattern_conclusion():
+    from core.pattern_engine import analyze_pattern
+    from core.strength_engine import analyze_day_master_strength
+
+    chart = {
+        "day_master": "甲",
+        "pillars": {
+            key: {"gan": "甲", "zhi": "寅", "pillar": "甲寅"}
+            for key in ("year", "month", "day", "hour")
+        },
+    }
+    chart["day_master_strength"] = analyze_day_master_strength(chart)
+    pattern = analyze_pattern(chart)
+
+    assert chart["day_master_strength"]["strength"] == "从旺"
+    assert pattern["special_pattern_review"]["accepted"] is True
+    assert pattern["pattern"] == "从旺格"
+    assert "从旺格" in pattern["plain_text"]

@@ -137,9 +137,20 @@ def _current_luck_note(luck_data: dict | None, target_year: int) -> str:
         except (TypeError, ValueError):
             continue
         if start_year <= target_year <= end_year:
+            start_date = str(item.get("start_date", ""))
+            boundary_note = ""
+            try:
+                from datetime import date
+
+                boundary = date.fromisoformat(start_date)
+                if boundary.year == target_year and (boundary.month, boundary.day) != (1, 1):
+                    boundary_note = f" 该年于{boundary.month}月{boundary.day}日换入此运，年初仍属上一运。"
+            except ValueError:
+                pass
             return (
                 f" 当前大运背景为{item.get('pillar', '')}，可把本年变化放在"
                 f"{item.get('start_year', '')}-{item.get('end_year', '')}年的十年阶段中观察。"
+                f"{boundary_note}"
             )
     return " 当前未匹配到具体大运区间，可先按流年本身和原局关系观察。"
 

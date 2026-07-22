@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass, field
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -18,10 +18,10 @@ class BaziAIAnswer(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
     answer: str = Field(min_length=1, max_length=4000)
-    chart_evidence: list[str] = Field(min_length=1, max_length=12)
-    rule_evidence: list[str] = Field(min_length=1, max_length=12)
-    uncertainty: list[str] = Field(default_factory=list, max_length=8)
-    cautions: list[str] = Field(default_factory=list, max_length=8)
+    chart_evidence: list[Annotated[str, Field(min_length=1)]] = Field(min_length=1, max_length=12)
+    rule_evidence: list[Annotated[str, Field(min_length=1)]] = Field(min_length=1, max_length=12)
+    uncertainty: list[Annotated[str, Field(min_length=1)]] = Field(default_factory=list, max_length=8)
+    cautions: list[Annotated[str, Field(min_length=1)]] = Field(default_factory=list, max_length=8)
 
 
 class ChatMessage(BaseModel):

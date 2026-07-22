@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from core.chart_fingerprint import build_chart_fingerprint
-from core.report_diversity import build_chart_signature_text
+from core.report_diversity import build_chart_signature_text, project_chart_facts_for_report
 from report.export_report import DISCLAIMER
 from report.special_report_common import _section
 
@@ -256,7 +256,9 @@ def generate_love_report(chart: dict, profile: dict | None = None) -> dict:
     """
     生成婚恋专项报告。
     """
-    profile = profile or {}
+    chart = project_chart_facts_for_report(chart)
+    profile = dict(profile or {})
+    profile["gender"] = chart.get("profile", {}).get("gender", "")
     fp = build_chart_fingerprint(chart)
     signature = build_chart_signature_text(chart, "婚恋专项差异依据")
     evidence = _evidence(fp, profile)

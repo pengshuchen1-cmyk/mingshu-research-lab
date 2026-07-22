@@ -54,3 +54,14 @@ def test_special_reports_use_attached_chart_facts_not_legacy_fields():
     assert generate_love_report(chart, {"gender": "女"}) == generate_love_report(
         poisoned, {"gender": "女"}
     )
+    assert generate_love_report(chart, {"gender": "男"}) == generate_love_report(
+        chart, {"gender": "女"}
+    )
+
+
+def test_reports_reject_charts_without_attached_canonical_facts():
+    import pytest
+    from report.bazi_report import generate_basic_bazi_report
+
+    with pytest.raises(ValueError, match="missing canonical ChartFacts"):
+        generate_basic_bazi_report({"day_master": "甲"})

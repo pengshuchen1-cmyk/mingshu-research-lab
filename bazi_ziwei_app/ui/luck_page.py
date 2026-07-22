@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
+from zoneinfo import ZoneInfo
 from html import escape
 
 import pandas as pd
@@ -13,7 +14,7 @@ from core.luck_engine import get_luck_cycles
 
 from ui.charts import STAGE_COLORS
 
-CURRENT_YEAR = datetime.now().year
+CURRENT_YEAR = datetime.now(ZoneInfo("Asia/Shanghai")).year
 
 
 def _mini_metric_html(label: str, value: object, suffix: str = "") -> str:
@@ -32,10 +33,16 @@ def _tag_html(label: object, tone: str = "") -> str:
     return f'<span class="{class_name}">{escape(str(label or "平稳观察"))}</span>'
 
 
-def _current_luck_item(dayun_list):
+def _current_luck_item(dayun_list, current_date: date | None = None):
     """根据当前年份判断当前大运。"""
+    today = current_date or datetime.now(ZoneInfo("Asia/Shanghai")).date()
     for item in dayun_list:
-        if int(item.get("start_year", 0)) <= CURRENT_YEAR <= int(item.get("end_year", 0)):
+        try:
+            start = date.fromisoformat(str(item.get("start_date", "")))
+            end = date.fromisoformat(str(item.get("end_date", "")))
+        except ValueError:
+            continue
+        if start <= today < end:
             return item
     return None
 

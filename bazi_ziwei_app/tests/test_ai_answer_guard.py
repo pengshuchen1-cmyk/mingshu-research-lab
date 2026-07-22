@@ -85,3 +85,34 @@ def test_guard_requires_exactly_mappable_evidence_not_two_character_overlap():
 
     assert result.accepted is False
     assert "unmapped_chart_evidence" in result.violations
+
+
+def test_guard_rejects_mixed_correct_and_incorrect_claims():
+    from core.ai_answer_guard import validate_ai_answer
+
+    result = validate_ai_answer(
+        _answer(
+            "男命也是女命，正印格也是七杀格，财星为火也为金，"
+            "配偶星为财星也为印星，身强也是身弱。"
+        ),
+        _context(),
+    )
+
+    assert result.accepted is False
+    assert {
+        "gender_contradiction", "pattern_contradiction", "wealth_element_contradiction",
+        "spouse_star_contradiction", "strength_contradiction",
+    } <= set(result.violations)
+
+
+def test_structured_answer_rejects_blank_evidence_items():
+    import pytest
+    from pydantic import ValidationError
+    from core.ai_models import BaziAIAnswer
+
+    with pytest.raises(ValidationError):
+        BaziAIAnswer(
+            answer="回答",
+            chart_evidence=[""],
+            rule_evidence=[""],
+        )

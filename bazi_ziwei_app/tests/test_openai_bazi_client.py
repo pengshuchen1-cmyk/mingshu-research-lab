@@ -81,3 +81,19 @@ def test_client_wraps_service_and_parse_failures():
         client = OpenAIBaziClient(config, client=_Client(responses))
         with pytest.raises(AIServiceError):
             client.answer(_context())
+
+
+def test_client_classifies_pydantic_parse_failure_as_retryable_unparseable():
+    from pydantic import ValidationError
+    from core.ai_models import AIConfig, BaziAIAnswer
+    from services.openai_bazi_client import AIServiceError, OpenAIBaziClient
+
+    with pytest.raises(ValidationError) as captured:
+        BaziAIAnswer.model_validate({"answer": "", "chart_evidence": [""], "rule_evidence": [""]})
+    responses = _Responses(error=captured.value)
+    client = OpenAIBaziClient(AIConfig("server-key", True), client=_Client(responses))
+
+    with pytest.raises(AIServiceError) as captured_service:
+        client.answer(_context())
+
+    assert captured_service.value.code == "unparseable_response"

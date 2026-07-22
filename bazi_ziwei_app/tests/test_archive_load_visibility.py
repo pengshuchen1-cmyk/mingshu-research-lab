@@ -7,6 +7,12 @@ APP_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 
 class ArchiveLoadVisibilityTests(unittest.TestCase):
+    def test_unknown_birth_time_is_safe_for_archive_display_and_inputs(self):
+        from ui.archive_page import _format_birth_time, _time_input_default
+
+        self.assertEqual(_format_birth_time(None, None), "时辰不详")
+        self.assertEqual(_time_input_default(None), 0)
+
     def test_archive_load_refreshes_visible_current_chart(self):
         with open(os.path.join(APP_DIR, "ui", "archive_page.py"), "r", encoding="utf-8") as file:
             text = file.read()

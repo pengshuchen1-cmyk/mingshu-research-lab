@@ -88,3 +88,13 @@ def test_build_bazi_chart_attaches_single_facts_projection():
     assert chart["public_summary"]["起运时间"] != "待计算"
     assert chart["facts"]["current_context"]["year"]
     assert chart["facts"]["current_context"]["year_pillar"]
+
+
+def test_attached_chart_facts_round_trip_without_legacy_recomputation():
+    from core.chart_facts import ChartFacts, build_chart_facts
+
+    original = build_chart_facts(_chart())
+    loaded = ChartFacts.from_dict(original.to_dict())
+
+    assert loaded == original
+    assert loaded.public_summary() == original.public_summary()

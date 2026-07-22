@@ -77,9 +77,14 @@ def _canonical_question(question: str, routed: RoutedQuestion) -> str:
 def _target_year_facts(question: str) -> list[dict[str, object]]:
     """Extract explicit forecast years and calculate only their year pillars."""
     text = re.sub(
-        r"(?:我是|本人)?\s*(?:19|20)\d{2}年(?:出生|生人)",
+        r"(?:19|20)\d{2}年\d{1,2}月\d{1,2}日(?:出生|生人|出生于[^，。；;\s]*)?",
         "",
         str(question or ""),
+    )
+    text = re.sub(
+        r"(?:我是|本人)?\s*(?:19|20)\d{2}年(?:出生|生人)",
+        "",
+        text,
     )
     years = list(dict.fromkeys(int(value) for value in re.findall(r"((?:19|20)\d{2})(?=年)", text)))[:4]
     return [

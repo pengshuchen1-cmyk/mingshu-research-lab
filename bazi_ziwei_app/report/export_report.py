@@ -228,7 +228,10 @@ def _monthly_lines(
             lines.append(f"  {bullet} 【{item.get('month_name', '')}大概率事件】")
             for e in month_events[:3]:
                 prob = e.get("probability_level", "")
-                lines.append(f"  {bullet}   {e.get('label','')}（{prob}）：{e.get('reason','')}")
+                lines.append(
+                    f"  {bullet}   {item.get('month_name', '')}·{e.get('label','')}（{prob}）："
+                    f"{e.get('reason','')}"
+                )
                 triggers = "、".join(e.get("trigger_factors", []) or [])
                 if triggers:
                     lines.append(f"  {bullet}   触发因素：{triggers}")

@@ -34,6 +34,59 @@ class ChartFacts:
     rule_ids: tuple[str, ...]
     current_context_json: str = "{}"
 
+    @classmethod
+    def from_dict(cls, value: Mapping[str, object]) -> "ChartFacts":
+        """Load an already attached canonical projection without consulting legacy fields."""
+        pillars = tuple(str(item) for item in (value.get("pillars") or []))
+        if len(pillars) != 4 or not all(pillars[:3]):
+            raise ValueError("invalid attached ChartFacts pillars")
+        hidden_raw = value.get("hidden_stems") or {}
+        if not isinstance(hidden_raw, Mapping):
+            raise ValueError("invalid attached ChartFacts hidden stems")
+        hidden = tuple(
+            (key, tuple(str(item) for item in (hidden_raw.get(key) or [])))
+            for key in ("year", "month", "day", "hour")
+        )
+        strength = value.get("strength") or {}
+        pattern = value.get("pattern") or {}
+        wealth = value.get("wealth") or {}
+        relationship = value.get("relationship") or {}
+        dayun = value.get("dayun") or {}
+        for name, item in (
+            ("strength", strength), ("pattern", pattern), ("wealth", wealth),
+            ("relationship", relationship), ("dayun", dayun),
+        ):
+            if not isinstance(item, Mapping):
+                raise ValueError(f"invalid attached ChartFacts {name}")
+        elements = value.get("element_counts") or {}
+        if not isinstance(elements, Mapping):
+            raise ValueError("invalid attached ChartFacts elements")
+        return cls(
+            gender=str(value.get("gender", "")),
+            pillars=pillars,  # type: ignore[arg-type]
+            day_master=str(value.get("day_master", "")),
+            hidden_stems=hidden,
+            ten_gods_json=json.dumps(value.get("ten_gods") or {}, ensure_ascii=False, sort_keys=True, separators=(",", ":")),
+            element_counts=tuple((str(key), float(item)) for key, item in sorted(elements.items())),
+            time_mode=str(value.get("time_mode", "")),
+            pillar_basis=str(value.get("pillar_basis", "")),
+            dayun_direction=str(dayun.get("direction", "")),
+            dayun_start=str(dayun.get("start", "")),
+            strength=str(strength.get("classification", "")),
+            strength_evidence=tuple(str(item) for item in (strength.get("evidence") or [])),
+            favorable_elements=tuple(str(item) for item in (strength.get("favorable_elements") or [])),
+            unfavorable_elements=tuple(str(item) for item in (strength.get("unfavorable_elements") or [])),
+            pattern=str(pattern.get("classification", "")),
+            pattern_evidence=tuple(str(item) for item in (pattern.get("evidence") or [])),
+            wealth=str(wealth.get("summary", "")),
+            wealth_evidence=tuple(str(item) for item in (wealth.get("evidence") or [])),
+            relationship=str(relationship.get("summary", "")),
+            relationship_evidence=tuple(str(item) for item in (relationship.get("evidence") or [])),
+            internal_rule_version=str(value.get("internal_rule_version", "")),
+            rule_ids=tuple(str(item) for item in (value.get("rule_ids") or [])),
+            current_context_json=json.dumps(value.get("current_context") or {}, ensure_ascii=False, sort_keys=True, separators=(",", ":")),
+        )
+
     def to_dict(self) -> dict[str, object]:
         return {
             "gender": self.gender,
@@ -183,3 +236,11 @@ def attach_chart_facts(chart: dict) -> ChartFacts:
     chart["public_summary"] = facts.public_summary()
     chart["chart_fingerprint_v2"] = facts.fingerprint()
     return facts
+
+
+def chart_facts_from_chart(chart: Mapping[str, object]) -> ChartFacts:
+    """Require and load the attached normative facts for every downstream consumer."""
+    raw = chart.get("facts")
+    if not isinstance(raw, Mapping):
+        raise ValueError("chart is missing canonical ChartFacts; rebuild it with the rule engine")
+    return ChartFacts.from_dict(raw)

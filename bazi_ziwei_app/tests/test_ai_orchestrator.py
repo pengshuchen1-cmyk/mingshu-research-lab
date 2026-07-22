@@ -96,3 +96,30 @@ def test_orchestrator_retries_once_for_malformed_structured_output():
 
     assert result.source == "cloud_validated"
     assert len(fake.contexts) == 2
+
+
+def test_orchestrator_uses_attached_facts_even_when_legacy_fields_are_poisoned():
+    from copy import deepcopy
+    from core.ai_models import AIConfig
+    from core.ai_orchestrator import answer_question
+
+    chart = _chart()
+    poisoned = deepcopy(chart)
+    poisoned["day_master"] = "庚"
+    poisoned["day_master_strength"] = {"strength": "从旺"}
+    poisoned["pattern_analysis"] = {"plain_text": "七杀格"}
+    poisoned["wealth_analysis"] = {"public_text": "旧财富"}
+    poisoned["relationship_analysis"] = {"public_text": "旧姻缘"}
+
+    result = answer_question(
+        poisoned,
+        "请概括命盘",
+        [],
+        config=AIConfig("", False),
+    )
+
+    assert "壬日主" not in result.answer or poisoned["facts"]["day_master"] == "壬"
+    assert poisoned["facts"]["day_master"] == "壬"
+    assert "七杀格" not in result.answer
+    assert "旧财富" not in result.answer
+    assert "旧姻缘" not in result.answer

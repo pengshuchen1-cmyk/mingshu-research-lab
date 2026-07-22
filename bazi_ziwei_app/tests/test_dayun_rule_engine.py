@@ -99,3 +99,33 @@ def test_unknown_time_marks_dayun_start_as_estimate():
 
     assert basis.time_is_estimated is True
     assert "时辰不详" in basis.start_text
+
+
+def test_current_dayun_matching_respects_exact_change_date():
+    from datetime import date
+    from ui.luck_page import _current_luck_item
+
+    periods = [
+        {"pillar": "甲子", "start_date": "2006-02-24", "end_date": "2016-02-24"},
+        {"pillar": "乙丑", "start_date": "2016-02-24", "end_date": "2026-02-24"},
+    ]
+
+    assert _current_luck_item(periods, date(2016, 2, 23))["pillar"] == "甲子"
+    assert _current_luck_item(periods, date(2016, 2, 24))["pillar"] == "乙丑"
+
+
+def test_yearly_note_discloses_midyear_dayun_boundary():
+    from core.yearly_engine import _current_luck_note
+
+    note = _current_luck_note(
+        {"available": True, "dayun_list": [
+            {
+                "pillar": "乙丑", "start_year": 2016, "end_year": 2025,
+                "start_date": "2016-02-24", "end_date": "2026-02-24",
+            }
+        ]},
+        2016,
+    )
+
+    assert "2月24日换入此运" in note
+    assert "年初仍属上一运" in note

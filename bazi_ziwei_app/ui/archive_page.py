@@ -31,6 +31,16 @@ def _parse_date(value: object) -> date:
         return date.today()
 
 
+def _format_birth_time(hour: object, minute: object) -> str:
+    if hour is None or minute is None:
+        return "时辰不详"
+    return f"{int(hour):02d}:{int(minute):02d}"
+
+
+def _time_input_default(value: object, default: int = 0) -> int:
+    return default if value is None or value == "" else int(value)
+
+
 def _build_rebuild_profile(
     *,
     name: str,
@@ -106,7 +116,8 @@ def render_archive_page() -> None:
         st.markdown("### 命盘基础信息")
         st.write(
             f"姓名：{loaded.get('name', '')}｜性别：{loaded.get('gender', '')}｜"
-            f"出生：{loaded.get('birth_date', '')} {loaded.get('birth_hour', 0):02d}:{loaded.get('birth_minute', 0):02d}"
+            f"出生：{loaded.get('birth_date', '')} "
+            f"{_format_birth_time(loaded.get('birth_hour'), loaded.get('birth_minute'))}"
         )
         st.write(f"出生地点：{loaded.get('birth_place', '') or '未填写'}")
         if loaded.get("note"):
@@ -208,7 +219,7 @@ def render_archive_page() -> None:
                 "出生小时",
                 min_value=0,
                 max_value=23,
-                value=int(loaded.get("birth_hour", 0)),
+                value=_time_input_default(loaded.get("birth_hour")),
                 step=1,
                 key=f"rebuild_hour_{profile_id}",
             )
@@ -216,7 +227,7 @@ def render_archive_page() -> None:
                 "出生分钟",
                 min_value=0,
                 max_value=59,
-                value=int(loaded.get("birth_minute", 0)),
+                value=_time_input_default(loaded.get("birth_minute")),
                 step=1,
                 key=f"rebuild_minute_{profile_id}",
             )

@@ -7,7 +7,7 @@ from typing import Mapping, Sequence
 from core.ai_answer_guard import validate_ai_answer
 from core.ai_context import build_ai_context
 from core.ai_models import AIConfig, AnswerResult, ChatMessage
-from core.chart_facts import build_chart_facts
+from core.chart_facts import chart_facts_from_chart
 from services.openai_bazi_client import AIServiceError, OpenAIBaziClient
 
 
@@ -52,7 +52,7 @@ def answer_question(
     client: object | None = None,
 ) -> AnswerResult:
     config = config or AIConfig.from_environment()
-    facts = build_chart_facts(chart)
+    facts = chart_facts_from_chart(chart)
     context = build_ai_context(facts, question, history)
     if not config.enabled:
         return _local_fallback(facts, question, context.category)

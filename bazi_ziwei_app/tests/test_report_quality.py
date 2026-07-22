@@ -111,6 +111,7 @@ class ReportQualityTests(unittest.TestCase):
 
     def test_full_markdown_report_is_not_overly_repetitive(self):
         from core.luck_engine import get_luck_cycles
+        from core.bazi_engine import build_bazi_chart
         from core.monthly_engine import analyze_monthly_fortune
         from core.yearly_engine import analyze_yearly_fortune
         from report.bazi_report import generate_basic_bazi_report
@@ -126,8 +127,7 @@ class ReportQualityTests(unittest.TestCase):
             "birth_place": "上海",
             "use_solar_time": False,
         }
-        chart = sample_chart()
-        chart["profile"] = profile
+        chart = build_bazi_chart(profile)
         report = generate_basic_bazi_report(chart)
         luck_data = get_luck_cycles(profile, chart)
         yearly_data = analyze_yearly_fortune(chart, 2026, luck_data)

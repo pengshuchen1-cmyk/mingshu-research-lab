@@ -69,13 +69,13 @@ def validate_ai_answer(answer: BaziAIAnswer, context: AIRequestContext) -> Guard
     expected_gender = str(context.chart_facts.get("gender", ""))
     mentioned_genders = {term for term in ("男命", "女命") if term in combined}
     expected_gender_term = "女命" if expected_gender == "female" else "男命"
-    if mentioned_genders and expected_gender_term not in mentioned_genders:
+    if mentioned_genders and mentioned_genders != {expected_gender_term}:
         violations.append("gender_contradiction")
 
     pattern = context.chart_facts.get("pattern", {})
     expected_pattern = str(pattern.get("classification", "")) if isinstance(pattern, dict) else str(pattern)
     mentioned_patterns = {term for term in PATTERN_TERMS if term in combined}
-    if mentioned_patterns and not any(term in expected_pattern for term in mentioned_patterns):
+    if mentioned_patterns and any(term not in expected_pattern for term in mentioned_patterns):
         violations.append("pattern_contradiction")
 
     try:
@@ -84,20 +84,33 @@ def validate_ai_answer(answer: BaziAIAnswer, context: AIRequestContext) -> Guard
         wealth_element = WEALTH_ELEMENT_BY_DAY_ELEMENT.get(STEM_ELEMENTS.get(day_master, ""), "")
     except Exception:
         wealth_element = ""
-    claimed_wealth_elements = set(re.findall(r"财星为([木火土金水])", combined))
-    if claimed_wealth_elements and wealth_element not in claimed_wealth_elements:
+    claimed_wealth_elements = {
+        value
+        for match in re.findall(r"财星为([木火土金水])(?:也为([木火土金水]))?", combined)
+        for value in match
+        if value
+    }
+    if claimed_wealth_elements and claimed_wealth_elements != {wealth_element}:
         violations.append("wealth_element_contradiction")
 
-    spouse_claims = set(re.findall(r"配偶星为(财星|官杀|印星|食伤|比劫)", combined))
+    spouse_claims = {
+        value
+        for match in re.findall(
+            r"配偶星为(财星|官杀|印星|食伤|比劫)(?:也为(财星|官杀|印星|食伤|比劫))?",
+            combined,
+        )
+        for value in match
+        if value
+    }
     expected_spouse = "官杀" if expected_gender == "female" else "财星"
-    if spouse_claims and expected_spouse not in spouse_claims:
+    if spouse_claims and spouse_claims != {expected_spouse}:
         violations.append("spouse_star_contradiction")
 
     strength = context.chart_facts.get("strength", {})
     if isinstance(strength, dict):
         expected_strength = str(strength.get("classification", ""))
         mentioned_strength = {term for term in STRENGTH_TERMS if term in combined}
-        if mentioned_strength and expected_strength not in mentioned_strength:
+        if mentioned_strength and mentioned_strength != {expected_strength}:
             violations.append("strength_contradiction")
 
     authorized_facts = _string_facts(context.chart_facts)
@@ -106,13 +119,13 @@ def validate_ai_answer(answer: BaziAIAnswer, context: AIRequestContext) -> Guard
         authorized_facts.add(f"{day_master}日主")
     if isinstance(strength, dict) and strength.get("classification"):
         authorized_facts.add(str(strength["classification"]))
-    if not all(
+    if any(not item.strip() for item in answer.chart_evidence) or not all(
         any(fact in item or item in fact for fact in authorized_facts)
         for item in answer.chart_evidence
     ):
         violations.append("unmapped_chart_evidence")
     rule_statements = [item["statement"] for item in context.rule_evidence]
-    if not all(
+    if any(not item.strip() for item in answer.rule_evidence) or not all(
         any(statement in item or item in statement for statement in rule_statements)
         for item in answer.rule_evidence
     ):

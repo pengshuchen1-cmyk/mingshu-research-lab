@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import json
 
+from pydantic import ValidationError
+
 from core.ai_models import AIConfig, AIRequestContext, BaziAIAnswer
 
 
@@ -57,6 +59,8 @@ class OpenAIBaziClient:
             )
         except TimeoutError as exc:
             raise AIServiceError("timeout") from exc
+        except ValidationError as exc:
+            raise AIServiceError("unparseable_response") from exc
         except Exception as exc:
             raise AIServiceError("service_error") from exc
         parsed = getattr(response, "output_parsed", None)

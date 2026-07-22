@@ -33,6 +33,8 @@ PATTERN_MEANINGS = {
     "伤官格": "重表达、创意、突破和规则摩擦，适合展示能力，也要注意说法和边界。",
     "建禄格": "日主在月令得根，行动力和自我驱动较强，适合靠能力与责任感立身。",
     "月刃格": "月令比劫气重，竞争心和承压性较强，适合攻坚，但要注意合伙和情绪边界。",
+    "从旺格": "日主旺势达到严格条件，取顺势生扶为主，同时持续复核是否出现足以破格的反向力量。",
+    "从弱格": "日主弱势达到严格条件，取顺势克泄耗为主，同时持续复核是否出现足以破格的根气或印比。",
     "格局未明": "月令和透干信号暂不集中，宜先看日主强弱、五行流通和大运流年。",
 }
 
@@ -168,6 +170,16 @@ def analyze_pattern(chart: dict) -> dict:
             evidence.append("需要经营：" + "、".join(dict.fromkeys(risks[:4])))
         special_pattern = strength.get("special_pattern", "无")
         if special_pattern in {"从旺", "从弱"}:
+            pattern = f"{special_pattern}格"
+            source = "特殊格局严格复核"
+            quality = "特殊格局"
+            meaning = PATTERN_MEANINGS[pattern]
+            evidence.append(f"特殊格局严格复核通过，统一以{pattern}作为规范格局结论。")
+            plain = (
+                f"格局初判为{pattern}，来源是{source}。"
+                f"它的白话意思是：{meaning}"
+                "后续仍需结合大运、流年和现实反馈复核是否保持成格条件。"
+            )
             special_review = {
                 "considered": True,
                 "accepted": True,

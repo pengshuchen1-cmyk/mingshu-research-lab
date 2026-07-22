@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from core.bazi_constants import BRANCH_MAIN_ELEMENTS, STEM_ELEMENTS
 from core.chart_fingerprint import build_chart_fingerprint
+from core.chart_facts import chart_facts_from_chart
 
 
 TEN_GOD_ORDER = ["比肩", "劫财", "食神", "伤官", "正财", "偏财", "正官", "七杀", "正印", "偏印"]
@@ -466,9 +467,8 @@ def _pillar_story(chart: dict) -> str:
 
 def project_chart_facts_for_report(chart: dict) -> dict:
     """Create the legacy-shaped read view exclusively from attached canonical facts."""
-    facts = chart.get("facts")
-    if not isinstance(facts, dict):
-        return chart
+    facts_object = chart_facts_from_chart(chart)
+    facts = facts_object.to_dict()
     projected = dict(chart)
     pillar_keys = ("year", "month", "day", "hour")
     pillar_texts = list(facts.get("pillars", []) or [])
@@ -512,7 +512,11 @@ def project_chart_facts_for_report(chart: dict) -> dict:
         "plain_text": (facts.get("pattern", {}) or {}).get("classification", "暂无法判断"),
         "evidence": list((facts.get("pattern", {}) or {}).get("evidence", [])),
     }
-    projected.pop("facts", None)
+    projected["public_summary"] = facts_object.public_summary()
+    profile = dict(projected.get("profile", {}) or {})
+    profile["gender"] = "女" if facts_object.gender == "female" else "男"
+    projected["profile"] = profile
+    projected["facts"] = facts
     return projected
 
 
@@ -669,7 +673,11 @@ def _build_chart_signature_text_impl(chart: dict, prefix: str = "本盘差异依
 
 def build_chart_signature_text(chart: dict, prefix: str = "本盘差异依据") -> str:
     """Render a report signature from the canonical ChartFacts projection."""
-    return _build_chart_signature_text_impl(project_chart_facts_for_report(chart), prefix)
+    if isinstance(chart.get("facts"), dict):
+        projected = project_chart_facts_for_report(chart)
+        projected.pop("facts", None)
+        return _build_chart_signature_text_impl(projected, prefix)
+    return _build_chart_signature_text_impl(chart, prefix)
 
 
 def build_brief_signature(chart: dict) -> str:

@@ -66,15 +66,17 @@ class V1LocalFeatureTests(unittest.TestCase):
             self.assertIn(page_name, pages)
 
     def test_special_reports_have_required_sections_and_disclaimer(self):
+        from core.bazi_engine import build_bazi_chart
         from report.career_report import generate_career_report
         from report.love_report import generate_love_report
         from report.wealth_report import generate_wealth_report
         from report.export_report import DISCLAIMER
 
+        chart = build_bazi_chart(sample_profile())
         reports = [
-            generate_career_report(sample_chart()),
-            generate_wealth_report(sample_chart()),
-            generate_love_report(sample_chart(), sample_profile()),
+            generate_career_report(chart),
+            generate_wealth_report(chart),
+            generate_love_report(chart, sample_profile()),
         ]
 
         for report in reports:
@@ -168,6 +170,9 @@ class V1LocalFeatureTests(unittest.TestCase):
             result = import_profiles_from_json(payload)
             self.assertEqual(result["imported"], 1)
             self.assertEqual(database.list_profiles()[0]["name"], "测试用户")
+            loaded = database.get_profile(database.list_profiles()[0]["id"])
+            self.assertIn("facts", loaded["chart"])
+            self.assertNotEqual(loaded["chart"].get("day_master"), sample_chart()["day_master"])
 
     def test_page_modules_import_without_streamlit_side_effects(self):
         modules = [

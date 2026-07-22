@@ -101,5 +101,6 @@ def test_unlabelled_chinese_identity_date_and_city_never_leave_as_raw_text():
 
     for forbidden in (raw, "金丝雀", "1996年9月4日", "上海", "广州", "陈小明"):
         assert forbidden not in payload
+    assert '"year":1996' not in payload
     assert context.question == "问题类别：财运；时间维度：是；目标年份：2026年"
     assert context.history[0].content == "此前用户询问：事业"

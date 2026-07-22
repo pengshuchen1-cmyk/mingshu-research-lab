@@ -40,6 +40,7 @@ def import_profiles_from_json(payload: str) -> dict:
         return {"imported": 0, "error": f"导入文件格式有误：{exc}"}
     profiles = data.get("profiles", [])
     imported = 0
+    rejected = 0
     for item in profiles:
         profile = {
             "name": item.get("name", ""),
@@ -55,9 +56,17 @@ def import_profiles_from_json(payload: str) -> dict:
             "use_solar_time": False,
             "note": item.get("note", ""),
         }
-        database.save_profile(profile, item.get("chart", {}), item.get("report", {}))
+        from core.bazi_engine import build_bazi_chart
+        from report.bazi_report import generate_basic_bazi_report
+
+        chart = build_bazi_chart(profile)
+        if chart.get("error"):
+            rejected += 1
+            continue
+        report = generate_basic_bazi_report(chart)
+        database.save_profile(profile, chart, report)
         imported += 1
-    return {"imported": imported}
+    return {"imported": imported, "rejected": rejected}
 
 
 def backup_database(target_path: str | None = None) -> dict:

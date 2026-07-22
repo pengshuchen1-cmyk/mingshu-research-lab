@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime
+from zoneinfo import ZoneInfo
 
 from core.bazi_calendar_adapter import BirthInput, normalize_birth_input
 from core.bazi_constants import (
@@ -245,7 +246,7 @@ def build_bazi_chart(profile: dict) -> dict:
             "time_is_estimated": dayun.time_is_estimated,
             "rule_ids": list(dayun.rule_ids),
         }
-        now = datetime.now()
+        now = datetime.now(ZoneInfo("Asia/Shanghai")).replace(tzinfo=None)
         current = calculate_four_pillars(
             BirthInput("solar", now.year, now.month, now.day, now.hour, now.minute, birth.gender)
         )
