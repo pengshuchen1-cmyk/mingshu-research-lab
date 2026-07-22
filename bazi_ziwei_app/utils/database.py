@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import sqlite3
 from datetime import datetime
 
@@ -11,6 +12,10 @@ from utils.runtime_mode import require_local_storage
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 DB_PATH = os.path.join(BASE_DIR, "data", "profiles.db")
+
+
+def _optional_int(value: object) -> int | None:
+    return None if value is None or value == "" else int(value)
 
 
 def _connect() -> sqlite3.Connection:
@@ -63,6 +68,70 @@ def init_db() -> None:
         )
         _ensure_profile_note_column(conn)
         conn.commit()
+    migrate_rule_engine_v2(DB_PATH)
+
+
+def migrate_rule_engine_v2(
+    db_path: str,
+    *,
+    now: datetime | None = None,
+) -> str | None:
+    """Back up and remove incompatible pre-rule-v2 profiles exactly once."""
+    path = os.path.abspath(db_path)
+    if not os.path.exists(path):
+        return None
+    with sqlite3.connect(path) as conn:
+        has_meta = conn.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='schema_meta'"
+        ).fetchone()
+        if has_meta:
+            current = conn.execute(
+                "SELECT value FROM schema_meta WHERE key='rule_engine_schema'"
+            ).fetchone()
+            if current and current[0] == "2":
+                return None
+        table_names = {
+            row[0]
+            for row in conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='table'"
+            ).fetchall()
+        }
+        profile_count = (
+            conn.execute("SELECT COUNT(*) FROM profiles").fetchone()[0]
+            if "profiles" in table_names
+            else 0
+        )
+        chart_count = (
+            conn.execute("SELECT COUNT(*) FROM bazi_charts").fetchone()[0]
+            if "bazi_charts" in table_names
+            else 0
+        )
+
+    backup_path = None
+    if profile_count or chart_count:
+        timestamp = (now or datetime.now()).strftime("%Y%m%d%H%M%S")
+        backup_path = f"{path}.pre-rule-v2-{timestamp}.bak"
+        shutil.copy2(path, backup_path)
+
+    with sqlite3.connect(path) as conn:
+        try:
+            conn.execute("BEGIN IMMEDIATE")
+            conn.execute(
+                "CREATE TABLE IF NOT EXISTS schema_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)"
+            )
+            if "bazi_charts" in table_names:
+                conn.execute("DELETE FROM bazi_charts")
+            if "profiles" in table_names:
+                conn.execute("DELETE FROM profiles")
+            conn.execute(
+                "INSERT OR REPLACE INTO schema_meta (key, value) VALUES (?, ?)",
+                ("rule_engine_schema", "2"),
+            )
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+    return backup_path
 
 
 def save_profile(profile: dict, chart: dict, report: dict) -> int:
@@ -82,8 +151,8 @@ def save_profile(profile: dict, chart: dict, report: dict) -> int:
                 profile.get("name", ""),
                 profile.get("gender", ""),
                 str(profile.get("birth_date", "")),
-                int(profile.get("birth_hour", 0)),
-                int(profile.get("birth_minute", 0)),
+                _optional_int(profile.get("birth_hour", 0)),
+                _optional_int(profile.get("birth_minute", 0)),
                 profile.get("birth_place", ""),
                 1 if profile.get("use_solar_time") else 0,
                 profile.get("note", ""),
@@ -124,35 +193,6 @@ def list_profiles() -> list[dict]:
 
 
 
-def _ensure_chart_fields(chart: dict) -> dict:
-    """填充旧版本命盘缺失的计算字段（向后兼容）。
-
-    早期版本导出/保存的命盘可能缺少 five_elements、ten_god_counts、
-    day_master_strength 等计算字段，重新补齐以免 UI 页面空显示。
-    """
-    if not chart or not chart.get("pillars"):
-        return chart
-    if "five_elements" not in chart or not chart["five_elements"]:
-        try:
-            from core.five_elements import calculate_five_elements
-            chart["five_elements"] = calculate_five_elements(chart)
-        except Exception:
-            pass
-    if "ten_god_counts" not in chart or not chart["ten_god_counts"]:
-        try:
-            from core.ten_gods import count_ten_gods
-            chart["ten_god_counts"] = count_ten_gods(chart)
-        except Exception:
-            pass
-    if "day_master_strength" not in chart or not chart["day_master_strength"]:
-        try:
-            from core.strength_engine import analyze_day_master_strength
-            chart["day_master_strength"] = analyze_day_master_strength(chart)
-        except Exception:
-            pass
-    return chart
-
-
 def get_profile(profile_id: int) -> dict | None:
     """
     根据 ID 读取命盘档案。
@@ -182,7 +222,7 @@ def get_profile(profile_id: int) -> dict | None:
         return None
     result = dict(profile_row)
     if chart_row:
-        result["chart"] = _ensure_chart_fields(json.loads(chart_row["chart_json"]))
+        result["chart"] = json.loads(chart_row["chart_json"])
         result["report"] = json.loads(chart_row["report_json"])
     else:
         result["chart"] = {}
@@ -301,8 +341,8 @@ def update_profile_birth_info(profile_id: int, profile: dict) -> None:
                 profile.get("name", ""),
                 profile.get("gender", ""),
                 str(profile.get("birth_date", "")),
-                int(profile.get("birth_hour", 0)),
-                int(profile.get("birth_minute", 0)),
+                _optional_int(profile.get("birth_hour", 0)),
+                _optional_int(profile.get("birth_minute", 0)),
                 profile.get("birth_place", ""),
                 1 if profile.get("use_solar_time") else 0,
                 profile.get("note", ""),
