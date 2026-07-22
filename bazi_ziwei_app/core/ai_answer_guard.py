@@ -16,6 +16,13 @@ DETERMINISTIC_PHRASES = (
 STEMS = "甲乙丙丁戊己庚辛壬癸"
 BRANCHES = "子丑寅卯辰巳午未申酉戌亥"
 STRENGTH_TERMS = ("身强", "身弱", "中和", "从旺", "从弱")
+PATTERN_TERMS = (
+    "正官格", "七杀格", "正印格", "偏印格", "食神格", "伤官格",
+    "正财格", "偏财格", "比肩格", "劫财格", "建禄格", "月刃格", "从旺格", "从弱格",
+)
+WEALTH_ELEMENT_BY_DAY_ELEMENT = {
+    "木": "土", "火": "金", "土": "水", "金": "木", "水": "火",
+}
 
 
 @dataclass(frozen=True)
@@ -24,9 +31,18 @@ class GuardResult:
     violations: tuple[str, ...]
 
 
-def _bigrams(text: str) -> set[str]:
-    compact = re.sub(r"\s+", "", text)
-    return {compact[index:index + 2] for index in range(max(0, len(compact) - 1))}
+def _string_facts(value: object) -> set[str]:
+    values: set[str] = set()
+    if isinstance(value, str):
+        if len(value.strip()) >= 2:
+            values.add(value.strip())
+    elif isinstance(value, dict):
+        for item in value.values():
+            values.update(_string_facts(item))
+    elif isinstance(value, (list, tuple)):
+        for item in value:
+            values.update(_string_facts(item))
+    return values
 
 
 def validate_ai_answer(answer: BaziAIAnswer, context: AIRequestContext) -> GuardResult:
@@ -37,7 +53,8 @@ def validate_ai_answer(answer: BaziAIAnswer, context: AIRequestContext) -> Guard
     if any(phrase in combined for phrase in DETERMINISTIC_PHRASES):
         violations.append("deterministic_claim")
 
-    authorized_pillars = set(context.chart_facts.get("pillars", []))
+    chart_payload = json.dumps(context.chart_facts, ensure_ascii=False)
+    authorized_pillars = set(re.findall(f"[{STEMS}][{BRANCHES}]", chart_payload))
     mentioned_pillars = set(re.findall(f"[{STEMS}][{BRANCHES}]", combined))
     rule_text = "。".join(item["statement"] for item in context.rule_evidence)
     unauthorized = {
@@ -49,6 +66,33 @@ def validate_ai_answer(answer: BaziAIAnswer, context: AIRequestContext) -> Guard
     if unauthorized or any(stem != day_master for stem in mentioned_day_masters):
         violations.append("chart_fact_contradiction")
 
+    expected_gender = str(context.chart_facts.get("gender", ""))
+    mentioned_genders = {term for term in ("男命", "女命") if term in combined}
+    expected_gender_term = "女命" if expected_gender == "female" else "男命"
+    if mentioned_genders and expected_gender_term not in mentioned_genders:
+        violations.append("gender_contradiction")
+
+    pattern = context.chart_facts.get("pattern", {})
+    expected_pattern = str(pattern.get("classification", "")) if isinstance(pattern, dict) else str(pattern)
+    mentioned_patterns = {term for term in PATTERN_TERMS if term in combined}
+    if mentioned_patterns and not any(term in expected_pattern for term in mentioned_patterns):
+        violations.append("pattern_contradiction")
+
+    try:
+        from core.bazi_constants import STEM_ELEMENTS
+
+        wealth_element = WEALTH_ELEMENT_BY_DAY_ELEMENT.get(STEM_ELEMENTS.get(day_master, ""), "")
+    except Exception:
+        wealth_element = ""
+    claimed_wealth_elements = set(re.findall(r"财星为([木火土金水])", combined))
+    if claimed_wealth_elements and wealth_element not in claimed_wealth_elements:
+        violations.append("wealth_element_contradiction")
+
+    spouse_claims = set(re.findall(r"配偶星为(财星|官杀|印星|食伤|比劫)", combined))
+    expected_spouse = "官杀" if expected_gender == "female" else "财星"
+    if spouse_claims and expected_spouse not in spouse_claims:
+        violations.append("spouse_star_contradiction")
+
     strength = context.chart_facts.get("strength", {})
     if isinstance(strength, dict):
         expected_strength = str(strength.get("classification", ""))
@@ -56,10 +100,22 @@ def validate_ai_answer(answer: BaziAIAnswer, context: AIRequestContext) -> Guard
         if mentioned_strength and expected_strength not in mentioned_strength:
             violations.append("strength_contradiction")
 
-    chart_payload = json.dumps(context.chart_facts, ensure_ascii=False)
-    if not all(_bigrams(item) & _bigrams(chart_payload) for item in answer.chart_evidence):
+    authorized_facts = _string_facts(context.chart_facts)
+    authorized_facts.update(authorized_pillars)
+    if day_master:
+        authorized_facts.add(f"{day_master}日主")
+    if isinstance(strength, dict) and strength.get("classification"):
+        authorized_facts.add(str(strength["classification"]))
+    if not all(
+        any(fact in item or item in fact for fact in authorized_facts)
+        for item in answer.chart_evidence
+    ):
         violations.append("unmapped_chart_evidence")
-    if not all(_bigrams(item) & _bigrams(rule_text) for item in answer.rule_evidence):
+    rule_statements = [item["statement"] for item in context.rule_evidence]
+    if not all(
+        any(statement in item or item in statement for statement in rule_statements)
+        for item in answer.rule_evidence
+    ):
         violations.append("unmapped_rule_evidence")
 
     unique = tuple(dict.fromkeys(violations))

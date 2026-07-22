@@ -79,3 +79,27 @@ def test_question_and_history_redact_common_personal_identifiers():
     for forbidden in ("金丝雀", "1996-09-04", "23:45", "a@example.com", "13800138000"):
         assert forbidden not in payload
     assert "2026年" in context.question
+
+
+def test_unlabelled_chinese_identity_date_and_city_never_leave_as_raw_text():
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    facts = build_chart_facts(
+        build_bazi_chart(
+            {"gender": "女", "birth_date": "1986-08-15", "birth_hour": 10, "birth_minute": 0}
+        )
+    )
+    raw = "我是金丝雀，1996年9月4日出生于上海，请看2026年财运"
+    context = build_ai_context(
+        facts,
+        raw,
+        [{"role": "user", "content": "我住在广州，叫陈小明，想问事业"}],
+    )
+    payload = context.model_dump_json()
+
+    for forbidden in (raw, "金丝雀", "1996年9月4日", "上海", "广州", "陈小明"):
+        assert forbidden not in payload
+    assert context.question == "问题类别：财运；时间维度：是；目标年份：2026年"
+    assert context.history[0].content == "此前用户询问：事业"

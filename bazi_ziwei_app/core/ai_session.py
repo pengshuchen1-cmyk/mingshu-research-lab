@@ -18,6 +18,7 @@ CHAT_SESSION_KEYS = (
     CHAT_LAST_ACTIVITY_KEY,
     CHAT_REQUEST_STATE_KEY,
 )
+DETAIL_KEYS = ("chart_evidence", "rule_evidence", "uncertainty", "cautions")
 
 
 def _as_utc(value: datetime) -> datetime:
@@ -87,11 +88,22 @@ def append_chat_message(
     details: dict | None = None,
 ) -> None:
     messages = list(state.get(CHAT_MESSAGES_KEY, []))
-    item = {"role": role, "content": str(content)}
-    if source:
+    safe_role = role if role in {"user", "assistant"} else "assistant"
+    item = {"role": safe_role, "content": str(content), "created_at": _timestamp()}
+    if source in {"cloud_validated", "local_rules"}:
         item["source"] = source
     if details:
-        item["details"] = details
+        safe_details: dict[str, list[str]] = {}
+        for key in DETAIL_KEYS:
+            values = details.get(key, [])
+            if isinstance(values, (list, tuple)):
+                safe_details[key] = [
+                    str(value).strip()
+                    for value in values[:12]
+                    if isinstance(value, str) and value.strip()
+                ]
+        if any(safe_details.values()):
+            item["details"] = safe_details
     messages.append(item)
     state[CHAT_MESSAGES_KEY] = messages[-20:]
     touch_chat_session(state)

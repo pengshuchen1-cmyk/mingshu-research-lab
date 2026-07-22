@@ -8,7 +8,10 @@ class _FakeClient:
 
     def answer(self, context):
         self.contexts.append(context)
-        return self.answers.pop(0)
+        item = self.answers.pop(0)
+        if isinstance(item, Exception):
+            raise item
+        return item
 
 
 def _chart():
@@ -25,7 +28,7 @@ def _answer(text, evidence):
     return BaziAIAnswer(
         answer=text,
         chart_evidence=[evidence],
-        rule_evidence=["承财能力要结合日主强弱、资源和现金流"],
+        rule_evidence=["财运承载需结合日主强弱、印比支持与食伤生财路径判断。"],
         uncertainty=["现实结果取决于执行"],
         cautions=["不替代财务决策"],
     )
@@ -70,3 +73,26 @@ def test_orchestrator_uses_local_rules_when_cloud_disabled():
     assert result.source == "local_rules"
     assert len(fake.contexts) == 0
     assert "不能确认当前是否已婚" in result.answer
+
+
+def test_orchestrator_retries_once_for_malformed_structured_output():
+    from core.ai_models import AIConfig
+    from core.ai_orchestrator import answer_question
+    from services.openai_bazi_client import AIServiceError
+
+    fake = _FakeClient(
+        [
+            AIServiceError("unparseable_response"),
+            _answer("壬日主的财务重点是承载能力和现金流。", "壬日主"),
+        ]
+    )
+    result = answer_question(
+        _chart(),
+        "财运如何？",
+        [],
+        config=AIConfig("key", True),
+        client=fake,
+    )
+
+    assert result.source == "cloud_validated"
+    assert len(fake.contexts) == 2

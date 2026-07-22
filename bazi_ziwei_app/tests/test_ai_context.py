@@ -46,3 +46,46 @@ def test_domain_context_only_includes_relevant_analysis():
     assert "relationship" not in wealth.chart_facts
     assert "relationship" in relationship.chart_facts
     assert "wealth" not in relationship.chart_facts
+
+
+def test_timing_context_contains_concrete_current_and_dayun_facts():
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    context = build_ai_context(
+        build_chart_facts(
+            build_bazi_chart(
+                {"gender": "女", "birth_date": "1996-09-04", "birth_hour": 23, "birth_minute": 45}
+            )
+        ),
+        "2026年需要注意什么？",
+        [],
+    )
+
+    assert context.chart_facts["dayun"]["direction"] in {"forward", "reverse", "顺排", "逆排"}
+    assert context.chart_facts["dayun"]["start"] != "待计算"
+    assert context.chart_facts["current_context"]["year_pillar"]
+    assert context.chart_facts["target_years"] == [
+        {"year": 2026, "year_pillar": "丙午"}
+    ]
+
+
+def test_timing_context_ignores_birth_year_and_caps_target_years():
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    context = build_ai_context(
+        build_chart_facts(
+            build_bazi_chart(
+                {"gender": "女", "birth_date": "1996-09-04", "birth_hour": 23, "birth_minute": 45}
+            )
+        ),
+        "我是1996年出生，想看2026年、2027年、2028年、2029年和2030年的财运",
+        [],
+    )
+
+    assert [item["year"] for item in context.chart_facts["target_years"]] == [
+        2026, 2027, 2028, 2029
+    ]

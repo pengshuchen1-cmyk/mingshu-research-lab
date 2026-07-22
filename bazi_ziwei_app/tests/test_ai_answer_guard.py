@@ -10,6 +10,7 @@ def _context():
         requires_timing=False,
         chart_facts={
             "pillars": ["甲戌", "癸酉", "壬子", "己酉"],
+            "gender": "male",
             "day_master": "壬",
             "strength": {"classification": "身强", "evidence": ["月令生扶"]},
             "pattern": {"classification": "正印格", "evidence": ["月令主气"]},
@@ -54,3 +55,33 @@ def test_guard_rejects_wrong_pillar_and_guarantee_language():
     assert result.accepted is False
     assert "chart_fact_contradiction" in result.violations
     assert "deterministic_claim" in result.violations
+
+
+def test_guard_rejects_gender_pattern_wealth_and_spouse_star_contradictions():
+    from core.ai_answer_guard import validate_ai_answer
+
+    result = validate_ai_answer(
+        _answer(
+            "这是女命、七杀格，财星为金，配偶星为印星。",
+            ["壬日主"],
+        ),
+        _context(),
+    )
+
+    assert result.accepted is False
+    assert "gender_contradiction" in result.violations
+    assert "pattern_contradiction" in result.violations
+    assert "wealth_element_contradiction" in result.violations
+    assert "spouse_star_contradiction" in result.violations
+
+
+def test_guard_requires_exactly_mappable_evidence_not_two_character_overlap():
+    from core.ai_answer_guard import validate_ai_answer
+
+    result = validate_ai_answer(
+        _answer("财务建议需谨慎。", ["命局财务需谨慎"]),
+        _context(),
+    )
+
+    assert result.accepted is False
+    assert "unmapped_chart_evidence" in result.violations

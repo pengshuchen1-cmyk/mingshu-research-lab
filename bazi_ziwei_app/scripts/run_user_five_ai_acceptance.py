@@ -24,7 +24,7 @@ class DeterministicAcceptanceClient:
         rule = context.rule_evidence[0]["statement"]
         if "抵押" in context.question or "保证" in context.question:
             text = "命盘只能提供风险观察，不能保证抵押房产创业的结果；应先做现实现金流与最坏损失测算。"
-        elif "是否" in context.question and "结婚" in context.question:
+        elif "当前婚姻状态" in context.question:
             text = "出生盘不能确认当前是否已经结婚，只能分析关系倾向和可能的时间触发。"
         else:
             text = "结合当前命盘事实与本地规则，建议把这项倾向作为观察线索，再结合现实资源、选择和时间条件验证。"

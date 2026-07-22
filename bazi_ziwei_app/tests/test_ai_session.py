@@ -40,3 +40,29 @@ def test_question_validation_rejects_blank_and_more_than_five_hundred_chars():
     assert validate_question("  ")[0] is False
     assert validate_question("甲" * 501)[0] is False
     assert validate_question("这个八字的财运怎么样？") == (True, "")
+
+
+def test_chat_message_has_timestamp_and_allowlisted_details_only():
+    from core.ai_session import append_chat_message
+
+    state = {}
+    append_chat_message(
+        state,
+        "assistant",
+        "回答",
+        source="cloud_validated",
+        details={
+            "chart_evidence": ["命盘证据", 123, ""],
+            "rule_evidence": ["规则证据"],
+            "uncertainty": ["不确定性"],
+            "cautions": ["注意事项"],
+            "raw_payload": {"customer_name": "不应保存"},
+        },
+    )
+
+    item = state["bazi_chat_messages"][0]
+    assert item["created_at"].endswith("+00:00")
+    assert set(item["details"]) == {
+        "chart_evidence", "rule_evidence", "uncertainty", "cautions"
+    }
+    assert item["details"]["chart_evidence"] == ["命盘证据"]

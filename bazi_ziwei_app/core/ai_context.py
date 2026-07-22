@@ -7,6 +7,7 @@ from typing import Mapping, Sequence
 
 from core.ai_models import AIRequestContext, ChatMessage, RoutedQuestion
 from core.bazi_rulebook import load_rulebook
+from core.bazi_constants import EARTHLY_BRANCHES, HEAVENLY_STEMS
 from core.chart_facts import ChartFacts
 
 
@@ -35,21 +36,62 @@ DOMAIN_RULE_IDS = {
     "timing": ("DAYUN-DIRECTION", "DAYUN-START-DIV3"),
     "other": ("SAFETY-NONDETERMINISTIC",),
 }
+CATEGORY_LABELS = {
+    "overview": "命盘概览",
+    "wealth": "财运",
+    "career": "事业",
+    "relationship": "姻缘婚姻",
+    "timing": "时运",
+    "family": "原生家庭",
+    "other": "其他",
+}
 
 
-def _redact_personal_text(value: object) -> str:
-    text = str(value or "").strip()
-    patterns = (
-        (r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}", "[邮箱已隐藏]"),
-        (r"(?<!\d)1[3-9]\d{9}(?!\d)", "[手机已隐藏]"),
-        (r"(?<!\d)(?:19|20)\d{2}[-/.](?:0?[1-9]|1[0-2])[-/.](?:0?[1-9]|[12]\d|3[01])(?!\d)", "[日期已隐藏]"),
-        (r"(?<!\d)(?:[01]?\d|2[0-3]):[0-5]\d(?!\d)", "[时间已隐藏]"),
-        (r"(?:姓名|称呼)\s*[:：]\s*[^\s，,。；;]+", "姓名：[已隐藏]"),
-        (r"我叫[\u4e00-\u9fff]{2,5}", "我叫[已隐藏]"),
+def _canonical_question(question: str, routed: RoutedQuestion) -> str:
+    """Turn arbitrary customer prose into an allowlisted intent, never raw text."""
+    text = str(question or "")
+    parts = [f"问题类别：{CATEGORY_LABELS[routed.category]}"]
+    parts.append(f"时间维度：{'是' if routed.requires_timing else '否'}")
+    timing_text = re.sub(
+        r"(?:19|20)\d{2}年\d{1,2}月\d{1,2}日(?:出生)?",
+        "",
+        text,
     )
-    for pattern, replacement in patterns:
-        text = re.sub(pattern, replacement, text)
-    return text
+    years = list(dict.fromkeys(re.findall(r"(?:19|20)\d{2}(?=年)", timing_text)))[:4]
+    if years:
+        parts.append("目标年份：" + "、".join(f"{year}年" for year in years))
+    topic_flags = []
+    if any(word in text for word in ("抵押", "借贷", "贷款", "杠杆")):
+        topic_flags.append("抵押借贷风险")
+    if "AI" in text.upper() or "人工智能" in text:
+        topic_flags.append("AI行业")
+    if (("现在" in text or "当前" in text) and any(word in text for word in ("结婚", "已婚"))):
+        topic_flags.append("当前婚姻状态")
+    if any(word in text for word in ("每月", "流月", "12个月")):
+        topic_flags.append("逐月走势")
+    if topic_flags:
+        parts.append("安全主题：" + "、".join(topic_flags))
+    return "；".join(parts)
+
+
+def _target_year_facts(question: str) -> list[dict[str, object]]:
+    """Extract explicit forecast years and calculate only their year pillars."""
+    text = re.sub(
+        r"(?:我是|本人)?\s*(?:19|20)\d{2}年(?:出生|生人)",
+        "",
+        str(question or ""),
+    )
+    years = list(dict.fromkeys(int(value) for value in re.findall(r"((?:19|20)\d{2})(?=年)", text)))[:4]
+    return [
+        {
+            "year": year,
+            "year_pillar": (
+                HEAVENLY_STEMS[(year - 4) % 10]
+                + EARTHLY_BRANCHES[(year - 4) % 12]
+            ),
+        }
+        for year in years
+    ]
 
 
 def classify_question(question: str) -> RoutedQuestion:
@@ -80,7 +122,11 @@ def _safe_history(history: Sequence[ChatMessage | Mapping[str, object]]) -> list
             content = str(raw.get("content", "")).strip()
         if role not in {"user", "assistant"} or not content:
             continue
-        content = _redact_personal_text(content)
+        if role == "user":
+            routed = classify_question(content)
+            content = f"此前用户询问：{CATEGORY_LABELS[routed.category]}"
+        else:
+            content = "此前助手已提供过回答"
         content = content[-min(len(content), remaining, 4000):]
         selected.append(ChatMessage(role=role, content=content))
         remaining -= len(content)
@@ -111,6 +157,7 @@ def build_ai_context(
     if routed.requires_timing or routed.category == "timing":
         chart_facts["dayun"] = raw["dayun"]
         chart_facts["current_context"] = raw["current_context"]
+        chart_facts["target_years"] = _target_year_facts(question)
 
     selected_ids = list(facts.rule_ids)
     selected_ids.extend(DOMAIN_RULE_IDS[routed.category])
@@ -127,7 +174,7 @@ def build_ai_context(
         rule_evidence.append({"id": rule.id, "statement": rule.statement})
 
     return AIRequestContext(
-        question=_redact_personal_text(question),
+        question=_canonical_question(question, routed),
         category=routed.category,
         requires_timing=routed.requires_timing,
         chart_facts=chart_facts,

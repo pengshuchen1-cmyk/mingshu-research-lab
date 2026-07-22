@@ -67,7 +67,12 @@ def answer_question(
             request_context = context.model_copy(update={"question": corrected_question})
         try:
             answer = service.answer(request_context)
-        except (AIServiceError, Exception):
+        except AIServiceError as exc:
+            if exc.code == "unparseable_response" and attempt == 0:
+                last_violations = ("malformed_structured_output",)
+                continue
+            return _local_fallback(facts, question, context.category)
+        except Exception:
             return _local_fallback(facts, question, context.category)
         guard = validate_ai_answer(answer, context)
         if guard.accepted:
