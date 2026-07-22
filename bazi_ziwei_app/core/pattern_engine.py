@@ -166,6 +166,21 @@ def analyze_pattern(chart: dict) -> dict:
             evidence.append("有利配合：" + "、".join(dict.fromkeys(supports[:4])))
         if risks:
             evidence.append("需要经营：" + "、".join(dict.fromkeys(risks[:4])))
+        special_pattern = strength.get("special_pattern", "无")
+        if special_pattern in {"从旺", "从弱"}:
+            special_review = {
+                "considered": True,
+                "accepted": True,
+                "result": special_pattern,
+                "reason": "强弱证据达到特殊格局阈值，仍需结合反向根气复核。",
+            }
+        else:
+            special_review = {
+                "considered": True,
+                "accepted": False,
+                "result": "普通格局",
+                "reason": "命局仍见双向生克和根气，优先按月令普通格局分析。",
+            }
         return {
             "day_master": day_master,
             "day_master_element": day_element,
@@ -181,6 +196,16 @@ def analyze_pattern(chart: dict) -> dict:
             "plain_text": plain,
             "evidence": evidence,
             "basis": "参考《子平真诠》以月令取格、《三命通会》格局分类，并结合十神透干与成败配合做趋势化判断。",
+            "formation_evidence": list(evidence),
+            "damage_factors": list(dict.fromkeys(risks)),
+            "rescue_factors": list(dict.fromkeys(supports)),
+            "special_pattern_review": special_review,
+            "rule_ids": [
+                "PATTERN-MONTH-QI",
+                "PATTERN-SUCCESS-FAILURE",
+                "PATTERN-SPECIAL-STRICT",
+            ],
+            "public_text": plain,
         }
     except Exception as exc:
         return {
@@ -189,4 +214,15 @@ def analyze_pattern(chart: dict) -> dict:
             "plain_text": f"格局判定暂不可用：{exc}",
             "evidence": [],
             "basis": "格局判定暂未完成。",
+            "formation_evidence": [],
+            "damage_factors": [],
+            "rescue_factors": [],
+            "special_pattern_review": {
+                "considered": False,
+                "accepted": False,
+                "result": "未完成",
+                "reason": str(exc),
+            },
+            "rule_ids": [],
+            "public_text": f"格局判定暂不可用：{exc}",
         }

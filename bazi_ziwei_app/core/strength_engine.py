@@ -268,6 +268,62 @@ def analyze_day_master_strength(chart: dict) -> dict:
         else:
             favorable, unfavorable, explanation = _element_preferences(day_element, strength)
 
+        evidence = [
+            {
+                "dimension": "得令",
+                "rule_id": "STRENGTH-SEASON",
+                "polarity": "support" if de_ling_score > 0 else "pressure" if de_ling_score < 0 else "mixed",
+                "weight": float(de_ling_score),
+                "fact": f"月支{month_branch}主气为{month_element}",
+                "explanation": de_ling_text,
+            },
+            {
+                "dimension": "得地",
+                "rule_id": "STRENGTH-ROOT",
+                "polarity": "support" if de_di_score > 0 else "pressure" if de_di_score < 0 else "mixed",
+                "weight": float(de_di_score),
+                "fact": "逐支检查本气、中气、余气中的同类根和生扶根",
+                "explanation": de_di_text,
+            },
+            {
+                "dimension": "得助",
+                "rule_id": "STRENGTH-SUPPORT-DRAIN",
+                "polarity": "support" if de_shi_support > 0 else "mixed",
+                "weight": float(de_shi_support),
+                "fact": f"印比生扶合计约{de_shi_support}",
+                "explanation": de_shi_text,
+            },
+            {
+                "dimension": "泄耗克制",
+                "rule_id": "STRENGTH-SUPPORT-DRAIN",
+                "polarity": "pressure" if de_shi_pressure > 0 else "mixed",
+                "weight": float(-de_shi_pressure),
+                "fact": f"食伤、财、官杀压力合计约{de_shi_pressure}",
+                "explanation": de_shi_text,
+            },
+            {
+                "dimension": "合冲有效性",
+                "rule_id": "STRENGTH-SUPPORT-DRAIN",
+                "polarity": "mixed",
+                "weight": 0.0,
+                "fact": "合冲只改变已识别根气的有效性，不单独替代月令和通根",
+                "explanation": "当前强弱结论以月令、通根和透藏生克为主，合冲作为复核项。",
+            },
+        ]
+        uncertainty: list[str] = []
+        if not chart.get("pillars", {}).get("hour", {}).get("pillar"):
+            uncertainty.append("时辰不详，时柱可能改变部分通根、透干和生克证据。")
+            evidence.append(
+                {
+                    "dimension": "时辰不确定性",
+                    "rule_id": "STRENGTH-UNCERTAINTY",
+                    "polarity": "uncertain",
+                    "weight": 0.0,
+                    "fact": "时柱缺失",
+                    "explanation": uncertainty[0],
+                }
+            )
+
         return {
             "day_master": day_master,
             "day_master_element": day_element,
@@ -287,6 +343,15 @@ def analyze_day_master_strength(chart: dict) -> dict:
             "explanation": explanation,
             "special_pattern": special_pattern,
             "season_adjustment": season_adjustment,
+            "evidence": evidence,
+            "public_evidence": [item["explanation"] for item in evidence],
+            "uncertainty": uncertainty,
+            "rule_ids": [
+                "STRENGTH-SEASON",
+                "STRENGTH-ROOT",
+                "STRENGTH-SUPPORT-DRAIN",
+                "STRENGTH-UNCERTAINTY",
+            ],
         }
     except Exception as exc:
         return {
@@ -303,4 +368,8 @@ def analyze_day_master_strength(chart: dict) -> dict:
             "unfavorable_elements": [],
             "explanation": f"日主强弱初判暂不可用：{exc}",
             "season_adjustment": {"plain_text": "调候解释暂无法生成。"},
+            "evidence": [],
+            "public_evidence": [],
+            "uncertainty": ["强弱证据计算未完成。"],
+            "rule_ids": [],
         }
