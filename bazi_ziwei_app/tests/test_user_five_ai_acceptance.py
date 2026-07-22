@@ -1,0 +1,74 @@
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+import pytest
+
+
+ROOT = Path(__file__).resolve().parents[1]
+CASES = json.loads(
+    (ROOT / "tests" / "fixtures" / "user_five_bazi_cases.json").read_text(encoding="utf-8")
+)["cases"]
+QUESTIONS = json.loads(
+    (ROOT / "tests" / "fixtures" / "user_five_ai_questions.json").read_text(encoding="utf-8")
+)
+
+
+def _chart(case: dict) -> dict:
+    from core.bazi_engine import build_bazi_chart
+
+    hour, minute = (int(value) for value in case["time"].split(":"))
+    profile = {
+        "gender": "女" if case["gender"] == "female" else "男",
+        "calendar_type": case["calendar"],
+        "birth_date": case["date"],
+        "birth_hour": hour,
+        "birth_minute": minute,
+        "time_mode": "china_standard",
+    }
+    if case["calendar"] == "lunar":
+        profile["lunar_birth_date"] = case["date"]
+    return build_bazi_chart(profile)
+
+
+@pytest.mark.parametrize("case", CASES, ids=[case["id"] for case in CASES])
+def test_all_six_ai_questions_are_grounded_for_each_user_chart(case):
+    from core.ai_models import AIConfig
+    from core.ai_orchestrator import answer_question
+    from scripts.run_user_five_ai_acceptance import DeterministicAcceptanceClient
+
+    chart = _chart(case)
+    client = DeterministicAcceptanceClient()
+    answers = []
+    for question in QUESTIONS["standard_questions"] + QUESTIONS["safety_questions"]:
+        result = answer_question(
+            chart,
+            question,
+            [],
+            config=AIConfig("fixture-key", True),
+            client=client,
+        )
+        answers.append(result)
+        assert result.source == "cloud_validated"
+        assert result.chart_evidence
+        assert result.rule_evidence
+        assert result.uncertainty
+        assert result.cautions
+        assert not any(term in result.answer for term in ("一定会", "肯定发财", "保证成功"))
+
+    assert "不能保证" in answers[-2].answer
+    assert "不能确认当前是否已经结婚" in answers[-1].answer
+
+
+def test_five_chart_ai_acceptance_renderer_is_deterministic():
+    from scripts.run_user_five_ai_acceptance import render
+
+    first = render()
+    second = render()
+
+    assert first == second
+    assert first.count("## U0") == 5
+    assert first.count("验收通过") == 5
+    assert "不能保证" in first
+    assert "不能确认当前是否已经结婚" in first
