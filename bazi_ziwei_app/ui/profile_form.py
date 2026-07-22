@@ -34,11 +34,13 @@ def _build_profile_payload(
     gender: str,
     calendar_label: str,
     birth_date: date,
-    birth_hour: int,
-    birth_minute: int,
+    birth_hour: int | None,
+    birth_minute: int | None,
     birth_place: str,
     use_solar_time: bool,
     birth_longitude: str | float | int | None,
+    is_leap_month: bool = False,
+    time_known: bool = True,
 ) -> dict:
     """构造新建命盘资料；农历日期由排盘核心统一换算。"""
     calendar_type = "lunar" if calendar_label == "农历" else "solar"
@@ -48,12 +50,14 @@ def _build_profile_payload(
         "gender": gender,
         "calendar_type": calendar_type,
         "birth_date": birth_date.isoformat(),
-        "birth_hour": birth_hour,
-        "birth_minute": birth_minute,
+        "birth_hour": birth_hour if time_known else None,
+        "birth_minute": birth_minute if time_known else None,
         "birth_place": birth_place.strip(),
-        "use_solar_time": use_solar_time,
-        "use_true_solar_time": use_solar_time,
-        "birth_longitude": parse_birth_longitude(birth_longitude) if use_solar_time else None,
+        "use_solar_time": False,
+        "use_true_solar_time": False,
+        "birth_longitude": None,
+        "time_mode": "china_standard",
+        "is_leap_month": bool(is_leap_month and calendar_type == "lunar"),
     }
     if calendar_type == "lunar":
         payload["lunar_birth_date"] = birth_date.isoformat()
@@ -64,18 +68,8 @@ def _render_unified_profile_form(draft: dict) -> None:
     """在一个表单中收集、验证并生成命盘。"""
     import streamlit as st
 
-    if PROFILE_SOLAR_TIME_KEY not in st.session_state:
-        st.session_state[PROFILE_SOLAR_TIME_KEY] = bool(draft.get("use_solar_time", False))
-
     with st.container(key="ms5-profile-card", border=True):
-        st.caption("可选设置：真太阳时会按出生地经度校正时间。")
-        use_solar_time = st.checkbox(
-            "使用真太阳时校正",
-            key=PROFILE_SOLAR_TIME_KEY,
-        )
-        draft["use_solar_time"] = bool(use_solar_time)
-        if not use_solar_time:
-            draft["birth_longitude"] = None
+        st.caption("排盘统一采用中国标准时间（北京时间）。")
         st.session_state[PROFILE_DRAFT_KEY] = draft
 
         with st.form("unified_profile_form"):
@@ -98,6 +92,12 @@ def _render_unified_profile_form(draft: dict) -> None:
                 index=0 if draft.get("calendar_label", "公历") == "公历" else 1,
                 horizontal=True,
             )
+            is_leap_month = False
+            if calendar_label == "农历":
+                is_leap_month = st.checkbox(
+                    "是否闰月",
+                    value=bool(draft.get("is_leap_month", False)),
+                )
             birth_date = st.date_input(
                 "出生日期",
                 value=draft.get("birth_date", date(1990, 1, 1)),
@@ -107,36 +107,31 @@ def _render_unified_profile_form(draft: dict) -> None:
             st.caption("选择农历时，日期会先自动换算为真实公历日期，再进入八字排盘。")
 
             st.markdown("### 出生时间与地点")
-            time_columns = st.columns(2)
-            with time_columns[0]:
-                birth_hour = st.selectbox(
-                    "出生小时",
-                    list(range(24)),
-                    index=int(draft.get("birth_hour", 10)),
-                )
-            with time_columns[1]:
-                birth_minute = st.selectbox(
-                    "出生分钟",
-                    list(range(60)),
-                    index=int(draft.get("birth_minute", 0)),
-                )
+            time_known = not st.checkbox(
+                "出生时辰不详",
+                value=not bool(draft.get("time_known", True)),
+            )
+            birth_hour = None
+            birth_minute = None
+            if time_known:
+                time_columns = st.columns(2)
+                with time_columns[0]:
+                    birth_hour = st.selectbox(
+                        "出生小时",
+                        list(range(24)),
+                        index=int(draft.get("birth_hour", 10) or 10),
+                    )
+                with time_columns[1]:
+                    birth_minute = st.selectbox(
+                        "出生分钟",
+                        list(range(60)),
+                        index=int(draft.get("birth_minute", 0) or 0),
+                    )
             birth_place = st.text_input(
                 "出生地点",
                 value=draft.get("birth_place", ""),
                 placeholder="可为空，如 北京、上海、广州",
             )
-
-            st.markdown("### 高级设置")
-            birth_longitude = None
-            if use_solar_time:
-                st.caption(
-                    "真太阳时可能影响时柱；若不确定经度，建议关闭并使用标准北京时间。"
-                )
-                birth_longitude = st.text_input(
-                    "出生地经度（东经）",
-                    placeholder="例如：116.4（北京）、121.4（上海）",
-                    value=draft.get("birth_longitude") or "",
-                )
 
             privacy_consent = True
             if is_public_mode():
@@ -163,16 +158,15 @@ def _render_unified_profile_form(draft: dict) -> None:
             "birth_hour": birth_hour,
             "birth_minute": birth_minute,
             "birth_place": birth_place,
-            "use_solar_time": use_solar_time,
-            "birth_longitude": birth_longitude,
+            "use_solar_time": False,
+            "birth_longitude": None,
+            "is_leap_month": is_leap_month,
+            "time_known": time_known,
         }
     )
     st.session_state[PROFILE_DRAFT_KEY] = draft
 
     try:
-        parsed_longitude = parse_birth_longitude(birth_longitude) if use_solar_time else None
-        if use_solar_time and parsed_longitude is None:
-            raise ValueError("启用真太阳时校正后，请填写出生地经度。")
         profile = _build_profile_payload(
             name=name,
             gender=gender,
@@ -181,8 +175,10 @@ def _render_unified_profile_form(draft: dict) -> None:
             birth_hour=birth_hour,
             birth_minute=birth_minute,
             birth_place=birth_place,
-            use_solar_time=use_solar_time,
-            birth_longitude=parsed_longitude,
+            use_solar_time=False,
+            birth_longitude=None,
+            is_leap_month=is_leap_month,
+            time_known=time_known,
         )
     except ValueError as exc:
         st.error(str(exc))

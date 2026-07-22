@@ -96,7 +96,7 @@ def test_profile_form_is_one_page_with_all_required_sections():
         "基本资料",
         "出生日期",
         "出生时间与地点",
-        "高级设置",
+        "出生时辰不详",
         "出生资料只用于本地排盘",
         "生成命盘",
     ]:
@@ -169,7 +169,7 @@ def test_public_form_source_requires_consent_and_starts_private_session_timer():
     assert "touch_private_session(st.session_state)" in source
 
 
-def test_first_solar_time_enable_immediately_reveals_longitude_without_submit_error(monkeypatch):
+def test_profile_form_keeps_time_controls_inside_single_form(monkeypatch):
     import ui.profile_form as profile_form
 
     draft = {"name": "保留姓名", "birth_place": "北京", "birth_date": date(1990, 1, 1)}
@@ -181,15 +181,14 @@ def test_first_solar_time_enable_immediately_reveals_longitude_without_submit_er
 
     assert fake_streamlit.container_calls == [{"key": "ms5-profile-card", "border": True}]
     assert fake_streamlit.form_parent_contexts == ["container"]
-    assert fake_streamlit.checkbox_calls[0][1] is False
-    assert ("出生地经度（东经）", True) in fake_streamlit.text_input_calls
+    assert fake_streamlit.checkbox_calls[0][0] == "出生时辰不详"
+    assert fake_streamlit.checkbox_calls[0][1] is True
+    assert all(label != "出生地经度（东经）" for label, _ in fake_streamlit.text_input_calls)
     assert fake_streamlit.errors == []
-    assert draft["use_solar_time"] is True
     assert fake_streamlit.session_state[profile_form.PROFILE_DRAFT_KEY] is draft
-    assert fake_streamlit.session_state.get("profile_use_solar_time") is True
 
 
-def test_solar_time_switch_off_hides_longitude_and_preserves_disabled_state(monkeypatch):
+def test_legacy_solar_time_draft_never_restores_longitude_control(monkeypatch):
     import ui.profile_form as profile_form
 
     draft = {
@@ -204,9 +203,6 @@ def test_solar_time_switch_off_hides_longitude_and_preserves_disabled_state(monk
     profile_form._render_unified_profile_form(draft)
 
     assert all(label != "出生地经度（东经）" for label, _inside_form in fake_streamlit.text_input_calls)
-    assert draft["use_solar_time"] is False
-    assert draft["birth_longitude"] is None
-    assert fake_streamlit.session_state.get("profile_use_solar_time") is False
 
 
 def test_successful_unified_form_navigates_and_clears_draft_and_switch_state(monkeypatch):
@@ -240,7 +236,9 @@ def test_successful_unified_form_navigates_and_clears_draft_and_switch_state(mon
 
     profile_form._render_unified_profile_form(draft)
 
-    assert fake_streamlit.session_state["current_profile"]["birth_longitude"] == 116.4
+    assert fake_streamlit.session_state["current_profile"]["birth_longitude"] is None
+    assert fake_streamlit.session_state["current_profile"]["use_true_solar_time"] is False
+    assert fake_streamlit.session_state["current_profile"]["time_mode"] == "china_standard"
     assert fake_streamlit.session_state["navigate_to"] == "个人命盘"
     assert profile_form.PROFILE_DRAFT_KEY not in fake_streamlit.session_state
     assert "profile_use_solar_time" not in fake_streamlit.session_state
