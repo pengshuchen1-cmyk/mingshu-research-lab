@@ -30,7 +30,8 @@ class AIServiceError(RuntimeError):
 
 
 def classify_service_error(exc: Exception) -> str:
-    if isinstance(exc, TimeoutError):
+    exception_name = type(exc).__name__.lower()
+    if isinstance(exc, TimeoutError) or "timeout" in exception_name:
         return "timeout"
     status = getattr(exc, "status_code", None)
     code = str(getattr(exc, "code", "") or "").lower()
@@ -45,9 +46,7 @@ def classify_service_error(exc: Exception) -> str:
         return "rate_limited"
     if status in {500, 502, 503, 504}:
         return "service_unavailable"
-    if isinstance(exc, (ConnectionError, OSError)) or (
-        "connection" in type(exc).__name__.lower()
-    ):
+    if isinstance(exc, (ConnectionError, OSError)) or "connection" in exception_name:
         return "network_error"
     return "service_unavailable"
 

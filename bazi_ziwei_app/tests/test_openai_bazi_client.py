@@ -152,6 +152,20 @@ def test_classify_service_error_returns_deterministic_codes(error, expected_code
     assert classify_service_error(error) == expected_code
 
 
+def test_classify_service_error_recognizes_openai_sdk_timeout():
+    import httpx
+    from openai import APIConnectionError, APITimeoutError
+    from services.openai_bazi_client import classify_service_error
+
+    error = APITimeoutError(
+        request=httpx.Request("POST", "https://example.invalid/v1/responses")
+    )
+
+    assert isinstance(error, APIConnectionError)
+    assert not isinstance(error, TimeoutError)
+    assert classify_service_error(error) == "timeout"
+
+
 def test_non_quota_429_stays_rate_limited_and_non_429_quota_is_not_billing_failure():
     from services.openai_bazi_client import classify_service_error
 
