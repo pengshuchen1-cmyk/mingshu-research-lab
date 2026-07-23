@@ -12,7 +12,7 @@ from core.chart_facts import ChartFacts
 
 
 CATEGORY_KEYWORDS = (
-    ("wealth", ("财运", "赚钱", "收入", "投资", "创业", "借贷", "抵押")),
+    ("wealth", ("财运", "赚钱", "收入", "投资", "创业", "借贷", "抵押", "现金流")),
     ("career", ("工作", "事业", "职业", "升职", "岗位", "行业", "AI")),
     ("relationship", ("桃花", "姻缘", "婚姻", "对象", "感情", "伴侣", "结婚", "已婚", "未婚")),
     ("family", ("父母", "家庭", "原生家庭", "长辈")),
@@ -63,10 +63,6 @@ _BIRTH_EXPRESSION_PATTERNS = (
 )
 
 _DIRECT_SENSITIVE_PATTERNS = (
-    # A log line is sensitive provenance as a whole, even when values collide
-    # with otherwise safe semantic terms.
-    re.compile(r"(?im)(?:日志|logs?)(?:内容)?\s*[:：=]\s*[^\r\n]*"),
-    re.compile(r"(?im)^\s*\[(?:INFO|DEBUG|WARN(?:ING)?|ERROR|TRACE)\][^\r\n]*"),
     # Identifier/secret values are a single token and may be Chinese safe words.
     re.compile(
         r"(?i)(?:profile[\s_-]*id|database[\s_-]*id|db[\s_-]*id|"
@@ -121,12 +117,29 @@ _SAFE_RESUME_CUE = re.compile(
     r"(?i)\b(?:wants?|needs?|seeks?|asks?)\s+"
     r"(?:advice|guidance|to\s+ask)(?:\s+(?:on|about))?\s*"
 )
+_CLAUSE_DELIMITER = re.compile(r"[，,。；;！？!?\r\n]")
+_SENSITIVE_CLAUSE_CUE = re.compile(
+    r"(?i)"
+    r"(?:姓名|名字|称呼|绰号|人称|别名|昵称|我叫|本人叫|我是|本人是|"
+    r"出生地|出生于|籍贯|现居|居住于|住在|居住地|常住地|来自)"
+    r"\s*(?:是|为|叫|在|[:：])?"
+    r"|(?:日志|logs?)(?:内容)?\s*[:：=]"
+    r"|\[(?:INFO|DEBUG|WARN(?:ING)?|ERROR|TRACE)\]"
+    r"|(?:profile[\s_-]*id|database[\s_-]*id|db[\s_-]*id|"
+    r"customer[\s_-]*id|用户(?:档案)?ID|档案ID|数据库ID|客户ID|"
+    r"(?:openai[\s_-]*)?API[\s_-]*key|"
+    r"internal[\s_-]*rule[\s_-]*version|内部规则版本)"
+    r"\s*(?:(?:[:：=]\s*)|\s+)"
+    r"|(?<![A-Za-z0-9_])(?:message|target|user|city)\s*="
+)
 
 _SAFE_SEMANTIC_TERMS = (
     "现在是否已经结婚",
     "当前是否已经结婚",
     "当前婚姻状态",
     "现在已经结婚",
+    "目前是否结婚",
+    "现在有没有结婚",
     "目前结婚了吗",
     "现在结婚了吗",
     "当前结婚了吗",
@@ -302,7 +315,8 @@ _NORMALIZABLE_MONTH = re.compile(
     rf"\s*(?P<month>{_CHINESE_MONTH})月"
 )
 _CURRENT_MARRIAGE_STATUS = re.compile(
-    r"(?:现在|目前|当前)(?:是否已经结婚|结婚了吗|已经结婚|已婚吗|未婚|已婚)"
+    r"(?:现在|目前|当前)"
+    r"(?:是否已经结婚|是否结婚|有没有结婚|结婚了吗|已经结婚|已婚吗|未婚|已婚)"
 )
 
 
@@ -354,9 +368,28 @@ def _identity_spans(text: str) -> list[tuple[int, int]]:
     return spans
 
 
+def _sensitive_clause_spans(text: str) -> list[tuple[int, int]]:
+    """Claim the whole containing clause for sensitive provenance cues."""
+    delimiters = list(_CLAUSE_DELIMITER.finditer(text))
+    spans: list[tuple[int, int]] = []
+    for cue in _SENSITIVE_CLAUSE_CUE.finditer(text):
+        start = 0
+        end = len(text)
+        for delimiter in delimiters:
+            if delimiter.end() <= cue.start():
+                start = delimiter.end()
+                continue
+            if delimiter.start() >= cue.end():
+                end = delimiter.start()
+                break
+        spans.append((start, end))
+    return spans
+
+
 def _provenance_segments(text: str) -> list[tuple[bool, str]]:
     """Split original text into sensitive and eligible spans before extraction."""
     spans = _identity_spans(text)
+    spans.extend(_sensitive_clause_spans(text))
     for pattern in _DIRECT_SENSITIVE_PATTERNS:
         spans.extend(match.span() for match in pattern.finditer(text))
     merged = _merge_spans(spans)

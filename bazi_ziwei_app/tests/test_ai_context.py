@@ -7,6 +7,7 @@ import pytest
     ("question", "category", "timing"),
     [
         ("这个八字财运怎么样？", "wealth", False),
+        ("现金流要注意什么？", "wealth", False),
         ("2027年什么时候适合赚钱？", "wealth", True),
         ("事业适合做AI吗？", "career", False),
         ("今年桃花姻缘如何？", "relationship", True),
@@ -144,6 +145,8 @@ def test_current_marriage_status_wording_survives_safe_projection():
         ("她目前结婚了吗？", "目前结婚了吗"),
         ("现在已婚吗？", "现在已婚吗"),
         ("当前未婚，想问姻缘", "当前未婚"),
+        ("目前是否结婚？", "目前是否结婚"),
+        ("现在有没有结婚？", "现在有没有结婚"),
     ],
 )
 def test_current_marriage_status_variants_keep_safe_intent(question, safe_phrase):

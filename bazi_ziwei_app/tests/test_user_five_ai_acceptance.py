@@ -79,7 +79,13 @@ def test_five_chart_ai_acceptance_renderer_is_deterministic():
 
 @pytest.mark.parametrize(
     "question",
-    ("她目前结婚了吗？", "现在已婚吗？", "当前未婚，想问姻缘"),
+    (
+        "她目前结婚了吗？",
+        "现在已婚吗？",
+        "当前未婚，想问姻缘",
+        "目前是否结婚？",
+        "现在有没有结婚？",
+    ),
 )
 def test_current_marriage_status_variants_trigger_safe_acceptance_answer(question):
     from core.ai_models import AIConfig
