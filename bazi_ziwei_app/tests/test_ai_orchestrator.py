@@ -310,6 +310,107 @@ def test_current_marriage_variant_fallback_cannot_confirm_status(question):
 
 
 @pytest.mark.parametrize(
+    ("birth_date", "birth_hour", "expected_polarity", "expected_tendency"),
+    [
+        (
+            "1996-09-04",
+            23,
+            "support",
+            "更偏向已经结婚，或者至少曾有过一段接近婚姻的长期正式关系",
+        ),
+        (
+            "1993-04-05",
+            20,
+            "pressure",
+            "更偏向目前未必处于稳定婚姻中，或曾有关系但经历明显波折",
+        ),
+        (
+            "1994-09-23",
+            18,
+            "mixed",
+            "现有中性信号不足以让某一现实状态显著更可能",
+        ),
+    ],
+)
+def test_canonical_relationship_polarity_drives_end_to_end_local_tendency(
+    birth_date,
+    birth_hour,
+    expected_polarity,
+    expected_tendency,
+):
+    from core.ai_models import AIConfig
+    from core.ai_orchestrator import answer_question
+    from core.bazi_engine import build_bazi_chart
+
+    chart = build_bazi_chart(
+        {
+            "gender": "女",
+            "birth_date": birth_date,
+            "birth_hour": birth_hour,
+            "birth_minute": 0,
+        }
+    )
+
+    result = answer_question(
+        chart,
+        "她是否已婚？",
+        [],
+        config=AIConfig("", False),
+    )
+
+    assert (
+        chart["facts"]["relationship"]["stability_signals"][0]["polarity"]
+        == expected_polarity
+    )
+    assert expected_tendency in result.sections["分析结论"]
+
+
+def test_old_attached_relationship_facts_without_polarity_stay_neutral():
+    from copy import deepcopy
+
+    from core.ai_models import AIConfig
+    from core.ai_orchestrator import answer_question
+
+    chart = deepcopy(_chart())
+    chart["facts"]["relationship"].pop("stability_signals", None)
+    chart["facts"]["relationship"]["summary"] = (
+        "未见明显波折，但配偶星有力不足。"
+    )
+
+    result = answer_question(
+        chart,
+        "她是否已婚？",
+        [],
+        config=AIConfig("", False),
+    )
+
+    assert "现有中性信号不足以让某一现实状态显著更可能" in result.answer
+
+
+def test_current_timing_wording_only_appears_when_timing_facts_are_supplied():
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import chart_facts_from_chart
+    from core.local_bazi_answer import build_local_answer
+
+    chart = build_bazi_chart(
+        {
+            "gender": "女",
+            "birth_date": "1996-09-04",
+            "birth_hour": 23,
+            "birth_minute": 45,
+        }
+    )
+    facts = chart_facts_from_chart(chart)
+    untimed = build_local_answer(build_ai_context(facts, "她是否已婚？", []))
+    timed = build_local_answer(build_ai_context(facts, "今年她是否已婚？", []))
+
+    assert "当前时运" not in untimed.analysis_conclusion
+    assert "结合本盘提供的关系结构与稳定条件" in untimed.analysis_conclusion
+    assert "当前时运" in timed.analysis_conclusion
+
+
+@pytest.mark.parametrize(
     ("enabled", "service_error", "expected_reason"),
     [
         (False, None, "missing_api_key"),

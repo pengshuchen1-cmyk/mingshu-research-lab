@@ -32,6 +32,7 @@ class ChartFacts:
     relationship_evidence: tuple[str, ...]
     internal_rule_version: str
     rule_ids: tuple[str, ...]
+    relationship_stability_signals: tuple[tuple[str, str, str], ...] = ()
     current_context_json: str = "{}"
 
     @classmethod
@@ -84,6 +85,9 @@ class ChartFacts:
             relationship_evidence=tuple(str(item) for item in (relationship.get("evidence") or [])),
             internal_rule_version=str(value.get("internal_rule_version", "")),
             rule_ids=tuple(str(item) for item in (value.get("rule_ids") or [])),
+            relationship_stability_signals=_relationship_stability_signals(
+                relationship.get("stability_signals")
+            ),
             current_context_json=json.dumps(value.get("current_context") or {}, ensure_ascii=False, sort_keys=True, separators=(",", ":")),
         )
 
@@ -120,6 +124,15 @@ class ChartFacts:
             "relationship": {
                 "summary": self.relationship,
                 "evidence": list(self.relationship_evidence),
+                "stability_signals": [
+                    {
+                        "polarity": polarity,
+                        "fact": fact,
+                        "explanation": explanation,
+                    }
+                    for polarity, fact, explanation
+                    in self.relationship_stability_signals
+                ],
             },
             "internal_rule_version": self.internal_rule_version,
             "rule_ids": list(self.rule_ids),
@@ -161,6 +174,23 @@ def _evidence_texts(value: object) -> tuple[str, ...]:
             if isinstance(text, str) and text.strip():
                 texts.append(text.strip())
     return tuple(texts)
+
+
+def _relationship_stability_signals(
+    value: object,
+) -> tuple[tuple[str, str, str], ...]:
+    if not isinstance(value, list):
+        return ()
+    signals: list[tuple[str, str, str]] = []
+    for item in value:
+        if not isinstance(item, Mapping):
+            continue
+        polarity = str(item.get("polarity") or "").strip()
+        fact = str(item.get("fact") or "").strip()
+        explanation = str(item.get("explanation") or "").strip()
+        if polarity or fact or explanation:
+            signals.append((polarity, fact, explanation))
+    return tuple(signals)
 
 
 def build_chart_facts(chart: dict) -> ChartFacts:
@@ -221,6 +251,9 @@ def build_chart_facts(chart: dict) -> ChartFacts:
         relationship_evidence=_evidence_texts(relationship.get("evidence", [])),
         internal_rule_version=str(chart.get("rule_version", "")),
         rule_ids=tuple(chart.get("pillar_evidence", {}).get("rule_ids", [])),
+        relationship_stability_signals=_relationship_stability_signals(
+            relationship.get("stability_signals")
+        ),
         current_context_json=json.dumps(
             chart.get("current_context", {}),
             ensure_ascii=False,

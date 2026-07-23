@@ -62,6 +62,38 @@ def test_context_always_includes_full_normative_chart_domains():
     assert "internal_rule_version" not in relationship.chart_facts
 
 
+def test_relationship_context_preserves_canonical_structured_stability_signal():
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    chart = build_bazi_chart(
+        {
+            "gender": "女",
+            "birth_date": "1996-09-04",
+            "birth_hour": 23,
+            "birth_minute": 45,
+        }
+    )
+    context = build_ai_context(
+        build_chart_facts(chart),
+        "她是否已婚？",
+        [],
+    )
+    expected = [
+        {
+            "polarity": item["polarity"],
+            "fact": item["fact"],
+            "explanation": item["explanation"],
+        }
+        for item in chart["relationship_analysis"]["stability_signals"]
+    ]
+
+    assert context.chart_facts["relationship"]["stability_signals"] == expected
+    assert "current_context" not in context.chart_facts
+    assert "target_years" not in context.chart_facts
+
+
 def test_specific_question_survives_privacy_redaction():
     from core.ai_context import build_ai_context
     from core.bazi_engine import build_bazi_chart

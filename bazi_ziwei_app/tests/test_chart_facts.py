@@ -98,3 +98,34 @@ def test_attached_chart_facts_round_trip_without_legacy_recomputation():
 
     assert loaded == original
     assert loaded.public_summary() == original.public_summary()
+
+
+def test_relationship_stability_signals_survive_canonical_round_trip():
+    from core.chart_facts import ChartFacts, build_chart_facts
+
+    chart = _chart()
+    expected = [
+        {
+            "polarity": item["polarity"],
+            "fact": item["fact"],
+            "explanation": item["explanation"],
+        }
+        for item in chart["relationship_analysis"]["stability_signals"]
+    ]
+    original = build_chart_facts(chart)
+    serialized = original.to_dict()
+    loaded = ChartFacts.from_dict(serialized)
+
+    assert serialized["relationship"]["stability_signals"] == expected
+    assert loaded.to_dict()["relationship"]["stability_signals"] == expected
+
+
+def test_old_attached_facts_without_relationship_signals_remain_loadable():
+    from core.chart_facts import ChartFacts, build_chart_facts
+
+    payload = build_chart_facts(_chart()).to_dict()
+    payload["relationship"].pop("stability_signals", None)
+
+    loaded = ChartFacts.from_dict(payload)
+
+    assert loaded.to_dict()["relationship"]["stability_signals"] == []

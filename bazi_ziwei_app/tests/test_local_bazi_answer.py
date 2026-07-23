@@ -62,6 +62,13 @@ def _context(
             "relationship": {
                 "summary": "关系倾向需要分吸引、建立和稳定阶段观察。",
                 "evidence": ["桃花不等同关系已经建立。"],
+                "stability_signals": [
+                    {
+                        "polarity": "mixed",
+                        "fact": "夫妻宫稳定条件信号混合。",
+                        "explanation": "不能据此认定现实关系状态。",
+                    }
+                ],
             },
             "dayun": {
                 "direction": "测试顺排",
@@ -164,24 +171,58 @@ def test_relationship_status_answer_does_not_invent_current_marital_status():
 
 
 @pytest.mark.parametrize(
-    ("summary", "evidence", "expected_tendency"),
+    ("signals", "summary", "expected_tendency"),
     [
         (
-            "夫妻宫稳定，关系稳定信号明确，承诺能够落实。",
-            ["配偶星有力，长期正式关系条件较清楚。"],
+            [
+                {
+                    "polarity": "support",
+                    "fact": "结构化支持信号。",
+                    "explanation": "此项明确记录为支持。",
+                }
+            ],
+            "自由文本声称夫妻宫受冲、关系反复。",
             (
                 "更偏向已经结婚，或者至少曾有过一段接近婚姻的长期正式关系；"
                 "不像是到现在完全没有过稳定姻缘"
             ),
         ),
         (
-            "夫妻宫受冲，关系反复，稳定条件延迟。",
-            ["关系信号有明显波折，承诺落实较慢。"],
+            [
+                {
+                    "polarity": "pressure",
+                    "fact": "结构化压力信号。",
+                    "explanation": "此项明确记录为压力。",
+                }
+            ],
+            "自由文本声称夫妻宫稳定、配偶星有力。",
             "更偏向目前未必处于稳定婚姻中，或曾有关系但经历明显波折",
         ),
         (
-            "关系机会与稳定结果需要分开观察。",
-            ["现有信号中性，不能由桃花推断现实关系状态。"],
+            [
+                {
+                    "polarity": "mixed",
+                    "fact": "结构化混合信号。",
+                    "explanation": "支持与压力不能单向归类。",
+                }
+            ],
+            "自由文本声称夫妻宫稳定、关系稳定信号明确。",
+            (
+                "更偏向认为“关系机会存在”不等于“已经形成稳定婚姻”，"
+                "现有中性信号不足以让某一现实状态显著更可能"
+            ),
+        ),
+        (
+            [],
+            "未见明显波折。",
+            (
+                "更偏向认为“关系机会存在”不等于“已经形成稳定婚姻”，"
+                "现有中性信号不足以让某一现实状态显著更可能"
+            ),
+        ),
+        (
+            [],
+            "配偶星有力不足。",
             (
                 "更偏向认为“关系机会存在”不等于“已经形成稳定婚姻”，"
                 "现有中性信号不足以让某一现实状态显著更可能"
@@ -189,9 +230,9 @@ def test_relationship_status_answer_does_not_invent_current_marital_status():
         ),
     ],
 )
-def test_current_marriage_tendency_branches_only_from_supplied_signals(
+def test_current_marriage_tendency_uses_only_structured_polarity(
+    signals,
     summary,
-    evidence,
     expected_tendency,
 ):
     from core.local_bazi_answer import build_local_answer
@@ -200,7 +241,8 @@ def test_current_marriage_tendency_branches_only_from_supplied_signals(
     facts = dict(context.chart_facts)
     facts["relationship"] = {
         "summary": summary,
-        "evidence": evidence,
+        "evidence": ["引用这条已提供的描述性事实。"],
+        "stability_signals": signals,
     }
     supplied_context = context.model_copy(update={"chart_facts": facts})
 
