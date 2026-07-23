@@ -1,11 +1,33 @@
+import pytest
+
 from core.birth_input_preview import BirthFormInput, build_birth_preview, traditional_time
 
 
-def test_traditional_hour_uses_stable_representative_times():
-    assert traditional_time("巳时") == (10, 0, "巳时")
-    assert traditional_time("未时") == (14, 0, "未时")
-    assert traditional_time("子时（23:00–23:59）") == (23, 30, "子时（23:00–23:59）")
-    assert traditional_time("子时（00:00–00:59）") == (0, 30, "子时（00:00–00:59）")
+@pytest.mark.parametrize(
+    ("label", "hour", "minute"),
+    [
+        ("子时（23:00–23:59）", 23, 30),
+        ("子时（00:00–00:59）", 0, 30),
+        ("丑时", 2, 0),
+        ("寅时", 4, 0),
+        ("卯时", 6, 0),
+        ("辰时", 8, 0),
+        ("巳时", 10, 0),
+        ("午时", 12, 0),
+        ("未时", 14, 0),
+        ("申时", 16, 0),
+        ("酉时", 18, 0),
+        ("戌时", 20, 0),
+        ("亥时", 22, 0),
+    ],
+)
+def test_traditional_hour_uses_stable_representative_times(label, hour, minute):
+    assert traditional_time(label) == (hour, minute, label)
+
+
+def test_traditional_hour_rejects_invalid_label():
+    with pytest.raises(ValueError, match="请选择有效的传统时辰。"):
+        traditional_time("无效时辰")
 
 
 def test_split_zi_hour_can_change_the_day_pillar():
