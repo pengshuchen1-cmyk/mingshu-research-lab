@@ -24,6 +24,26 @@ _BORROWING_TERMS = (
 )
 _MAX_LOCAL_STRING_CHARS = 3000
 _TRUNCATION_SUFFIX = "…（已按本地回答长度上限截断）"
+_STABLE_RELATIONSHIP_SIGNALS = (
+    "夫妻宫稳定",
+    "关系稳定信号明确",
+    "稳定信号较强",
+    "承诺能够落实",
+    "承诺落实清楚",
+    "配偶星有力",
+    "长期正式关系条件较清楚",
+)
+_UNSTABLE_RELATIONSHIP_SIGNALS = (
+    "夫妻宫受冲",
+    "冲刑",
+    "刑害",
+    "关系反复",
+    "明显波折",
+    "稳定条件延迟",
+    "稳定条件不足",
+    "尚未稳定",
+    "承诺落实较慢",
+)
 
 
 def _mapping(value: object) -> Mapping[str, object]:
@@ -108,6 +128,55 @@ def _is_current_marriage_question(context: AIRequestContext) -> bool:
     )
 
 
+def _nested_strings(value: object) -> list[str]:
+    if isinstance(value, str):
+        text = value.strip()
+        return [text] if text else []
+    if isinstance(value, Mapping):
+        return [
+            text
+            for item in value.values()
+            for text in _nested_strings(item)
+        ]
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+        return [
+            text
+            for item in value
+            for text in _nested_strings(item)
+        ]
+    return []
+
+
+def _current_marriage_tendency(facts: Mapping[str, object]) -> str:
+    supplied_signal_text = "。".join(
+        [
+            *_nested_strings(facts.get("relationship")),
+            *_nested_strings(facts.get("dayun")),
+            *_nested_strings(facts.get("current_context")),
+            *_nested_strings(facts.get("target_years")),
+        ]
+    )
+    has_stable_signal = any(
+        signal in supplied_signal_text
+        for signal in _STABLE_RELATIONSHIP_SIGNALS
+    )
+    has_unstable_signal = any(
+        signal in supplied_signal_text
+        for signal in _UNSTABLE_RELATIONSHIP_SIGNALS
+    )
+    if has_stable_signal and not has_unstable_signal:
+        return (
+            "更偏向已经结婚，或者至少曾有过一段接近婚姻的长期正式关系；"
+            "不像是到现在完全没有过稳定姻缘"
+        )
+    if has_unstable_signal and not has_stable_signal:
+        return "更偏向目前未必处于稳定婚姻中，或曾有关系但经历明显波折"
+    return (
+        "更偏向认为“关系机会存在”不等于“已经形成稳定婚姻”，"
+        "现有中性信号不足以让某一现实状态显著更可能"
+    )
+
+
 def _analysis_conclusion(
     context: AIRequestContext,
     facts: Mapping[str, object],
@@ -129,10 +198,12 @@ def _analysis_conclusion(
     if category == "relationship":
         if _is_current_marriage_question(context):
             return (
-                "命盘不能确认当前是否已婚；"
-                "从已提供的命盘关系结构看，倾向于呈现这些关系发展条件："
-                f"{relationship}；这不是现实或法律状态认定，"
+                "单凭八字，不能确认现实中的婚姻登记状态。"
+                "但如果一定要根据命盘作倾向判断："
+                "结合本盘提供的配偶星/夫妻宫/关系稳定信号及当前时运，"
+                f"我{_current_marriage_tendency(facts)}。"
                 "仍需以本人现实情况为准。"
+                f"本次依据的关系事实是：{relationship}"
             )
         return f"关系判断仅描述互动倾向与建立条件：{relationship}"
     if category == "family":

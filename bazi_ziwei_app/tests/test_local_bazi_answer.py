@@ -152,14 +152,68 @@ def test_relationship_status_answer_does_not_invent_current_marital_status():
     timing = "。".join(answer.timing_conditions)
     limitations = "。".join(answer.uncertainty_limitations)
 
-    assert "不能确认当前是否已婚" in answer.analysis_conclusion
-    assert "倾向" in answer.analysis_conclusion
+    assert "单凭八字，不能确认现实中的婚姻登记状态。" in answer.analysis_conclusion
+    assert "但如果一定要根据命盘作倾向判断：" in answer.analysis_conclusion
+    assert "我更偏向" in answer.analysis_conclusion
     assert relationship_summary in answer.analysis_conclusion
     assert "仍需以本人现实情况为准" in answer.analysis_conclusion
     assert "关系状态的倾向判断" in timing
     assert "不代表确定已婚或未婚" in limitations
-    assert "已婚" not in answer.analysis_conclusion.replace("不能确认当前是否已婚", "")
-    assert "未婚" not in answer.analysis_conclusion
+    assert "一定会" not in answer.analysis_conclusion
+    assert "注定" not in answer.analysis_conclusion
+
+
+@pytest.mark.parametrize(
+    ("summary", "evidence", "expected_tendency"),
+    [
+        (
+            "夫妻宫稳定，关系稳定信号明确，承诺能够落实。",
+            ["配偶星有力，长期正式关系条件较清楚。"],
+            (
+                "更偏向已经结婚，或者至少曾有过一段接近婚姻的长期正式关系；"
+                "不像是到现在完全没有过稳定姻缘"
+            ),
+        ),
+        (
+            "夫妻宫受冲，关系反复，稳定条件延迟。",
+            ["关系信号有明显波折，承诺落实较慢。"],
+            "更偏向目前未必处于稳定婚姻中，或曾有关系但经历明显波折",
+        ),
+        (
+            "关系机会与稳定结果需要分开观察。",
+            ["现有信号中性，不能由桃花推断现实关系状态。"],
+            (
+                "更偏向认为“关系机会存在”不等于“已经形成稳定婚姻”，"
+                "现有中性信号不足以让某一现实状态显著更可能"
+            ),
+        ),
+    ],
+)
+def test_current_marriage_tendency_branches_only_from_supplied_signals(
+    summary,
+    evidence,
+    expected_tendency,
+):
+    from core.local_bazi_answer import build_local_answer
+
+    context = _context("relationship", "当前婚姻状态")
+    facts = dict(context.chart_facts)
+    facts["relationship"] = {
+        "summary": summary,
+        "evidence": evidence,
+    }
+    supplied_context = context.model_copy(update={"chart_facts": facts})
+
+    answer = build_local_answer(supplied_context)
+
+    assert answer.analysis_conclusion.startswith(
+        "单凭八字，不能确认现实中的婚姻登记状态。"
+    )
+    assert expected_tendency in answer.analysis_conclusion
+    assert summary in answer.analysis_conclusion
+    assert "仍需以本人现实情况为准。" in answer.analysis_conclusion
+    for deterministic in ("一定会", "注定", "百分之百", "必然离婚", "保证成功"):
+        assert deterministic not in answer.analysis_conclusion
 
 
 def test_mortgage_answer_gives_cash_flow_and_downside_advice_without_guarantee():

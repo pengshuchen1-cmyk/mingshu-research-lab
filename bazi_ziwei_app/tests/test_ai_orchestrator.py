@@ -101,8 +101,9 @@ def test_orchestrator_uses_local_rules_when_cloud_disabled():
     assert result.practical_advice
     assert result.degraded_reason == "missing_api_key"
     assert len(fake.contexts) == 0
-    assert "不能确认当前是否已婚" in result.answer
-    assert "倾向" in result.sections["分析结论"]
+    assert "单凭八字，不能确认现实中的婚姻登记状态。" in result.answer
+    assert "但如果一定要根据命盘作倾向判断：" in result.sections["分析结论"]
+    assert "我更偏向" in result.sections["分析结论"]
     assert "仍需以本人现实情况为准" in result.sections["分析结论"]
 
 
@@ -293,8 +294,12 @@ def test_current_marriage_variant_fallback_cannot_confirm_status(question):
 
     assert result.source == "local_rules"
     assert result.degraded_reason == "missing_api_key"
-    assert "不能确认当前是否已婚" in result.sections["分析结论"]
-    assert "倾向" in result.sections["分析结论"]
+    assert (
+        "单凭八字，不能确认现实中的婚姻登记状态。"
+        in result.sections["分析结论"]
+    )
+    assert "但如果一定要根据命盘作倾向判断：" in result.sections["分析结论"]
+    assert "我更偏向" in result.sections["分析结论"]
     assert relationship_summary in result.sections["分析结论"]
     assert "仍需以本人现实情况为准" in result.sections["分析结论"]
     assert any("关系状态的倾向判断" in item for item in result.timing_conditions)
