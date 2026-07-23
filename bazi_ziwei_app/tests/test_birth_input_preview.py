@@ -1,4 +1,21 @@
-from core.birth_input_preview import BirthFormInput, build_birth_preview
+from core.birth_input_preview import BirthFormInput, build_birth_preview, traditional_time
+
+
+def test_traditional_hour_uses_stable_representative_times():
+    assert traditional_time("巳时") == (10, 0, "巳时")
+    assert traditional_time("未时") == (14, 0, "未时")
+    assert traditional_time("子时（23:00–23:59）") == (23, 30, "子时（23:00–23:59）")
+    assert traditional_time("子时（00:00–00:59）") == (0, 30, "子时（00:00–00:59）")
+
+
+def test_split_zi_hour_can_change_the_day_pillar():
+    late = build_birth_preview(
+        BirthFormInput("访客", "女", "solar", 1996, 9, 4, 23, 30, time_label="子时（23:00–23:59）")
+    )
+    early = build_birth_preview(
+        BirthFormInput("访客", "女", "solar", 1996, 9, 4, 0, 30, time_label="子时（00:00–00:59）")
+    )
+    assert late.pillars[2] != early.pillars[2]
 
 
 def test_1999_lunar_input_builds_expected_receipt_and_pillars():

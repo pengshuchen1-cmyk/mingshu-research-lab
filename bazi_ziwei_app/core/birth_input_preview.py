@@ -18,6 +18,29 @@ CHINESE_DAYS = (
     "十一", "十二", "十三", "十四", "十五", "十六", "十七", "十八", "十九", "二十",
     "廿一", "廿二", "廿三", "廿四", "廿五", "廿六", "廿七", "廿八", "廿九", "三十",
 )
+TRADITIONAL_TIMES = {
+    "子时（23:00–23:59）": (23, 30),
+    "子时（00:00–00:59）": (0, 30),
+    "丑时": (2, 0),
+    "寅时": (4, 0),
+    "卯时": (6, 0),
+    "辰时": (8, 0),
+    "巳时": (10, 0),
+    "午时": (12, 0),
+    "未时": (14, 0),
+    "申时": (16, 0),
+    "酉时": (18, 0),
+    "戌时": (20, 0),
+    "亥时": (22, 0),
+}
+
+
+def traditional_time(label: str) -> tuple[int, int, str]:
+    try:
+        hour, minute = TRADITIONAL_TIMES[label]
+    except KeyError as exc:
+        raise ValueError("请选择有效的传统时辰。") from exc
+    return hour, minute, label
 
 
 @dataclass(frozen=True)
