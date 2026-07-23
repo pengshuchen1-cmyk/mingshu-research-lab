@@ -24,7 +24,7 @@ def test_question_router_is_deterministic(question, category, timing):
     assert routed.requires_timing is timing
 
 
-def test_domain_context_only_includes_relevant_analysis():
+def test_context_always_includes_full_normative_chart_domains():
     from core.ai_context import build_ai_context
     from core.bazi_engine import build_bazi_chart
     from core.chart_facts import build_chart_facts
@@ -42,10 +42,100 @@ def test_domain_context_only_includes_relevant_analysis():
     wealth = build_ai_context(facts, "财运怎么发展？", [])
     relationship = build_ai_context(facts, "姻缘怎么样？", [])
 
-    assert "wealth" in wealth.chart_facts
-    assert "relationship" not in wealth.chart_facts
-    assert "relationship" in relationship.chart_facts
-    assert "wealth" not in relationship.chart_facts
+    expected = {
+        "pillars",
+        "gender",
+        "day_master",
+        "hidden_stems",
+        "ten_gods",
+        "element_counts",
+        "strength",
+        "pattern",
+        "wealth",
+        "relationship",
+        "dayun",
+    }
+    assert expected <= wealth.chart_facts.keys()
+    assert expected <= relationship.chart_facts.keys()
+    assert "internal_rule_version" not in wealth.chart_facts
+    assert "internal_rule_version" not in relationship.chart_facts
+
+
+def test_specific_question_survives_privacy_redaction():
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    facts = build_chart_facts(
+        build_bazi_chart(
+            {
+                "gender": "女",
+                "birth_date": "1996-09-04",
+                "birth_hour": 23,
+                "birth_minute": 45,
+            }
+        )
+    )
+    context = build_ai_context(
+        facts,
+        "姓名：金丝雀，生日1996-09-04 23:45，我想在2026年抵押房子做AI创业，现金流要注意什么？",
+        [],
+    )
+
+    assert "金丝雀" not in context.question
+    assert "1996-09-04" not in context.question
+    assert "23:45" not in context.question
+    for useful in ("2026年", "抵押房子", "AI创业", "现金流"):
+        assert useful in context.question
+
+
+def test_recent_follow_up_keeps_deidentified_semantics():
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    facts = build_chart_facts(
+        build_bazi_chart(
+            {
+                "gender": "女",
+                "birth_date": "1996-09-04",
+                "birth_hour": 23,
+                "birth_minute": 45,
+            }
+        )
+    )
+    context = build_ai_context(
+        facts,
+        "那姻缘方面呢？",
+        [
+            {"role": "user", "content": "我更关心2027年的事业转换"},
+            {"role": "assistant", "content": "前一轮讨论了事业转换的条件和现金流。"},
+        ],
+    )
+
+    assert "2027年的事业转换" in context.history[0].content
+    assert "现金流" in context.history[1].content
+
+
+def test_current_marriage_status_wording_survives_safe_projection():
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    facts = build_chart_facts(
+        build_bazi_chart(
+            {
+                "gender": "女",
+                "birth_date": "1996-09-04",
+                "birth_hour": 23,
+                "birth_minute": 45,
+            }
+        )
+    )
+    context = build_ai_context(facts, "请判断她现在是否已经结婚。", [])
+
+    assert "现在是否已经结婚" in context.question
+    assert "当前婚姻状态" in context.question
 
 
 def test_timing_context_contains_concrete_current_and_dayun_facts():
