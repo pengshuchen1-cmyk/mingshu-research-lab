@@ -15,6 +15,11 @@ CASES = json.loads(
 QUESTIONS = json.loads(
     (ROOT / "tests" / "fixtures" / "user_five_ai_questions.json").read_text(encoding="utf-8")
 )
+TRACKED_ARTIFACT = ROOT / "acceptance_samples" / "user_five_ai_acceptance.md"
+
+
+def _assert_artifact_current(path: Path, rendered: str) -> None:
+    assert path.read_text(encoding="utf-8") == rendered
 
 
 def _chart(case: dict) -> dict:
@@ -77,11 +82,41 @@ def test_five_chart_ai_acceptance_renderer_is_deterministic():
     assert first.count("验收通过") == 5
     assert "不能保证" in first
     assert "不能确认当前是否已经结婚" in first
+    assert "答：###" not in first
+    assert "\n答：\n\n#### 分析结论\n" in first
+    for title in (
+        "分析结论",
+        "命盘依据",
+        "规则依据",
+        "阶段与触发条件",
+        "现实建议",
+        "不确定性与限制",
+    ):
+        assert first.count(f"#### {title}\n") == 30
+        assert f"\n### {title}\n" not in first
+    _assert_artifact_current(TRACKED_ARTIFACT, first)
 
 
-def test_five_chart_ai_acceptance_script_runs_from_project_root():
+def test_stale_five_chart_ai_artifact_fails_currentness_check(tmp_path):
+    stale = tmp_path / "user_five_ai_acceptance.md"
+    stale.write_text("stale content\n", encoding="utf-8")
+
+    with pytest.raises(AssertionError):
+        _assert_artifact_current(stale, "fresh content\n")
+
+
+def test_five_chart_ai_acceptance_script_runs_to_explicit_temporary_output(tmp_path):
+    from scripts.run_user_five_ai_acceptance import render
+
+    tracked_before = TRACKED_ARTIFACT.read_bytes()
+    target = tmp_path / "user_five_ai_acceptance.md"
     completed = subprocess.run(
-        [sys.executable, "scripts/run_user_five_ai_acceptance.py"],
+        [
+            sys.executable,
+            "scripts/run_user_five_ai_acceptance.py",
+            "--output",
+            str(target),
+        ],
         cwd=ROOT,
         capture_output=True,
         text=True,
@@ -89,7 +124,9 @@ def test_five_chart_ai_acceptance_script_runs_from_project_root():
     )
 
     assert completed.returncode == 0, completed.stderr
-    assert "acceptance_samples/user_five_ai_acceptance.md" in completed.stdout
+    assert str(target) in completed.stdout
+    assert target.read_text(encoding="utf-8") == render()
+    assert TRACKED_ARTIFACT.read_bytes() == tracked_before
 
 
 @pytest.mark.parametrize(

@@ -88,25 +88,29 @@ def render(*, live: bool = False) -> str:
         lines.extend([f"## {case['id']} · 验收通过", "", f"四柱：{pillars}", ""])
         for index, question in enumerate(questions, 1):
             result = answer_question(chart, question, [], config=config, client=client)
-            lines.extend([
-                f"### Q{index}", "", f"问：{question}", "", f"答：{result.answer}", "",
-                f"来源：{result.source}", "",
-            ])
+            lines.extend([f"### Q{index}", "", f"问：{question}", "", "答：", ""])
+            for title, content in result.sections.items():
+                lines.extend([f"#### {title}", "", content, ""])
+            lines.extend([f"来源：{result.source}", ""])
     return "\n".join(lines).rstrip() + "\n"
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--live", action="store_true", help="explicitly call the configured AI service")
+    parser.add_argument("--output", type=Path, help="write the receipt to this explicit path")
     args = parser.parse_args()
     output = render(live=args.live)
-    if args.live:
+    if args.output is not None:
+        target = args.output
+    elif args.live:
         directory = ROOT / "acceptance_runs"
         directory.mkdir(exist_ok=True)
         stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
         target = directory / f"user_five_ai_live_{stamp}.md"
     else:
         target = ROOT / "acceptance_samples" / "user_five_ai_acceptance.md"
+    target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(output, encoding="utf-8")
     print(target)
 

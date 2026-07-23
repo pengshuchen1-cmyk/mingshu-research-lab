@@ -165,7 +165,7 @@ def test_original_five_case_chain_remains_exact_and_passing():
 
 
 def test_lunar_1999_receipt_renderer_is_exact_and_deterministic():
-    from scripts.render_lunar_1999_acceptance import render
+    from scripts.render_lunar_1999_acceptance import OUTPUT, render
 
     expected = (
         "# 1999 农历命例·输入与问答验收\n"
@@ -181,6 +181,7 @@ def test_lunar_1999_receipt_renderer_is_exact_and_deterministic():
 
     assert render() == expected
     assert render() == expected
+    assert OUTPUT.read_text(encoding="utf-8") == expected
 
 
 def test_lunar_1999_receipt_privacy_verdict_uses_actual_cloud_context(monkeypatch):
