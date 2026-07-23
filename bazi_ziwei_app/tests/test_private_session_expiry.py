@@ -6,6 +6,10 @@ from datetime import datetime, timedelta, timezone
 def _private_state(now):
     return {
         "profile_draft": {"name": "金丝雀姓名"},
+        "profile_birth_preview": {
+            "profile": {"name": "金丝雀姓名", "birth_date": "1990-01-01"}
+        },
+        "profile_birth_preview_input": "preview-input-fingerprint",
         "current_profile": {"birth_date": "1990-01-01"},
         "current_chart": {"pillars": {"day": "甲子"}},
         "current_report": {"summary": "私密报告"},
@@ -31,6 +35,8 @@ def test_clear_private_session_removes_raw_and_derived_data_but_keeps_navigation
 
     assert set(PRIVATE_SESSION_KEYS).issuperset(removed)
     assert all(key not in state for key in PRIVATE_SESSION_KEYS)
+    assert "profile_birth_preview" not in state
+    assert "profile_birth_preview_input" not in state
     assert state["sidebar_navigation"] == "个人命盘"
 
 
@@ -58,3 +64,17 @@ def test_active_private_session_is_refreshed_but_expired_session_is_not_revived(
     expired = _private_state(now - timedelta(minutes=31))
     assert maintain_private_session(expired, now) is True
     assert "current_profile" not in expired
+
+
+def test_preview_only_private_session_refreshes_on_activity():
+    from utils.session_privacy import maintain_private_session
+
+    now = datetime(2026, 7, 17, 12, 0, tzinfo=timezone.utc)
+    state = {
+        "profile_birth_preview": {"profile": {"name": "金丝雀姓名"}},
+        "profile_birth_preview_input": "preview-input-fingerprint",
+        "private_session_last_active_at": (now - timedelta(minutes=10)).isoformat(),
+    }
+
+    assert maintain_private_session(state, now) is False
+    assert state["private_session_last_active_at"] == now.isoformat()

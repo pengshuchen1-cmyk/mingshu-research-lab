@@ -82,6 +82,33 @@ def test_same_numeric_solar_date_is_explicitly_different():
     assert preview.pillars != ("己卯", "壬申", "乙未", "辛巳")
 
 
+def test_input_fingerprint_distinguishes_visible_time_modes_at_same_clock_time():
+    exact = BirthFormInput(
+        "访客",
+        "男",
+        "solar",
+        1999,
+        7,
+        1,
+        10,
+        0,
+        time_label="精确时间",
+    )
+    traditional = BirthFormInput(
+        "访客",
+        "男",
+        "solar",
+        1999,
+        7,
+        1,
+        10,
+        0,
+        time_label="巳时",
+    )
+
+    assert exact.fingerprint() != traditional.fingerprint()
+
+
 def test_invalid_lunar_date_does_not_produce_a_preview():
     import pytest
 

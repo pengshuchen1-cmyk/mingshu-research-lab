@@ -78,7 +78,11 @@ class BirthFormInput:
         return profile
 
     def fingerprint(self) -> str:
-        payload = json.dumps(self.to_profile(), ensure_ascii=False, sort_keys=True)
+        payload = json.dumps(
+            {"profile": self.to_profile(), "time_label": self.time_label},
+            ensure_ascii=False,
+            sort_keys=True,
+        )
         return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 

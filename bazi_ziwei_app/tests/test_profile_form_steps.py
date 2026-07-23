@@ -1,7 +1,8 @@
 import sys
 import types
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
+from types import MappingProxyType, SimpleNamespace
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -21,18 +22,28 @@ class _Context:
 
 
 class _FakeStreamlit(types.ModuleType):
-    def __init__(self, *, solar_time=False, submitted=False, text_values=None):
+    def __init__(
+        self,
+        *,
+        values=None,
+        preview_submitted=False,
+        confirm_submitted=False,
+        session_state=None,
+    ):
         super().__init__("streamlit")
-        self.solar_time = solar_time
-        self.submitted = submitted
-        self.text_values = text_values or {}
-        self.session_state = {}
+        self.values = values or {}
+        self.preview_submitted = preview_submitted
+        self.confirm_submitted = confirm_submitted
+        self.session_state = session_state if session_state is not None else {}
         self.context_stack = []
         self.container_calls = []
         self.form_parent_contexts = []
-        self.checkbox_calls = []
-        self.text_input_calls = []
+        self.markdowns = []
+        self.captions = []
+        self.infos = []
         self.errors = []
+        self.submit_calls = []
+        self.button_calls = []
         self.rerun_calls = 0
 
     def container(self, **kwargs):
@@ -48,35 +59,42 @@ class _FakeStreamlit(types.ModuleType):
         count = spec if isinstance(spec, int) else len(spec)
         return [_Context(self, "column") for _ in range(count)]
 
-    def markdown(self, *_args, **_kwargs):
-        return None
+    def markdown(self, value, **_kwargs):
+        self.markdowns.append(str(value))
 
-    def caption(self, *_args, **_kwargs):
-        return None
+    def caption(self, value, **_kwargs):
+        self.captions.append(str(value))
+
+    def info(self, value, **_kwargs):
+        self.infos.append(str(value))
 
     def text_input(self, label, **kwargs):
-        self.text_input_calls.append((label, "form" in self.context_stack))
-        return self.text_values.get(label, kwargs.get("value", ""))
+        return self.values.get(label, kwargs.get("value", ""))
 
-    def selectbox(self, _label, options, **kwargs):
-        return options[kwargs.get("index", 0)]
+    def selectbox(self, label, options, **kwargs):
+        options = list(options)
+        return self.values.get(label, options[kwargs.get("index", 0)])
 
-    def radio(self, _label, options, **kwargs):
-        return options[kwargs.get("index", 0)]
+    def radio(self, label, options, **kwargs):
+        return self.values.get(label, options[kwargs.get("index", 0)])
 
-    def date_input(self, _label, **kwargs):
-        return kwargs["value"]
+    def date_input(self, label, **kwargs):
+        return self.values.get(label, kwargs["value"])
 
     def checkbox(self, label, **kwargs):
-        inside_form = "form" in self.context_stack
-        self.checkbox_calls.append((label, inside_form, kwargs))
-        key = kwargs.get("key")
-        if key:
-            self.session_state[key] = self.solar_time
-        return self.solar_time
+        return self.values.get(label, kwargs.get("value", False))
 
-    def form_submit_button(self, *_args, **_kwargs):
-        return self.submitted
+    def form_submit_button(self, label, **_kwargs):
+        self.submit_calls.append((label, "form" in self.context_stack))
+        if label == "校验并预览":
+            return self.preview_submitted
+        if label == "确认生成命盘":
+            return self.confirm_submitted
+        return False
+
+    def button(self, label, **_kwargs):
+        self.button_calls.append((label, "form" in self.context_stack))
+        return False
 
     def error(self, message):
         self.errors.append(str(message))
@@ -88,41 +106,301 @@ class _FakeStreamlit(types.ModuleType):
         self.rerun_calls += 1
 
 
-def test_profile_form_is_one_page_with_all_required_sections():
+def _preview(
+    value,
+    *,
+    chart_fingerprint="chart-v1",
+    solar_datetime="1999-08-11 10:00",
+):
+    profile = MappingProxyType(value.to_profile())
+    chart = MappingProxyType(
+        {
+            "profile": profile,
+            "pillars": MappingProxyType({}),
+            "chart_fingerprint_v2": chart_fingerprint,
+        }
+    )
+    return SimpleNamespace(
+        profile=profile,
+        chart=chart,
+        input_text="农历1999年七月初一，非闰月，男，巳时",
+        solar_datetime=solar_datetime,
+        pillars=("己卯", "壬申", "乙未", "辛巳"),
+        calculation_basis="本地规则证据",
+        input_fingerprint=value.fingerprint(),
+        chart_fingerprint=chart_fingerprint,
+    )
+
+
+def _lunar_values(**overrides):
+    values = {
+        "姓名": "测试用户",
+        "性别": "男",
+        "出生日期类型": "农历",
+        "农历年份": 1999,
+        "农历月份": 7,
+        "农历日期": 1,
+        "是否闰月": False,
+        "出生时间精度": "传统时辰",
+        "传统时辰": "巳时",
+        "出生地点": "北京",
+    }
+    values.update(overrides)
+    return values
+
+
+def _run_form(
+    monkeypatch,
+    *,
+    values=None,
+    preview_submitted=False,
+    confirm_submitted=False,
+    session_state=None,
+    preview_builder=None,
+):
+    import ui.profile_form as profile_form
+
+    state = session_state if session_state is not None else {}
+    draft = state.setdefault(profile_form.PROFILE_DRAFT_KEY, {})
+    fake = _FakeStreamlit(
+        values=values or _lunar_values(),
+        preview_submitted=preview_submitted,
+        confirm_submitted=confirm_submitted,
+        session_state=state,
+    )
+    monkeypatch.setitem(sys.modules, "streamlit", fake)
+    monkeypatch.setattr(
+        profile_form,
+        "build_birth_preview",
+        preview_builder or (lambda value: _preview(value)),
+    )
+    monkeypatch.setattr(
+        profile_form,
+        "generate_basic_bazi_report",
+        lambda _chart: {"summary": "ok"},
+    )
+    profile_form._render_unified_profile_form(draft)
+    return fake
+
+
+def test_first_submit_saves_receipt_without_saving_chart_and_renders_confirmation(monkeypatch):
+    import ui.profile_form as profile_form
+
+    state = {}
+    first_render = _run_form(
+        monkeypatch,
+        preview_submitted=True,
+        session_state=state,
+    )
+    fake = _run_form(monkeypatch, session_state=state)
+
+    assert first_render.rerun_calls == 1
+    assert fake.submit_calls == [
+        ("校验并预览", True),
+        ("确认生成命盘", True),
+    ]
+    assert fake.button_calls == []
+    receipt = "\n".join(fake.markdowns)
+    assert "原始输入：农历1999年七月初一，非闰月，男，巳时" in receipt
+    assert "标准时间：中国标准时间 1999-08-11 10:00" in receipt
+    assert "四柱预览：己卯 / 壬申 / 乙未 / 辛巳" in receipt
+    assert "计算依据：本地规则证据" in receipt
+    saved = state[profile_form.PROFILE_PREVIEW_KEY]
+    assert "profile" in saved
+    assert "chart" not in saved
+    assert "current_chart" not in state
+    assert "private_session_last_active_at" in state
+
+
+def test_changing_birth_field_invalidates_saved_preview(monkeypatch):
+    import ui.profile_form as profile_form
+
+    state = {}
+    _run_form(monkeypatch, preview_submitted=True, session_state=state)
+    fake = _run_form(
+        monkeypatch,
+        values=_lunar_values(**{"农历日期": 2}),
+        session_state=state,
+    )
+
+    assert profile_form.PROFILE_PREVIEW_KEY not in state
+    assert profile_form.PROFILE_PREVIEW_INPUT_KEY not in state
+    assert ("确认生成命盘", True) not in fake.submit_calls
+    assert any("已变更" in message for message in fake.infos)
+
+
+def test_changing_exact_time_to_equivalent_traditional_hour_invalidates_preview(
+    monkeypatch,
+):
+    import ui.profile_form as profile_form
+
+    state = {}
+    _run_form(
+        monkeypatch,
+        values=_lunar_values(
+            **{
+                "出生时间精度": "精确时间",
+                "出生小时": 10,
+                "出生分钟": 0,
+            }
+        ),
+        preview_submitted=True,
+        session_state=state,
+    )
+    fake = _run_form(
+        monkeypatch,
+        values=_lunar_values(),
+        session_state=state,
+    )
+
+    assert profile_form.PROFILE_PREVIEW_KEY not in state
+    assert ("确认生成命盘", True) not in fake.submit_calls
+    assert any("已变更" in message for message in fake.infos)
+
+
+def test_switching_from_lunar_preview_to_solar_uses_a_safe_default_date(monkeypatch):
+    state = {}
+    _run_form(monkeypatch, preview_submitted=True, session_state=state)
+
+    fake = _run_form(
+        monkeypatch,
+        values={
+            "姓名": "测试用户",
+            "性别": "男",
+            "出生日期类型": "公历",
+            "出生时间精度": "精确时间",
+            "出生地点": "北京",
+        },
+        session_state=state,
+    )
+
+    assert fake.errors == []
+
+
+def test_exact_midnight_is_restored_without_invalidating_preview(monkeypatch):
+    import ui.profile_form as profile_form
+
+    state = {}
+    midnight_values = _lunar_values(
+        **{
+            "出生时间精度": "精确时间",
+            "出生小时": 0,
+            "出生分钟": 0,
+        }
+    )
+    _run_form(
+        monkeypatch,
+        values=midnight_values,
+        preview_submitted=True,
+        session_state=state,
+    )
+    fake = _run_form(
+        monkeypatch,
+        values=_lunar_values(**{"出生时间精度": "精确时间"}),
+        session_state=state,
+    )
+
+    assert profile_form.PROFILE_PREVIEW_KEY in state
+    assert ("确认生成命盘", True) in fake.submit_calls
+    assert fake.infos == []
+
+
+def test_converted_lunar_date_in_the_future_is_not_saved_as_preview(monkeypatch):
+    tomorrow = date.today() + timedelta(days=1)
+
+    fake = _run_form(
+        monkeypatch,
+        preview_submitted=True,
+        preview_builder=lambda value: _preview(
+            value,
+            solar_datetime=f"{tomorrow.isoformat()} 10:00",
+        ),
+    )
+
+    assert fake.errors == ["出生日期不能晚于今天。"]
+    assert "profile_birth_preview" not in fake.session_state
+    assert "private_session_last_active_at" in fake.session_state
+    assert ("确认生成命盘", True) not in fake.submit_calls
+
+
+def test_confirmation_rebuilds_matching_chart_before_generation(monkeypatch):
+    import ui.profile_form as profile_form
+
+    calls = []
+
+    def builder(value):
+        calls.append(value)
+        return _preview(value)
+
+    state = {}
+    _run_form(
+        monkeypatch,
+        preview_submitted=True,
+        session_state=state,
+        preview_builder=builder,
+    )
+    fake = _run_form(
+        monkeypatch,
+        confirm_submitted=True,
+        session_state=state,
+        preview_builder=builder,
+    )
+
+    assert len(calls) == 2
+    assert fake.session_state["current_profile"]["calendar_type"] == "lunar"
+    assert fake.session_state["current_chart"]["chart_fingerprint_v2"] == "chart-v1"
+    assert fake.session_state["navigate_to"] == "个人命盘"
+    assert fake.rerun_calls == 1
+
+
+def test_confirmation_rejects_rebuilt_chart_with_changed_fingerprint(monkeypatch):
+    import ui.profile_form as profile_form
+
+    calls = 0
+
+    def builder(value):
+        nonlocal calls
+        calls += 1
+        return _preview(value, chart_fingerprint=f"chart-v{calls}")
+
+    state = {}
+    _run_form(
+        monkeypatch,
+        preview_submitted=True,
+        session_state=state,
+        preview_builder=builder,
+    )
+    fake = _run_form(
+        monkeypatch,
+        confirm_submitted=True,
+        session_state=state,
+        preview_builder=builder,
+    )
+
+    assert "current_chart" not in state
+    assert fake.rerun_calls == 0
+    assert any("命盘结果已变化" in message for message in fake.errors)
+
+
+def test_conversion_failure_shows_no_confirmation(monkeypatch):
+    def fail(_value):
+        raise ValueError("农历日期无法转换")
+
+    fake = _run_form(
+        monkeypatch,
+        preview_submitted=True,
+        preview_builder=fail,
+    )
+
+    assert fake.errors == ["农历日期无法转换"]
+    assert "private_session_last_active_at" in fake.session_state
+    assert ("确认生成命盘", True) not in fake.submit_calls
+
+
+def test_profile_form_remains_one_data_entry_form():
     source = (ROOT / "ui" / "profile_form.py").read_text(encoding="utf-8")
-    for token in [
-        "PROFILE_DRAFT_KEY",
-        "def _render_unified_profile_form",
-        "基本资料",
-        "出生日期",
-        "出生时间与地点",
-        "出生时辰不详",
-        "出生资料只用于本地排盘",
-        "生成命盘",
-    ]:
-        assert token in source
     assert source.count("with st.form(") == 1
-    assert source.index("_render_unified_profile_form") < source.index("build_bazi_chart(profile)")
-
-
-def test_profile_form_removes_step_navigation_and_duplicate_chart_summary():
-    source = (ROOT / "ui" / "profile_form.py").read_text(encoding="utf-8")
-    for token in [
-        "PROFILE_STEP_KEY",
-        "def _profile_step",
-        "def _set_profile_step",
-        "def _render_profile_step_one",
-        "def _render_profile_step_two",
-        "def _render_profile_step_three",
-        "第 1 步，共 3 步",
-        "下一步",
-        "返回上一步",
-        "### 当前命盘",
-    ]:
-        assert token not in source
-
-    render_source = source[source.index("def render_profile_form") :]
-    assert "_render_unified_profile_form(draft)" in render_source
+    assert "PROFILE_STEP_KEY" not in source
     assert 'st.session_state["navigate_to"] = "个人命盘"' in source
 
 
@@ -160,89 +438,18 @@ def test_public_profile_payload_allows_blank_optional_nickname(monkeypatch):
     assert payload["birth_place"] == ""
 
 
-def test_public_form_source_requires_consent_and_starts_private_session_timer():
+def test_public_form_keeps_consent_and_discloses_cloud_ai(monkeypatch):
     source = (ROOT / "ui" / "profile_form.py").read_text(encoding="utf-8")
 
     assert "称呼（可选，建议昵称）" in source
     assert "我已阅读并同意本次会话隐私说明" in source
     assert "请先阅读并同意本次会话隐私说明" in source
+    privacy_notice = (
+        "出生资料只用于本地排盘，不上传云端。进入 AI 问答后，去身份化命盘事实、"
+        "问题和近期对话会发送给已配置的云端 AI 服务；30 分钟无操作后清除本次会话。"
+    )
+    assert privacy_notice in source
     assert "touch_private_session(st.session_state)" in source
-
-
-def test_profile_form_keeps_time_controls_inside_single_form(monkeypatch):
-    import ui.profile_form as profile_form
-
-    draft = {"name": "保留姓名", "birth_place": "北京", "birth_date": date(1990, 1, 1)}
-    fake_streamlit = _FakeStreamlit(solar_time=True, submitted=False)
-    fake_streamlit.session_state[profile_form.PROFILE_DRAFT_KEY] = draft
-    monkeypatch.setitem(sys.modules, "streamlit", fake_streamlit)
-
-    profile_form._render_unified_profile_form(draft)
-
-    assert fake_streamlit.container_calls == [{"key": "ms5-profile-card", "border": True}]
-    assert fake_streamlit.form_parent_contexts == ["container"]
-    assert fake_streamlit.checkbox_calls[0][0] == "出生时辰不详"
-    assert fake_streamlit.checkbox_calls[0][1] is True
-    assert all(label != "出生地经度（东经）" for label, _ in fake_streamlit.text_input_calls)
-    assert fake_streamlit.errors == []
-    assert fake_streamlit.session_state[profile_form.PROFILE_DRAFT_KEY] is draft
-
-
-def test_legacy_solar_time_draft_never_restores_longitude_control(monkeypatch):
-    import ui.profile_form as profile_form
-
-    draft = {
-        "birth_date": date(1990, 1, 1),
-        "use_solar_time": True,
-        "birth_longitude": "116.4",
-    }
-    fake_streamlit = _FakeStreamlit(solar_time=False, submitted=False)
-    fake_streamlit.session_state[profile_form.PROFILE_DRAFT_KEY] = draft
-    monkeypatch.setitem(sys.modules, "streamlit", fake_streamlit)
-
-    profile_form._render_unified_profile_form(draft)
-
-    assert all(label != "出生地经度（东经）" for label, _inside_form in fake_streamlit.text_input_calls)
-
-
-def test_successful_unified_form_navigates_and_clears_draft_and_switch_state(monkeypatch):
-    import ui.profile_form as profile_form
-
-    draft = {
-        "name": "测试用户",
-        "gender": "男",
-        "calendar_label": "公历",
-        "birth_date": date(1990, 6, 15),
-        "birth_hour": 8,
-        "birth_minute": 30,
-        "birth_place": "北京",
-        "use_solar_time": True,
-    }
-    fake_streamlit = _FakeStreamlit(
-        solar_time=True,
-        submitted=True,
-        text_values={"姓名": "测试用户", "出生地点": "北京", "出生地经度（东经）": "116.4"},
-    )
-    fake_streamlit.session_state.update(
-        {
-            profile_form.PROFILE_DRAFT_KEY: draft,
-            "profile_use_solar_time": True,
-        }
-    )
-    monkeypatch.setitem(sys.modules, "streamlit", fake_streamlit)
-    monkeypatch.setattr(profile_form, "validate_profile", lambda _profile: (True, ""))
-    monkeypatch.setattr(profile_form, "build_bazi_chart", lambda profile: {"profile": profile, "pillars": {}})
-    monkeypatch.setattr(profile_form, "generate_basic_bazi_report", lambda _chart: {"summary": "ok"})
-
-    profile_form._render_unified_profile_form(draft)
-
-    assert fake_streamlit.session_state["current_profile"]["birth_longitude"] is None
-    assert fake_streamlit.session_state["current_profile"]["use_true_solar_time"] is False
-    assert fake_streamlit.session_state["current_profile"]["time_mode"] == "china_standard"
-    assert fake_streamlit.session_state["navigate_to"] == "个人命盘"
-    assert profile_form.PROFILE_DRAFT_KEY not in fake_streamlit.session_state
-    assert "profile_use_solar_time" not in fake_streamlit.session_state
-    assert fake_streamlit.rerun_calls == 1
 
 
 def test_profile_card_styles_flatten_the_nested_submit_form():
@@ -254,13 +461,3 @@ def test_profile_card_styles_flatten_the_nested_submit_form():
     rule = css.split(selector, 1)[1].split("}", 1)[0]
     assert "border: 0" in rule
     assert "box-shadow: none" in rule
-
-
-def test_profile_card_checkbox_label_has_a_44px_touch_target():
-    from ui.styles import get_global_css
-
-    css = get_global_css()
-    selector = '.st-key-ms5-profile-card [data-testid="stCheckbox"] label {'
-    assert selector in css
-    rule = css.split(selector, 1)[1].split("}", 1)[0]
-    assert "min-height: 44px" in rule

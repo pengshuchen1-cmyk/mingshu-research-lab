@@ -88,5 +88,6 @@ def test_profile_form_uses_single_standard_time_mode():
     )
 
     assert "使用真太阳时校正" not in source
-    assert "出生时辰不详" in source
+    assert '"出生时间精度"' in source
+    assert '["精确时间", "传统时辰", "时辰不详"]' in source
     assert "是否闰月" in source

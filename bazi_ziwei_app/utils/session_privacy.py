@@ -11,6 +11,8 @@ PRIVATE_SESSION_KEYS = (
     "profile_draft",
     "profile_use_solar_time",
     "profile_privacy_consent",
+    "profile_birth_preview",
+    "profile_birth_preview_input",
     "current_profile",
     "current_chart",
     "current_report",
@@ -75,6 +77,14 @@ def maintain_private_session(
     """先执行到期清除；仍有效且含个人资料时刷新活动时间。"""
     current = _as_utc(now or datetime.now(timezone.utc))
     expired = expire_private_session(state, current, ttl_minutes)
-    if not expired and any(key in state for key in ("current_profile", "current_chart", "current_report")):
+    if not expired and any(
+        key in state
+        for key in (
+            "profile_birth_preview",
+            "current_profile",
+            "current_chart",
+            "current_report",
+        )
+    ):
         touch_private_session(state, current)
     return expired
