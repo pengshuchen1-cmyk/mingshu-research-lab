@@ -9,15 +9,22 @@ def validate_profile(profile: dict) -> tuple[bool, str]:
         return False, "姓名不能为空。"
     if not profile.get("birth_date"):
         return False, "出生日期不能为空。"
-    try:
-        birth_hour = int(profile.get("birth_hour", -1))
-        birth_minute = int(profile.get("birth_minute", -1))
-    except (TypeError, ValueError):
-        return False, "出生时间格式不正确。"
-    if birth_hour < 0 or birth_hour > 23:
-        return False, "出生小时必须在 0-23 之间。"
-    if birth_minute < 0 or birth_minute > 59:
-        return False, "出生分钟必须在 0-59 之间。"
+    hour_raw = profile.get("birth_hour")
+    minute_raw = profile.get("birth_minute")
+    if hour_raw is None and minute_raw is None:
+        pass
+    elif hour_raw is None or minute_raw is None:
+        return False, "出生小时和分钟需要同时填写。"
+    else:
+        try:
+            birth_hour = int(hour_raw)
+            birth_minute = int(minute_raw)
+        except (TypeError, ValueError):
+            return False, "出生时间格式不正确。"
+        if not 0 <= birth_hour <= 23:
+            return False, "出生小时必须在 0-23 之间。"
+        if not 0 <= birth_minute <= 59:
+            return False, "出生分钟必须在 0-59 之间。"
     from datetime import date as _dt_check
     birth_str = profile.get("birth_date", "")
     if birth_str:
