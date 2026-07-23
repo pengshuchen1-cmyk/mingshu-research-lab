@@ -10,8 +10,15 @@ from core.ai_models import AIConfig, AIRequestContext, BaziAIAnswer
 
 
 SYSTEM_INSTRUCTION = """你是命数研究室的四柱问答助手。
-仅使用请求中提供的去身份化命盘事实和本地规则，不自行重排命盘，不补造出生信息。
-回答必须区分命局倾向、时间触发、不确定性和现实建议；证据必须来自提供的事实与规则。
+仅使用请求中提供的去身份化命盘事实和本地规则，不得补充未提供的事实、规则或现实状态。
+不得重新计算四柱、节气、起运或大运，不得根据原始出生数据推断或补造出生信息。
+回答必须严格包含以下六个非空部分：
+1. 分析结论（analysis_conclusion）：区分命局倾向与当前现实状态。
+2. 命盘证据（chart_evidence）：逐条引用请求中提供的具体命盘事实。
+3. 规则证据（rule_evidence）：逐条引用请求中提供的本地规则。
+4. 时间条件（timing_conditions）：说明结论成立所需的时间触发条件。
+5. 现实建议（practical_advice）：提供审慎、可执行且现实的建议。
+6. 不确定性与限制（uncertainty_limitations）：明确证据边界与不能判断之处。
 不得保证结婚、离婚、发财、疾病、死亡、法律、投资或借贷结果。
 如果事实不足，请明确说明不能判断当前现实状态。"""
 
@@ -20,6 +27,29 @@ class AIServiceError(RuntimeError):
     def __init__(self, code: str):
         super().__init__(code)
         self.code = code
+
+
+def classify_service_error(exc: Exception) -> str:
+    if isinstance(exc, TimeoutError):
+        return "timeout"
+    status = getattr(exc, "status_code", None)
+    code = str(getattr(exc, "code", "") or "").lower()
+    text = f"{code} {exc}".lower()
+    if status in {401, 403}:
+        return "invalid_credentials"
+    if status == 429 and any(
+        token in text for token in ("insufficient_quota", "billing", "quota")
+    ):
+        return "insufficient_quota"
+    if status == 429:
+        return "rate_limited"
+    if status in {500, 502, 503, 504}:
+        return "service_unavailable"
+    if isinstance(exc, (ConnectionError, OSError)) or (
+        "connection" in type(exc).__name__.lower()
+    ):
+        return "network_error"
+    return "service_unavailable"
 
 
 def build_messages(context: AIRequestContext) -> list[dict[str, str]]:
@@ -57,12 +87,12 @@ class OpenAIBaziClient:
                 text_format=BaziAIAnswer,
                 timeout=self._config.timeout_seconds,
             )
-        except TimeoutError as exc:
-            raise AIServiceError("timeout") from exc
-        except ValidationError as exc:
-            raise AIServiceError("unparseable_response") from exc
+        except TimeoutError:
+            raise AIServiceError("timeout") from None
+        except ValidationError:
+            raise AIServiceError("unparseable_response") from None
         except Exception as exc:
-            raise AIServiceError("service_error") from exc
+            raise AIServiceError(classify_service_error(exc)) from None
         parsed = getattr(response, "output_parsed", None)
         if parsed is None:
             raise AIServiceError("unparseable_response")
@@ -70,5 +100,5 @@ class OpenAIBaziClient:
             return parsed
         try:
             return BaziAIAnswer.model_validate(parsed)
-        except Exception as exc:
-            raise AIServiceError("unparseable_response") from exc
+        except Exception:
+            raise AIServiceError("unparseable_response") from None

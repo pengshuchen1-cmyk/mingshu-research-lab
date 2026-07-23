@@ -26,6 +26,18 @@ class _Client:
         self.responses = responses
 
 
+class _ProviderError(Exception):
+    def __init__(self, message, *, status_code=None, code=None):
+        super().__init__(message)
+        self.status_code = status_code
+        self.code = code
+        self.message = message
+
+
+class _ProviderConnectionError(Exception):
+    pass
+
+
 def _context():
     from core.ai_models import AIRequestContext
 
@@ -107,3 +119,107 @@ def test_client_classifies_pydantic_parse_failure_as_retryable_unparseable():
         client.answer(_context())
 
     assert captured_service.value.code == "unparseable_response"
+
+
+@pytest.mark.parametrize(
+    ("error", "expected_code"),
+    [
+        (_ProviderError("unauthorized", status_code=401), "invalid_credentials"),
+        (_ProviderError("forbidden", status_code=403), "invalid_credentials"),
+        (
+            _ProviderError(
+                "requests exhausted",
+                status_code=429,
+                code="insufficient_quota",
+            ),
+            "insufficient_quota",
+        ),
+        (
+            _ProviderError("billing account inactive", status_code=429),
+            "insufficient_quota",
+        ),
+        (_ProviderError("too many requests", status_code=429), "rate_limited"),
+        (TimeoutError("provider timed out"), "timeout"),
+        (_ProviderConnectionError("connection reset"), "network_error"),
+        (_ProviderError("internal error", status_code=500), "service_unavailable"),
+        (_ProviderError("bad gateway", status_code=502), "service_unavailable"),
+        (_ProviderError("unavailable", status_code=503), "service_unavailable"),
+    ],
+)
+def test_classify_service_error_returns_deterministic_codes(error, expected_code):
+    from services.openai_bazi_client import classify_service_error
+
+    assert classify_service_error(error) == expected_code
+
+
+def test_non_quota_429_stays_rate_limited_and_non_429_quota_is_not_billing_failure():
+    from services.openai_bazi_client import classify_service_error
+
+    assert (
+        classify_service_error(
+            _ProviderError("rate limit reached", status_code=429, code="rate_limit")
+        )
+        == "rate_limited"
+    )
+    assert (
+        classify_service_error(
+            _ProviderError("insufficient_quota", status_code=500)
+        )
+        == "service_unavailable"
+    )
+
+
+def test_client_exposes_only_classified_code_not_raw_provider_error():
+    from core.ai_models import AIConfig
+    from services.openai_bazi_client import AIServiceError, OpenAIBaziClient
+
+    raw_message = "invalid token sk-provider-secret"
+    client = OpenAIBaziClient(
+        AIConfig("server-key", True),
+        client=_Client(
+            _Responses(error=_ProviderError(raw_message, status_code=401))
+        ),
+    )
+
+    with pytest.raises(AIServiceError) as captured:
+        client.answer(_context())
+
+    assert captured.value.code == "invalid_credentials"
+    assert str(captured.value) == "invalid_credentials"
+    assert raw_message not in str(captured.value)
+    assert captured.value.__cause__ is None
+    assert captured.value.__suppress_context__ is True
+
+
+def test_invalid_parsed_object_is_unparseable_response():
+    from core.ai_models import AIConfig
+    from services.openai_bazi_client import AIServiceError, OpenAIBaziClient
+
+    client = OpenAIBaziClient(
+        AIConfig("server-key", True),
+        client=_Client(_Responses(parsed={"analysis_conclusion": "缺少其余五段"})),
+    )
+
+    with pytest.raises(AIServiceError) as captured:
+        client.answer(_context())
+
+    assert captured.value.code == "unparseable_response"
+
+
+def test_system_prompt_requires_six_sections_and_only_supplied_evidence():
+    from services.openai_bazi_client import build_messages
+
+    system_prompt = build_messages(_context())[0]["content"]
+
+    for section_name in (
+        "分析结论",
+        "命盘证据",
+        "规则证据",
+        "时间条件",
+        "现实建议",
+        "不确定性与限制",
+    ):
+        assert section_name in system_prompt
+    assert "不得重新计算四柱" in system_prompt
+    assert "仅使用请求中提供" in system_prompt
+    assert "不得补充未提供" in system_prompt
