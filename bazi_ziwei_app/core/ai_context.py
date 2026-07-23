@@ -37,6 +37,9 @@ DOMAIN_RULE_IDS = {
     "other": ("SAFETY-NONDETERMINISTIC",),
 }
 REDACTION_MARKER = "[已隐去]"
+_MAX_QUESTION_INPUT_CHARS = 500
+_MAX_HISTORY_INPUT_CHARS = 4000
+_MAX_REDACTION_INPUT_CHARS = 4000
 
 _CHINESE_MONTH = r"(?:1[0-2]|0?[1-9]|十[一二]?|[一二三四五六七八九])"
 _BIRTH_EXPRESSION_PATTERNS = (
@@ -109,20 +112,71 @@ _DIRECT_SENSITIVE_PATTERNS = (
     *_BIRTH_EXPRESSION_PATTERNS,
 )
 
+_ENGLISH_IDENTITY_KEY = (
+    r"(?:full[\s_-]*name|name|birth[\s_-]*(?:place|city)|"
+    r"residence|home[\s_-]*(?:city|address))"
+)
 _ENGLISH_IDENTITY_LABEL = re.compile(
-    r"(?i)(?:full[\s_-]*name|name|birth[\s_-]*(?:place|city)|"
-    r"residence|home[\s_-]*(?:city|address))\s*[:：=]\s*"
+    rf"(?i){_ENGLISH_IDENTITY_KEY}\s*[:：=]\s*"
 )
 _SAFE_RESUME_CUE = re.compile(
     r"(?i)\b(?:wants?|needs?|seeks?|asks?)\s+"
     r"(?:advice|guidance|to\s+ask)(?:\s+(?:on|about))?\s*"
 )
-_CLAUSE_DELIMITER = re.compile(r"[，,。；;！？!?\r\n]")
+_CLAUSE_DELIMITER = re.compile(r"[，,。.；;！？!?\r\n]")
+_IDENTITY_CLAUSE_CUES = (
+    "姓名",
+    "名字",
+    "乳名",
+    "小名",
+    "曾用名",
+    "原名",
+    "笔名",
+    "艺名",
+    "网名",
+    "昵称",
+    "绰号",
+    "外号",
+    "别名",
+    "人称",
+    "称呼",
+    "我叫",
+    "本人叫",
+)
+_LOCATION_CLAUSE_CUES = (
+    "出生地",
+    "出生于",
+    "出生在",
+    "生于",
+    "来自",
+    "籍贯",
+    "户籍",
+    "户口",
+    "现居",
+    "居住",
+    "居住于",
+    "住在",
+    "住址",
+    "地址",
+    "所在地",
+    "常住地",
+    "城市",
+    "省市",
+    "家乡",
+    "故乡",
+    "老家",
+)
+_SENSITIVE_CUE_WORDS = "|".join(
+    re.escape(cue)
+    for cue in sorted(
+        (*_IDENTITY_CLAUSE_CUES, *_LOCATION_CLAUSE_CUES),
+        key=len,
+        reverse=True,
+    )
+)
 _SENSITIVE_CLAUSE_CUE = re.compile(
     r"(?i)"
-    r"(?:姓名|名字|称呼|绰号|人称|别名|昵称|我叫|本人叫|我是|本人是|"
-    r"出生地|出生于|籍贯|现居|居住于|住在|居住地|常住地|来自)"
-    r"\s*(?:是|为|叫|在|[:：])?"
+    rf"(?:{_SENSITIVE_CUE_WORDS})\s*(?:是|为|叫|在|[:：])?"
     r"|(?:日志|logs?)(?:内容)?\s*[:：=]"
     r"|\[(?:INFO|DEBUG|WARN(?:ING)?|ERROR|TRACE)\]"
     r"|(?:profile[\s_-]*id|database[\s_-]*id|db[\s_-]*id|"
@@ -131,6 +185,46 @@ _SENSITIVE_CLAUSE_CUE = re.compile(
     r"internal[\s_-]*rule[\s_-]*version|内部规则版本)"
     r"\s*(?:(?:[:：=]\s*)|\s+)"
     r"|(?<![A-Za-z0-9_])(?:message|target|user|city)\s*="
+)
+_BOUNDED_SINGLE_NAME_FIELD_CUE = re.compile(
+    r"(?<![\u3400-\u9fffA-Za-z0-9_])"
+    r"(?:(?:姓氏|姓|名)\s*(?:是|为|叫|[:：=])"
+    r"|(?:姓|名)\s+)"
+)
+_GRAMMATICAL_IDENTITY_CUE = re.compile(
+    r"(?<![\u3400-\u9fffA-Za-z0-9_])大名\s*(?:是|为|叫|[:：=])"
+)
+_SURNAME_SUBJECTS = (
+    "当事人",
+    "本人",
+    "客户",
+    "用户",
+    "孩子",
+    "父亲",
+    "母亲",
+    "丈夫",
+    "妻子",
+    "伴侣",
+    "我",
+    "你",
+    "您",
+    "他",
+    "她",
+    "其",
+)
+_NATURAL_SURNAME_FIELD_CUE = re.compile(
+    r"(?<![\u3400-\u9fffA-Za-z0-9_])"
+    rf"(?:(?:{'|'.join(_SURNAME_SUBJECTS)})姓|姓)"
+    r"(?!氏)(?=[\u3400-\u9fff·A-Za-z])"
+)
+_GENERIC_KEY_VALUE_CUE = re.compile(
+    rf"(?i)"
+    rf"(?<![A-Za-z0-9_])"
+    rf"(?!{_ENGLISH_IDENTITY_KEY}\s*[:：=])"
+    rf"[A-Za-z_][A-Za-z0-9_.-]*\s*[:：=]"
+)
+_UNQUOTED_JSON_OBJECT_FIELD = re.compile(
+    r"[^{}\"'\s，,。；;！？!?:：=]+\s*[:：=]"
 )
 
 _SAFE_SEMANTIC_TERMS = (
@@ -368,21 +462,136 @@ def _identity_spans(text: str) -> list[tuple[int, int]]:
     return spans
 
 
+def _containing_clause_span(
+    text: str,
+    start: int,
+    end: int,
+) -> tuple[int, int]:
+    """Return the clause surrounding one already identified sensitive span."""
+    clause_start = 0
+    for delimiter in _CLAUSE_DELIMITER.finditer(text, 0, start):
+        clause_start = delimiter.end()
+    following = _CLAUSE_DELIMITER.search(text, end)
+    clause_end = following.start() if following else len(text)
+    return clause_start, clause_end
+
+
+def _has_quoted_key_value(text: str) -> bool:
+    """Detect a quoted config key in bounded linear passes."""
+    for quote_character in ('"', "'"):
+        opening: int | None = None
+        escaped = False
+        for index, character in enumerate(text):
+            if opening is not None and escaped:
+                escaped = False
+                continue
+            if opening is not None and character == "\\":
+                escaped = True
+                continue
+            if character != quote_character:
+                continue
+            if opening is None:
+                previous = text[index - 1] if index else ""
+                following = text[index + 1] if index + 1 < len(text) else ""
+                if (
+                    quote_character == "'"
+                    and previous.isascii()
+                    and previous.isalnum()
+                    and following.isascii()
+                    and following.isalnum()
+                ):
+                    continue
+                opening = index
+                continue
+
+            probe = index + 1
+            while probe < len(text) and text[probe].isspace():
+                probe += 1
+            if probe < len(text) and text[probe] in ":：=":
+                return True
+            opening = None
+            escaped = False
+    return False
+
+
+def _complete_clause_boundaries(text: str) -> list[int]:
+    """Find top-level delimiter endpoints, ignoring quoted or braced delimiters."""
+    boundaries: list[int] = []
+    depth = 0
+    quote = ""
+    escaped = False
+
+    for index, character in enumerate(text):
+        if quote:
+            if escaped:
+                escaped = False
+            elif character == "\\":
+                escaped = True
+            elif character == quote:
+                quote = ""
+            continue
+        if character in {'"', "'"}:
+            previous = text[index - 1] if index else ""
+            following = text[index + 1] if index + 1 < len(text) else ""
+            if (
+                character == "'"
+                and previous.isascii()
+                and previous.isalnum()
+                and following.isascii()
+                and following.isalnum()
+            ):
+                continue
+            quote = character
+        elif character == "{":
+            depth += 1
+        elif character == "}" and depth:
+            depth -= 1
+        elif depth == 0 and _CLAUSE_DELIMITER.fullmatch(character):
+            boundaries.append(index + 1)
+    return boundaries
+
+
+def _clause_spans(text: str) -> list[tuple[int, int]]:
+    """Split clauses once, ignoring delimiters inside quoted or braced config text."""
+    spans: list[tuple[int, int]] = []
+    clause_start = 0
+    for boundary in _complete_clause_boundaries(text):
+        delimiter_start = boundary - 1
+        if clause_start < delimiter_start:
+            spans.append((clause_start, delimiter_start))
+        clause_start = boundary
+    if clause_start < len(text):
+        spans.append((clause_start, len(text)))
+    return spans
+
+
+def _clause_has_config_syntax(clause: str) -> bool:
+    return bool(
+        _has_quoted_key_value(clause)
+        or _GENERIC_KEY_VALUE_CUE.search(clause)
+        or (
+            "{" in clause
+            and _UNQUOTED_JSON_OBJECT_FIELD.search(clause)
+        )
+    )
+
+
 def _sensitive_clause_spans(text: str) -> list[tuple[int, int]]:
     """Claim the whole containing clause for sensitive provenance cues."""
-    delimiters = list(_CLAUSE_DELIMITER.finditer(text))
     spans: list[tuple[int, int]] = []
-    for cue in _SENSITIVE_CLAUSE_CUE.finditer(text):
-        start = 0
-        end = len(text)
-        for delimiter in delimiters:
-            if delimiter.end() <= cue.start():
-                start = delimiter.end()
-                continue
-            if delimiter.start() >= cue.end():
-                end = delimiter.start()
-                break
-        spans.append((start, end))
+    sensitive_patterns = (
+        _SENSITIVE_CLAUSE_CUE,
+        _BOUNDED_SINGLE_NAME_FIELD_CUE,
+        _GRAMMATICAL_IDENTITY_CUE,
+        _NATURAL_SURNAME_FIELD_CUE,
+    )
+    for start, end in _clause_spans(text):
+        clause = text[start:end]
+        if (
+            _clause_has_config_syntax(clause)
+            or any(pattern.search(clause) for pattern in sensitive_patterns)
+        ):
+            spans.append((start, end))
     return spans
 
 
@@ -451,13 +660,32 @@ def _project_safe_semantics(segments: Sequence[tuple[bool, str]]) -> str:
     return projected.strip() or REDACTION_MARKER
 
 
-def redact_customer_text(text: str) -> str:
+def _bounded_complete_input(text: object, max_input_chars: int) -> str:
+    """Bound raw input without projecting an incomplete trailing clause."""
+    raw_text = str(text or "")
+    limit = max(0, max_input_chars)
+    if len(raw_text) <= limit:
+        return raw_text.strip()
+
+    bounded = raw_text[:limit]
+    boundaries = _complete_clause_boundaries(bounded)
+    if not boundaries:
+        return ""
+    return bounded[:boundaries[-1]].strip()
+
+
+def redact_customer_text(
+    text: str,
+    *,
+    max_input_chars: int = _MAX_REDACTION_INPUT_CHARS,
+) -> str:
     """Project safe semantics from provenance-aware, non-sensitive source spans.
 
     Sensitive labeled fields and log spans are segmented before semantic matching, so
     values that collide with safe terms can never be recovered by the allowlist.
     """
-    segments = _provenance_segments(str(text or "").strip())
+    bounded_text = _bounded_complete_input(text, max_input_chars)
+    segments = _provenance_segments(bounded_text)
     return _project_safe_semantics(segments)[:4000]
 
 
@@ -510,10 +738,13 @@ def _safe_history(history: Sequence[ChatMessage | Mapping[str, object]]) -> list
             role, content = raw.role, raw.content
         else:
             role = str(raw.get("role", ""))
-            content = str(raw.get("content", "")).strip()
+            content = str(raw.get("content", ""))
         if role not in {"user", "assistant"} or not content:
             continue
-        content = redact_customer_text(content)
+        content = redact_customer_text(
+            content,
+            max_input_chars=_MAX_HISTORY_INPUT_CHARS,
+        )
         content = content[:min(len(content), remaining, 4000)]
         selected.append(ChatMessage(role=role, content=content))
         remaining -= len(content)
@@ -525,7 +756,10 @@ def build_ai_context(
     question: str,
     history: Sequence[ChatMessage | Mapping[str, object]],
 ) -> AIRequestContext:
-    redacted_question = redact_customer_text(question)[:500]
+    redacted_question = redact_customer_text(
+        question,
+        max_input_chars=_MAX_QUESTION_INPUT_CHARS,
+    )
     routed = classify_question(redacted_question)
     raw = facts.to_dict()
     chart_facts: dict[str, object] = {

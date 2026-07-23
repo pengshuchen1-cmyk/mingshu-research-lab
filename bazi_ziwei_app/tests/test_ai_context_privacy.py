@@ -451,3 +451,646 @@ def test_sensitive_clauses_are_masked_in_user_and_assistant_history():
     for forbidden in ("事业", "2026年", "AI创业"):
         assert forbidden not in assistant_history
     assert "姻缘" in assistant_history
+
+
+def test_generic_key_value_and_json_clauses_are_sensitive_provenance():
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    facts = build_chart_facts(
+        build_bazi_chart(
+            {"gender": "男", "birth_date": "1994-09-23", "birth_hour": 18, "birth_minute": 0}
+        )
+    )
+    cases = (
+        (
+            "说明：event=事业 forecast=2026年；想问现金流",
+            ("事业", "2026年"),
+            "现金流",
+            "wealth",
+        ),
+        (
+            '说明：{"event":"AI创业","forecast":"2027年"}；想问姻缘',
+            ("AI创业", "2027年"),
+            "姻缘",
+            "relationship",
+        ),
+        (
+            "说明：custom_flag : 财运 next_year = 2028年；想问现金流",
+            ("财运", "2028年"),
+            "现金流",
+            "wealth",
+        ),
+    )
+
+    for question, forbidden, useful, category in cases:
+        context = build_ai_context(facts, question, [])
+
+        for value in forbidden:
+            assert value not in context.question
+        assert useful in context.question
+        assert context.category == category
+        assert context.requires_timing is False
+        assert "target_years" not in context.chart_facts
+
+
+def test_json_objects_with_space_or_unicode_keys_are_wholly_sensitive():
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    facts = build_chart_facts(
+        build_bazi_chart(
+            {"gender": "男", "birth_date": "1994-09-23", "birth_hour": 18, "birth_minute": 0}
+        )
+    )
+    for question in (
+        '{"event type":"事业","forecast year":"2026年"}；想问现金流',
+        '{"事件":"事业","预测年":"2026年"}；想问现金流',
+        "it's config {事件:事业, notes:[AI创业,2026年]}；想问现金流",
+    ):
+        context = build_ai_context(facts, question, [])
+
+        assert "事业" not in context.question
+        assert "AI创业" not in context.question
+        assert "2026年" not in context.question
+        assert "现金流" in context.question
+        assert context.category == "wealth"
+        assert context.requires_timing is False
+        assert "target_years" not in context.chart_facts
+
+
+def test_json_objects_with_space_or_unicode_keys_are_sensitive_in_both_history_roles():
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    facts = build_chart_facts(
+        build_bazi_chart(
+            {"gender": "男", "birth_date": "1994-09-23", "birth_hour": 18, "birth_minute": 0}
+        )
+    )
+    context = build_ai_context(
+        facts,
+        "想问姻缘",
+        [
+            {
+                "role": "user",
+                "content": '{"event type":"事业","forecast year":"2026年"}；想问现金流',
+            },
+            {
+                "role": "assistant",
+                "content": '{"事件":"AI创业","预测年":"2027年"}；想问婚姻',
+            },
+        ],
+    )
+
+    user_history, assistant_history = (item.content for item in context.history)
+    for forbidden in ("事业", "2026年"):
+        assert forbidden not in user_history
+    assert "现金流" in user_history
+    for forbidden in ("AI创业", "2027年"):
+        assert forbidden not in assistant_history
+    assert "婚姻" in assistant_history
+
+
+def test_arbitrarily_long_quoted_config_keys_mask_question_values_and_metadata():
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    facts = build_chart_facts(
+        build_bazi_chart(
+            {"gender": "男", "birth_date": "1994-09-23", "birth_hour": 18, "birth_minute": 0}
+        )
+    )
+    for key in ("a" * 160, "超长键" * 60):
+        context = build_ai_context(
+            facts,
+            f'"{key}":事业 和 2026年；想问现金流',
+            [],
+        )
+
+        assert "事业" not in context.question
+        assert "2026年" not in context.question
+        assert "现金流" in context.question
+        assert context.category == "wealth"
+        assert context.requires_timing is False
+        assert "target_years" not in context.chart_facts
+
+
+def test_arbitrarily_long_quoted_config_keys_mask_both_history_roles():
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    facts = build_chart_facts(
+        build_bazi_chart(
+            {"gender": "男", "birth_date": "1994-09-23", "birth_hour": 18, "birth_minute": 0}
+        )
+    )
+    context = build_ai_context(
+        facts,
+        "想问姻缘",
+        [
+            {
+                "role": "user",
+                "content": f'{"u" * 160!r}:事业 和 2026年；想问现金流',
+            },
+            {
+                "role": "assistant",
+                "content": f'{"历史键" * 60!r}=AI创业 和 2027年；想问婚姻',
+            },
+        ],
+    )
+
+    user_history, assistant_history = (item.content for item in context.history)
+    for forbidden in ("事业", "2026年"):
+        assert forbidden not in user_history
+    assert "现金流" in user_history
+    for forbidden in ("AI创业", "2027年"):
+        assert forbidden not in assistant_history
+    assert "婚姻" in assistant_history
+
+
+def test_generic_key_value_mixed_with_query_in_one_clause_fails_closed():
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    facts = build_chart_facts(
+        build_bazi_chart(
+            {"gender": "男", "birth_date": "1994-09-23", "birth_hour": 18, "birth_minute": 0}
+        )
+    )
+    context = build_ai_context(
+        facts,
+        "event=事业 forecast=2026年 想问现金流",
+        [],
+    )
+
+    assert context.question == "[已隐去]"
+    assert context.category == "other"
+    assert context.requires_timing is False
+    assert "target_years" not in context.chart_facts
+
+
+def test_all_required_identity_alias_and_location_cue_families_mask_the_clause():
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    facts = build_chart_facts(
+        build_bazi_chart(
+            {"gender": "女", "birth_date": "1986-08-15", "birth_hour": 10, "birth_minute": 0}
+        )
+    )
+    cues = (
+        "姓名",
+        "名字",
+        "乳名",
+        "小名",
+        "曾用名",
+        "原名",
+        "笔名",
+        "艺名",
+        "网名",
+        "昵称",
+        "绰号",
+        "外号",
+        "别名",
+        "人称",
+        "称呼",
+        "我叫",
+        "出生地",
+        "出生于",
+        "出生在",
+        "生于",
+        "来自",
+        "籍贯",
+        "户籍",
+        "户口",
+        "现居",
+        "居住",
+        "住在",
+        "住址",
+        "地址",
+        "所在地",
+        "常住地",
+        "城市",
+        "省市",
+        "家乡",
+        "故乡",
+        "老家",
+    )
+
+    for cue in cues:
+        context = build_ai_context(
+            facts,
+            f"{cue} 事业 和 2026年；想问2027年现金流",
+            [],
+        )
+
+        assert "事业" not in context.question
+        assert "2026年" not in context.question
+        assert "2027年现金流" in context.question
+        assert context.category == "wealth"
+        assert context.requires_timing is True
+        assert [item["year"] for item in context.chart_facts["target_years"]] == [
+            2027
+        ]
+
+
+def test_bounded_single_character_name_fields_mask_without_substring_false_positives():
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    facts = build_chart_facts(
+        build_bazi_chart(
+            {"gender": "女", "birth_date": "1986-08-15", "birth_hour": 10, "birth_minute": 0}
+        )
+    )
+    for question, forbidden in (
+        ("姓氏：事业 和 2026年；想问2027年现金流", "事业"),
+        ("姓：事业 和 2026年；想问2027年现金流", "事业"),
+        ("名=财运 和 2026年；想问2027年AI创业现金流", "财运"),
+        ("姓为事业 和 2026年；想问2027年现金流", "事业"),
+        ("名叫财运 和 2026年；想问2027年AI行业现金流", "财运"),
+    ):
+        context = build_ai_context(facts, question, [])
+
+        assert forbidden not in context.question
+        assert "2026年" not in context.question
+        assert "2027年" in context.question
+        assert "现金流" in context.question
+        assert context.category == "wealth"
+        assert [item["year"] for item in context.chart_facts["target_years"]] == [
+            2027
+        ]
+
+
+def test_natural_surname_fields_at_clause_boundaries_are_masked():
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    facts = build_chart_facts(
+        build_bazi_chart(
+            {"gender": "女", "birth_date": "1986-08-15", "birth_hour": 10, "birth_minute": 0}
+        )
+    )
+    for question, forbidden, useful, category in (
+        ("我姓事业，想问现金流", "事业", "现金流", "wealth"),
+        ("姓事业，想问现金流", "事业", "现金流", "wealth"),
+        ("我姓AI创业，想问婚姻", "AI创业", "婚姻", "relationship"),
+    ):
+        context = build_ai_context(facts, question, [])
+
+        assert forbidden not in context.question
+        assert useful in context.question
+        assert context.category == category
+        assert context.requires_timing is False
+        assert "target_years" not in context.chart_facts
+
+
+def test_pronoun_qualified_surname_fields_mask_question_and_metadata():
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    facts = build_chart_facts(
+        build_bazi_chart(
+            {"gender": "女", "birth_date": "1986-08-15", "birth_hour": 10, "birth_minute": 0}
+        )
+    )
+    for pronoun in (
+        "我",
+        "你",
+        "您",
+        "他",
+        "她",
+        "其",
+        "本人",
+        "当事人",
+        "客户",
+        "用户",
+        "孩子",
+        "父亲",
+        "母亲",
+        "丈夫",
+        "妻子",
+        "伴侣",
+    ):
+        context = build_ai_context(
+            facts,
+            f"{pronoun}姓事业 和 2026年；想问2027年现金流",
+            [],
+        )
+
+        assert "事业" not in context.question
+        assert "2026年" not in context.question
+        assert "2027年现金流" in context.question
+        assert context.category == "wealth"
+        assert context.requires_timing is True
+        assert [item["year"] for item in context.chart_facts["target_years"]] == [
+            2027
+        ]
+
+
+def test_pronoun_qualified_surname_fields_mask_both_history_roles():
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    facts = build_chart_facts(
+        build_bazi_chart(
+            {"gender": "男", "birth_date": "1994-09-23", "birth_hour": 18, "birth_minute": 0}
+        )
+    )
+    context = build_ai_context(
+        facts,
+        "想问财运",
+        [
+            {
+                "role": "user",
+                "content": "她姓事业 和 2026年；想问2027年现金流",
+            },
+            {
+                "role": "assistant",
+                "content": "本人姓AI创业 和 2028年；想问婚姻",
+            },
+        ],
+    )
+
+    user_history, assistant_history = (item.content for item in context.history)
+    for forbidden in ("事业", "2026年"):
+        assert forbidden not in user_history
+    for useful in ("2027年", "现金流"):
+        assert useful in user_history
+    for forbidden in ("AI创业", "2028年"):
+        assert forbidden not in assistant_history
+    assert "婚姻" in assistant_history
+
+
+def test_surname_discussion_and_ordinary_words_do_not_trigger_identity_masking():
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    facts = build_chart_facts(
+        build_bazi_chart(
+            {"gender": "男", "birth_date": "1994-09-23", "birth_hour": 18, "birth_minute": 0}
+        )
+    )
+    for safe_text in (
+        "百姓讨论AI行业创业现金流怎么办？",
+        "姓氏讨论不影响AI行业创业现金流怎么办？",
+        "姓氏文化里的AI行业创业现金流怎么办？",
+        "贵姓问题不影响AI行业创业现金流怎么办？",
+        "隐姓埋名后做AI行业创业现金流怎么办？",
+    ):
+        context = build_ai_context(
+            facts,
+            safe_text,
+            [{"role": "assistant", "content": safe_text}],
+        )
+
+        for useful in ("AI行业", "创业", "现金流", "怎么办"):
+            assert useful in context.question
+            assert useful in context.history[0].content
+        assert context.category == "wealth"
+
+
+def test_name_cues_are_grammar_aware_for_positive_and_negative_forms():
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    facts = build_chart_facts(
+        build_bazi_chart(
+            {"gender": "男", "birth_date": "1994-09-23", "birth_hour": 18, "birth_minute": 0}
+        )
+    )
+    for safe_text in (
+        "大名鼎鼎的AI行业创业现金流怎么办？",
+        "我是在AI行业创业，现金流怎么办？",
+        "贵姓问题不影响AI行业创业，现金流怎么办？",
+    ):
+        context = build_ai_context(
+            facts,
+            safe_text,
+            [{"role": "assistant", "content": safe_text}],
+        )
+
+        for useful in ("AI行业", "创业", "现金流", "怎么办"):
+            assert useful in context.question
+            assert useful in context.history[0].content
+        assert context.category == "wealth"
+
+    for identity_text, forbidden in (
+        ("我是金丝雀，想问现金流", "金丝雀"),
+        ("大名为事业，想问现金流", "事业"),
+        ("大名叫AI创业，想问现金流", "AI创业"),
+    ):
+        context = build_ai_context(
+            facts,
+            identity_text,
+            [{"role": "assistant", "content": identity_text}],
+        )
+
+        assert forbidden not in context.question
+        assert forbidden not in context.history[0].content
+        assert "现金流" in context.question
+        assert "现金流" in context.history[0].content
+        assert context.category == "wealth"
+
+
+def test_many_quoted_fields_do_not_repeat_clause_boundary_scans(monkeypatch):
+    import core.ai_context as ai_context
+
+    calls = 0
+    original = ai_context._containing_clause_span
+
+    def counted_clause_span(text, start, end):
+        nonlocal calls
+        calls += 1
+        return original(text, start, end)
+
+    monkeypatch.setattr(ai_context, "_containing_clause_span", counted_clause_span)
+    fields = " ".join(f'"key {index}":事业' for index in range(40))
+    projected = ai_context.redact_customer_text(f"{fields}；想问现金流")
+
+    assert "事业" not in projected
+    assert "现金流" in projected
+    assert calls <= 2
+
+
+def test_projection_bounds_raw_question_history_and_direct_inputs_before_scanning():
+    from core.ai_context import build_ai_context, redact_customer_text
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    facts = build_chart_facts(
+        build_bazi_chart(
+            {"gender": "男", "birth_date": "1994-09-23", "birth_hour": 18, "birth_minute": 0}
+        )
+    )
+    context = build_ai_context(
+        facts,
+        ("x" * 500) + "现金流",
+        [{"role": "assistant", "content": ("y" * 4000) + "AI创业"}],
+    )
+
+    assert "现金流" not in context.question
+    assert context.category == "other"
+    assert context.requires_timing is False
+    assert "target_years" not in context.chart_facts
+    assert "AI创业" not in context.history[0].content
+    assert "现金流" not in redact_customer_text(("z" * 4000) + "现金流")
+
+
+def test_truncated_question_tail_never_becomes_forecast_timing_or_target_year():
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    facts = build_chart_facts(
+        build_bazi_chart(
+            {"gender": "男", "birth_date": "1994-09-23", "birth_hour": 18, "birth_minute": 0}
+        )
+    )
+    for question in (
+        ("x" * 493) + "1996年9月出生",
+        ("x" * 495) + "1996年生",
+    ):
+        context = build_ai_context(facts, question, [])
+
+        assert "1996" not in context.question
+        assert context.question == "[已隐去]"
+        assert context.category == "other"
+        assert context.requires_timing is False
+        assert "target_years" not in context.chart_facts
+
+
+def test_truncated_history_and_direct_tails_fail_closed():
+    from core.ai_context import build_ai_context, redact_customer_text
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    facts = build_chart_facts(
+        build_bazi_chart(
+            {"gender": "女", "birth_date": "1986-08-15", "birth_hour": 10, "birth_minute": 0}
+        )
+    )
+    tails = (
+        ("x" * 3993) + "1996年9月出生",
+        ("x" * 3995) + "1996年生",
+    )
+    context = build_ai_context(
+        facts,
+        "想问财运",
+        [
+            {"role": "user", "content": tails[0]},
+            {"role": "assistant", "content": tails[1]},
+        ],
+    )
+
+    assert all(item.content == "[已隐去]" for item in context.history)
+    for tail in tails:
+        assert redact_customer_text(tail) == "[已隐去]"
+
+
+def test_complete_safe_clause_before_truncated_tail_is_preserved():
+    from core.ai_context import build_ai_context, redact_customer_text
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    facts = build_chart_facts(
+        build_bazi_chart(
+            {"gender": "男", "birth_date": "1994-09-23", "birth_hour": 18, "birth_minute": 0}
+        )
+    )
+    context = build_ai_context(
+        facts,
+        "想问现金流；" + ("x" * 490) + "1996年9月出生",
+        [
+            {
+                "role": "user",
+                "content": "想问姻缘," + ("y" * 3990) + "1996年生",
+            }
+        ],
+    )
+
+    assert "现金流" in context.question
+    assert "1996" not in context.question
+    assert context.category == "wealth"
+    assert context.requires_timing is False
+    assert "target_years" not in context.chart_facts
+    assert "姻缘" in context.history[0].content
+    assert "1996" not in context.history[0].content
+    for delimiter in ("。", "."):
+        direct = redact_customer_text(
+            f"想问事业{delimiter}" + ("z" * 3990) + "1996年9月出生"
+        )
+        assert "事业" in direct
+        assert "1996" not in direct
+
+
+def test_normal_words_containing_name_characters_preserve_safe_semantics():
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    facts = build_chart_facts(
+        build_bazi_chart(
+            {"gender": "男", "birth_date": "1994-09-23", "birth_hour": 18, "birth_minute": 0}
+        )
+    )
+    for adjective in ("知名", "有名", "著名"):
+        context = build_ai_context(
+            facts,
+            f"{adjective}AI行业创业现金流怎么办？",
+            [{"role": "assistant", "content": f"{adjective}AI行业创业现金流怎么办？"}],
+        )
+
+        for useful in ("AI行业", "创业", "现金流", "怎么办"):
+            assert useful in context.question
+            assert useful in context.history[0].content
+        assert context.category == "wealth"
+
+
+def test_novel_cue_families_and_generic_config_are_masked_in_both_history_roles():
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    facts = build_chart_facts(
+        build_bazi_chart(
+            {"gender": "男", "birth_date": "1994-09-23", "birth_hour": 18, "birth_minute": 0}
+        )
+    )
+    context = build_ai_context(
+        facts,
+        "想问现金流",
+        [
+            {
+                "role": "user",
+                "content": "曾用名 事业 和 财运，户籍 New AI行业；想问2027年现金流",
+            },
+            {
+                "role": "assistant",
+                "content": '前缀 {"alias":"AI创业","forecast":"2026年"}；故乡 财运，想问姻缘',
+            },
+        ],
+    )
+
+    user_history, assistant_history = (item.content for item in context.history)
+    for forbidden in ("事业", "财运", "New", "AI行业"):
+        assert forbidden not in user_history
+    for useful in ("2027年", "现金流"):
+        assert useful in user_history
+    for forbidden in ("AI创业", "2026年", "财运"):
+        assert forbidden not in assistant_history
+    assert "姻缘" in assistant_history
