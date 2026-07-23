@@ -11,6 +11,7 @@ def render_privacy_center_page() -> None:
     st.title("隐私与清除")
     st.markdown("### 当前隐私状态")
     st.info("个人资料仅用于本次会话计算；服务器档案保存、跨用户搜索与云同步均已关闭。")
+    st.info("出生资料和排盘计算保留在本次会话；AI 问答会把去身份化命盘事实、问题和近期对话发送给已配置的云端 AI 服务。不会发送姓名、精确出生日期、出生地点或 API Key。")
     left, middle, right = st.columns(3)
     left.metric("资料范围", "仅本次会话")
     middle.metric("服务器保存", "关闭")

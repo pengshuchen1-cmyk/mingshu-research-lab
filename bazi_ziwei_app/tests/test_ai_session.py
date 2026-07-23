@@ -57,6 +57,16 @@ def test_chat_message_has_timestamp_and_allowlisted_details_only():
             "timing_conditions": ["阶段条件"],
             "practical_advice": ["现实建议"],
             "uncertainty": ["不确定性"],
+            "sections": {
+                "分析结论": "结论",
+                "命盘依据": "- 命盘证据",
+                "规则依据": "- 规则证据",
+                "阶段与触发条件": "- 阶段条件",
+                "现实建议": "- 现实建议",
+                "不确定性与限制": "- 不确定性",
+                "任意标题": "不应保存",
+            },
+            "degraded_reason": "network_error",
             "raw_payload": {"customer_name": "不应保存"},
         },
     )
@@ -69,8 +79,44 @@ def test_chat_message_has_timestamp_and_allowlisted_details_only():
         "timing_conditions",
         "practical_advice",
         "uncertainty",
+        "sections",
+        "degraded_reason",
     }
     assert item["details"]["chart_evidence"] == ["命盘证据"]
+    assert list(item["details"]["sections"]) == [
+        "分析结论",
+        "命盘依据",
+        "规则依据",
+        "阶段与触发条件",
+        "现实建议",
+        "不确定性与限制",
+    ]
+    assert "任意标题" not in item["details"]["sections"]
+    assert item["details"]["degraded_reason"] == "network_error"
+
+
+def test_chat_drops_arbitrary_degradation_reason_and_non_string_sections():
+    from core.ai_session import append_chat_message
+
+    state = {}
+    append_chat_message(
+        state,
+        "assistant",
+        "回答",
+        source="local_rules",
+        details={
+            "sections": {
+                "分析结论": "安全结论",
+                "命盘依据": {"raw_exception": "姓名：不应保存"},
+            },
+            "degraded_reason": "姓名：不应保存 Exception",
+        },
+    )
+
+    details = state["bazi_chat_messages"][0]["details"]
+    assert details["sections"] == {"分析结论": "安全结论"}
+    assert "degraded_reason" not in details
+    assert "不应保存" not in repr(details)
 
 
 def test_recent_context_truncates_long_answers_without_changing_saved_display():

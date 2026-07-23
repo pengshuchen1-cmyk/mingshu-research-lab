@@ -452,6 +452,17 @@ def test_public_form_keeps_consent_and_discloses_cloud_ai(monkeypatch):
     assert "touch_private_session(st.session_state)" in source
 
 
+def test_birth_input_explains_name_is_not_required_before_calendar_choice():
+    source = (ROOT / "ui" / "profile_form.py").read_text(encoding="utf-8")
+    notice = (
+        "无需输入姓名，只需选择农历或公历的出生日期及时间；"
+        "性别仍用于排盘规则。"
+    )
+
+    assert notice in source
+    assert source.index(notice) < source.index('"出生日期类型"')
+
+
 def test_profile_card_styles_flatten_the_nested_submit_form():
     from ui.styles import get_global_css
 

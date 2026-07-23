@@ -31,12 +31,52 @@ SUGGESTED_QUESTIONS = (
     "这个八字的姻缘桃花与婚姻建议是什么？",
     "未来一年需要重点注意什么？",
 )
+SIX_SECTION_TITLES = (
+    "分析结论",
+    "命盘依据",
+    "规则依据",
+    "阶段与触发条件",
+    "现实建议",
+    "不确定性与限制",
+)
+_MISSING_CREDENTIAL_REASON = "_".join(("missing", "api", "key"))
 
 
-def answer_source_label(source: str) -> str:
+def answer_source_label(source: str, degraded_reason: str | None) -> str:
     if source == "cloud_validated":
-        return "AI综合分析·本地规则校验"
-    return "本地规则分析"
+        return "云端 AI 分析 · 本地规则校验"
+    labels = {
+        _MISSING_CREDENTIAL_REASON: "本地完整分析 · 云端服务未配置",
+        "insufficient_quota": "本地完整分析 · 云端额度不足",
+        "invalid_credentials": "本地完整分析 · 云端认证异常",
+        "rate_limited": "本地完整分析 · 网络或服务异常",
+        "network_error": "本地完整分析 · 网络或服务异常",
+        "timeout": "本地完整分析 · 网络或服务异常",
+        "service_unavailable": "本地完整分析 · 网络或服务异常",
+        "unparseable_response": "本地完整分析 · 云端回答格式异常",
+        "local_validation_failed": "本地完整分析 · 云端回答校验未通过",
+    }
+    return labels.get(degraded_reason, "本地完整分析")
+
+
+def degradation_warning(degraded_reason: str | None) -> str:
+    if not degraded_reason:
+        return ""
+    reason_text = {
+        _MISSING_CREDENTIAL_REASON: "未配置 AI 服务。",
+        "insufficient_quota": "云端 AI 服务余额或额度不足。",
+        "invalid_credentials": "API Key 无效或无权限。",
+        "rate_limited": "网络或 AI 服务出现短暂异常。",
+        "network_error": "网络或 AI 服务出现短暂异常。",
+        "timeout": "网络或 AI 服务出现短暂异常。",
+        "service_unavailable": "网络或 AI 服务出现短暂异常。",
+        "unparseable_response": "云端 AI 回答格式异常。",
+        "local_validation_failed": "云端回答未通过本地四柱规则校验。",
+    }.get(degraded_reason, "云端 AI 服务暂时不可用。")
+    return (
+        f"{reason_text}当前已切换为本地四柱规则完整分析。"
+        "该回应可能不如云端 AI 分析全面。"
+    )
 
 
 def _chart_session_fingerprint(chart: dict) -> str:
@@ -55,18 +95,14 @@ def _render_supporting_details(item: dict) -> None:
     details = item.get("details", {}) or {}
     chart_evidence = details.get("chart_evidence", [])
     rule_evidence = details.get("rule_evidence", [])
-    timing_conditions = details.get("timing_conditions", [])
-    practical_advice = details.get("practical_advice", [])
     uncertainty = details.get("uncertainty", [])
     if not any((
         chart_evidence,
         rule_evidence,
-        timing_conditions,
-        practical_advice,
         uncertainty,
     )):
         return
-    with st.expander("查看依据与限制", expanded=False):
+    with st.expander("查看补充的机器校验明细", expanded=False):
         if chart_evidence:
             st.markdown("**命盘证据**")
             for text in chart_evidence:
@@ -74,14 +110,6 @@ def _render_supporting_details(item: dict) -> None:
         if rule_evidence:
             st.markdown("**规则依据**")
             for text in rule_evidence:
-                st.write(f"• {text}")
-        if timing_conditions:
-            st.markdown("**阶段与触发条件**")
-            for text in timing_conditions:
-                st.write(f"• {text}")
-        if practical_advice:
-            st.markdown("**现实建议**")
-            for text in practical_advice:
                 st.write(f"• {text}")
         if uncertainty:
             st.markdown("**不确定性**")
@@ -92,10 +120,30 @@ def _render_supporting_details(item: dict) -> None:
 def _render_message(item: dict) -> None:
     role = item.get("role", "assistant")
     with st.chat_message(role):
-        st.markdown(str(item.get("content", "")))
+        details = item.get("details", {}) or {}
+        sections = details.get("sections", {})
         if role == "assistant":
-            st.caption(answer_source_label(str(item.get("source", "local_rules"))))
+            degraded_reason = details.get("degraded_reason")
+            warning = degradation_warning(degraded_reason)
+            if warning:
+                st.warning(warning)
+            if isinstance(sections, dict) and sections:
+                for title in SIX_SECTION_TITLES:
+                    content = sections.get(title)
+                    if content:
+                        st.markdown(f"### {title}")
+                        st.write(content)
+            else:
+                st.markdown(str(item.get("content", "")))
+            st.caption(
+                answer_source_label(
+                    str(item.get("source", "local_rules")),
+                    degraded_reason,
+                )
+            )
             _render_supporting_details(item)
+        else:
+            st.markdown(str(item.get("content", "")))
 
 
 def _save_answer(state, result: AnswerResult) -> None:
@@ -110,6 +158,8 @@ def _save_answer(state, result: AnswerResult) -> None:
             "timing_conditions": list(result.timing_conditions),
             "practical_advice": list(result.practical_advice),
             "uncertainty": list(result.uncertainty),
+            "sections": dict(result.sections),
+            "degraded_reason": result.degraded_reason,
         },
     )
 
@@ -159,7 +209,7 @@ def _answer(chart: dict, question: str) -> None:
             category=category,
             model_alias=model_alias,
             latency_ms=elapsed,
-            reason_code="local_rules",
+            reason_code=result.degraded_reason,
         )
     touch_private_session(st.session_state)
     _render_message(st.session_state[CHAT_MESSAGES_KEY][-1])
@@ -200,6 +250,7 @@ def render_inquiry_page() -> None:
     )
     render_loaded_profile_hint(st.session_state.get("current_profile", {}), chart)
     st.caption("AI 不能确认现实婚姻状态，也不会保证投资结果。")
+    st.info("无需在问答中输入姓名或重复输入出生资料。请直接询问希望了解的命理主题。")
 
     with st.expander("当前命盘的本地规则摘要", expanded=False):
         render_rule_summary(chart)

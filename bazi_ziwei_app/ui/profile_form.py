@@ -98,6 +98,7 @@ def _render_unified_profile_form(draft: dict) -> None:
         st.session_state[PROFILE_DRAFT_KEY] = draft
 
         st.markdown("### 出生日期")
+        st.caption("无需输入姓名，只需选择农历或公历的出生日期及时间；性别仍用于排盘规则。")
         calendar_label = st.radio(
             "出生日期类型",
             ["公历", "农历"],
