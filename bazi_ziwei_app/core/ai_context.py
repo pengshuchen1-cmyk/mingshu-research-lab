@@ -11,8 +11,14 @@ from core.bazi_constants import EARTHLY_BRANCHES, HEAVENLY_STEMS
 from core.chart_facts import ChartFacts
 
 
+BORROWING_KEYWORDS = (
+    "房贷", "按揭", "借钱", "负债", "融资", "抵押", "借贷", "贷款", "杠杆",
+)
 CATEGORY_KEYWORDS = (
-    ("wealth", ("财运", "赚钱", "收入", "投资", "创业", "借贷", "抵押", "现金流")),
+    (
+        "wealth",
+        ("财运", "赚钱", "收入", "投资", "创业", "现金流", *BORROWING_KEYWORDS),
+    ),
     ("career", ("工作", "事业", "职业", "升职", "岗位", "行业", "AI")),
     ("relationship", ("桃花", "姻缘", "婚姻", "对象", "感情", "伴侣", "结婚", "已婚", "未婚")),
     ("family", ("父母", "家庭", "原生家庭", "长辈")),
@@ -230,7 +236,11 @@ _UNQUOTED_JSON_OBJECT_FIELD = re.compile(
 _SAFE_SEMANTIC_TERMS = (
     "现在是否已经结婚",
     "当前是否已经结婚",
+    "现在是未婚还是已婚",
     "当前婚姻状态",
+    "未婚还是已婚",
+    "是否已婚",
+    "已婚了吗",
     "现在已经结婚",
     "目前是否结婚",
     "现在有没有结婚",
@@ -273,6 +283,7 @@ _SAFE_SEMANTIC_TERMS = (
     "AI行业",
     "现金流",
     "高杠杆",
+    *BORROWING_KEYWORDS,
     "什么时候",
     "适不适合",
     "可不可以",
@@ -282,10 +293,6 @@ _SAFE_SEMANTIC_TERMS = (
     "怎么办",
     "为什么",
     "想问",
-    "借贷",
-    "贷款",
-    "杠杆",
-    "抵押",
     "房子",
     "人工智能",
     "创业",
@@ -409,8 +416,12 @@ _NORMALIZABLE_MONTH = re.compile(
     rf"\s*(?P<month>{_CHINESE_MONTH})月"
 )
 _CURRENT_MARRIAGE_STATUS = re.compile(
-    r"(?:现在|目前|当前)"
-    r"(?:是否已经结婚|是否结婚|有没有结婚|结婚了吗|已经结婚|已婚吗|未婚|已婚)"
+    r"(?:"
+    r"(?:现在|目前|当前)(?:是)?"
+    r"(?:是否已经结婚|是否结婚|有没有结婚|结婚了吗|已经结婚|"
+    r"已婚吗|未婚还是已婚|未婚|已婚)"
+    r"|是否已婚|已婚了吗|未婚还是已婚"
+    r")"
 )
 
 

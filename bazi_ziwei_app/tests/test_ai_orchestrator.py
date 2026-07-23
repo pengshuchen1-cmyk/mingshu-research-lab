@@ -102,6 +102,8 @@ def test_orchestrator_uses_local_rules_when_cloud_disabled():
     assert result.degraded_reason == "missing_api_key"
     assert len(fake.contexts) == 0
     assert "不能确认当前是否已婚" in result.answer
+    assert "倾向" in result.sections["分析结论"]
+    assert "仍需以本人现实情况为准" in result.sections["分析结论"]
 
 
 def test_missing_api_key_returns_complete_wealth_fallback_with_exact_reason():
@@ -237,6 +239,110 @@ def test_orchestrator_does_not_expose_raw_unexpected_exception():
     assert result.degraded_reason == "service_unavailable"
     assert "provider leaked secret details" not in result.answer
     assert len(fake.contexts) == 1
+
+
+@pytest.mark.parametrize(
+    "question",
+    [
+        "房贷要注意什么？",
+        "按揭买房可以吗？",
+        "借钱创业可以吗？",
+    ],
+)
+def test_borrowing_synonym_fallback_has_complete_risk_advice(question):
+    from core.ai_models import AIConfig
+    from core.ai_orchestrator import answer_question
+
+    result = answer_question(
+        _chart(),
+        question,
+        [],
+        config=AIConfig("", False),
+    )
+    advice = "。".join(result.practical_advice)
+
+    assert result.source == "local_rules"
+    assert result.degraded_reason == "missing_api_key"
+    assert list(result.sections) == SIX_SECTION_TITLES
+    for required in ("现金流", "最坏情景", "还款", "退出"):
+        assert required in advice
+    assert "一定能" not in result.answer
+    assert "保证成功" not in result.answer
+
+
+@pytest.mark.parametrize(
+    "question",
+    [
+        "她是否已婚？",
+        "她已婚了吗？",
+        "现在是未婚还是已婚？",
+    ],
+)
+def test_current_marriage_variant_fallback_cannot_confirm_status(question):
+    from core.ai_models import AIConfig
+    from core.ai_orchestrator import answer_question
+
+    chart = _chart()
+    relationship_summary = chart["facts"]["relationship"]["summary"]
+    result = answer_question(
+        chart,
+        question,
+        [],
+        config=AIConfig("", False),
+    )
+
+    assert result.source == "local_rules"
+    assert result.degraded_reason == "missing_api_key"
+    assert "不能确认当前是否已婚" in result.sections["分析结论"]
+    assert "倾向" in result.sections["分析结论"]
+    assert relationship_summary in result.sections["分析结论"]
+    assert "仍需以本人现实情况为准" in result.sections["分析结论"]
+    assert any("关系状态的倾向判断" in item for item in result.timing_conditions)
+    assert any(
+        "不代表确定已婚或未婚" in item
+        for item in result.uncertainty
+    )
+
+
+@pytest.mark.parametrize(
+    ("enabled", "service_error", "expected_reason"),
+    [
+        (False, None, "missing_api_key"),
+        (True, "network_error", "network_error"),
+    ],
+)
+def test_long_attached_wealth_fact_still_returns_bounded_local_fallback(
+    enabled,
+    service_error,
+    expected_reason,
+):
+    from copy import deepcopy
+
+    from core.ai_models import AIConfig
+    from core.ai_orchestrator import answer_question
+    from services.openai_bazi_client import AIServiceError
+
+    chart = deepcopy(_chart())
+    chart["facts"]["wealth"]["summary"] = "保留-wealth-" + ("长" * 3200)
+    client = (
+        _FakeClient([AIServiceError(service_error)])
+        if service_error
+        else None
+    )
+
+    result = answer_question(
+        chart,
+        "财运如何？",
+        [],
+        config=AIConfig("key" if enabled else "", enabled),
+        client=client,
+    )
+
+    assert result.source == "local_rules"
+    assert result.degraded_reason == expected_reason
+    assert list(result.sections) == SIX_SECTION_TITLES
+    assert "保留-wealth-" in result.sections["分析结论"]
+    assert len(result.sections["分析结论"]) <= 3000
 
 
 def test_orchestrator_uses_attached_facts_even_when_legacy_fields_are_poisoned():

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 
+import pytest
+
 
 def test_outbound_context_contains_no_raw_profile_identity():
     from core.ai_context import build_ai_context
@@ -270,6 +272,36 @@ def test_unrecognized_names_and_cities_are_dropped_by_safe_semantic_projection()
     history = context.history[0].content
     for useful in ("2027年的事业转换", "因为现金流压力", "注意风险"):
         assert useful in history
+
+
+@pytest.mark.parametrize(
+    ("question", "safe_term"),
+    [
+        ("姓名：金丝雀。房贷要注意什么？", "房贷"),
+        ("姓名：金丝雀。按揭买房可以吗？", "按揭"),
+        ("姓名：金丝雀。借钱创业可以吗？", "借钱"),
+        ("姓名：金丝雀。她是否已婚？", "当前婚姻状态"),
+    ],
+)
+def test_new_safe_intents_do_not_weaken_identity_redaction(question, safe_term):
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    facts = build_chart_facts(
+        build_bazi_chart(
+            {
+                "gender": "女",
+                "birth_date": "1996-09-04",
+                "birth_hour": 23,
+                "birth_minute": 45,
+            }
+        )
+    )
+    context = build_ai_context(facts, question, [])
+
+    assert "金丝雀" not in context.question
+    assert safe_term in context.question
 
 
 def test_safe_term_collisions_inside_sensitive_fields_and_logs_never_recover():

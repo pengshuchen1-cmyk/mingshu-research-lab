@@ -146,11 +146,18 @@ def test_wealth_answer_uses_supplied_summary_and_wealth_evidence():
 def test_relationship_status_answer_does_not_invent_current_marital_status():
     from core.local_bazi_answer import build_local_answer
 
-    answer = build_local_answer(
-        _context("relationship", "现在是否已经结婚；当前婚姻状态")
-    )
+    context = _context("relationship", "现在是否已经结婚；当前婚姻状态")
+    answer = build_local_answer(context)
+    relationship_summary = context.chart_facts["relationship"]["summary"]
+    timing = "。".join(answer.timing_conditions)
+    limitations = "。".join(answer.uncertainty_limitations)
 
     assert "不能确认当前是否已婚" in answer.analysis_conclusion
+    assert "倾向" in answer.analysis_conclusion
+    assert relationship_summary in answer.analysis_conclusion
+    assert "仍需以本人现实情况为准" in answer.analysis_conclusion
+    assert "关系状态的倾向判断" in timing
+    assert "不代表确定已婚或未婚" in limitations
     assert "已婚" not in answer.analysis_conclusion.replace("不能确认当前是否已婚", "")
     assert "未婚" not in answer.analysis_conclusion
 
@@ -190,3 +197,68 @@ def test_timing_answer_uses_only_supplied_dayun_current_and_target_year_facts():
         assert supplied in timing
     for not_supplied in ("2028年", "戊申", "具体月份一定"):
         assert not_supplied not in timing
+
+
+@pytest.mark.parametrize(
+    "term",
+    ["房贷", "按揭", "借钱", "负债", "融资", "抵押", "借贷", "贷款", "杠杆"],
+)
+def test_all_borrowing_terms_trigger_complete_downside_advice(term):
+    from core.local_bazi_answer import build_local_answer
+
+    answer = build_local_answer(_context("wealth", f"{term}要注意什么？"))
+    advice = "。".join(answer.practical_advice)
+    combined = "。".join(
+        [
+            answer.analysis_conclusion,
+            *answer.practical_advice,
+            *answer.uncertainty_limitations,
+        ]
+    )
+
+    for required in ("现金流", "最坏情景", "还款", "退出"):
+        assert required in advice
+    assert "一定能" not in combined
+    assert "保证成功" not in combined
+
+
+@pytest.mark.parametrize(
+    ("domain", "field", "category"),
+    [
+        ("wealth", "summary", "wealth"),
+        ("strength", "classification", "overview"),
+        ("pattern", "classification", "career"),
+        ("relationship", "summary", "relationship"),
+    ],
+)
+def test_long_supplied_fact_still_builds_bounded_complete_answer(
+    domain,
+    field,
+    category,
+):
+    from core.ai_answer_format import render_structured_answer
+    from core.local_bazi_answer import build_local_answer
+
+    context = _context(category, "请分析")
+    facts = dict(context.chart_facts)
+    section = dict(facts[domain])
+    useful_prefix = f"保留-{domain}-"
+    section[field] = useful_prefix + ("长" * 3200)
+    facts[domain] = section
+    long_context = context.model_copy(update={"chart_facts": facts})
+
+    answer = build_local_answer(long_context)
+    sections = render_structured_answer(answer)
+    strings = [
+        answer.analysis_conclusion,
+        *answer.chart_evidence,
+        *answer.rule_evidence,
+        *answer.timing_conditions,
+        *answer.practical_advice,
+        *answer.uncertainty_limitations,
+    ]
+
+    assert list(sections) == SIX_SECTION_TITLES
+    assert all(sections.values())
+    assert useful_prefix in answer.analysis_conclusion
+    assert all(0 < len(value) <= 3000 for value in strings)

@@ -9,6 +9,9 @@ from core.ai_models import AIRequestContext, BaziAIAnswer
 
 _CURRENT_MARRIAGE_TERMS = (
     "当前婚姻状态",
+    "是否已婚",
+    "已婚了吗",
+    "未婚还是已婚",
     "现在是否",
     "目前是否",
     "现在已婚",
@@ -16,7 +19,11 @@ _CURRENT_MARRIAGE_TERMS = (
     "结婚了吗",
     "有没有结婚",
 )
-_BORROWING_TERMS = ("借贷", "贷款", "抵押", "杠杆")
+_BORROWING_TERMS = (
+    "房贷", "按揭", "借钱", "负债", "融资", "抵押", "借贷", "贷款", "杠杆",
+)
+_MAX_LOCAL_STRING_CHARS = 3000
+_TRUNCATION_SUFFIX = "…（已按本地回答长度上限截断）"
 
 
 def _mapping(value: object) -> Mapping[str, object]:
@@ -38,8 +45,17 @@ def _strings(value: object) -> list[str]:
     ]
 
 
+def _bounded_string(value: str) -> str:
+    text = value.strip()
+    if len(text) <= _MAX_LOCAL_STRING_CHARS:
+        return text
+    prefix_limit = _MAX_LOCAL_STRING_CHARS - len(_TRUNCATION_SUFFIX)
+    return text[:prefix_limit].rstrip() + _TRUNCATION_SUFFIX
+
+
 def _deduplicated(items: Sequence[str], *, limit: int = 12) -> list[str]:
-    return list(dict.fromkeys(item for item in items if item.strip()))[:limit]
+    bounded = (_bounded_string(item) for item in items if item.strip())
+    return list(dict.fromkeys(bounded))[:limit]
 
 
 def _base_chart_evidence(facts: Mapping[str, object]) -> list[str]:
@@ -86,6 +102,12 @@ def _domain_evidence(
     return []
 
 
+def _is_current_marriage_question(context: AIRequestContext) -> bool:
+    return context.category == "relationship" and any(
+        term in context.question for term in _CURRENT_MARRIAGE_TERMS
+    )
+
+
 def _analysis_conclusion(
     context: AIRequestContext,
     facts: Mapping[str, object],
@@ -105,10 +127,14 @@ def _analysis_conclusion(
             "可据此观察工作方式和承载条件，但具体行业选择仍需现实验证。"
         )
     if category == "relationship":
-        status_limit = ""
-        if any(term in context.question for term in _CURRENT_MARRIAGE_TERMS):
-            status_limit = "命盘不能确认当前是否已婚；"
-        return f"{status_limit}关系判断仅描述互动倾向与建立条件：{relationship}"
+        if _is_current_marriage_question(context):
+            return (
+                "命盘不能确认当前是否已婚；"
+                "从已提供的命盘关系结构看，倾向于呈现这些关系发展条件："
+                f"{relationship}；这不是现实或法律状态认定，"
+                "仍需以本人现实情况为准。"
+            )
+        return f"关系判断仅描述互动倾向与建立条件：{relationship}"
     if category == "family":
         return (
             "命盘只能观察家庭互动倾向，不能替代当事人的真实经历；"
@@ -125,7 +151,10 @@ def _analysis_conclusion(
     )
 
 
-def _timing_conditions(facts: Mapping[str, object]) -> list[str]:
+def _timing_conditions(
+    context: AIRequestContext,
+    facts: Mapping[str, object],
+) -> list[str]:
     dayun = _mapping(facts.get("dayun"))
     direction = str(dayun.get("direction") or "").strip()
     start = str(dayun.get("start") or "").strip()
@@ -170,6 +199,14 @@ def _timing_conditions(facts: Mapping[str, object]) -> list[str]:
                 if pillar:
                     detail += f"年柱{pillar}"
                 conditions.append(f"已提供的目标年份事实：{detail}。")
+
+    if _is_current_marriage_question(context):
+        relationship = _text(_mapping(facts.get("relationship")).get("summary"))
+        conditions.append(
+            "关系状态的倾向判断依据已提供的关系事实："
+            f"{relationship}；并只把上述已提供的大运或流年事实作为时间条件，"
+            "仍需由本人现实情况核实。"
+        )
 
     if not conditions:
         conditions.append("当前上下文未提供具体大运或流年事实，不能补充时间断语。")
@@ -224,6 +261,11 @@ def _limitations(context: AIRequestContext) -> list[str]:
     ]
     if context.category == "relationship":
         limitations.append("命盘不能单独证明当事人当前是否已婚或关系是否已经建立。")
+    if _is_current_marriage_question(context):
+        limitations.append(
+            "上述倾向不代表确定已婚或未婚，也不构成现实或法律状态认定，"
+            "仍需以本人现实情况为准。"
+        )
     if any(term in context.question for term in _BORROWING_TERMS):
         limitations.append("命盘不能保证借贷、抵押、投资或创业结果。")
     if context.requires_timing or context.category == "timing":
@@ -248,10 +290,10 @@ def build_local_answer(context: AIRequestContext) -> BaziAIAnswer:
         ]
     )
     return BaziAIAnswer(
-        analysis_conclusion=_analysis_conclusion(context, facts),
+        analysis_conclusion=_bounded_string(_analysis_conclusion(context, facts)),
         chart_evidence=chart_evidence or ["当前上下文未提供可引用的命盘事实。"],
         rule_evidence=rule_evidence or ["本地回答不得超出已提供的规则证据。"],
-        timing_conditions=_timing_conditions(facts),
+        timing_conditions=_timing_conditions(context, facts),
         practical_advice=_practical_advice(context),
         uncertainty_limitations=_limitations(context),
     )

@@ -140,6 +140,60 @@ def test_current_marriage_status_wording_survives_safe_projection():
 
 
 @pytest.mark.parametrize(
+    "question",
+    [
+        "她是否已婚？",
+        "她已婚了吗？",
+        "现在是未婚还是已婚？",
+    ],
+)
+def test_additional_current_marriage_variants_project_to_safe_status_intent(question):
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    facts = build_chart_facts(
+        build_bazi_chart(
+            {
+                "gender": "女",
+                "birth_date": "1996-09-04",
+                "birth_hour": 23,
+                "birth_minute": 45,
+            }
+        )
+    )
+    context = build_ai_context(facts, question, [])
+
+    assert "当前婚姻状态" in context.question
+    assert context.category == "relationship"
+
+
+@pytest.mark.parametrize(
+    "term",
+    ["房贷", "按揭", "借钱", "负债", "融资"],
+)
+def test_borrowing_synonyms_survive_projection_and_route_to_wealth(term):
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    facts = build_chart_facts(
+        build_bazi_chart(
+            {
+                "gender": "女",
+                "birth_date": "1996-09-04",
+                "birth_hour": 23,
+                "birth_minute": 45,
+            }
+        )
+    )
+    context = build_ai_context(facts, f"{term}要注意什么？", [])
+
+    assert term in context.question
+    assert context.category == "wealth"
+
+
+@pytest.mark.parametrize(
     ("question", "safe_phrase"),
     [
         ("她目前结婚了吗？", "目前结婚了吗"),
