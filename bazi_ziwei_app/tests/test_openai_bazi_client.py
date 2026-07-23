@@ -43,11 +43,12 @@ def _answer():
     from core.ai_models import BaziAIAnswer
 
     return BaziAIAnswer(
-        answer="财运需要结合承载能力。",
+        analysis_conclusion="财运需要结合承载能力。",
         chart_evidence=["丙日主"],
         rule_evidence=["承财看日主能力"],
-        uncertainty=[],
-        cautions=["不保证投资结果"],
+        timing_conditions=["具体阶段需结合流年观察"],
+        practical_advice=["先核对现实现金流"],
+        uncertainty_limitations=["不保证投资结果"],
     )
 
 
@@ -63,7 +64,7 @@ def test_client_uses_structured_responses_api_without_storage():
     result = client.answer(_context())
     call = responses.calls[0]
 
-    assert result.answer
+    assert result.analysis_conclusion
     assert call["model"] == "gpt-5.6-sol"
     assert call["store"] is False
     assert call["reasoning"] == {"effort": "medium"}
@@ -89,7 +90,16 @@ def test_client_classifies_pydantic_parse_failure_as_retryable_unparseable():
     from services.openai_bazi_client import AIServiceError, OpenAIBaziClient
 
     with pytest.raises(ValidationError) as captured:
-        BaziAIAnswer.model_validate({"answer": "", "chart_evidence": [""], "rule_evidence": [""]})
+        BaziAIAnswer.model_validate(
+            {
+                "analysis_conclusion": "",
+                "chart_evidence": [""],
+                "rule_evidence": [""],
+                "timing_conditions": [""],
+                "practical_advice": [""],
+                "uncertainty_limitations": [""],
+            }
+        )
     responses = _Responses(error=captured.value)
     client = OpenAIBaziClient(AIConfig("server-key", True), client=_Client(responses))
 

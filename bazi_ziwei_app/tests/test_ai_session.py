@@ -54,8 +54,9 @@ def test_chat_message_has_timestamp_and_allowlisted_details_only():
         details={
             "chart_evidence": ["命盘证据", 123, ""],
             "rule_evidence": ["规则证据"],
+            "timing_conditions": ["阶段条件"],
+            "practical_advice": ["现实建议"],
             "uncertainty": ["不确定性"],
-            "cautions": ["注意事项"],
             "raw_payload": {"customer_name": "不应保存"},
         },
     )
@@ -63,6 +64,24 @@ def test_chat_message_has_timestamp_and_allowlisted_details_only():
     item = state["bazi_chat_messages"][0]
     assert item["created_at"].endswith("+00:00")
     assert set(item["details"]) == {
-        "chart_evidence", "rule_evidence", "uncertainty", "cautions"
+        "chart_evidence",
+        "rule_evidence",
+        "timing_conditions",
+        "practical_advice",
+        "uncertainty",
     }
     assert item["details"]["chart_evidence"] == ["命盘证据"]
+
+
+def test_recent_context_truncates_long_answers_without_changing_saved_display():
+    from core.ai_session import append_chat_message, recent_context_messages
+
+    state = {}
+    full_answer = "甲" * 4500
+    append_chat_message(state, "assistant", full_answer)
+
+    history = recent_context_messages(state)
+
+    assert state["bazi_chat_messages"][0]["content"] == full_answer
+    assert len(history) == 1
+    assert history[0].content == full_answer[:4000]

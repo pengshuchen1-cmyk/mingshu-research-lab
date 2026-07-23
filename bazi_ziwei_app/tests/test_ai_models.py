@@ -6,11 +6,12 @@ from pydantic import ValidationError
 
 def _valid_answer():
     return {
-        "answer": "这是基于命盘事实的趋势分析。",
+        "analysis_conclusion": "这是基于命盘事实的趋势分析。",
         "chart_evidence": ["日主乙木"],
         "rule_evidence": ["强弱先看月令与通根"],
-        "uncertainty": [],
-        "cautions": ["结合现实选择验证"],
+        "timing_conditions": ["具体阶段需要结合流年观察"],
+        "practical_advice": ["结合现实选择验证"],
+        "uncertainty_limitations": ["命理趋势不保证现实结果"],
     }
 
 
@@ -18,7 +19,7 @@ def test_ai_answer_requires_evidence_and_rejects_unknown_fields():
     from core.ai_models import BaziAIAnswer
 
     answer = BaziAIAnswer.model_validate(_valid_answer())
-    assert answer.answer
+    assert answer.analysis_conclusion
 
     with pytest.raises(ValidationError):
         BaziAIAnswer.model_validate({**_valid_answer(), "extra": "not allowed"})

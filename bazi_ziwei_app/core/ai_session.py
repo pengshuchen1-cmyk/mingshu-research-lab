@@ -18,7 +18,13 @@ CHAT_SESSION_KEYS = (
     CHAT_LAST_ACTIVITY_KEY,
     CHAT_REQUEST_STATE_KEY,
 )
-DETAIL_KEYS = ("chart_evidence", "rule_evidence", "uncertainty", "cautions")
+DETAIL_KEYS = (
+    "chart_evidence",
+    "rule_evidence",
+    "timing_conditions",
+    "practical_advice",
+    "uncertainty",
+)
 
 
 def _as_utc(value: datetime) -> datetime:
@@ -112,7 +118,10 @@ def append_chat_message(
 def recent_context_messages(state: MutableMapping) -> list[ChatMessage]:
     items = list(state.get(CHAT_MESSAGES_KEY, []))[-6:]
     return [
-        ChatMessage(role=str(item.get("role", "user")), content=str(item.get("content", "")))
+        ChatMessage(
+            role=str(item.get("role", "user")),
+            content=str(item.get("content", ""))[:4000],
+        )
         for item in items
         if isinstance(item, dict) and item.get("content")
     ]

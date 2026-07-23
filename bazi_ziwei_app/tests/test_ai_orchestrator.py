@@ -26,11 +26,12 @@ def _answer(text, evidence):
     from core.ai_models import BaziAIAnswer
 
     return BaziAIAnswer(
-        answer=text,
+        analysis_conclusion=text,
         chart_evidence=[evidence],
         rule_evidence=["财运承载需结合日主强弱、印比支持与食伤生财路径判断。"],
-        uncertainty=["现实结果取决于执行"],
-        cautions=["不替代财务决策"],
+        timing_conditions=["具体阶段需结合流年事实观察。"],
+        practical_advice=["先核对现金流，再决定行动。"],
+        uncertainty_limitations=["现实结果取决于执行，不替代财务决策。"],
     )
 
 
@@ -53,6 +54,17 @@ def test_orchestrator_retries_once_after_guard_rejection():
     )
 
     assert result.source == "cloud_validated"
+    assert list(result.sections) == [
+        "分析结论",
+        "命盘依据",
+        "规则依据",
+        "阶段与触发条件",
+        "现实建议",
+        "不确定性与限制",
+    ]
+    assert result.timing_conditions
+    assert result.practical_advice
+    assert result.degraded_reason is None
     assert len(fake.contexts) == 2
     assert "纠正要求" in fake.contexts[1].question
 
@@ -71,6 +83,10 @@ def test_orchestrator_uses_local_rules_when_cloud_disabled():
     )
 
     assert result.source == "local_rules"
+    assert len(result.sections) == 6
+    assert result.timing_conditions
+    assert result.practical_advice
+    assert result.degraded_reason == "missing_api_key"
     assert len(fake.contexts) == 0
     assert "不能确认当前是否已婚" in result.answer
 

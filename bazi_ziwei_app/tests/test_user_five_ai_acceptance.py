@@ -51,10 +51,13 @@ def test_all_six_ai_questions_are_grounded_for_each_user_chart(case):
         )
         answers.append(result)
         assert result.source == "cloud_validated"
+        assert len(result.sections) == 6
         assert result.chart_evidence
         assert result.rule_evidence
+        assert result.timing_conditions
+        assert result.practical_advice
         assert result.uncertainty
-        assert result.cautions
+        assert result.degraded_reason is None
         assert not any(term in result.answer for term in ("一定会", "肯定发财", "保证成功"))
 
     assert "不能保证" in answers[-2].answer

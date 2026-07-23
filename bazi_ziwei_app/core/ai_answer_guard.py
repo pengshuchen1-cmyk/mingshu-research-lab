@@ -47,7 +47,14 @@ def _string_facts(value: object) -> set[str]:
 
 def validate_ai_answer(answer: BaziAIAnswer, context: AIRequestContext) -> GuardResult:
     combined = "。".join(
-        [answer.answer, *answer.chart_evidence, *answer.rule_evidence]
+        [
+            answer.analysis_conclusion,
+            *answer.chart_evidence,
+            *answer.rule_evidence,
+            *answer.timing_conditions,
+            *answer.practical_advice,
+            *answer.uncertainty_limitations,
+        ]
     )
     violations: list[str] = []
     if any(phrase in combined for phrase in DETERMINISTIC_PHRASES):

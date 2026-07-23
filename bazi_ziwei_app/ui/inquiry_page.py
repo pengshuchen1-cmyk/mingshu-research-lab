@@ -55,9 +55,16 @@ def _render_supporting_details(item: dict) -> None:
     details = item.get("details", {}) or {}
     chart_evidence = details.get("chart_evidence", [])
     rule_evidence = details.get("rule_evidence", [])
+    timing_conditions = details.get("timing_conditions", [])
+    practical_advice = details.get("practical_advice", [])
     uncertainty = details.get("uncertainty", [])
-    cautions = details.get("cautions", [])
-    if not any((chart_evidence, rule_evidence, uncertainty, cautions)):
+    if not any((
+        chart_evidence,
+        rule_evidence,
+        timing_conditions,
+        practical_advice,
+        uncertainty,
+    )):
         return
     with st.expander("查看依据与限制", expanded=False):
         if chart_evidence:
@@ -68,13 +75,17 @@ def _render_supporting_details(item: dict) -> None:
             st.markdown("**规则依据**")
             for text in rule_evidence:
                 st.write(f"• {text}")
+        if timing_conditions:
+            st.markdown("**阶段与触发条件**")
+            for text in timing_conditions:
+                st.write(f"• {text}")
+        if practical_advice:
+            st.markdown("**现实建议**")
+            for text in practical_advice:
+                st.write(f"• {text}")
         if uncertainty:
             st.markdown("**不确定性**")
             for text in uncertainty:
-                st.write(f"• {text}")
-        if cautions:
-            st.markdown("**需要注意**")
-            for text in cautions:
                 st.write(f"• {text}")
 
 
@@ -96,8 +107,9 @@ def _save_answer(state, result: AnswerResult) -> None:
         details={
             "chart_evidence": list(result.chart_evidence),
             "rule_evidence": list(result.rule_evidence),
+            "timing_conditions": list(result.timing_conditions),
+            "practical_advice": list(result.practical_advice),
             "uncertainty": list(result.uncertainty),
-            "cautions": list(result.cautions),
         },
     )
 

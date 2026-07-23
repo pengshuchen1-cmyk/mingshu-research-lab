@@ -17,11 +17,15 @@ QuestionCategory = Literal[
 class BaziAIAnswer(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
-    answer: str = Field(min_length=1, max_length=4000)
+    analysis_conclusion: str = Field(min_length=1, max_length=3000)
     chart_evidence: list[Annotated[str, Field(min_length=1)]] = Field(min_length=1, max_length=12)
     rule_evidence: list[Annotated[str, Field(min_length=1)]] = Field(min_length=1, max_length=12)
-    uncertainty: list[Annotated[str, Field(min_length=1)]] = Field(default_factory=list, max_length=8)
-    cautions: list[Annotated[str, Field(min_length=1)]] = Field(default_factory=list, max_length=8)
+    timing_conditions: list[Annotated[str, Field(min_length=1)]] = Field(min_length=1, max_length=12)
+    practical_advice: list[Annotated[str, Field(min_length=1)]] = Field(min_length=1, max_length=12)
+    uncertainty_limitations: list[Annotated[str, Field(min_length=1)]] = Field(
+        min_length=1,
+        max_length=8,
+    )
 
 
 class ChatMessage(BaseModel):
@@ -78,11 +82,27 @@ class AIConfig:
         )
 
 
+DegradationReason = Literal[
+    "missing_api_key",
+    "insufficient_quota",
+    "invalid_credentials",
+    "rate_limited",
+    "network_error",
+    "timeout",
+    "service_unavailable",
+    "unparseable_response",
+    "local_validation_failed",
+]
+
+
 @dataclass(frozen=True)
 class AnswerResult:
     answer: str
+    sections: dict[str, str]
     chart_evidence: tuple[str, ...]
     rule_evidence: tuple[str, ...]
+    timing_conditions: tuple[str, ...]
+    practical_advice: tuple[str, ...]
     uncertainty: tuple[str, ...]
-    cautions: tuple[str, ...]
     source: Literal["cloud_validated", "local_rules"]
+    degraded_reason: DegradationReason | None = None

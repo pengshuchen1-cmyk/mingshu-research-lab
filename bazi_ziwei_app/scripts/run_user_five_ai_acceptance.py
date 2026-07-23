@@ -29,11 +29,12 @@ class DeterministicAcceptanceClient:
         else:
             text = "结合当前命盘事实与本地规则，建议把这项倾向作为观察线索，再结合现实资源、选择和时间条件验证。"
         return BaziAIAnswer(
-            answer=text,
+            analysis_conclusion=text,
             chart_evidence=[f"命盘四柱中年柱为{pillar}"],
             rule_evidence=[rule],
-            uncertainty=["命理倾向不等于现实事件已经发生。"],
-            cautions=["重大投资、借贷或婚姻决策应以现实调查为准。"],
+            timing_conditions=["具体阶段需结合大运、流年事实与现实环境观察。"],
+            practical_advice=["重大投资、借贷或婚姻决策应以现实调查为准。"],
+            uncertainty_limitations=["命理倾向不等于现实事件已经发生。"],
         )
 
 

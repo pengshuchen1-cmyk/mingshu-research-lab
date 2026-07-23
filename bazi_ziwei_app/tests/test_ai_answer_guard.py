@@ -23,16 +23,19 @@ def _context():
     )
 
 
-def _answer(text, chart_evidence=None):
+def _answer(text, chart_evidence=None, **overrides):
     from core.ai_models import BaziAIAnswer
 
-    return BaziAIAnswer(
-        answer=text,
-        chart_evidence=chart_evidence or ["壬日主，命局身强"],
-        rule_evidence=["承财能力要结合日主强弱"],
-        uncertainty=["现实收入仍取决于选择"],
-        cautions=["控制现金流风险"],
-    )
+    values = {
+        "analysis_conclusion": text,
+        "chart_evidence": chart_evidence or ["壬日主，命局身强"],
+        "rule_evidence": ["承财能力要结合日主强弱"],
+        "timing_conditions": ["后续阶段仍需结合现实条件观察"],
+        "practical_advice": ["控制现金流风险"],
+        "uncertainty_limitations": ["现实收入仍取决于选择"],
+    }
+    values.update(overrides)
+    return BaziAIAnswer(**values)
 
 
 def test_guard_accepts_consistent_evidence():
@@ -112,9 +115,12 @@ def test_structured_answer_rejects_blank_evidence_items():
 
     with pytest.raises(ValidationError):
         BaziAIAnswer(
-            answer="回答",
+            analysis_conclusion="回答",
             chart_evidence=[""],
             rule_evidence=[""],
+            timing_conditions=["阶段条件"],
+            practical_advice=["现实建议"],
+            uncertainty_limitations=["不确定性"],
         )
 
 
@@ -131,3 +137,21 @@ def test_guard_rejects_common_wealth_and_spouse_synonym_claims():
         assert {"wealth_element_contradiction", "spouse_star_contradiction"} & set(
             result.violations
         )
+
+
+def test_guard_examines_all_six_answer_sections():
+    from core.ai_answer_guard import validate_ai_answer
+
+    cases = [
+        ("analysis_conclusion", "一定会成功"),
+        ("chart_evidence", ["壬日主，命局身强，一定会成功"]),
+        ("rule_evidence", ["承财能力要结合日主强弱，一定会成功"]),
+        ("timing_conditions", ["这个阶段一定会成功"]),
+        ("practical_advice", ["采取行动一定会成功"]),
+        ("uncertainty_limitations", ["即使有限制也一定会成功"]),
+    ]
+
+    for field, value in cases:
+        answer = _answer("壬日主身强，财务宜控制现金流。", **{field: value})
+        result = validate_ai_answer(answer, _context())
+        assert "deterministic_claim" in result.violations, field
