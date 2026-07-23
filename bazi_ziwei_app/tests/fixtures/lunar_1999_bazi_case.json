@@ -1,0 +1,11 @@
+{
+  "id": "L1999",
+  "calendar": "lunar",
+  "date": "1999-07-01",
+  "time": "10:00",
+  "time_label": "巳时",
+  "is_leap_month": false,
+  "gender": "male",
+  "expected_solar_date": "1999-08-11",
+  "expected_pillars": ["己卯", "壬申", "乙未", "辛巳"]
+}

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import subprocess
+import sys
 
 import pytest
 
@@ -75,6 +77,19 @@ def test_five_chart_ai_acceptance_renderer_is_deterministic():
     assert first.count("验收通过") == 5
     assert "不能保证" in first
     assert "不能确认当前是否已经结婚" in first
+
+
+def test_five_chart_ai_acceptance_script_runs_from_project_root():
+    completed = subprocess.run(
+        [sys.executable, "scripts/run_user_five_ai_acceptance.py"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert "acceptance_samples/user_five_ai_acceptance.md" in completed.stdout
 
 
 @pytest.mark.parametrize(

@@ -7,19 +7,26 @@ import json
 import os
 from datetime import datetime, timezone
 from pathlib import Path
+import sys
+
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from core.ai_models import AIConfig, BaziAIAnswer
 from core.ai_orchestrator import answer_question
 from core.bazi_engine import build_bazi_chart
 
 
-ROOT = Path(__file__).resolve().parents[1]
-
-
 class DeterministicAcceptanceClient:
     """Fake structured client that uses only supplied facts and rules."""
 
+    def __init__(self):
+        self.contexts = []
+
     def answer(self, context):
+        self.contexts.append(context)
         pillar = str((context.chart_facts.get("pillars") or ["本盘"])[0])
         rule = context.rule_evidence[0]["statement"]
         if "抵押" in context.question or "保证" in context.question:
