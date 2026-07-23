@@ -138,6 +138,69 @@ def test_current_marriage_status_wording_survives_safe_projection():
     assert "当前婚姻状态" in context.question
 
 
+@pytest.mark.parametrize(
+    ("question", "safe_phrase"),
+    [
+        ("她目前结婚了吗？", "目前结婚了吗"),
+        ("现在已婚吗？", "现在已婚吗"),
+        ("当前未婚，想问姻缘", "当前未婚"),
+    ],
+)
+def test_current_marriage_status_variants_keep_safe_intent(question, safe_phrase):
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    facts = build_chart_facts(
+        build_bazi_chart(
+            {
+                "gender": "女",
+                "birth_date": "1996-09-04",
+                "birth_hour": 23,
+                "birth_minute": 45,
+            }
+        )
+    )
+    context = build_ai_context(facts, question, [])
+
+    assert "她" not in context.question
+    assert safe_phrase in context.question
+    assert "当前婚姻状态" in context.question
+    assert context.category == "relationship"
+
+
+@pytest.mark.parametrize(
+    ("question", "normalized"),
+    [
+        ("想看2026年 3月的AI创业现金流", "2026年3月"),
+        ("想看2026年三月的AI创业现金流", "2026年3月"),
+        ("想看明年三月的AI创业现金流", "明年3月"),
+    ],
+)
+def test_forecast_month_variants_are_normalized(question, normalized):
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    facts = build_chart_facts(
+        build_bazi_chart(
+            {
+                "gender": "女",
+                "birth_date": "1996-09-04",
+                "birth_hour": 23,
+                "birth_minute": 45,
+            }
+        )
+    )
+    context = build_ai_context(facts, question, [])
+
+    assert normalized in context.question
+    if normalized.startswith("2026年"):
+        assert context.chart_facts["target_years"] == [
+            {"year": 2026, "year_pillar": "丙午"}
+        ]
+
+
 def test_timing_context_contains_concrete_current_and_dayun_facts():
     from core.ai_context import build_ai_context
     from core.bazi_engine import build_bazi_chart

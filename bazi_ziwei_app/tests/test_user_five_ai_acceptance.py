@@ -75,3 +75,23 @@ def test_five_chart_ai_acceptance_renderer_is_deterministic():
     assert first.count("验收通过") == 5
     assert "不能保证" in first
     assert "不能确认当前是否已经结婚" in first
+
+
+@pytest.mark.parametrize(
+    "question",
+    ("她目前结婚了吗？", "现在已婚吗？", "当前未婚，想问姻缘"),
+)
+def test_current_marriage_status_variants_trigger_safe_acceptance_answer(question):
+    from core.ai_models import AIConfig
+    from core.ai_orchestrator import answer_question
+    from scripts.run_user_five_ai_acceptance import DeterministicAcceptanceClient
+
+    result = answer_question(
+        _chart(CASES[0]),
+        question,
+        [],
+        config=AIConfig("fixture-key", True),
+        client=DeterministicAcceptanceClient(),
+    )
+
+    assert "不能确认当前是否已经结婚" in result.answer

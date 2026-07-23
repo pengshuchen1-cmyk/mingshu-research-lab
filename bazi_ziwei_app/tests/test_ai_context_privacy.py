@@ -270,3 +270,76 @@ def test_unrecognized_names_and_cities_are_dropped_by_safe_semantic_projection()
     history = context.history[0].content
     for useful in ("2027年的事业转换", "因为现金流压力", "注意风险"):
         assert useful in history
+
+
+def test_safe_term_collisions_inside_sensitive_fields_and_logs_never_recover():
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    facts = build_chart_facts(
+        build_bazi_chart(
+            {"gender": "男", "birth_date": "1994-09-23", "birth_hour": 18, "birth_minute": 0}
+        )
+    )
+    context = build_ai_context(
+        facts,
+        "profile_id 事业，database_id AI创业，API key 2026年",
+        [{"role": "user", "content": "[INFO] user=事业 city=财运"}],
+    )
+
+    for collision in ("事业", "AI创业", "2026年"):
+        assert collision not in context.question
+    for collision in ("事业", "财运"):
+        assert collision not in context.history[0].content
+    assert context.category == "other"
+    assert context.requires_timing is False
+    assert "target_years" not in context.chart_facts
+    assert context.question == "[已隐去]"
+    assert context.history[0].content == "[已隐去]"
+
+
+def test_common_chinese_birth_month_forms_do_not_become_forecast_targets():
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    facts = build_chart_facts(
+        build_bazi_chart(
+            {"gender": "男", "birth_date": "1994-09-23", "birth_hour": 18, "birth_minute": 0}
+        )
+    )
+    for question in (
+        "1996年9月出生，想看2026年财运",
+        "生日1996年9月，想看2026年财运",
+        "1996年生的，想看2026年财运",
+    ):
+        context = build_ai_context(facts, question, [])
+
+        assert "1996年" not in context.question
+        assert "2026年财运" in context.question
+        assert context.chart_facts["target_years"] == [
+            {"year": 2026, "year_pillar": "丙午"}
+        ]
+
+
+def test_english_identity_value_stops_before_unpunctuated_safe_semantics():
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    facts = build_chart_facts(
+        build_bazi_chart(
+            {"gender": "女", "birth_date": "1986-08-15", "birth_hour": 10, "birth_minute": 0}
+        )
+    )
+    context = build_ai_context(
+        facts,
+        "name: Alice Smith wants advice on 2026年AI创业现金流怎么办",
+        [],
+    )
+
+    for forbidden in ("name", "Alice", "Smith", "wants", "advice"):
+        assert forbidden not in context.question
+    for useful in ("2026年", "AI创业", "现金流", "怎么办"):
+        assert useful in context.question
