@@ -5,7 +5,8 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import dataclass
-from typing import Literal
+from types import MappingProxyType
+from typing import Any, Literal, Mapping
 
 from core.bazi_engine import build_bazi_chart
 from utils.validators import validate_profile
@@ -60,14 +61,27 @@ class BirthFormInput:
 
 @dataclass(frozen=True)
 class BirthPreview:
-    profile: dict
-    chart: dict
+    profile: Mapping[str, Any]
+    chart: Mapping[str, Any]
     input_text: str
     solar_datetime: str
     pillars: tuple[str, str, str, str]
     calculation_basis: str
     input_fingerprint: str
     chart_fingerprint: str
+
+
+def _freeze(value: Any) -> Any:
+    """Recursively freeze preview data without changing engine input types."""
+    if isinstance(value, dict):
+        return MappingProxyType({key: _freeze(item) for key, item in value.items()})
+    if isinstance(value, list):
+        return tuple(_freeze(item) for item in value)
+    if isinstance(value, tuple):
+        return tuple(_freeze(item) for item in value)
+    if isinstance(value, set):
+        return frozenset(_freeze(item) for item in value)
+    return value
 
 
 def _input_text(value: BirthFormInput) -> str:
@@ -103,8 +117,8 @@ def build_birth_preview(value: BirthFormInput) -> BirthPreview:
         else "时辰不详"
     )
     return BirthPreview(
-        profile=profile,
-        chart=chart,
+        profile=_freeze(profile),
+        chart=_freeze(chart),
         input_text=_input_text(value),
         solar_datetime=f"{chart['profile']['birth_date']} {time_text}",
         pillars=pillars,

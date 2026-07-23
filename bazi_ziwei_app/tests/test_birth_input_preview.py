@@ -74,3 +74,27 @@ def test_paired_unknown_time_is_valid_but_partial_time_is_invalid():
 
     profile["birth_minute"] = 0
     assert validate_profile(profile) == (False, "出生小时和分钟需要同时填写。")
+
+
+def test_preview_profile_and_chart_are_deeply_immutable():
+    import pytest
+
+    preview = build_birth_preview(
+        BirthFormInput(
+            name="访客",
+            gender="男",
+            calendar="solar",
+            year=1999,
+            month=7,
+            day=1,
+            hour=10,
+            minute=0,
+        )
+    )
+
+    with pytest.raises(TypeError):
+        preview.profile["name"] = "篡改"
+    with pytest.raises(TypeError):
+        preview.chart["pillars"]["year"]["pillar"] = "篡改"
+    with pytest.raises(AttributeError):
+        preview.chart["pillar_evidence"]["rule_ids"].append("篡改")
