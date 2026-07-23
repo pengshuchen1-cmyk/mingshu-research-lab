@@ -1,5 +1,17 @@
 from __future__ import annotations
 
+import pytest
+
+
+SIX_SECTION_TITLES = [
+    "分析结论",
+    "命盘依据",
+    "规则依据",
+    "阶段与触发条件",
+    "现实建议",
+    "不确定性与限制",
+]
+
 
 class _FakeClient:
     def __init__(self, answers):
@@ -83,12 +95,29 @@ def test_orchestrator_uses_local_rules_when_cloud_disabled():
     )
 
     assert result.source == "local_rules"
-    assert len(result.sections) == 6
+    assert list(result.sections) == SIX_SECTION_TITLES
+    assert all(result.sections.values())
     assert result.timing_conditions
     assert result.practical_advice
     assert result.degraded_reason == "missing_api_key"
     assert len(fake.contexts) == 0
     assert "不能确认当前是否已婚" in result.answer
+
+
+def test_missing_api_key_returns_complete_wealth_fallback_with_exact_reason():
+    from core.ai_models import AIConfig
+    from core.ai_orchestrator import answer_question
+
+    result = answer_question(
+        _chart(),
+        "财运如何？",
+        [],
+        config=AIConfig("", False),
+    )
+
+    assert result.source == "local_rules"
+    assert result.degraded_reason == "missing_api_key"
+    assert list(result.sections) == SIX_SECTION_TITLES
 
 
 def test_orchestrator_retries_once_for_malformed_structured_output():
@@ -112,6 +141,102 @@ def test_orchestrator_retries_once_for_malformed_structured_output():
 
     assert result.source == "cloud_validated"
     assert len(fake.contexts) == 2
+
+
+@pytest.mark.parametrize(
+    "error_code",
+    [
+        "insufficient_quota",
+        "invalid_credentials",
+        "rate_limited",
+        "network_error",
+        "timeout",
+        "service_unavailable",
+    ],
+)
+def test_orchestrator_preserves_service_error_reason_without_retry(error_code):
+    from core.ai_models import AIConfig
+    from core.ai_orchestrator import answer_question
+    from services.openai_bazi_client import AIServiceError
+
+    fake = _FakeClient([AIServiceError(error_code)])
+    result = answer_question(
+        _chart(),
+        "财运如何？",
+        [],
+        config=AIConfig("key", True),
+        client=fake,
+    )
+
+    assert result.source == "local_rules"
+    assert result.degraded_reason == error_code
+    assert list(result.sections) == SIX_SECTION_TITLES
+    assert len(fake.contexts) == 1
+
+
+def test_orchestrator_returns_unparseable_reason_after_one_retry():
+    from core.ai_models import AIConfig
+    from core.ai_orchestrator import answer_question
+    from services.openai_bazi_client import AIServiceError
+
+    fake = _FakeClient(
+        [
+            AIServiceError("unparseable_response"),
+            AIServiceError("unparseable_response"),
+        ]
+    )
+    result = answer_question(
+        _chart(),
+        "财运如何？",
+        [],
+        config=AIConfig("key", True),
+        client=fake,
+    )
+
+    assert result.source == "local_rules"
+    assert result.degraded_reason == "unparseable_response"
+    assert len(fake.contexts) == 2
+
+
+def test_orchestrator_returns_validation_reason_after_two_guard_rejections():
+    from core.ai_models import AIConfig
+    from core.ai_orchestrator import answer_question
+
+    fake = _FakeClient(
+        [
+            _answer("乙巳日主肯定发财。", "日柱乙巳"),
+            _answer("丙午日主一定会发财。", "日柱丙午"),
+        ]
+    )
+    result = answer_question(
+        _chart(),
+        "财运如何？",
+        [],
+        config=AIConfig("key", True),
+        client=fake,
+    )
+
+    assert result.source == "local_rules"
+    assert result.degraded_reason == "local_validation_failed"
+    assert len(fake.contexts) == 2
+
+
+def test_orchestrator_does_not_expose_raw_unexpected_exception():
+    from core.ai_models import AIConfig
+    from core.ai_orchestrator import answer_question
+
+    fake = _FakeClient([RuntimeError("provider leaked secret details")])
+    result = answer_question(
+        _chart(),
+        "财运如何？",
+        [],
+        config=AIConfig("key", True),
+        client=fake,
+    )
+
+    assert result.degraded_reason == "service_unavailable"
+    assert "provider leaked secret details" not in result.answer
+    assert len(fake.contexts) == 1
 
 
 def test_orchestrator_uses_attached_facts_even_when_legacy_fields_are_poisoned():
