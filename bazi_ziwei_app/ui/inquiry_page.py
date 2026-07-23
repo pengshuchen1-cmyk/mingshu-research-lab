@@ -123,11 +123,12 @@ def _render_message(item: dict) -> None:
         details = item.get("details", {}) or {}
         sections = details.get("sections", {})
         if role == "assistant":
+            has_structured_sections = isinstance(sections, dict) and bool(sections)
             degraded_reason = details.get("degraded_reason")
             warning = degradation_warning(degraded_reason)
             if warning:
                 st.warning(warning)
-            if isinstance(sections, dict) and sections:
+            if has_structured_sections:
                 for title in SIX_SECTION_TITLES:
                     content = sections.get(title)
                     if content:
@@ -141,7 +142,8 @@ def _render_message(item: dict) -> None:
                     degraded_reason,
                 )
             )
-            _render_supporting_details(item)
+            if not has_structured_sections:
+                _render_supporting_details(item)
         else:
             st.markdown(str(item.get("content", "")))
 

@@ -29,6 +29,7 @@ class _FakeStreamlit:
         self.markdowns = []
         self.writes = []
         self.captions = []
+        self.expanders = []
         self.session_state = {}
 
     def chat_message(self, _role):
@@ -46,7 +47,8 @@ class _FakeStreamlit:
     def caption(self, text):
         self.captions.append(str(text))
 
-    def expander(self, *_args, **_kwargs):
+    def expander(self, label, **_kwargs):
+        self.expanders.append(str(label))
         return _Context()
 
     def spinner(self, *_args, **_kwargs):
@@ -90,6 +92,77 @@ def test_assistant_message_renders_warning_and_all_six_sections_directly(monkeyp
     assert fake.markdowns == [f"### {title}" for title in SECTION_TITLES]
     assert fake.writes == [sections[title] for title in SECTION_TITLES]
     assert fake.captions == ["本地完整分析 · 网络或服务异常"]
+
+
+def test_saved_structured_answer_does_not_repeat_section_evidence_in_expander(
+    monkeypatch,
+):
+    import ui.inquiry_page as inquiry_page
+    from core.ai_models import AnswerResult
+    from core.ai_session import CHAT_MESSAGES_KEY
+
+    fake = _FakeStreamlit()
+    monkeypatch.setattr(inquiry_page, "st", fake)
+    sections = {
+        "分析结论": "唯一分析结论",
+        "命盘依据": "- 唯一命盘证据",
+        "规则依据": "- 唯一规则证据",
+        "阶段与触发条件": "- 唯一阶段条件",
+        "现实建议": "- 唯一现实建议",
+        "不确定性与限制": "- 唯一不确定性",
+    }
+    result = AnswerResult(
+        answer="完整 Markdown 回答",
+        sections=sections,
+        chart_evidence=("唯一命盘证据",),
+        rule_evidence=("唯一规则证据",),
+        timing_conditions=("唯一阶段条件",),
+        practical_advice=("唯一现实建议",),
+        uncertainty=("唯一不确定性",),
+        source="cloud_validated",
+    )
+
+    inquiry_page._save_answer(fake.session_state, result)
+    inquiry_page._render_message(fake.session_state[CHAT_MESSAGES_KEY][0])
+
+    rendered = "\n".join(fake.writes)
+    for token in (
+        "唯一命盘证据",
+        "唯一规则证据",
+        "唯一阶段条件",
+        "唯一现实建议",
+        "唯一不确定性",
+    ):
+        assert rendered.count(token) == 1
+    assert fake.expanders == []
+
+
+def test_legacy_answer_without_sections_keeps_evidence_expander(monkeypatch):
+    import ui.inquiry_page as inquiry_page
+
+    fake = _FakeStreamlit()
+    monkeypatch.setattr(inquiry_page, "st", fake)
+
+    inquiry_page._render_message(
+        {
+            "role": "assistant",
+            "content": "旧版回答正文",
+            "source": "local_rules",
+            "details": {
+                "chart_evidence": ["旧版命盘证据"],
+                "rule_evidence": ["旧版规则证据"],
+                "uncertainty": ["旧版限制"],
+            },
+        }
+    )
+
+    assert fake.markdowns[0] == "旧版回答正文"
+    assert fake.expanders == ["查看补充的机器校验明细"]
+    assert fake.writes == [
+        "• 旧版命盘证据",
+        "• 旧版规则证据",
+        "• 旧版限制",
+    ]
 
 
 def test_fallback_log_uses_exact_reason_code_without_content_or_pii(monkeypatch):
