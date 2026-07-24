@@ -277,6 +277,38 @@ def test_additional_current_marriage_variants_project_to_safe_status_intent(ques
 
 
 @pytest.mark.parametrize(
+    "question",
+    [
+        "我目前的婚姻状况如何？",
+        "现在婚姻登记状态是什么？",
+        "我如今有配偶吗？",
+        "现阶段是否属于已婚人士？",
+    ],
+)
+def test_current_marriage_natural_language_variants_share_canonical_intent(
+    question,
+):
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    facts = build_chart_facts(
+        build_bazi_chart(
+            {
+                "gender": "女",
+                "birth_date": "1996-09-04",
+                "birth_hour": 23,
+                "birth_minute": 45,
+            }
+        )
+    )
+    context = build_ai_context(facts, question, [])
+
+    assert context.category == "relationship"
+    assert "当前婚姻状态" in context.question
+
+
+@pytest.mark.parametrize(
     "term",
     ["房贷", "按揭", "借钱", "负债", "融资"],
 )

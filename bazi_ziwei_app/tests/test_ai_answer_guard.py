@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 
 def _context():
     from core.ai_models import AIRequestContext
@@ -203,3 +205,35 @@ def test_current_marriage_guard_requires_disclaimer_before_qualified_tendency():
     assert accepted.accepted is True
     assert wrong_order.accepted is False
     assert "current_marriage_status_claim" in wrong_order.violations
+
+
+@pytest.mark.parametrize(
+    "claim",
+    [
+        "你的婚姻状态为已婚。",
+        "你属于已婚人士。",
+        "你现在有配偶。",
+        "你仍处于婚姻关系中。",
+        "可能需要核验，但你现在已经结婚。",
+    ],
+)
+def test_current_marriage_guard_rejects_synonym_and_distant_hedge_bypasses(
+    claim,
+):
+    from core.ai_answer_guard import validate_ai_answer
+
+    context = _context().model_copy(
+        update={
+            "question": "我目前的婚姻状况如何？",
+            "category": "relationship",
+        }
+    )
+    result = validate_ai_answer(
+        _answer(
+            "单凭八字，不能确认现实中的婚姻登记状态。" + claim
+        ),
+        context,
+    )
+
+    assert result.accepted is False
+    assert "current_marriage_status_claim" in result.violations

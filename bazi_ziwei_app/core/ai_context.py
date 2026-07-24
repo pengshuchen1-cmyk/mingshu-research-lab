@@ -6,6 +6,10 @@ import re
 from typing import Mapping, Sequence
 
 import core.yearly_engine as yearly_engine
+from core.ai_intent import (
+    CURRENT_MARRIAGE_STATUS_MARKER,
+    is_current_marriage_question,
+)
 from core.ai_models import AIRequestContext, ChatMessage, RoutedQuestion
 from core.bazi_rulebook import load_rulebook
 from core.chart_facts import ChartFacts
@@ -30,7 +34,13 @@ CATEGORY_KEYWORDS = (
             "工程师", "管理岗", "转岗", "团队", "职场", "薪资", "主管",
         ),
     ),
-    ("relationship", ("桃花", "姻缘", "婚姻", "对象", "感情", "伴侣", "结婚", "已婚", "未婚")),
+    (
+        "relationship",
+        (
+            "桃花", "姻缘", "婚姻", "对象", "感情", "伴侣", "配偶",
+            "结婚", "已婚", "未婚", "登记状态",
+        ),
+    ),
     ("family", ("父母", "家庭", "原生家庭", "长辈")),
     ("overview", ("概括", "整体", "整个命盘", "八字怎么样", "强弱和格局")),
 )
@@ -56,6 +66,23 @@ REDACTION_MARKER = "[已隐去]"
 _MAX_QUESTION_INPUT_CHARS = 500
 _MAX_HISTORY_INPUT_CHARS = 4000
 _MAX_REDACTION_INPUT_CHARS = 4000
+_SAFE_QUERY_TERMS = tuple(
+    dict.fromkeys(
+        (
+            *(
+                keyword
+                for _category, keywords in CATEGORY_KEYWORDS
+                for keyword in keywords
+            ),
+            *TIMING_KEYWORDS,
+            "分析", "为什么", "为何", "怎么", "怎样", "如何", "什么",
+            "是否", "需要", "注意", "条件", "原因", "影响", "风险",
+            "机会", "建议", "策略", "处理", "控制", "安排", "讨论",
+            "确认", "授权", "结构", "核验", "现实", "转型", "转换",
+            "调整", "规划", "选择", "适合", "发展",
+        )
+    )
+)
 
 _CHINESE_MONTH = r"(?:1[0-2]|0?[1-9]|十[一二]?|[一二三四五六七八九])"
 _BIRTH_EXPRESSION_PATTERNS = (
@@ -82,6 +109,11 @@ _BIRTH_EXPRESSION_PATTERNS = (
 )
 
 _DIRECT_SENSITIVE_PATTERNS = (
+    re.compile(
+        r"(?i)(?:配置内容|调试输出|Authorization\s*:?\s*Bearer|"
+        r"stack\s*trace|config(?:uration)?)"
+        r"[^。；;！？!?\r\n]*"
+    ),
     # Identifier/secret values are a single token and may be Chinese safe words.
     re.compile(
         r"(?i)(?:profile[\s_-]*id|database[\s_-]*id|db[\s_-]*id|"
@@ -214,6 +246,11 @@ _SENSITIVE_CLAUSE_CUE = re.compile(
     r"(?:openai[\s_-]*)?API[\s_-]*key|"
     r"internal[\s_-]*rule[\s_-]*version|内部规则版本)"
     r"\s*(?:(?:[:：=]\s*)|\s+)"
+    r"|Authorization\s*:?\s*Bearer"
+    r"|Bearer\s+[A-Za-z0-9._-]{8,}"
+    r"|(?:access[\s_-]*token|token|secret|password|passwd|env)"
+    r"\s*(?:(?:[:：=]\s*)|\s+)"
+    r"|(?:配置内容|调试输出|堆栈|stack\s*trace|config(?:uration)?)"
     r"|(?<![A-Za-z0-9_])(?:message|target|user|city)\s*="
 )
 _BOUNDED_SINGLE_NAME_FIELD_CUE = re.compile(
@@ -256,6 +293,34 @@ _GENERIC_KEY_VALUE_CUE = re.compile(
 _UNQUOTED_JSON_OBJECT_FIELD = re.compile(
     r"[^{}\"'\s，,。；;！？!?:：=]+\s*[:：=]"
 )
+_COMMON_SURNAME = (
+    "赵钱孙李周吴郑王冯陈褚卫蒋沈韩杨朱秦尤许何吕施张孔曹严华"
+    "金魏陶姜戚谢邹喻柏窦章云苏潘葛奚范彭郎鲁韦昌马苗凤花方"
+    "俞任袁柳唐罗薛伍余米贝姚孟顾尹江钟"
+)
+_NATURAL_NAME = re.compile(
+    rf"(?:^|[，,。；;！？!?\r\n])"
+    rf"(?P<value>(?:欧阳|司马|上官|诸葛|[{_COMMON_SURNAME}])"
+    rf"[\u3400-\u9fff·]{{1,3}})"
+    r"(?=(?:准备|打算|目前|现在|如今|现阶段|常驻|现居|人在|"
+    r"位于|计划|考虑|想|需要|建议))",
+    re.MULTILINE,
+)
+_ADMIN_LOCATION = (
+    r"(?:(?:北京|上海|天津|重庆|香港|澳门)(?:市)?"
+    r"(?:[\u3400-\u9fff]{1,8}(?:区|县|镇|乡|村))?"
+    r"|[\u3400-\u9fff]{2,10}(?:省|市|自治区|特别行政区|自治州|"
+    r"地区|盟|区|县|州|旗|镇|乡|村))"
+)
+_NATURAL_LOCATION = re.compile(
+    rf"(?:人在|常驻|现居|位于|住在|来自|准备在|去|回|到)"
+    rf"\s*(?P<value>{_ADMIN_LOCATION})"
+)
+_HIGH_ENTROPY_TOKEN = re.compile(
+    r"(?<![A-Za-z0-9._-])"
+    r"[A-Za-z0-9_-]{28,}(?:\.[A-Za-z0-9_-]{8,}){0,2}"
+    r"(?![A-Za-z0-9._-])"
+)
 
 _MONTH_NUMBERS = {
     "一": 1,
@@ -275,16 +340,6 @@ _NORMALIZABLE_MONTH = re.compile(
     rf"(?P<prefix>(?:19|20)\d{{2}}年|今年|明年|后年|流月|每月)"
     rf"\s*(?P<month>{_CHINESE_MONTH})月"
 )
-_CURRENT_MARRIAGE_STATUS = re.compile(
-    r"(?:"
-    r"(?:现在|目前|当前)(?:是)?"
-    r"(?:是否已经结婚|是否结婚|有没有结婚|结婚了吗|已经结婚|"
-    r"已婚吗|未婚还是已婚|未婚|已婚)"
-    r"|是否已婚|已婚了吗|未婚还是已婚"
-    r")"
-)
-
-
 def _normalize_safe_span(value: str) -> str:
     match = _NORMALIZABLE_MONTH.fullmatch(value)
     if not match:
@@ -464,6 +519,9 @@ def _provenance_segments(text: str) -> list[tuple[bool, str]]:
     spans.extend(_sensitive_clause_spans(text))
     for pattern in _DIRECT_SENSITIVE_PATTERNS:
         spans.extend(match.span() for match in pattern.finditer(text))
+    spans.extend(match.span("value") for match in _NATURAL_NAME.finditer(text))
+    spans.extend(match.span("value") for match in _NATURAL_LOCATION.finditer(text))
+    spans.extend(match.span() for match in _HIGH_ENTROPY_TOKEN.finditer(text))
     merged = _merge_spans(spans)
     if not merged:
         return [(False, text)]
@@ -483,6 +541,11 @@ def _provenance_segments(text: str) -> list[tuple[bool, str]]:
 def _project_safe_segment(text: str) -> str:
     if not text:
         return ""
+    if not (
+        any(term in text for term in _SAFE_QUERY_TERMS)
+        or re.search(r"(?:19|20)\d{2}年", text)
+    ):
+        return REDACTION_MARKER
     projected = _NORMALIZABLE_MONTH.sub(
         lambda match: _normalize_safe_span(match.group(0)),
         text,
@@ -506,7 +569,7 @@ def _project_safe_semantics(segments: Sequence[tuple[bool, str]]) -> str:
             continue
         has_current_marriage_status = (
             has_current_marriage_status
-            or bool(_CURRENT_MARRIAGE_STATUS.search(text))
+            or is_current_marriage_question(text)
         )
         pieces.append(_project_safe_segment(text))
     projected = "".join(pieces)
@@ -515,8 +578,11 @@ def _project_safe_semantics(segments: Sequence[tuple[bool, str]]) -> str:
         REDACTION_MARKER,
         projected,
     )
-    if has_current_marriage_status and "当前婚姻状态" not in projected:
-        projected += "；当前婚姻状态"
+    if (
+        has_current_marriage_status
+        and CURRENT_MARRIAGE_STATUS_MARKER not in projected
+    ):
+        projected += f"；{CURRENT_MARRIAGE_STATUS_MARKER}"
     return projected.strip() or REDACTION_MARKER
 
 

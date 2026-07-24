@@ -274,6 +274,78 @@ def test_unrecognized_names_and_cities_are_dropped_by_safe_semantic_projection()
         assert useful in history
 
 
+def test_natural_names_locations_are_removed_while_safe_work_semantics_remain():
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    facts = build_chart_facts(
+        build_bazi_chart(
+            {"gender": "男", "birth_date": "1994-09-23", "birth_hour": 18, "birth_minute": 0}
+        )
+    )
+    context = build_ai_context(
+        facts,
+        "王小明准备在上海转管理岗，团队冲突怎么处理？",
+        [
+            {
+                "role": "user",
+                "content": "张伟目前人在杭州市，想谈软件工程师的薪资策略。",
+            },
+            {
+                "role": "assistant",
+                "content": "李雷常驻北京朝阳区，建议先确认团队授权和薪资结构。",
+            },
+        ],
+    )
+    payload = context.model_dump_json()
+
+    for forbidden in (
+        "王小明", "上海", "张伟", "杭州市", "李雷", "北京朝阳区",
+    ):
+        assert forbidden not in payload
+    for useful in ("转管理岗", "团队冲突", "怎么处理"):
+        assert useful in context.question
+    assert "软件工程师的薪资策略" in context.history[0].content
+    assert "团队授权和薪资结构" in context.history[1].content
+
+
+def test_bearer_secrets_and_unlabeled_machine_config_fail_closed_in_both_roles():
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    facts = build_chart_facts(
+        build_bazi_chart(
+            {"gender": "男", "birth_date": "1994-09-23", "birth_hour": 18, "birth_minute": 0}
+        )
+    )
+    context = build_ai_context(
+        facts,
+        "Authorization Bearer eyJhbGciOiJIUzI1NiJ9.secret；想问转管理岗后的团队冲突",
+        [
+            {
+                "role": "user",
+                "content": "配置内容 model gpt-5.6-sol timeout 30；想问基金风险",
+            },
+            {
+                "role": "assistant",
+                "content": "调试输出 token super-secret-value-123456789；建议先谈薪资结构",
+            },
+        ],
+    )
+    payload = context.model_dump_json().lower()
+
+    for forbidden in (
+        "authorization", "bearer", "eyjhbgcioijiuzi1nij9",
+        "gpt-5.6-sol", "timeout 30", "super-secret-value-123456789",
+    ):
+        assert forbidden not in payload
+    assert "转管理岗后的团队冲突" in context.question
+    assert "基金风险" in context.history[0].content
+    assert "薪资结构" in context.history[1].content
+
+
 @pytest.mark.parametrize(
     ("question", "safe_term"),
     [

@@ -4,21 +4,10 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 
+from core.ai_intent import is_current_marriage_question
 from core.ai_models import AIRequestContext, BaziAIAnswer
 
 
-_CURRENT_MARRIAGE_TERMS = (
-    "当前婚姻状态",
-    "是否已婚",
-    "已婚了吗",
-    "未婚还是已婚",
-    "现在是否",
-    "目前是否",
-    "现在已婚",
-    "目前已婚",
-    "结婚了吗",
-    "有没有结婚",
-)
 _BORROWING_TERMS = (
     "房贷", "按揭", "借钱", "负债", "融资", "抵押", "借贷", "贷款", "杠杆",
 )
@@ -103,8 +92,9 @@ def _domain_evidence(
 
 
 def _is_current_marriage_question(context: AIRequestContext) -> bool:
-    return context.category == "relationship" and any(
-        term in context.question for term in _CURRENT_MARRIAGE_TERMS
+    return (
+        context.category == "relationship"
+        and is_current_marriage_question(context.question)
     )
 
 

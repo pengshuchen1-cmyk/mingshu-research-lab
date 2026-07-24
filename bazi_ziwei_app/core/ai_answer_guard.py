@@ -6,6 +6,10 @@ import json
 import re
 from dataclasses import dataclass
 
+from core.ai_intent import (
+    CURRENT_MARRIAGE_DISCLAIMER,
+    is_current_marriage_question,
+)
 from core.ai_models import AIRequestContext, BaziAIAnswer
 
 
@@ -23,25 +27,36 @@ PATTERN_TERMS = (
 WEALTH_ELEMENT_BY_DAY_ELEMENT = {
     "木": "土", "火": "金", "土": "水", "金": "木", "水": "火",
 }
-CURRENT_MARRIAGE_STATUS_MARKER = "当前婚姻状态"
-CURRENT_MARRIAGE_DISCLAIMER = "单凭八字，不能确认现实中的婚姻登记状态。"
-_CURRENT_MARRIAGE_CLAIM = re.compile(
-    r"(?:已经结婚|结婚了|是已婚|处于已婚|仍是已婚|"
-    r"是未婚|处于未婚|仍是未婚|没有结婚|尚未结婚|仍未结婚)"
+_CURRENT_MARRIAGE_PREDICATE = re.compile(
+    r"(?:"
+    r"婚姻(?:登记)?(?:状态|状况)(?:为|是)(?:已婚|未婚)"
+    r"|(?:属于|是|处于|仍是)(?:已婚|未婚)(?:人士|状态)?"
+    r"|(?:已经结婚|结婚了|没有结婚|尚未结婚|仍未结婚)"
+    r"|(?:有|无|没有)配偶"
+    r"|(?:处于|仍处于|进入|维持)婚姻关系"
+    r")"
 )
-_CURRENT_MARRIAGE_HEDGES = (
-    "更偏向",
-    "偏向",
-    "倾向",
-    "大概率",
-    "很可能",
-    "较可能",
-    "可能",
-    "或许",
-    "未必",
-    "不一定",
-    "不像",
+_CURRENT_MARRIAGE_LIMITATIONS = (
+    "不能确认",
+    "无法确认",
+    "不能判断",
+    "无法判断",
+    "不能证明",
+    "无法证明",
+    "不能认定",
+    "无法认定",
+    "不代表",
+    "不构成",
+    "不等于",
+    "仍需核实",
+    "以本人现实情况为准",
 )
+_CURRENT_MARRIAGE_TENDENCY = re.compile(
+    r"(?:更?偏向|倾向于?|大概率|很可能|较可能|可能|或许|未必|"
+    r"不一定|不像)(?:认为|是|为)?[^，,。；;！？!?\r\n]{0,8}"
+    r"(?:已经结婚|结婚|已婚|未婚|有配偶|无配偶|处于婚姻关系)"
+)
+_CLAUSE_SPLIT = re.compile(r"[，,。；;！？!?\r\n]+")
 
 
 @dataclass(frozen=True)
@@ -65,9 +80,12 @@ def _string_facts(value: object) -> set[str]:
 
 
 def _has_unqualified_current_marriage_claim(text: str) -> bool:
-    for match in _CURRENT_MARRIAGE_CLAIM.finditer(text):
-        prefix = text[max(0, match.start() - 18):match.start()]
-        if not any(hedge in prefix for hedge in _CURRENT_MARRIAGE_HEDGES):
+    for clause in _CLAUSE_SPLIT.split(text):
+        if not _CURRENT_MARRIAGE_PREDICATE.search(clause):
+            continue
+        if any(marker in clause for marker in _CURRENT_MARRIAGE_LIMITATIONS):
+            continue
+        if not _CURRENT_MARRIAGE_TENDENCY.search(clause):
             return True
     return False
 
@@ -86,11 +104,11 @@ def validate_ai_answer(answer: BaziAIAnswer, context: AIRequestContext) -> Guard
     violations: list[str] = []
     if any(phrase in combined for phrase in DETERMINISTIC_PHRASES):
         violations.append("deterministic_claim")
-    is_current_marriage_question = (
+    current_marriage_question = (
         context.category == "relationship"
-        and CURRENT_MARRIAGE_STATUS_MARKER in context.question
+        and is_current_marriage_question(context.question)
     )
-    if is_current_marriage_question and (
+    if current_marriage_question and (
         not answer.analysis_conclusion.strip().startswith(
             CURRENT_MARRIAGE_DISCLAIMER
         )
