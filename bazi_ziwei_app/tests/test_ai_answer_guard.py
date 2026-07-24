@@ -237,3 +237,33 @@ def test_current_marriage_guard_rejects_synonym_and_distant_hedge_bypasses(
 
     assert result.accepted is False
     assert "current_marriage_status_claim" in result.violations
+
+
+@pytest.mark.parametrize(
+    "claim",
+    [
+        "虽然不能确认但你属于已婚人士。",
+        "无法判断，不过你的婚姻状态为已婚。",
+        "不能认定，却可以确定你现在有配偶。",
+    ],
+)
+def test_current_marriage_guard_rejects_limitation_and_fact_in_same_clause(
+    claim,
+):
+    from core.ai_answer_guard import validate_ai_answer
+
+    context = _context().model_copy(
+        update={
+            "question": "我目前的婚姻状况如何？",
+            "category": "relationship",
+        }
+    )
+    result = validate_ai_answer(
+        _answer(
+            "单凭八字，不能确认现实中的婚姻登记状态。" + claim
+        ),
+        context,
+    )
+
+    assert result.accepted is False
+    assert "current_marriage_status_claim" in result.violations

@@ -36,21 +36,6 @@ _CURRENT_MARRIAGE_PREDICATE = re.compile(
     r"|(?:处于|仍处于|进入|维持)婚姻关系"
     r")"
 )
-_CURRENT_MARRIAGE_LIMITATIONS = (
-    "不能确认",
-    "无法确认",
-    "不能判断",
-    "无法判断",
-    "不能证明",
-    "无法证明",
-    "不能认定",
-    "无法认定",
-    "不代表",
-    "不构成",
-    "不等于",
-    "仍需核实",
-    "以本人现实情况为准",
-)
 _CURRENT_MARRIAGE_TENDENCY = re.compile(
     r"(?:更?偏向|倾向于?|大概率|很可能|较可能|可能|或许|未必|"
     r"不一定|不像)(?:认为|是|为)?[^，,。；;！？!?\r\n]{0,8}"
@@ -82,8 +67,6 @@ def _string_facts(value: object) -> set[str]:
 def _has_unqualified_current_marriage_claim(text: str) -> bool:
     for clause in _CLAUSE_SPLIT.split(text):
         if not _CURRENT_MARRIAGE_PREDICATE.search(clause):
-            continue
-        if any(marker in clause for marker in _CURRENT_MARRIAGE_LIMITATIONS):
             continue
         if not _CURRENT_MARRIAGE_TENDENCY.search(clause):
             return True

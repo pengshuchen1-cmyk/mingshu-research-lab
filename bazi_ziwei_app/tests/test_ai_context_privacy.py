@@ -310,6 +310,44 @@ def test_natural_names_locations_are_removed_while_safe_work_semantics_remain():
     assert "团队授权和薪资结构" in context.history[1].content
 
 
+def test_unlabeled_natural_pii_and_machine_config_do_not_leave_context():
+    from core.ai_context import build_ai_context
+    from core.ai_models import ChatMessage
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    facts = build_chart_facts(
+        build_bazi_chart(
+            {"gender": "男", "birth_date": "1994-09-23", "birth_hour": 18, "birth_minute": 0}
+        )
+    )
+    context = build_ai_context(
+        facts,
+        "刘小明准备转管理岗，上海转管理岗是否合适？"
+        "model gpt-5.6-sol timeout 30，想问基金风险",
+        [
+            ChatMessage(
+                role="user",
+                content="请帮王小明分析事业转型。",
+            ),
+            {
+                "role": "assistant",
+                "content": "刘小明准备转管理岗，上海转管理岗是否合适？",
+            },
+        ],
+    )
+    payload = context.model_dump_json()
+
+    for forbidden in (
+        "刘小明", "王小明", "上海", "gpt-5.6-sol", "timeout 30",
+    ):
+        assert forbidden not in payload
+    for useful in ("转管理岗", "是否合适", "基金风险"):
+        assert useful in context.question
+    assert "分析事业转型" in context.history[0].content
+    assert "转管理岗" in context.history[1].content
+
+
 def test_bearer_secrets_and_unlabeled_machine_config_fail_closed_in_both_roles():
     from core.ai_context import build_ai_context
     from core.bazi_engine import build_bazi_chart

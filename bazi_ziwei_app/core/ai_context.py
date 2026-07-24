@@ -251,6 +251,7 @@ _SENSITIVE_CLAUSE_CUE = re.compile(
     r"|(?:access[\s_-]*token|token|secret|password|passwd|env)"
     r"\s*(?:(?:[:：=]\s*)|\s+)"
     r"|(?:配置内容|调试输出|堆栈|stack\s*trace|config(?:uration)?)"
+    r"|(?<![A-Za-z0-9_])(?:model|timeout)\s+[A-Za-z0-9_.:/-]+"
     r"|(?<![A-Za-z0-9_])(?:message|target|user|city)\s*="
 )
 _BOUNDED_SINGLE_NAME_FIELD_CUE = re.compile(
@@ -296,14 +297,15 @@ _UNQUOTED_JSON_OBJECT_FIELD = re.compile(
 _COMMON_SURNAME = (
     "赵钱孙李周吴郑王冯陈褚卫蒋沈韩杨朱秦尤许何吕施张孔曹严华"
     "金魏陶姜戚谢邹喻柏窦章云苏潘葛奚范彭郎鲁韦昌马苗凤花方"
-    "俞任袁柳唐罗薛伍余米贝姚孟顾尹江钟"
+    "俞任袁柳唐罗薛伍余米贝姚孟顾尹江钟刘叶杜夏汪田郭林高徐"
+    "邱于董萧程邓傅曾卢蔡贾丁戴熊廖侯邵黎龚文毛赖段雷汤尹武"
 )
 _NATURAL_NAME = re.compile(
-    rf"(?:^|[，,。；;！？!?\r\n])"
+    rf"(?:^|[，,。；;！？!?\r\n]|请帮|帮|替|为)"
     rf"(?P<value>(?:欧阳|司马|上官|诸葛|[{_COMMON_SURNAME}])"
     rf"[\u3400-\u9fff·]{{1,3}})"
     r"(?=(?:准备|打算|目前|现在|如今|现阶段|常驻|现居|人在|"
-    r"位于|计划|考虑|想|需要|建议))",
+    r"位于|计划|考虑|想|需要|建议|分析|咨询|询问|看看))",
     re.MULTILINE,
 )
 _ADMIN_LOCATION = (
@@ -315,6 +317,13 @@ _ADMIN_LOCATION = (
 _NATURAL_LOCATION = re.compile(
     rf"(?:人在|常驻|现居|位于|住在|来自|准备在|去|回|到)"
     rf"\s*(?P<value>{_ADMIN_LOCATION})"
+)
+_STANDALONE_NATURAL_LOCATION = re.compile(
+    rf"(?:^|[，,。；;！？!?\r\n])"
+    rf"(?P<value>{_ADMIN_LOCATION})"
+    r"(?=(?:转|换|找|做|从事|发展|创业|工作|事业|职业|就业|"
+    r"求职|升职|管理岗|是否|适合|合适))",
+    re.MULTILINE,
 )
 _HIGH_ENTROPY_TOKEN = re.compile(
     r"(?<![A-Za-z0-9._-])"
@@ -521,6 +530,10 @@ def _provenance_segments(text: str) -> list[tuple[bool, str]]:
         spans.extend(match.span() for match in pattern.finditer(text))
     spans.extend(match.span("value") for match in _NATURAL_NAME.finditer(text))
     spans.extend(match.span("value") for match in _NATURAL_LOCATION.finditer(text))
+    spans.extend(
+        match.span("value")
+        for match in _STANDALONE_NATURAL_LOCATION.finditer(text)
+    )
     spans.extend(match.span() for match in _HIGH_ENTROPY_TOKEN.finditer(text))
     merged = _merge_spans(spans)
     if not merged:
