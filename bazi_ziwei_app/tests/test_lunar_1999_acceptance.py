@@ -86,7 +86,7 @@ def test_lunar_1999_cloud_and_no_key_paths_return_guarded_six_section_answers():
     assert cloud.source == "cloud_validated"
     assert list(cloud.sections) == SIX_SECTION_TITLES
     assert all(cloud.sections.values())
-    assert "不能确认当前是否已经结婚" in cloud.answer
+    assert "单凭八字，不能确认现实中的婚姻登记状态" in cloud.answer
     assert cloud.degraded_reason is None
 
     assert local.source == "local_rules"

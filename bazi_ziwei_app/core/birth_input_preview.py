@@ -136,7 +136,9 @@ def build_birth_preview(value: BirthFormInput) -> BirthPreview:
         label = "农历日期" if value.calendar == "lunar" else "出生日期"
         raise ValueError(f"{label}无法转换：{chart['error']}")
     pillars = tuple(
-        chart["pillars"][key]["pillar"] for key in ("year", "month", "day", "hour")
+        chart["pillars"][key]["pillar"]
+        or ("时柱不详" if key == "hour" else "")
+        for key in ("year", "month", "day", "hour")
     )
     time_text = (
         f"{value.hour:02d}:{value.minute:02d}"

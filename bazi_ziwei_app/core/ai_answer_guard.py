@@ -23,6 +23,25 @@ PATTERN_TERMS = (
 WEALTH_ELEMENT_BY_DAY_ELEMENT = {
     "木": "土", "火": "金", "土": "水", "金": "木", "水": "火",
 }
+CURRENT_MARRIAGE_STATUS_MARKER = "当前婚姻状态"
+CURRENT_MARRIAGE_DISCLAIMER = "单凭八字，不能确认现实中的婚姻登记状态。"
+_CURRENT_MARRIAGE_CLAIM = re.compile(
+    r"(?:已经结婚|结婚了|是已婚|处于已婚|仍是已婚|"
+    r"是未婚|处于未婚|仍是未婚|没有结婚|尚未结婚|仍未结婚)"
+)
+_CURRENT_MARRIAGE_HEDGES = (
+    "更偏向",
+    "偏向",
+    "倾向",
+    "大概率",
+    "很可能",
+    "较可能",
+    "可能",
+    "或许",
+    "未必",
+    "不一定",
+    "不像",
+)
 
 
 @dataclass(frozen=True)
@@ -45,6 +64,14 @@ def _string_facts(value: object) -> set[str]:
     return values
 
 
+def _has_unqualified_current_marriage_claim(text: str) -> bool:
+    for match in _CURRENT_MARRIAGE_CLAIM.finditer(text):
+        prefix = text[max(0, match.start() - 18):match.start()]
+        if not any(hedge in prefix for hedge in _CURRENT_MARRIAGE_HEDGES):
+            return True
+    return False
+
+
 def validate_ai_answer(answer: BaziAIAnswer, context: AIRequestContext) -> GuardResult:
     combined = "。".join(
         [
@@ -59,6 +86,17 @@ def validate_ai_answer(answer: BaziAIAnswer, context: AIRequestContext) -> Guard
     violations: list[str] = []
     if any(phrase in combined for phrase in DETERMINISTIC_PHRASES):
         violations.append("deterministic_claim")
+    is_current_marriage_question = (
+        context.category == "relationship"
+        and CURRENT_MARRIAGE_STATUS_MARKER in context.question
+    )
+    if is_current_marriage_question and (
+        not answer.analysis_conclusion.strip().startswith(
+            CURRENT_MARRIAGE_DISCLAIMER
+        )
+        or _has_unqualified_current_marriage_claim(combined)
+    ):
+        violations.append("current_marriage_status_claim")
 
     chart_payload = json.dumps(context.chart_facts, ensure_ascii=False)
     authorized_pillars = set(re.findall(f"[{STEMS}][{BRANCHES}]", chart_payload))

@@ -96,6 +96,27 @@ def test_unknown_hour_never_guesses_hour_pillar():
     assert "时辰不详" in chart.evidence.hour_basis
 
 
+def test_yearly_rule_delegates_to_four_pillars_canonical_year_cycle(monkeypatch):
+    import core.four_pillars_engine as four_pillars_engine
+    from core.yearly_engine import get_year_pillar
+
+    calls = []
+
+    def canonical_year_pillar(year):
+        calls.append(year)
+        return f"规则{year}"
+
+    monkeypatch.setattr(
+        four_pillars_engine,
+        "year_pillar_for_effective_year",
+        canonical_year_pillar,
+        raising=False,
+    )
+
+    assert get_year_pillar(2026) == "规则2026"
+    assert calls == [2026]
+
+
 @pytest.mark.parametrize(
     ("birth", "expected"),
     [

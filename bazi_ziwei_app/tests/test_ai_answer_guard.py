@@ -155,3 +155,51 @@ def test_guard_examines_all_six_answer_sections():
         answer = _answer("壬日主身强，财务宜控制现金流。", **{field: value})
         result = validate_ai_answer(answer, _context())
         assert "deterministic_claim" in result.violations, field
+
+
+def test_current_marriage_guard_rejects_unqualified_real_world_status_claim():
+    from core.ai_answer_guard import validate_ai_answer
+
+    context = _context().model_copy(
+        update={
+            "question": "当前婚姻状态",
+            "category": "relationship",
+        }
+    )
+    result = validate_ai_answer(
+        _answer("你现在已经结婚，配偶关系稳定。"),
+        context,
+    )
+
+    assert result.accepted is False
+    assert "current_marriage_status_claim" in result.violations
+
+
+def test_current_marriage_guard_requires_disclaimer_before_qualified_tendency():
+    from core.ai_answer_guard import validate_ai_answer
+
+    context = _context().model_copy(
+        update={
+            "question": "当前婚姻状态",
+            "category": "relationship",
+        }
+    )
+    accepted = validate_ai_answer(
+        _answer(
+            "单凭八字，不能确认现实中的婚姻登记状态。"
+            "但如果一定要根据命盘作倾向判断：更偏向已经结婚，"
+            "或者至少曾有过一段接近婚姻的长期正式关系。"
+        ),
+        context,
+    )
+    wrong_order = validate_ai_answer(
+        _answer(
+            "你现在已经结婚。"
+            "但单凭八字，不能确认现实中的婚姻登记状态。"
+        ),
+        context,
+    )
+
+    assert accepted.accepted is True
+    assert wrong_order.accepted is False
+    assert "current_marriage_status_claim" in wrong_order.violations

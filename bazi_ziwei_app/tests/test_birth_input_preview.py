@@ -142,6 +142,26 @@ def test_paired_unknown_time_is_valid_but_partial_time_is_invalid():
     assert validate_profile(profile) == (False, "出生小时和分钟需要同时填写。")
 
 
+def test_unknown_time_receipt_uses_explicit_hour_pillar_placeholder():
+    preview = build_birth_preview(
+        BirthFormInput(
+            name="访客",
+            gender="男",
+            calendar="solar",
+            year=1994,
+            month=9,
+            day=23,
+            hour=None,
+            minute=None,
+            time_label="时辰不详",
+        )
+    )
+
+    assert preview.solar_datetime == "1994-09-23 时辰不详"
+    assert preview.pillars[-1] == "时柱不详"
+    assert preview.chart["pillars"]["hour"]["pillar"] == ""
+
+
 def test_preview_profile_and_chart_are_deeply_immutable():
     import pytest
 

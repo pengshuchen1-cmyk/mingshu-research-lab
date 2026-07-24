@@ -75,6 +75,11 @@ def _year_pillar(effective_year: int) -> Pillar:
     )
 
 
+def year_pillar_for_effective_year(effective_year: int) -> str:
+    """Return a canonical year pillar from the project-local pillar engine."""
+    return _year_pillar(int(effective_year)).text
+
+
 def _latest_jie(at: datetime) -> JieBoundary:
     candidates = jie_boundaries(at.year - 1) + jie_boundaries(at.year)
     eligible = [boundary for boundary in candidates if boundary.at <= at]

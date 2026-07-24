@@ -150,6 +150,82 @@ def test_recent_follow_up_keeps_deidentified_semantics():
     assert "现金流" in context.history[1].content
 
 
+@pytest.mark.parametrize(
+    ("question", "category", "required_phrases"),
+    [
+        (
+            "请分析软件工程师转管理岗后团队冲突和薪资谈判策略",
+            "career",
+            ("软件工程师", "管理岗", "团队冲突", "薪资谈判策略"),
+        ),
+        (
+            "我打算卖掉基金给孩子付学费，怎样控制风险",
+            "wealth",
+            ("卖掉基金", "给孩子付学费", "怎样控制风险"),
+        ),
+    ],
+)
+def test_unlisted_safe_customer_semantics_are_preserved_and_routed(
+    question,
+    category,
+    required_phrases,
+):
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    facts = build_chart_facts(
+        build_bazi_chart(
+            {
+                "gender": "女",
+                "birth_date": "1996-09-04",
+                "birth_hour": 23,
+                "birth_minute": 45,
+            }
+        )
+    )
+    context = build_ai_context(facts, question, [])
+
+    assert context.category == category
+    for phrase in required_phrases:
+        assert phrase in context.question
+
+
+def test_unlisted_follow_up_semantics_survive_history_projection():
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    facts = build_chart_facts(
+        build_bazi_chart(
+            {
+                "gender": "女",
+                "birth_date": "1996-09-04",
+                "birth_hour": 23,
+                "birth_minute": 45,
+            }
+        )
+    )
+    context = build_ai_context(
+        facts,
+        "那这一步为什么要先和主管谈？",
+        [
+            {
+                "role": "user",
+                "content": "软件工程师转管理岗后，团队冲突和薪资谈判怎么安排？",
+            },
+            {
+                "role": "assistant",
+                "content": "先确认职责范围，再讨论团队授权和薪资结构。",
+            },
+        ],
+    )
+
+    assert "为什么要先和主管谈" in context.question
+    assert "软件工程师转管理岗" in context.history[0].content
+    assert "团队授权和薪资结构" in context.history[1].content
+
+
 def test_current_marriage_status_wording_survives_safe_projection():
     from core.ai_context import build_ai_context
     from core.bazi_engine import build_bazi_chart
@@ -310,6 +386,41 @@ def test_timing_context_contains_concrete_current_and_dayun_facts():
     assert context.chart_facts["current_context"]["year_pillar"]
     assert context.chart_facts["target_years"] == [
         {"year": 2026, "year_pillar": "丙午"}
+    ]
+
+
+def test_target_year_facts_delegate_to_canonical_yearly_rule(monkeypatch):
+    import core.yearly_engine as yearly_engine
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    calls = []
+
+    def canonical_year_pillar(year):
+        calls.append(year)
+        return f"规则{year}"
+
+    monkeypatch.setattr(yearly_engine, "get_year_pillar", canonical_year_pillar)
+    context = build_ai_context(
+        build_chart_facts(
+            build_bazi_chart(
+                {
+                    "gender": "女",
+                    "birth_date": "1996-09-04",
+                    "birth_hour": 23,
+                    "birth_minute": 45,
+                }
+            )
+        ),
+        "想看2026年和2027年的财运",
+        [],
+    )
+
+    assert calls == [2026, 2027]
+    assert context.chart_facts["target_years"] == [
+        {"year": 2026, "year_pillar": "规则2026"},
+        {"year": 2027, "year_pillar": "规则2027"},
     ]
 
 

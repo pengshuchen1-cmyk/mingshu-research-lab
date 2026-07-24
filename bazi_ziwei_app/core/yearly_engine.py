@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import core.four_pillars_engine as four_pillars_engine
 from core.bazi_constants import BRANCH_HIDDEN_STEMS, BRANCH_MAIN_ELEMENTS, EARTHLY_BRANCHES, HEAVENLY_STEMS, STEM_ELEMENTS
 from core.branch_relations import analyze_year_branch_relations
 from core.report_diversity import build_chart_signature_text
@@ -70,8 +71,8 @@ def _fallback_year_pillar(year: int) -> str:
 
 
 def get_year_pillar(target_year: int) -> str:
-    """按 1984 甲子年的六十甲子循环取流年干支。"""
-    return _fallback_year_pillar(int(target_year))
+    """通过项目四柱引擎的唯一干支循环入口取得流年干支。"""
+    return four_pillars_engine.year_pillar_for_effective_year(int(target_year))
 
 
 def _split_pillar(pillar: str) -> tuple[str, str]:

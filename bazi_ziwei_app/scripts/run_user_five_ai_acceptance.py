@@ -32,7 +32,11 @@ class DeterministicAcceptanceClient:
         if "抵押" in context.question or "保证" in context.question:
             text = "命盘只能提供风险观察，不能保证抵押房产创业的结果；应先做现实现金流与最坏损失测算。"
         elif "当前婚姻状态" in context.question:
-            text = "出生盘不能确认当前是否已经结婚，只能分析关系倾向和可能的时间触发。"
+            text = (
+                "单凭八字，不能确认现实中的婚姻登记状态。"
+                "但如果一定要根据命盘作倾向判断："
+                "更偏向把现有关系机会视为观察线索，不能据此认定已婚或未婚。"
+            )
         else:
             text = "结合当前命盘事实与本地规则，建议把这项倾向作为观察线索，再结合现实资源、选择和时间条件验证。"
         return BaziAIAnswer(

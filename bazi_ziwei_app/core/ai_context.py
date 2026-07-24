@@ -5,9 +5,9 @@ from __future__ import annotations
 import re
 from typing import Mapping, Sequence
 
+import core.yearly_engine as yearly_engine
 from core.ai_models import AIRequestContext, ChatMessage, RoutedQuestion
 from core.bazi_rulebook import load_rulebook
-from core.bazi_constants import EARTHLY_BRANCHES, HEAVENLY_STEMS
 from core.chart_facts import ChartFacts
 
 
@@ -17,9 +17,19 @@ BORROWING_KEYWORDS = (
 CATEGORY_KEYWORDS = (
     (
         "wealth",
-        ("财运", "赚钱", "收入", "投资", "创业", "现金流", *BORROWING_KEYWORDS),
+        (
+            "财运", "赚钱", "收入", "投资", "创业", "现金流",
+            "基金", "股票", "理财", "预算", "支出", "学费",
+            *BORROWING_KEYWORDS,
+        ),
     ),
-    ("career", ("工作", "事业", "职业", "升职", "岗位", "行业", "AI")),
+    (
+        "career",
+        (
+            "工作", "事业", "职业", "升职", "岗位", "行业", "AI",
+            "工程师", "管理岗", "转岗", "团队", "职场", "薪资", "主管",
+        ),
+    ),
     ("relationship", ("桃花", "姻缘", "婚姻", "对象", "感情", "伴侣", "结婚", "已婚", "未婚")),
     ("family", ("父母", "家庭", "原生家庭", "长辈")),
     ("overview", ("概括", "整体", "整个命盘", "八字怎么样", "强弱和格局")),
@@ -94,6 +104,10 @@ _DIRECT_SENSITIVE_PATTERNS = (
         r"(?:是|为|[:：])\s*[^\s，,。；;！？!?\r\n]{1,32}"
     ),
     re.compile(
+        r"(?:生日|出生日期|生辰)\s*(?:是|为|[:：])?\s*"
+        r"[^\s，,。；;！？!?\r\n]{4,32}"
+    ),
+    re.compile(
         r"(?:出生地|籍贯)\s*(?:是|为|在|[:：])?\s*"
         r"[^\s，,。；;！？!?\r\n]{2,24}"
     ),
@@ -111,6 +125,16 @@ _DIRECT_SENSITIVE_PATTERNS = (
         r"[\u3400-\u9fff·]{2,16}"
     ),
     re.compile(r"(?:我叫|本人叫|叫)\s*[\u3400-\u9fff·]{2,8}"),
+    re.compile(
+        r"(?<![\u3400-\u9fffA-Za-z0-9_])"
+        r"[\u3400-\u9fff·]{2,8}从[\u3400-\u9fff·]{2,16}来"
+        r"(?=[，,。；;！？!?])"
+    ),
+    re.compile(
+        r"(?<![\u3400-\u9fffA-Za-z0-9_])"
+        r"[\u3400-\u9fff·]{2,8}在[\u3400-\u9fff·]{2,16}说"
+        r"(?=[，,。；;！？!?])"
+    ),
     re.compile(
         r"(?:我是|本人是)\s*[\u3400-\u9fff·]{2,8}"
         r"(?=\s*[，,。；;！？!?])"
@@ -233,170 +257,6 @@ _UNQUOTED_JSON_OBJECT_FIELD = re.compile(
     r"[^{}\"'\s，,。；;！？!?:：=]+\s*[:：=]"
 )
 
-_SAFE_SEMANTIC_TERMS = (
-    "现在是否已经结婚",
-    "当前是否已经结婚",
-    "现在是未婚还是已婚",
-    "当前婚姻状态",
-    "未婚还是已婚",
-    "是否已婚",
-    "已婚了吗",
-    "现在已经结婚",
-    "目前是否结婚",
-    "现在有没有结婚",
-    "目前结婚了吗",
-    "现在结婚了吗",
-    "当前结婚了吗",
-    "现在已婚吗",
-    "目前已婚吗",
-    "当前已婚吗",
-    "现在未婚",
-    "目前未婚",
-    "当前未婚",
-    "现在已婚",
-    "目前已婚",
-    "当前已婚",
-    "转向人工智能行业",
-    "人工智能行业",
-    "人工智能创业",
-    "转向AI行业",
-    "现金流紧张",
-    "现金流压力",
-    "抵押房子",
-    "抵押贷款",
-    "房屋抵押",
-    "事业转换",
-    "事业转型",
-    "事业调整",
-    "职业转换",
-    "职业转型",
-    "工作转换",
-    "行业转换",
-    "行业转型",
-    "原生家庭",
-    "姻缘方面",
-    "婚姻方面",
-    "事业方面",
-    "财运方面",
-    "关系方面",
-    "AI创业",
-    "AI行业",
-    "现金流",
-    "高杠杆",
-    *BORROWING_KEYWORDS,
-    "什么时候",
-    "适不适合",
-    "可不可以",
-    "能不能",
-    "该不该",
-    "要不要",
-    "怎么办",
-    "为什么",
-    "想问",
-    "房子",
-    "人工智能",
-    "创业",
-    "行业",
-    "姻缘",
-    "婚姻",
-    "桃花",
-    "感情",
-    "伴侣",
-    "结婚",
-    "关系",
-    "事业",
-    "职业",
-    "工作",
-    "财运",
-    "财富",
-    "赚钱",
-    "收入",
-    "投资",
-    "家庭",
-    "父母",
-    "今年",
-    "明年",
-    "后年",
-    "未来",
-    "每月",
-    "流年",
-    "流月",
-    "上半年",
-    "下半年",
-    "因为",
-    "由于",
-    "所以",
-    "如果",
-    "导致",
-    "为何",
-    "怎么",
-    "怎样",
-    "如何",
-    "什么",
-    "是否",
-    "解释",
-    "需要",
-    "注意",
-    "条件",
-    "原因",
-    "影响",
-    "风险",
-    "机会",
-    "建议",
-    "调整",
-    "转换",
-    "转型",
-    "发展",
-    "紧张",
-    "压力",
-    "规划",
-    "选择",
-    "适合",
-)
-_SAFE_SPAN_PATTERN = re.compile(
-    "|".join(
-        (
-            re.escape(REDACTION_MARKER),
-            rf"(?:19|20)\d{{2}}年\s*{_CHINESE_MONTH}月",
-            r"(?:19|20)\d{2}年",
-            rf"(?:今年|明年|后年|流月|每月)\s*{_CHINESE_MONTH}月",
-            *(
-                re.escape(term)
-                for term in sorted(_SAFE_SEMANTIC_TERMS, key=len, reverse=True)
-            ),
-        )
-    ),
-    re.IGNORECASE,
-)
-_SAFE_BRIDGE_CORES = frozenset(
-    {
-        "",
-        "的",
-        "了",
-        "呢",
-        "吗",
-        "吧",
-        "和",
-        "与",
-        "及",
-        "或",
-        "在",
-        "想",
-        "做",
-        "要",
-        "更",
-        "请",
-        "看",
-        "问",
-        "从",
-        "向",
-        "转",
-        "到",
-        "先",
-        "再",
-    }
-)
-_SEMANTIC_EDGE_CHARS = " \t\r\n，,。；;！？!?、：:"
 _MONTH_NUMBERS = {
     "一": 1,
     "二": 2,
@@ -423,14 +283,6 @@ _CURRENT_MARRIAGE_STATUS = re.compile(
     r"|是否已婚|已婚了吗|未婚还是已婚"
     r")"
 )
-
-
-def _safe_semantic_gap(gap: str) -> str:
-    """Keep only short grammatical bridges between independently safe spans."""
-    core = gap.strip(_SEMANTIC_EDGE_CHARS)
-    if core in _SAFE_BRIDGE_CORES:
-        return gap
-    return REDACTION_MARKER
 
 
 def _normalize_safe_span(value: str) -> str:
@@ -467,7 +319,7 @@ def _identity_spans(text: str) -> list[tuple[int, int]]:
         punctuation = re.search(r"[，,。；;！？!?]", text[label.end():line_end])
         boundary = label.end() + punctuation.start() if punctuation else line_end
         cue = _SAFE_RESUME_CUE.search(text, label.end(), boundary)
-        if cue and _SAFE_SPAN_PATTERN.match(text, cue.end()):
+        if cue:
             boundary = cue.end()
         spans.append((label.start(), boundary))
     return spans
@@ -629,22 +481,19 @@ def _provenance_segments(text: str) -> list[tuple[bool, str]]:
 
 
 def _project_safe_segment(text: str) -> str:
-    matches = list(_SAFE_SPAN_PATTERN.finditer(text))
-    if not matches:
-        return REDACTION_MARKER
-
-    pieces: list[str] = []
-    cursor = 0
-    for match in matches:
-        gap = text[cursor:match.start()]
-        if gap:
-            pieces.append(_safe_semantic_gap(gap))
-        pieces.append(_normalize_safe_span(match.group(0)))
-        cursor = match.end()
-    suffix = text[cursor:]
-    if suffix:
-        pieces.append(_safe_semantic_gap(suffix))
-    return "".join(pieces)
+    if not text:
+        return ""
+    projected = _NORMALIZABLE_MONTH.sub(
+        lambda match: _normalize_safe_span(match.group(0)),
+        text,
+    )
+    projected = re.sub(
+        r"(?:她|他)(?=(?:现在|目前|当前)?"
+        r"(?:是否|有没有|已经|未婚|已婚|结婚))",
+        "",
+        projected,
+    )
+    return projected
 
 
 def _project_safe_semantics(segments: Sequence[tuple[bool, str]]) -> str:
@@ -709,16 +558,13 @@ def _strip_birth_expressions(value: object) -> str:
 
 
 def _target_year_facts(question: str) -> list[dict[str, object]]:
-    """Extract explicit forecast years and calculate only their year pillars."""
+    """Extract explicit forecast years and forward the canonical yearly fact."""
     text = redact_customer_text(_strip_birth_expressions(question))
     years = list(dict.fromkeys(int(value) for value in re.findall(r"((?:19|20)\d{2})(?=年)", text)))[:4]
     return [
         {
             "year": year,
-            "year_pillar": (
-                HEAVENLY_STEMS[(year - 4) % 10]
-                + EARTHLY_BRANCHES[(year - 4) % 12]
-            ),
+            "year_pillar": yearly_engine.get_year_pillar(year),
         }
         for year in years
     ]

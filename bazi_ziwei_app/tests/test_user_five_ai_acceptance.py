@@ -68,7 +68,7 @@ def test_all_six_ai_questions_are_grounded_for_each_user_chart(case):
         assert not any(term in result.answer for term in ("一定会", "肯定发财", "保证成功"))
 
     assert "不能保证" in answers[-2].answer
-    assert "不能确认当前是否已经结婚" in answers[-1].answer
+    assert "单凭八字，不能确认现实中的婚姻登记状态" in answers[-1].answer
 
 
 def test_five_chart_ai_acceptance_renderer_is_deterministic():
@@ -81,7 +81,7 @@ def test_five_chart_ai_acceptance_renderer_is_deterministic():
     assert first.count("## U0") == 5
     assert first.count("验收通过") == 5
     assert "不能保证" in first
-    assert "不能确认当前是否已经结婚" in first
+    assert "单凭八字，不能确认现实中的婚姻登记状态" in first
     assert "答：###" not in first
     assert "\n答：\n\n#### 分析结论\n" in first
     for title in (
@@ -152,4 +152,4 @@ def test_current_marriage_status_variants_trigger_safe_acceptance_answer(questio
         client=DeterministicAcceptanceClient(),
     )
 
-    assert "不能确认当前是否已经结婚" in result.answer
+    assert "单凭八字，不能确认现实中的婚姻登记状态" in result.answer
