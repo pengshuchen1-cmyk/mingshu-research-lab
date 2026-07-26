@@ -1,4 +1,4 @@
-"""Deterministic six-section answers built only from supplied AI context."""
+"""Adaptive local answers built only from supplied AI context."""
 
 from __future__ import annotations
 
@@ -13,6 +13,9 @@ _BORROWING_TERMS = (
 )
 _MAX_LOCAL_STRING_CHARS = 3000
 _MAX_LOCAL_MAIN_ANSWER_CHARS = 6000
+_MAX_LOCAL_TIMING_BLOCK_CHARS = 1200
+_MAX_LOCAL_ADVICE_BLOCK_CHARS = 1600
+_MAX_LOCAL_LIMITATIONS_BLOCK_CHARS = 1600
 _TRUNCATION_SUFFIX = "…（已按本地回答长度上限截断）"
 
 
@@ -51,6 +54,14 @@ def _bounded_main_answer(value: str) -> str:
     return text[:prefix_limit].rstrip() + _TRUNCATION_SUFFIX
 
 
+def _bounded_block(value: str, limit: int) -> str:
+    text = value.strip()
+    if len(text) <= limit:
+        return text
+    prefix_limit = max(1, limit - len(_TRUNCATION_SUFFIX))
+    return text[:prefix_limit].rstrip() + _TRUNCATION_SUFFIX
+
+
 def _deduplicated(items: Sequence[str], *, limit: int = 12) -> list[str]:
     bounded = (_bounded_string(item) for item in items if item.strip())
     return list(dict.fromkeys(bounded))[:limit]
@@ -72,21 +83,46 @@ def _adaptive_local_text(
     advice: Sequence[str],
     limitations: Sequence[str],
 ) -> str:
-    parts = [_bounded_string(conclusion)]
+    leading_parts = [_bounded_string(conclusion)]
     evidence = [*chart_evidence[:4], *rule_evidence[:2]]
     if evidence:
-        parts.append(_bullet_block("主要依据", evidence, 6))
+        leading_parts.append(_bullet_block("主要依据", evidence, 6))
+
+    trailing_parts: list[str] = []
     if (context.requires_timing or context.category == "timing") and timing:
-        parts.append(_bullet_block("阶段观察", timing, 4))
+        trailing_parts.append(
+            _bounded_block(
+                _bullet_block("阶段观察", timing, 4),
+                _MAX_LOCAL_TIMING_BLOCK_CHARS,
+            )
+        )
     if advice:
-        parts.append(_bullet_block("现实建议", advice, 4))
+        trailing_parts.append(
+            _bounded_block(
+                _bullet_block("现实建议", advice, 4),
+                _MAX_LOCAL_ADVICE_BLOCK_CHARS,
+            )
+        )
     if limitations and (
         context.category == "relationship"
         or context.requires_timing
         or any(term in context.question for term in _BORROWING_TERMS)
     ):
-        parts.append(_bullet_block("需要说明", limitations, 4))
-    return _bounded_main_answer("\n\n".join(part for part in parts if part))
+        trailing_parts.append(
+            _bounded_block(
+                _bullet_block("需要说明", limitations, 4),
+                _MAX_LOCAL_LIMITATIONS_BLOCK_CHARS,
+            )
+        )
+
+    trailing = "\n\n".join(part for part in trailing_parts if part)
+    separator = "\n\n" if leading_parts and trailing else ""
+    leading_budget = _MAX_LOCAL_MAIN_ANSWER_CHARS - len(trailing) - len(separator)
+    leading = _bounded_block(
+        "\n\n".join(part for part in leading_parts if part),
+        max(1, leading_budget),
+    )
+    return _bounded_main_answer(f"{leading}{separator}{trailing}")
 
 
 def _base_chart_evidence(facts: Mapping[str, object]) -> list[str]:

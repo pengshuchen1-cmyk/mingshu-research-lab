@@ -159,7 +159,7 @@ def test_guard_rejects_common_wealth_and_spouse_synonym_claims():
         )
 
 
-def test_guard_examines_all_six_answer_sections():
+def test_guard_examines_main_answer_and_machine_support_fields():
     from core.ai_answer_guard import validate_ai_answer
 
     cases = [

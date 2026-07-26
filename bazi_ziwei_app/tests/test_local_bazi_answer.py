@@ -345,3 +345,30 @@ def test_long_supplied_fact_still_builds_bounded_complete_answer(
     assert useful_prefix in answer.analysis_conclusion
     assert 0 < len(answer.analysis_conclusion) <= 6000
     assert all(0 < len(value) <= 3000 for value in strings[1:])
+
+
+def test_long_facts_keep_required_advice_and_limitations_in_adaptive_answer():
+    from core.local_bazi_answer import build_local_answer
+
+    context = _context("wealth", "想抵押房子借贷创业，现金流要注意什么？")
+    facts = dict(context.chart_facts)
+    facts["wealth"] = {
+        **facts["wealth"],
+        "summary": "保留-wealth-" + ("长" * 3200),
+    }
+    facts["strength"] = {
+        **facts["strength"],
+        "classification": "保留-strength-" + ("长" * 3200),
+    }
+    facts["pattern"] = {
+        **facts["pattern"],
+        "classification": "保留-pattern-" + ("长" * 3200),
+    }
+
+    answer = build_local_answer(context.model_copy(update={"chart_facts": facts}))
+
+    assert len(answer.analysis_conclusion) <= 6000
+    assert "**现实建议**" in answer.analysis_conclusion
+    assert "**需要说明**" in answer.analysis_conclusion
+    assert "现金流" in answer.analysis_conclusion
+    assert "借贷、抵押、投资或创业结果" in answer.analysis_conclusion
