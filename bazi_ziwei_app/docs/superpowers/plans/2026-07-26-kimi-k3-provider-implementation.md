@@ -29,6 +29,7 @@
 - Modify: `core/ai_answer_guard.py` — 对自然主回答与非空机器证据执行现有事实校验。
 - Modify: `core/local_bazi_answer.py` — 组合与问题相关的本地自然回答，不固定六段。
 - Modify: `core/ai_orchestrator.py` — 使用客户端工厂，保持重试、校验和降级。
+- Create: `services/bazi_ai_prompt.py` — Kimi 与 OpenAI 共用的四柱问答约束和消息构造。
 - Create: `services/ai_service_errors.py` — 供应商无关的安全错误分类。
 - Modify: `services/openai_bazi_client.py` — 复用共享错误类型，保留 OpenAI 适配。
 - Create: `services/kimi_bazi_client.py` — Kimi K3 Chat Completions + JSON Schema 适配器。
@@ -64,6 +65,7 @@
 - Modify: `core/local_bazi_answer.py`
 - Modify: `core/ai_answer_guard.py`
 - Modify: `core/ai_orchestrator.py`
+- Create: `services/bazi_ai_prompt.py`
 - Modify: `services/openai_bazi_client.py`
 
 **Interfaces:**
@@ -300,9 +302,18 @@ def render_structured_markdown(answer: BaziAIAnswer) -> str:
     return render_adaptive_markdown(answer)
 ```
 
-将 `services/openai_bazi_client.py` 的 `SYSTEM_INSTRUCTION` 改为：
+创建 `services/bazi_ai_prompt.py`：
 
 ```python
+"""Shared prompt and message construction for Bazi cloud providers."""
+
+from __future__ import annotations
+
+import json
+
+from core.ai_models import AIRequestContext
+
+
 SYSTEM_INSTRUCTION = """你是命数研究室的四柱问答助手。
 仅使用请求中提供的去身份化命盘事实和本地规则，不得补充未提供的事实、
 规则或现实状态。不得重新计算四柱、节气、起运或大运。
@@ -313,6 +324,27 @@ analysis_conclusion 必须是一段可直接展示给客户的完整自然回答
 询问当前婚姻状态时，主回答必须先以
 “单凭八字，不能确认现实中的婚姻登记状态。”开头，再给概率倾向。
 """
+
+
+def build_messages(context: AIRequestContext) -> list[dict[str, str]]:
+    return [
+        {"role": "system", "content": SYSTEM_INSTRUCTION},
+        {
+            "role": "user",
+            "content": json.dumps(
+                context.model_dump(mode="json"),
+                ensure_ascii=False,
+                sort_keys=True,
+            ),
+        },
+    ]
+```
+
+在 `services/openai_bazi_client.py` 删除本地提示词和 `build_messages`，
+改为：
+
+```python
+from services.bazi_ai_prompt import build_messages
 ```
 
 在 `core/local_bazi_answer.py` 增加自然组合函数：
@@ -432,6 +464,7 @@ git add \
   core/local_bazi_answer.py \
   core/ai_answer_guard.py \
   core/ai_orchestrator.py \
+  services/bazi_ai_prompt.py \
   services/openai_bazi_client.py \
   tests/test_ai_models.py \
   tests/test_ai_answer_format.py \
@@ -1036,34 +1069,8 @@ from __future__ import annotations
 import json
 
 from core.ai_models import AIConfig, AIRequestContext, BaziAIAnswer
+from services.bazi_ai_prompt import build_messages
 from services.ai_service_errors import AIServiceError, classify_service_error
-
-
-SYSTEM_INSTRUCTION = """你是命数研究室的四柱问答助手。
-仅使用请求中提供的去身份化命盘事实和本地规则，不得补充未提供的事实、
-规则或现实状态。不得重新计算四柱、节气、起运或大运。
-analysis_conclusion 必须是一段可直接展示给客户的完整自然回答：
-简单问题简洁直接，复杂问题可自然分段，但不得固定套用六个栏目。
-chart_evidence、rule_evidence、timing_conditions、practical_advice 和
-uncertainty_limitations 是机器校验材料，可按问题相关性返回空列表。
-不得保证结婚、离婚、发财、疾病、死亡、法律、投资或借贷结果。
-询问当前婚姻状态时，主回答必须先以
-“单凭八字，不能确认现实中的婚姻登记状态。”开头，再给概率倾向。
-"""
-
-
-def build_messages(context: AIRequestContext) -> list[dict[str, str]]:
-    return [
-        {"role": "system", "content": SYSTEM_INSTRUCTION},
-        {
-            "role": "user",
-            "content": json.dumps(
-                context.model_dump(mode="json"),
-                ensure_ascii=False,
-                sort_keys=True,
-            ),
-        },
-    ]
 
 
 def _response_format() -> dict[str, object]:
