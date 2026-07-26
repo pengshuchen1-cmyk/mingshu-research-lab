@@ -9,6 +9,9 @@ from services.ai_service_errors import AIServiceError, classify_service_error
 from services.bazi_ai_prompt import build_messages
 
 
+KIMI_MODEL = "kimi-k3"
+
+
 def _response_format() -> dict[str, object]:
     return {
         "type": "json_schema",
@@ -36,6 +39,8 @@ class KimiBaziClient:
             self._client = None
 
     def answer(self, context: AIRequestContext) -> BaziAIAnswer:
+        if self._config.model != KIMI_MODEL:
+            raise AIServiceError("service_unavailable")
         if self._client is None:
             raise AIServiceError("disabled")
         try:
