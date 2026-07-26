@@ -5,35 +5,8 @@ from __future__ import annotations
 from pydantic import ValidationError
 
 from core.ai_models import AIConfig, AIRequestContext, BaziAIAnswer
+from services.ai_service_errors import AIServiceError, classify_service_error
 from services.bazi_ai_prompt import build_messages
-
-
-class AIServiceError(RuntimeError):
-    def __init__(self, code: str):
-        super().__init__(code)
-        self.code = code
-
-
-def classify_service_error(exc: Exception) -> str:
-    exception_name = type(exc).__name__.lower()
-    if isinstance(exc, TimeoutError) or "timeout" in exception_name:
-        return "timeout"
-    status = getattr(exc, "status_code", None)
-    code = str(getattr(exc, "code", "") or "").lower()
-    text = f"{code} {exc}".lower()
-    if status in {401, 403}:
-        return "invalid_credentials"
-    if status == 429 and any(
-        token in text for token in ("insufficient_quota", "billing", "quota")
-    ):
-        return "insufficient_quota"
-    if status == 429:
-        return "rate_limited"
-    if status in {500, 502, 503, 504}:
-        return "service_unavailable"
-    if isinstance(exc, (ConnectionError, OSError)) or "connection" in exception_name:
-        return "network_error"
-    return "service_unavailable"
 
 
 class OpenAIBaziClient:

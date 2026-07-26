@@ -135,7 +135,11 @@ def test_client_classifies_pydantic_parse_failure_as_retryable_unparseable():
             "insufficient_quota",
         ),
         (
-            _ProviderError("billing account inactive", status_code=429),
+            _ProviderError(
+                "provider message is not used for classification",
+                status_code=429,
+                code="billing",
+            ),
             "insufficient_quota",
         ),
         (_ProviderError("too many requests", status_code=429), "rate_limited"),
