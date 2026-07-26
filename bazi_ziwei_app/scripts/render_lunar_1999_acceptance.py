@@ -20,16 +20,6 @@ from scripts.run_user_five_ai_acceptance import DeterministicAcceptanceClient
 
 FIXTURE = ROOT / "tests" / "fixtures" / "lunar_1999_bazi_case.json"
 OUTPUT = ROOT / "acceptance_samples" / "lunar_1999_input_ai_acceptance.md"
-SIX_SECTION_TITLES = [
-    "分析结论",
-    "命盘依据",
-    "规则依据",
-    "阶段与触发条件",
-    "现实建议",
-    "不确定性与限制",
-]
-
-
 def _case() -> dict:
     return json.loads(FIXTURE.read_text(encoding="utf-8"))
 
@@ -82,10 +72,10 @@ def render() -> str:
     )
     if (
         cloud.source != "cloud_validated"
-        or list(cloud.sections) != SIX_SECTION_TITLES
-        or not all(cloud.sections.values())
+        or cloud.sections != {}
+        or not cloud.answer.strip()
     ):
-        raise RuntimeError("L1999 cloud structured acceptance failed")
+        raise RuntimeError("L1999 cloud adaptive answer acceptance failed")
 
     local = answer_question(
         chart,
@@ -96,8 +86,8 @@ def render() -> str:
     if (
         local.source != "local_rules"
         or local.degraded_reason != "missing_api_key"
-        or list(local.sections) != SIX_SECTION_TITLES
-        or not all(local.sections.values())
+        or local.sections != {}
+        or not local.answer.strip()
     ):
         raise RuntimeError("L1999 local fallback acceptance failed")
 
@@ -129,7 +119,7 @@ def render() -> str:
         f"标准时间：中国标准时间 {preview.solar_datetime}\n"
         f"四柱预览：{pillars_text}\n"
         "预览与正式命盘：一致\n"
-        "云端结构化模拟：通过\n"
+        "云端自然回答模拟：通过\n"
         "本地完整降级：通过\n"
         "隐私边界：通过\n"
     )

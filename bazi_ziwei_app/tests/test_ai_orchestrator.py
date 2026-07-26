@@ -3,16 +3,6 @@ from __future__ import annotations
 import pytest
 
 
-SIX_SECTION_TITLES = [
-    "分析结论",
-    "命盘依据",
-    "规则依据",
-    "阶段与触发条件",
-    "现实建议",
-    "不确定性与限制",
-]
-
-
 class _FakeClient:
     def __init__(self, answers):
         self.answers = list(answers)
@@ -66,14 +56,8 @@ def test_orchestrator_retries_once_after_guard_rejection():
     )
 
     assert result.source == "cloud_validated"
-    assert list(result.sections) == [
-        "分析结论",
-        "命盘依据",
-        "规则依据",
-        "阶段与触发条件",
-        "现实建议",
-        "不确定性与限制",
-    ]
+    assert result.sections == {}
+    assert result.answer.strip()
     assert result.timing_conditions
     assert result.practical_advice
     assert result.degraded_reason is None
@@ -95,16 +79,16 @@ def test_orchestrator_uses_local_rules_when_cloud_disabled():
     )
 
     assert result.source == "local_rules"
-    assert list(result.sections) == SIX_SECTION_TITLES
-    assert all(result.sections.values())
+    assert result.sections == {}
+    assert result.answer.strip()
     assert result.timing_conditions
     assert result.practical_advice
     assert result.degraded_reason == "missing_api_key"
     assert len(fake.contexts) == 0
     assert "单凭八字，不能确认现实中的婚姻登记状态。" in result.answer
-    assert "但如果一定要根据命盘作倾向判断：" in result.sections["分析结论"]
-    assert "我更偏向" in result.sections["分析结论"]
-    assert "仍需以本人现实情况为准" in result.sections["分析结论"]
+    assert "但如果一定要根据命盘作倾向判断：" in result.answer
+    assert "我更偏向" in result.answer
+    assert "仍需以本人现实情况为准" in result.answer
 
 
 def test_missing_api_key_returns_complete_wealth_fallback_with_exact_reason():
@@ -120,7 +104,8 @@ def test_missing_api_key_returns_complete_wealth_fallback_with_exact_reason():
 
     assert result.source == "local_rules"
     assert result.degraded_reason == "missing_api_key"
-    assert list(result.sections) == SIX_SECTION_TITLES
+    assert result.sections == {}
+    assert result.answer.strip()
 
 
 def test_orchestrator_retries_once_for_malformed_structured_output():
@@ -173,7 +158,8 @@ def test_orchestrator_preserves_service_error_reason_without_retry(error_code):
 
     assert result.source == "local_rules"
     assert result.degraded_reason == error_code
-    assert list(result.sections) == SIX_SECTION_TITLES
+    assert result.sections == {}
+    assert result.answer.strip()
     assert len(fake.contexts) == 1
 
 
@@ -264,7 +250,8 @@ def test_borrowing_synonym_fallback_has_complete_risk_advice(question):
 
     assert result.source == "local_rules"
     assert result.degraded_reason == "missing_api_key"
-    assert list(result.sections) == SIX_SECTION_TITLES
+    assert result.sections == {}
+    assert result.answer.strip()
     for required in ("现金流", "最坏情景", "还款", "退出"):
         assert required in advice
     assert "一定能" not in result.answer
@@ -294,14 +281,11 @@ def test_current_marriage_variant_fallback_cannot_confirm_status(question):
 
     assert result.source == "local_rules"
     assert result.degraded_reason == "missing_api_key"
-    assert (
-        "单凭八字，不能确认现实中的婚姻登记状态。"
-        in result.sections["分析结论"]
-    )
-    assert "但如果一定要根据命盘作倾向判断：" in result.sections["分析结论"]
-    assert "我更偏向" in result.sections["分析结论"]
-    assert relationship_summary in result.sections["分析结论"]
-    assert "仍需以本人现实情况为准" in result.sections["分析结论"]
+    assert "单凭八字，不能确认现实中的婚姻登记状态。" in result.answer
+    assert "但如果一定要根据命盘作倾向判断：" in result.answer
+    assert "我更偏向" in result.answer
+    assert relationship_summary in result.answer
+    assert "仍需以本人现实情况为准" in result.answer
     assert any("关系状态的倾向判断" in item for item in result.timing_conditions)
     assert any(
         "不代表确定已婚或未婚" in item
@@ -362,7 +346,7 @@ def test_canonical_relationship_polarity_drives_end_to_end_local_tendency(
         chart["facts"]["relationship"]["stability_signals"][0]["polarity"]
         == expected_polarity
     )
-    assert expected_tendency in result.sections["分析结论"]
+    assert expected_tendency in result.answer
 
 
 def test_old_attached_relationship_facts_without_polarity_stay_neutral():
@@ -446,9 +430,9 @@ def test_long_attached_wealth_fact_still_returns_bounded_local_fallback(
 
     assert result.source == "local_rules"
     assert result.degraded_reason == expected_reason
-    assert list(result.sections) == SIX_SECTION_TITLES
-    assert "保留-wealth-" in result.sections["分析结论"]
-    assert len(result.sections["分析结论"]) <= 3000
+    assert result.sections == {}
+    assert "保留-wealth-" in result.answer
+    assert len(result.answer) <= 6000
 
 
 def test_orchestrator_uses_attached_facts_even_when_legacy_fields_are_poisoned():

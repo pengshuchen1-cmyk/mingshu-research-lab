@@ -62,6 +62,24 @@ def test_guard_rejects_wrong_pillar_and_guarantee_language():
     assert "deterministic_claim" in result.violations
 
 
+def test_guard_checks_the_natural_main_answer_even_when_optional_lists_are_empty():
+    from core.ai_answer_guard import validate_ai_answer
+    from core.ai_models import BaziAIAnswer
+
+    answer = BaziAIAnswer(
+        analysis_conclusion="乙巳日主一定会发财。",
+        chart_evidence=[],
+        rule_evidence=[],
+        timing_conditions=[],
+        practical_advice=[],
+        uncertainty_limitations=[],
+    )
+
+    result = validate_ai_answer(answer, _context())
+    assert result.accepted is False
+    assert "deterministic_claim" in result.violations
+
+
 def test_guard_rejects_gender_pattern_wealth_and_spouse_star_contradictions():
     from core.ai_answer_guard import validate_ai_answer
 

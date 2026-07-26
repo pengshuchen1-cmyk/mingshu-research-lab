@@ -220,20 +220,13 @@ def test_invalid_parsed_object_is_unparseable_response():
     assert captured.value.code == "unparseable_response"
 
 
-def test_system_prompt_requires_six_sections_and_only_supplied_evidence():
+def test_openai_prompt_requires_adaptive_answer_and_only_supplied_evidence():
     from services.openai_bazi_client import build_messages
 
     system_prompt = build_messages(_context())[0]["content"]
 
-    for section_name in (
-        "分析结论",
-        "命盘证据",
-        "规则证据",
-        "时间条件",
-        "现实建议",
-        "不确定性与限制",
-    ):
-        assert section_name in system_prompt
+    assert "完整自然回答" in system_prompt
+    assert "不得固定套用六个栏目" in system_prompt
     assert "不得重新计算四柱" in system_prompt
     assert "仅使用请求中提供" in system_prompt
     assert "不得补充未提供" in system_prompt

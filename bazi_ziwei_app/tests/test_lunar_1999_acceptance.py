@@ -10,16 +10,6 @@ ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = json.loads(
     (ROOT / "tests" / "fixtures" / "lunar_1999_bazi_case.json").read_text(encoding="utf-8")
 )
-SIX_SECTION_TITLES = [
-    "分析结论",
-    "命盘依据",
-    "规则依据",
-    "阶段与触发条件",
-    "现实建议",
-    "不确定性与限制",
-]
-
-
 def _birth_input():
     from core.birth_input_preview import BirthFormInput
 
@@ -62,7 +52,7 @@ def test_lunar_1999_input_preview_and_formal_chart_share_authoritative_fingerpri
     assert chart["chart_fingerprint_v2"] == preview.chart_fingerprint
 
 
-def test_lunar_1999_cloud_and_no_key_paths_return_guarded_six_section_answers():
+def test_lunar_1999_cloud_and_no_key_paths_return_guarded_adaptive_answers():
     from core.ai_models import AIConfig
     from core.ai_orchestrator import answer_question
     from scripts.run_user_five_ai_acceptance import DeterministicAcceptanceClient
@@ -84,14 +74,14 @@ def test_lunar_1999_cloud_and_no_key_paths_return_guarded_six_section_answers():
     )
 
     assert cloud.source == "cloud_validated"
-    assert list(cloud.sections) == SIX_SECTION_TITLES
-    assert all(cloud.sections.values())
+    assert cloud.sections == {}
+    assert cloud.answer.strip()
     assert "单凭八字，不能确认现实中的婚姻登记状态" in cloud.answer
     assert cloud.degraded_reason is None
 
     assert local.source == "local_rules"
-    assert list(local.sections) == SIX_SECTION_TITLES
-    assert all(local.sections.values())
+    assert local.sections == {}
+    assert local.answer.strip()
     assert local.degraded_reason == "missing_api_key"
     assert "不能确认现实中的婚姻登记状态" in local.answer
 
@@ -174,7 +164,7 @@ def test_lunar_1999_receipt_renderer_is_exact_and_deterministic():
         "标准时间：中国标准时间 1999-08-11 10:00\n"
         "四柱预览：己卯 / 壬申 / 乙未 / 辛巳\n"
         "预览与正式命盘：一致\n"
-        "云端结构化模拟：通过\n"
+        "云端自然回答模拟：通过\n"
         "本地完整降级：通过\n"
         "隐私边界：通过\n"
     )

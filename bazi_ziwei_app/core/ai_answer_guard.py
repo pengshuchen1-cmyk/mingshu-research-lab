@@ -177,13 +177,13 @@ def validate_ai_answer(answer: BaziAIAnswer, context: AIRequestContext) -> Guard
         authorized_facts.add(f"{day_master}日主")
     if isinstance(strength, dict) and strength.get("classification"):
         authorized_facts.add(str(strength["classification"]))
-    if any(not item.strip() for item in answer.chart_evidence) or not all(
+    if answer.chart_evidence and not all(
         any(fact in item or item in fact for fact in authorized_facts)
         for item in answer.chart_evidence
     ):
         violations.append("unmapped_chart_evidence")
     rule_statements = [item["statement"] for item in context.rule_evidence]
-    if any(not item.strip() for item in answer.rule_evidence) or not all(
+    if answer.rule_evidence and not all(
         any(statement in item or item in statement for statement in rule_statements)
         for item in answer.rule_evidence
     ):

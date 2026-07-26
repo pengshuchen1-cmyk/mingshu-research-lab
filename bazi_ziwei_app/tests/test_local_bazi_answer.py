@@ -3,16 +3,6 @@ from __future__ import annotations
 import pytest
 
 
-SIX_SECTION_TITLES = [
-    "分析结论",
-    "命盘依据",
-    "规则依据",
-    "阶段与触发条件",
-    "现实建议",
-    "不确定性与限制",
-]
-
-
 def _context(
     category: str,
     question: str,
@@ -107,21 +97,21 @@ def _context(
         ("timing", "2027年什么时候需要注意？", True),
     ],
 )
-def test_local_answer_has_six_non_empty_sections(
+def test_local_answer_is_detailed_but_not_a_fixed_six_section_template(
     category,
     question,
     requires_timing,
 ):
-    from core.ai_answer_format import render_structured_answer
     from core.local_bazi_answer import build_local_answer
 
-    answer = build_local_answer(
-        _context(category, question, requires_timing=requires_timing)
-    )
-    sections = render_structured_answer(answer)
+    context = _context(category, question, requires_timing=requires_timing)
+    answer = build_local_answer(context)
 
-    assert list(sections) == SIX_SECTION_TITLES
-    assert all(value.strip() for value in sections.values())
+    assert len(answer.analysis_conclusion) > 80
+    assert "主要依据" in answer.analysis_conclusion
+    assert "现实建议" in answer.analysis_conclusion
+    assert "规则依据" not in answer.analysis_conclusion
+    assert "不确定性与限制" not in answer.analysis_conclusion
     assert answer.rule_evidence[0] == (
         f"{category}类别只依据已提供的本地规则判断。"
     )
@@ -332,7 +322,6 @@ def test_long_supplied_fact_still_builds_bounded_complete_answer(
     field,
     category,
 ):
-    from core.ai_answer_format import render_structured_answer
     from core.local_bazi_answer import build_local_answer
 
     context = _context(category, "请分析")
@@ -344,7 +333,6 @@ def test_long_supplied_fact_still_builds_bounded_complete_answer(
     long_context = context.model_copy(update={"chart_facts": facts})
 
     answer = build_local_answer(long_context)
-    sections = render_structured_answer(answer)
     strings = [
         answer.analysis_conclusion,
         *answer.chart_evidence,
@@ -354,7 +342,6 @@ def test_long_supplied_fact_still_builds_bounded_complete_answer(
         *answer.uncertainty_limitations,
     ]
 
-    assert list(sections) == SIX_SECTION_TITLES
-    assert all(sections.values())
     assert useful_prefix in answer.analysis_conclusion
-    assert all(0 < len(value) <= 3000 for value in strings)
+    assert 0 < len(answer.analysis_conclusion) <= 6000
+    assert all(0 < len(value) <= 3000 for value in strings[1:])

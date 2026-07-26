@@ -17,13 +17,12 @@ QuestionCategory = Literal[
 class BaziAIAnswer(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
-    analysis_conclusion: str = Field(min_length=1, max_length=3000)
-    chart_evidence: list[Annotated[str, Field(min_length=1)]] = Field(min_length=1, max_length=12)
-    rule_evidence: list[Annotated[str, Field(min_length=1)]] = Field(min_length=1, max_length=12)
-    timing_conditions: list[Annotated[str, Field(min_length=1)]] = Field(min_length=1, max_length=12)
-    practical_advice: list[Annotated[str, Field(min_length=1)]] = Field(min_length=1, max_length=12)
+    analysis_conclusion: str = Field(min_length=1, max_length=6000)
+    chart_evidence: list[Annotated[str, Field(min_length=1)]] = Field(max_length=12)
+    rule_evidence: list[Annotated[str, Field(min_length=1)]] = Field(max_length=12)
+    timing_conditions: list[Annotated[str, Field(min_length=1)]] = Field(max_length=12)
+    practical_advice: list[Annotated[str, Field(min_length=1)]] = Field(max_length=12)
     uncertainty_limitations: list[Annotated[str, Field(min_length=1)]] = Field(
-        min_length=1,
         max_length=8,
     )
 

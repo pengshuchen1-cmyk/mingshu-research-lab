@@ -93,8 +93,7 @@ def render(*, live: bool = False) -> str:
         for index, question in enumerate(questions, 1):
             result = answer_question(chart, question, [], config=config, client=client)
             lines.extend([f"### Q{index}", "", f"问：{question}", "", "答：", ""])
-            for title, content in result.sections.items():
-                lines.extend([f"#### {title}", "", content, ""])
+            lines.extend([result.answer, ""])
             lines.extend([f"来源：{result.source}", ""])
     return "\n".join(lines).rstrip() + "\n"
 

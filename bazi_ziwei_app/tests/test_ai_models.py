@@ -15,16 +15,22 @@ def _valid_answer():
     }
 
 
-def test_ai_answer_requires_evidence_and_rejects_unknown_fields():
+def test_ai_answer_allows_empty_machine_lists_and_rejects_unknown_fields():
     from core.ai_models import BaziAIAnswer
 
-    answer = BaziAIAnswer.model_validate(_valid_answer())
+    data = {
+        "analysis_conclusion": "这是可直接展示的自然回答。",
+        "chart_evidence": [],
+        "rule_evidence": [],
+        "timing_conditions": [],
+        "practical_advice": [],
+        "uncertainty_limitations": [],
+    }
+    answer = BaziAIAnswer.model_validate(data)
     assert answer.analysis_conclusion
 
     with pytest.raises(ValidationError):
-        BaziAIAnswer.model_validate({**_valid_answer(), "extra": "not allowed"})
-    with pytest.raises(ValidationError):
-        BaziAIAnswer.model_validate({**_valid_answer(), "chart_evidence": []})
+        BaziAIAnswer.model_validate({**data, "extra": "not allowed"})
 
 
 def test_ai_config_is_disabled_without_key(monkeypatch):

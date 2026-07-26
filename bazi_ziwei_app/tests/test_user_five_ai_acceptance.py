@@ -58,7 +58,8 @@ def test_all_six_ai_questions_are_grounded_for_each_user_chart(case):
         )
         answers.append(result)
         assert result.source == "cloud_validated"
-        assert len(result.sections) == 6
+        assert result.sections == {}
+        assert result.answer.strip()
         assert result.chart_evidence
         assert result.rule_evidence
         assert result.timing_conditions
@@ -83,7 +84,7 @@ def test_five_chart_ai_acceptance_renderer_is_deterministic():
     assert "不能保证" in first
     assert "单凭八字，不能确认现实中的婚姻登记状态" in first
     assert "答：###" not in first
-    assert "\n答：\n\n#### 分析结论\n" in first
+    assert "\n答：\n\n结合当前命盘事实与本地规则" in first
     for title in (
         "分析结论",
         "命盘依据",
@@ -92,7 +93,7 @@ def test_five_chart_ai_acceptance_renderer_is_deterministic():
         "现实建议",
         "不确定性与限制",
     ):
-        assert first.count(f"#### {title}\n") == 30
+        assert f"#### {title}\n" not in first
         assert f"\n### {title}\n" not in first
     _assert_artifact_current(TRACKED_ARTIFACT, first)
 

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Literal, Mapping, Sequence, cast
 
-from core.ai_answer_format import render_structured_answer, render_structured_markdown
+from core.ai_answer_format import render_adaptive_markdown
 from core.ai_answer_guard import validate_ai_answer
 from core.ai_context import build_ai_context
 from core.ai_models import (
@@ -27,8 +27,8 @@ def _answer_result(
     degraded_reason: DegradationReason | None = None,
 ) -> AnswerResult:
     return AnswerResult(
-        answer=render_structured_markdown(answer),
-        sections=render_structured_answer(answer),
+        answer=render_adaptive_markdown(answer),
+        sections={},
         chart_evidence=tuple(answer.chart_evidence),
         rule_evidence=tuple(answer.rule_evidence),
         timing_conditions=tuple(answer.timing_conditions),

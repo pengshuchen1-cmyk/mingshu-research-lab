@@ -12,6 +12,7 @@ _BORROWING_TERMS = (
     "房贷", "按揭", "借钱", "负债", "融资", "抵押", "借贷", "贷款", "杠杆",
 )
 _MAX_LOCAL_STRING_CHARS = 3000
+_MAX_LOCAL_MAIN_ANSWER_CHARS = 6000
 _TRUNCATION_SUFFIX = "…（已按本地回答长度上限截断）"
 
 
@@ -42,9 +43,50 @@ def _bounded_string(value: str) -> str:
     return text[:prefix_limit].rstrip() + _TRUNCATION_SUFFIX
 
 
+def _bounded_main_answer(value: str) -> str:
+    text = value.strip()
+    if len(text) <= _MAX_LOCAL_MAIN_ANSWER_CHARS:
+        return text
+    prefix_limit = _MAX_LOCAL_MAIN_ANSWER_CHARS - len(_TRUNCATION_SUFFIX)
+    return text[:prefix_limit].rstrip() + _TRUNCATION_SUFFIX
+
+
 def _deduplicated(items: Sequence[str], *, limit: int = 12) -> list[str]:
     bounded = (_bounded_string(item) for item in items if item.strip())
     return list(dict.fromkeys(bounded))[:limit]
+
+
+def _bullet_block(title: str, items: Sequence[str], limit: int) -> str:
+    selected = _deduplicated(items, limit=limit)
+    if not selected:
+        return ""
+    return f"**{title}**\n" + "\n".join(f"- {item}" for item in selected)
+
+
+def _adaptive_local_text(
+    context: AIRequestContext,
+    conclusion: str,
+    chart_evidence: Sequence[str],
+    rule_evidence: Sequence[str],
+    timing: Sequence[str],
+    advice: Sequence[str],
+    limitations: Sequence[str],
+) -> str:
+    parts = [_bounded_string(conclusion)]
+    evidence = [*chart_evidence[:4], *rule_evidence[:2]]
+    if evidence:
+        parts.append(_bullet_block("主要依据", evidence, 6))
+    if (context.requires_timing or context.category == "timing") and timing:
+        parts.append(_bullet_block("阶段观察", timing, 4))
+    if advice:
+        parts.append(_bullet_block("现实建议", advice, 4))
+    if limitations and (
+        context.category == "relationship"
+        or context.requires_timing
+        or any(term in context.question for term in _BORROWING_TERMS)
+    ):
+        parts.append(_bullet_block("需要说明", limitations, 4))
+    return _bounded_main_answer("\n\n".join(part for part in parts if part))
 
 
 def _base_chart_evidence(facts: Mapping[str, object]) -> list[str]:
@@ -353,11 +395,23 @@ def build_local_answer(context: AIRequestContext) -> BaziAIAnswer:
             if isinstance(item, Mapping)
         ]
     )
+    conclusion = _analysis_conclusion(context, facts)
+    timing = _timing_conditions(context, facts)
+    advice = _practical_advice(context)
+    limitations = _limitations(context)
     return BaziAIAnswer(
-        analysis_conclusion=_bounded_string(_analysis_conclusion(context, facts)),
-        chart_evidence=chart_evidence or ["当前上下文未提供可引用的命盘事实。"],
-        rule_evidence=rule_evidence or ["本地回答不得超出已提供的规则证据。"],
-        timing_conditions=_timing_conditions(context, facts),
-        practical_advice=_practical_advice(context),
-        uncertainty_limitations=_limitations(context),
+        analysis_conclusion=_adaptive_local_text(
+            context,
+            conclusion,
+            chart_evidence,
+            rule_evidence,
+            timing,
+            advice,
+            limitations,
+        ),
+        chart_evidence=chart_evidence,
+        rule_evidence=rule_evidence,
+        timing_conditions=timing,
+        practical_advice=advice,
+        uncertainty_limitations=limitations,
     )
