@@ -42,6 +42,14 @@ SIX_SECTION_TITLES = (
 _MISSING_CREDENTIAL_REASON = "_".join(("missing", "api", "key"))
 
 
+def _runtime_ai_config() -> AIConfig:
+    try:
+        secrets = st.secrets
+    except (FileNotFoundError, RuntimeError):
+        secrets = {}
+    return AIConfig.from_environment(secrets)
+
+
 def answer_source_label(source: str, degraded_reason: str | None) -> str:
     if source == "cloud_validated":
         return "云端 AI 分析 · 本地规则校验"
@@ -174,8 +182,10 @@ def _answer(chart: dict, question: str) -> None:
     text = question.strip()
     history = recent_context_messages(st.session_state)
     category = classify_question(text).category
-    config = AIConfig.from_environment()
-    model_alias = "configured-ai" if config.enabled else "local"
+    config = _runtime_ai_config()
+    model_alias = (
+        f"{config.provider}:{config.model}" if config.enabled else "local"
+    )
     log_ai_event(
         event_code="AI_QA_REQUESTED",
         category=category,

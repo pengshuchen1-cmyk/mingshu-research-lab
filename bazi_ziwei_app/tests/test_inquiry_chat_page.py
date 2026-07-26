@@ -31,6 +31,7 @@ class _FakeStreamlit:
         self.captions = []
         self.expanders = []
         self.session_state = {}
+        self.secrets = {}
 
     def chat_message(self, _role):
         return _Context()
@@ -187,7 +188,7 @@ def test_fallback_log_uses_exact_reason_code_without_content_or_pii(monkeypatch)
     monkeypatch.setattr(
         inquiry_page.AIConfig,
         "from_environment",
-        classmethod(lambda cls: SimpleNamespace(enabled=True)),
+        classmethod(lambda cls, secrets=None: SimpleNamespace(enabled=True, provider="kimi", model="kimi-k3")),
     )
     monkeypatch.setattr(inquiry_page, "answer_question", lambda *_args, **_kwargs: result)
     monkeypatch.setattr(inquiry_page, "log_ai_event", lambda **kwargs: events.append(kwargs))
@@ -210,6 +211,47 @@ def test_fallback_log_uses_exact_reason_code_without_content_or_pii(monkeypatch)
     }
     assert "不应记录" not in repr(events)
     assert "1990-01-01" not in repr(events)
+
+
+def test_question_page_passes_streamlit_secrets_to_config(monkeypatch):
+    import ui.inquiry_page as inquiry_page
+    from core.ai_models import AnswerResult
+
+    captured = []
+    fake = _FakeStreamlit()
+    fake.secrets = {"MOONSHOT_API_KEY": "local-secret"}
+    result = AnswerResult(
+        answer="本地回答",
+        sections={},
+        chart_evidence=(),
+        rule_evidence=(),
+        timing_conditions=(),
+        practical_advice=(),
+        uncertainty=(),
+        source="local_rules",
+        degraded_reason="missing_api_key",
+    )
+    monkeypatch.setattr(inquiry_page, "st", fake)
+    monkeypatch.setattr(
+        inquiry_page.AIConfig,
+        "from_environment",
+        classmethod(lambda cls, secrets=None: captured.append(secrets) or SimpleNamespace(
+            enabled=False,
+            provider="kimi",
+            model="kimi-k3",
+        )),
+    )
+    monkeypatch.setattr(
+        inquiry_page,
+        "answer_question",
+        lambda *_a, **_k: result,
+    )
+    monkeypatch.setattr(inquiry_page, "log_ai_event", lambda **_kwargs: None)
+    monkeypatch.setattr(inquiry_page, "touch_private_session", lambda _state: None)
+    monkeypatch.setattr(inquiry_page, "_render_message", lambda _item: None)
+
+    inquiry_page._answer({"pillars": {}}, "财运如何？")
+    assert captured == [fake.secrets]
 
 
 def test_privacy_center_discloses_deidentified_cloud_payload_and_exclusions():

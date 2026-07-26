@@ -37,16 +37,20 @@ def test_ai_config_is_disabled_without_key(monkeypatch):
     from core.ai_models import AIConfig
 
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.delenv("MOONSHOT_API_KEY", raising=False)
+    monkeypatch.delenv("MINGSHU_AI_PROVIDER", raising=False)
     config = AIConfig.from_environment()
 
     assert config.enabled is False
-    assert config.model == "gpt-5.6-sol"
-    assert config.reasoning_effort == "medium"
+    assert config.provider == "kimi"
+    assert config.model == "kimi-k3"
+    assert config.reasoning_effort == "high"
 
 
 def test_ai_config_validates_server_overrides(monkeypatch):
     from core.ai_models import AIConfig
 
+    monkeypatch.setenv("MINGSHU_AI_PROVIDER", "openai")
     monkeypatch.setenv("OPENAI_API_KEY", "server-secret")
     monkeypatch.setenv("MINGSHU_AI_MODEL", "gpt-5.6-terra")
     monkeypatch.setenv("MINGSHU_AI_REASONING", "high")
@@ -59,3 +63,60 @@ def test_ai_config_validates_server_overrides(monkeypatch):
     assert config.model == "gpt-5.6-terra"
     assert config.reasoning_effort == "high"
     assert config.timeout_seconds == 45
+
+
+def test_kimi_is_default_and_streamlit_secrets_enable_cloud(monkeypatch):
+    from core.ai_models import AIConfig
+
+    for name in (
+        "MINGSHU_AI_PROVIDER",
+        "MOONSHOT_API_KEY",
+        "MINGSHU_AI_MODEL",
+        "MINGSHU_AI_BASE_URL",
+        "MINGSHU_AI_REASONING",
+    ):
+        monkeypatch.delenv(name, raising=False)
+
+    config = AIConfig.from_environment(
+        {"MOONSHOT_API_KEY": "local-secret"}
+    )
+
+    assert config.enabled is True
+    assert config.api_key == "local-secret"
+    assert config.provider == "kimi"
+    assert config.model == "kimi-k3"
+    assert config.base_url == "https://api.moonshot.cn/v1"
+    assert config.reasoning_effort == "high"
+
+
+def test_server_environment_overrides_streamlit_secrets(monkeypatch):
+    from core.ai_models import AIConfig
+
+    monkeypatch.setenv("MINGSHU_AI_PROVIDER", "kimi")
+    monkeypatch.setenv("MOONSHOT_API_KEY", "server-secret")
+    monkeypatch.setenv("MINGSHU_AI_MODEL", "kimi-k3")
+    monkeypatch.setenv("MINGSHU_AI_BASE_URL", "https://api.moonshot.cn/v1")
+    monkeypatch.setenv("MINGSHU_AI_REASONING", "max")
+
+    config = AIConfig.from_environment(
+        {
+            "MOONSHOT_API_KEY": "local-secret",
+            "MINGSHU_AI_MODEL": "should-not-win",
+        }
+    )
+
+    assert config.api_key == "server-secret"
+    assert config.model == "kimi-k3"
+    assert config.reasoning_effort == "max"
+
+
+def test_openai_provider_keeps_its_own_key(monkeypatch):
+    from core.ai_models import AIConfig
+
+    monkeypatch.setenv("MINGSHU_AI_PROVIDER", "openai")
+    monkeypatch.setenv("OPENAI_API_KEY", "openai-secret")
+    monkeypatch.delenv("MOONSHOT_API_KEY", raising=False)
+
+    config = AIConfig.from_environment()
+    assert config.provider == "openai"
+    assert config.api_key == "openai-secret"
