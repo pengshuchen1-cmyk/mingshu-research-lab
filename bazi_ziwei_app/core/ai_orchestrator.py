@@ -17,7 +17,8 @@ from core.ai_models import (
 )
 from core.chart_facts import chart_facts_from_chart
 from core.local_bazi_answer import build_local_answer
-from services.openai_bazi_client import AIServiceError, OpenAIBaziClient
+from services.ai_client_factory import build_ai_client
+from services.ai_service_errors import AIServiceError
 
 
 def _answer_result(
@@ -82,7 +83,10 @@ def answer_question(
     context = build_ai_context(facts, question, history)
     if not config.enabled:
         return _local_result(context, "missing_api_key")
-    service = client or OpenAIBaziClient(config)
+    try:
+        service = client or build_ai_client(config)
+    except AIServiceError as exc:
+        return _local_result(context, _degradation_reason(exc.code))
 
     last_violations: tuple[str, ...] = ()
     for attempt in range(2):

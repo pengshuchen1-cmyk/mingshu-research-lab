@@ -16,6 +16,29 @@ class _FakeClient:
         return item
 
 
+def test_orchestrator_builds_configured_provider_when_client_not_injected(monkeypatch):
+    import core.ai_orchestrator as orchestrator
+    from core.ai_models import AIConfig
+
+    fake = _FakeClient([_answer("壬日主的财务重点是现金流。", "壬日主")])
+    captured = []
+    monkeypatch.setattr(
+        orchestrator,
+        "build_ai_client",
+        lambda config: captured.append(config.provider) or fake,
+    )
+
+    result = orchestrator.answer_question(
+        _chart(),
+        "财运如何？",
+        [],
+        config=AIConfig("key", True, provider="kimi"),
+    )
+
+    assert captured == ["kimi"]
+    assert result.source == "cloud_validated"
+
+
 def _chart():
     from core.bazi_engine import build_bazi_chart
 
