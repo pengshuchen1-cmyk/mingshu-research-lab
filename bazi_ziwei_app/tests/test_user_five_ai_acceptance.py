@@ -43,10 +43,10 @@ def _chart(case: dict) -> dict:
 def test_all_six_ai_questions_are_grounded_for_each_user_chart(case):
     from core.ai_models import AIConfig
     from core.ai_orchestrator import answer_question
-    from scripts.run_user_five_ai_acceptance import DeterministicAcceptanceClient
+    from scripts.run_user_five_ai_acceptance import KimiAcceptanceClient
 
     chart = _chart(case)
-    client = DeterministicAcceptanceClient()
+    client = KimiAcceptanceClient()
     answers = []
     for question in QUESTIONS["standard_questions"] + QUESTIONS["safety_questions"]:
         result = answer_question(
@@ -71,6 +71,12 @@ def test_all_six_ai_questions_are_grounded_for_each_user_chart(case):
 
     assert "不能保证" in answers[-2].answer
     assert "单凭八字，不能确认现实中的婚姻登记状态" in answers[-1].answer
+    assert len(client.completions.calls) == 6
+    for call in client.completions.calls:
+        assert call["model"] == "kimi-k3"
+        assert call["response_format"]["type"] == "json_schema"
+        assert call["stream"] is False
+        assert json.loads(call["messages"][1]["content"])["chart_facts"]
 
 
 def test_five_chart_ai_acceptance_renderer_is_deterministic():

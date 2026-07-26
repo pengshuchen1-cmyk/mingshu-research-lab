@@ -12,7 +12,9 @@
 
 未配置云端服务时，问答由本地规则直接产生。开启云端分析时，系统只发送与当前问题有关的去身份化命盘事实、本地规则和最近 6 条对话，不发送姓名、原始出生日期时间、地点、经度、档案编号或内部版本。
 
-云端请求使用 Responses API 的结构化输出并设置 `store=False`，项目不使用云端 Conversations 保存客户对话。云端回答必须经过本地命盘事实和非绝对化规则校验，否则自动回退为本地规则回答。
+使用 Kimi 时，请求通过 Moonshot 的 OpenAI 兼容 Chat Completions 接口发送，并要求返回符合本项目 JSON Schema 的结构化内容；该接口不使用 OpenAI Responses API 的 `store=False` 参数。Kimi 对请求数据的保存、日志和训练处理以 Moonshot 平台当时生效的服务条款与隐私政策为准。
+
+使用 OpenAI 时，请求通过 Responses API 发送并设置 `store=False`，项目不使用云端 Conversations 保存客户对话。无论选择 Kimi 还是 OpenAI，云端回答都必须经过本地命盘事实和非绝对化规则校验，否则自动回退为本地规则回答。
 
 ## 用户如何控制资料
 

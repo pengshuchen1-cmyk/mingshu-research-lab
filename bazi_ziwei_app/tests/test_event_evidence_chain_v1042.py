@@ -120,7 +120,7 @@ class EventEvidenceChainV1042Tests(unittest.TestCase):
                 "domains": ["五行取象", "神煞资料"],
                 "broadness_penalty": 0.35,
             },
-            "master_case_zhou_huimin_2026": {
+            "specialized_event_reference": {
                 "authority_weight": 0.78,
                 "specificity": "case",
                 "domains": ["财务支出", "感情婚恋", "社交人情"],
@@ -147,20 +147,20 @@ class EventEvidenceChainV1042Tests(unittest.TestCase):
             ontology,
             source_registry=broad_registry,
         )
-        case_result = _evaluate_event_confidence(
+        specialized_result = _evaluate_event_confidence(
             {
                 "trigger_count": 4,
-                "evidence": evidence + [{"type": "month_index", "source_ids": ["master_case_zhou_huimin_2026"], "source_relevance": 0.95}],
-                "source_ids": ["ming_li_tan_yuan", "wu_xing_jing_ji", "master_case_zhou_huimin_2026"],
+                "evidence": evidence + [{"type": "month_index", "source_ids": ["specialized_event_reference"], "source_relevance": 0.95}],
+                "source_ids": ["ming_li_tan_yuan", "wu_xing_jing_ji", "specialized_event_reference"],
             },
             ontology,
             source_registry=broad_registry,
         )
-        low_relevance_case_result = _evaluate_event_confidence(
+        low_relevance_specialized_result = _evaluate_event_confidence(
             {
                 "trigger_count": 4,
-                "evidence": evidence + [{"type": "month_index", "source_ids": ["master_case_zhou_huimin_2026"], "source_relevance": 0.2}],
-                "source_ids": ["ming_li_tan_yuan", "wu_xing_jing_ji", "master_case_zhou_huimin_2026"],
+                "evidence": evidence + [{"type": "month_index", "source_ids": ["specialized_event_reference"], "source_relevance": 0.2}],
+                "source_ids": ["ming_li_tan_yuan", "wu_xing_jing_ji", "specialized_event_reference"],
             },
             ontology,
             source_registry=broad_registry,
@@ -168,9 +168,15 @@ class EventEvidenceChainV1042Tests(unittest.TestCase):
 
         self.assertEqual(broad_result["confidence_level"], "medium")
         self.assertIn("来源过于宽泛，不能支撑高置信事件。", broad_result["downgrade_reasons"])
-        self.assertLess(broad_result["source_confidence_score"], case_result["source_confidence_score"])
-        self.assertLess(low_relevance_case_result["source_confidence_score"], case_result["source_confidence_score"])
-        self.assertEqual(case_result["confidence_level"], "high")
+        self.assertLess(
+            broad_result["source_confidence_score"],
+            specialized_result["source_confidence_score"],
+        )
+        self.assertLess(
+            low_relevance_specialized_result["source_confidence_score"],
+            specialized_result["source_confidence_score"],
+        )
+        self.assertEqual(specialized_result["confidence_level"], "high")
 
 
 if __name__ == "__main__":

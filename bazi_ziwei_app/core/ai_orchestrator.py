@@ -26,6 +26,7 @@ def _answer_result(
     *,
     source: Literal["cloud_validated", "local_rules"],
     degraded_reason: DegradationReason | None = None,
+    provider: Literal["kimi", "openai"] | None = None,
 ) -> AnswerResult:
     return AnswerResult(
         answer=render_adaptive_markdown(answer),
@@ -37,6 +38,7 @@ def _answer_result(
         uncertainty=tuple(answer.uncertainty_limitations),
         source=source,
         degraded_reason=degraded_reason,
+        provider=provider,
     )
 
 
@@ -81,12 +83,16 @@ def answer_question(
     config = config or AIConfig.from_environment()
     facts = chart_facts_from_chart(chart)
     context = build_ai_context(facts, question, history)
+    if config.provider not in {"kimi", "openai"}:
+        return _local_result(context, "service_unavailable")
     if not config.enabled:
         return _local_result(context, "missing_api_key")
     try:
         service = client or build_ai_client(config)
     except AIServiceError as exc:
         return _local_result(context, _degradation_reason(exc.code))
+    except Exception:
+        return _local_result(context, "service_unavailable")
 
     last_violations: tuple[str, ...] = ()
     for attempt in range(2):
@@ -109,6 +115,7 @@ def answer_question(
             return _answer_result(
                 answer,
                 source="cloud_validated",
+                provider=config.provider,
             )
         last_violations = guard.violations
     return _local_result(context, "local_validation_failed")

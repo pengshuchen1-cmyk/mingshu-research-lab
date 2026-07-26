@@ -35,19 +35,19 @@ class EventPoolExpansion120Tests(unittest.TestCase):
     def test_event_type_count_is_120_plus(self):
         self.assertGreaterEqual(len(self.ontology), 120)
 
-    def test_event_type_count_expands_to_270_with_aligned_assets(self):
-        self.assertGreaterEqual(len(self.ontology), 270)
+    def test_event_type_count_keeps_262_generic_events_with_aligned_assets(self):
+        self.assertGreaterEqual(len(self.ontology), 262)
         self.assertEqual(len(self.ontology), len(self.rules))
         self.assertEqual(len(self.ontology), len(self.variants))
 
-    def test_priority_categories_expand_by_six_real_events_each(self):
+    def test_priority_categories_keep_the_generic_event_coverage(self):
         expected_counts = {
             "财务收入": 20,
             "财务支出": 20,
             "事业职场": 21,
             "创业经营": 18,
             "交通车辆": 18,
-            "感情婚恋": 21,
+            "感情婚恋": 20,
             "学习证书": 14,
             "贵人与资源": 14,
         }

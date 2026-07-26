@@ -15,7 +15,15 @@ from core.ai_models import AIRequestContext, BaziAIAnswer
 
 DETERMINISTIC_PHRASES = (
     "一定会", "注定", "百分之百", "必然离婚", "肯定发财",
-    "保证成功", "抵押房子一定能成",
+    "保证成功", "抵押房子一定能成", "必定", "绝对成功",
+    "毫无疑问", "铁定",
+)
+_ABSOLUTE_CLAIM = re.compile(
+    r"(?:必成|必发(?:财|达|家)|必赚(?:钱|到)|必赢)"
+)
+_NEGATING_SUFFIXES = (
+    "不能够", "不可能", "不能", "无法", "并非", "并不",
+    "没有", "不太", "不可", "不", "未", "非",
 )
 STEMS = "甲乙丙丁戊己庚辛壬癸"
 BRANCHES = "子丑寅卯辰巳午未申酉戌亥"
@@ -42,6 +50,12 @@ _CURRENT_MARRIAGE_TENDENCY = re.compile(
     r"(?:已经结婚|结婚|已婚|未婚|有配偶|无配偶|处于婚姻关系)"
 )
 _CLAUSE_SPLIT = re.compile(r"[，,。；;！？!?\r\n]+")
+ELEMENTS = "木火土金水"
+TEN_GODS = (
+    "比肩", "劫财", "食神", "伤官", "正财",
+    "偏财", "正官", "七杀", "正印", "偏印",
+)
+POSITION_KEYS = {"年": "year", "月": "month", "日": "day", "时": "hour"}
 
 
 @dataclass(frozen=True)
@@ -73,6 +87,404 @@ def _has_unqualified_current_marriage_claim(text: str) -> bool:
     return False
 
 
+def _is_negated(text: str, start: int) -> bool:
+    prefix = text[max(0, start - 4):start]
+    if any(prefix.endswith(value) for value in _NEGATING_SUFFIXES):
+        return True
+    clause_prefix = re.split(r"[，,。；;！？!?\r\n]+", text[:start])[-1]
+    return bool(
+        re.search(
+            r"(?:不存在|谈不上)(?:任何|所谓|什么)?\s*$",
+            clause_prefix,
+        )
+    )
+
+
+def _has_deterministic_claim(text: str) -> bool:
+    for phrase in DETERMINISTIC_PHRASES:
+        for match in re.finditer(re.escape(phrase), text):
+            if not _is_negated(text, match.start()):
+                return True
+    return any(
+        not _is_negated(text, match.start())
+        for match in _ABSOLUTE_CLAIM.finditer(text)
+    )
+
+
+def _mapping(value: object) -> dict:
+    return value if isinstance(value, dict) else {}
+
+
+def _overlaps_any(
+    span: tuple[int, int],
+    excluded_spans: list[tuple[int, int]],
+) -> bool:
+    start, end = span
+    return any(
+        start < excluded_end and end > excluded_start
+        for excluded_start, excluded_end in excluded_spans
+    )
+
+
+def _claimed_elements(
+    text: str,
+    label_pattern: str,
+    excluded_spans: list[tuple[int, int]] | None = None,
+) -> set[str]:
+    values: set[str] = set()
+    excluded = excluded_spans or []
+    for match in re.finditer(
+        rf"(?:{label_pattern})(?:的?五行)?(?:为|是|属|：|:)?"
+        rf"([{ELEMENTS}、，和及与]+)",
+        text,
+    ):
+        if (
+            _is_negated(text, match.start())
+            or _overlaps_any(match.span(), excluded)
+        ):
+            continue
+        values.update(char for char in match.group(1) if char in ELEMENTS)
+    return values
+
+
+def _ten_god_counts(ten_gods: dict) -> dict[str, int]:
+    counts = {name: 0 for name in TEN_GODS}
+    for raw in ten_gods.values():
+        item = _mapping(raw)
+        visible = str(item.get("gan") or "")
+        if visible in counts:
+            counts[visible] += 1
+        hidden = item.get("hidden_stems")
+        if isinstance(hidden, list):
+            for raw_hidden in hidden:
+                ten_god = str(_mapping(raw_hidden).get("ten_god") or "")
+                if ten_god in counts:
+                    counts[ten_god] += 1
+    return counts
+
+
+def _numeric_equal(claimed: str, expected: object) -> bool:
+    try:
+        return abs(float(claimed) - float(expected)) < 1e-9
+    except (TypeError, ValueError):
+        return False
+
+
+def _contains_start_age(start: str, claimed: str) -> bool:
+    before_start = start.split("起运", 1)[0]
+    ages = re.findall(r"(\d+(?:\.\d+)?)\s*岁", before_start)
+    ages.extend(
+        re.findall(
+            r"(?:约)?(\d+(?:\.\d+)?)\s*年(?:\d+\s*个月)?",
+            before_start,
+        )
+    )
+    return any(_numeric_equal(claimed, age) for age in ages)
+
+
+def _has_canonical_fact_contradiction(
+    combined: str,
+    facts: dict[str, object],
+) -> tuple[str, ...]:
+    """Validate explicit machine-checkable claims in the natural answer.
+
+    Free-form interpretation remains allowed. Once the model states a concrete
+    value that the canonical projection can check, a mismatch is rejected.
+    """
+    violations: list[str] = []
+    strength = _mapping(facts.get("strength"))
+    favorable = set(strength.get("favorable_elements") or [])
+    unfavorable = set(strength.get("unfavorable_elements") or [])
+    claimed_non_favorable: set[str] = set()
+    claimed_not_unfavorable: set[str] = set()
+    negated_disposition_spans: list[tuple[int, int]] = []
+    for match in re.finditer(
+        rf"(?:(?:此命|命局|此局)\s*)?(?:并不|不太|不)\s*喜(?:用)?"
+        rf"(?:为|是|属|：|:)?\s*([{ELEMENTS}、和及与]+)",
+        combined,
+    ):
+        negated_disposition_spans.append(match.span())
+        claimed_non_favorable.update(
+            char for char in match.group(1) if char in ELEMENTS
+        )
+    for match in re.finditer(
+        rf"(?:(?:此命|命局|此局)\s*)?(?:并不|不太|不)\s*忌(?:用)?"
+        rf"(?:为|是|属|：|:)?\s*([{ELEMENTS}、和及与]+)",
+        combined,
+    ):
+        negated_disposition_spans.append(match.span())
+        claimed_not_unfavorable.update(
+            char for char in match.group(1) if char in ELEMENTS
+        )
+    claimed_favorable = _claimed_elements(
+        combined,
+        r"喜用五行|喜用神|喜神|用神|有利五行",
+        negated_disposition_spans,
+    )
+    claimed_unfavorable = _claimed_elements(
+        combined,
+        r"忌用五行|忌神|不利五行",
+        negated_disposition_spans,
+    )
+    for match in re.finditer(
+        rf"(?<![欢不太])(?:(?:此命|命局|此局)\s*)?喜(?:用)?"
+        rf"(?:为|是|属|：|:)?\s*([{ELEMENTS}、和及与]+)",
+        combined,
+    ):
+        if _overlaps_any(match.span(), negated_disposition_spans):
+            continue
+        claimed_favorable.update(
+            char for char in match.group(1) if char in ELEMENTS
+        )
+    for match in re.finditer(
+        rf"(?<![不太])(?:(?:此命|命局|此局)\s*)?忌(?:用)?"
+        rf"(?:为|是|属|：|:)?\s*([{ELEMENTS}、和及与]+)",
+        combined,
+    ):
+        if _overlaps_any(match.span(), negated_disposition_spans):
+            continue
+        claimed_unfavorable.update(
+            char for char in match.group(1) if char in ELEMENTS
+        )
+    for elements, disposition in re.findall(
+        rf"以\s*([{ELEMENTS}、和及与]+)\s*为\s*(喜(?:用)?|忌(?:用)?)",
+        combined,
+    ):
+        target = (
+            claimed_favorable
+            if disposition.startswith("喜")
+            else claimed_unfavorable
+        )
+        target.update(char for char in elements if char in ELEMENTS)
+    if claimed_favorable and (
+        not favorable or not claimed_favorable.issubset(favorable)
+    ):
+        violations.append("favorable_element_contradiction")
+    if claimed_unfavorable and (
+        not unfavorable or not claimed_unfavorable.issubset(unfavorable)
+    ):
+        violations.append("unfavorable_element_contradiction")
+    if claimed_non_favorable and (
+        not favorable or bool(claimed_non_favorable & favorable)
+    ):
+        violations.append("favorable_element_contradiction")
+    if claimed_not_unfavorable and (
+        not unfavorable or bool(claimed_not_unfavorable & unfavorable)
+    ):
+        violations.append("unfavorable_element_contradiction")
+
+    element_counts = _mapping(facts.get("element_counts"))
+    for element, claimed in re.findall(
+        rf"(?:五行中)?([{ELEMENTS}])(?:元素)?(?:的)?"
+        r"(?:数量|个数|计数|共有|共|有|为|是)"
+        r"(?:为|是)?\s*(\d+(?:\.\d+)?)",
+        combined,
+    ):
+        if element not in element_counts or not _numeric_equal(
+            claimed, element_counts[element]
+        ):
+            violations.append("element_count_contradiction")
+            break
+
+    ten_gods = _mapping(facts.get("ten_gods"))
+    ten_god_pattern = "|".join(TEN_GODS)
+    for position, claimed in re.findall(
+        rf"([年月日时])干(?:的?十神)?(?:为|是|属)\s*({ten_god_pattern})",
+        combined,
+    ):
+        expected = str(_mapping(ten_gods.get(POSITION_KEYS[position])).get("gan") or "")
+        if not expected or claimed != expected:
+            violations.append("ten_god_contradiction")
+            break
+    try:
+        from core.ten_gods import get_ten_god
+    except Exception:
+        get_ten_god = None
+    day_master = str(facts.get("day_master") or "")
+    for stem, claimed in re.findall(
+        rf"(?:藏干)?([{STEMS}])(?:的?十神)?(?:为|是|属|对应)\s*"
+        rf"({ten_god_pattern})",
+        combined,
+    ):
+        expected = get_ten_god(day_master, stem) if get_ten_god else ""
+        if not expected or claimed != expected:
+            violations.append("ten_god_contradiction")
+            break
+    counts = _ten_god_counts(ten_gods)
+    for ten_god, claimed in re.findall(
+        rf"({ten_god_pattern})(?:星)?(?:共有|共计|共|有|为|是)\s*"
+        r"(\d+)\s*个?",
+        combined,
+    ):
+        if not ten_gods or int(claimed) != counts[ten_god]:
+            violations.append("ten_god_count_contradiction")
+            break
+
+    dayun = _mapping(facts.get("dayun"))
+    expected_direction = str(dayun.get("direction") or "")
+    claimed_directions = re.findall(
+        r"(?:大运|起运)(?:的)?方向(?:为|是|：|:)?\s*(顺排|逆排|顺行|逆行)",
+        combined,
+    )
+    if claimed_directions and (
+        not expected_direction
+        or any(
+            ("顺" in claimed) != ("顺" in expected_direction)
+            for claimed in claimed_directions
+        )
+    ):
+        violations.append("dayun_contradiction")
+    expected_start = str(dayun.get("start") or "")
+    claimed_ages = re.findall(r"(\d+(?:\.\d+)?)\s*岁(?:左右|前后)?起运", combined)
+    if claimed_ages and (
+        not expected_start
+        or any(not _contains_start_age(expected_start, age) for age in claimed_ages)
+    ):
+        violations.append("dayun_contradiction")
+    current = _mapping(facts.get("current_context"))
+    current_luck = str(
+        current.get("current_dayun_pillar")
+        or current.get("dayun_pillar")
+        or current.get("luck_pillar")
+        or ""
+    )
+    claimed_luck = re.findall(
+        rf"(?:当前|现在|本步)(?:大运|行运)(?:柱)?(?:为|是|：|:)?"
+        rf"\s*([{STEMS}][{BRANCHES}])",
+        combined,
+    )
+    if claimed_luck and (
+        not current_luck or any(item != current_luck for item in claimed_luck)
+    ):
+        violations.append("dayun_contradiction")
+
+    target_years = facts.get("target_years")
+    year_pillars: dict[str, str] = {}
+    if current.get("year") and current.get("year_pillar"):
+        year_pillars[str(current["year"])] = str(current["year_pillar"])
+    if isinstance(target_years, list):
+        for raw in target_years:
+            target = _mapping(raw)
+            if target.get("year") and target.get("year_pillar"):
+                year_pillars[str(target["year"])] = str(target["year_pillar"])
+    for year, pillar in re.findall(
+        rf"((?:19|20)\d{{2}})年(?:的)?(?:流年|年)柱(?:为|是|：|:)?"
+        rf"\s*([{STEMS}][{BRANCHES}])",
+        combined,
+    ):
+        if year not in year_pillars or pillar != year_pillars[year]:
+            violations.append("timing_fact_contradiction")
+            break
+    pillars = facts.get("pillars")
+    natal_pillars = {
+        "月": (
+            str(pillars[1])
+            if isinstance(pillars, list) and len(pillars) >= 2
+            else ""
+        ),
+        "日": (
+            str(pillars[2])
+            if isinstance(pillars, list) and len(pillars) >= 3
+            else ""
+        ),
+    }
+    current_keys = {"月": "month_pillar", "日": "day_pillar"}
+    current_spans: list[tuple[int, int]] = []
+    for match in re.finditer(
+        rf"(当前|当月|本月|今日|当天)([月日])?柱"
+        rf"(?:为|是|：|:)?\s*([{STEMS}][{BRANCHES}])",
+        combined,
+    ):
+        scope, explicit_label, claimed = match.groups()
+        label = explicit_label or (
+            "月" if scope in {"当月", "本月"} else
+            "日" if scope in {"今日", "当天"} else ""
+        )
+        if not label:
+            continue
+        current_spans.append(match.span())
+        expected = str(current.get(current_keys[label]) or "")
+        if not expected or claimed != expected:
+            violations.append("timing_fact_contradiction")
+    for match in re.finditer(
+        rf"([月日])柱(?:为|是|：|:)?\s*([{STEMS}][{BRANCHES}])",
+        combined,
+    ):
+        if any(
+            start <= match.start() and match.end() <= end
+            for start, end in current_spans
+        ):
+            continue
+        label, claimed = match.groups()
+        expected = natal_pillars[label]
+        if not expected or claimed != expected:
+            violations.append("natal_pillar_contradiction")
+
+    day_pillar = (
+        str(pillars[2])
+        if isinstance(pillars, list) and len(pillars) >= 3
+        else ""
+    )
+    spouse_palace = day_pillar[1:2]
+    spouse_claims = re.findall(
+        rf"(?:夫妻宫|婚姻宫|配偶宫)(?:地支)?(?:为|是|：|:)?\s*([{BRANCHES}])",
+        combined,
+    )
+    if spouse_claims and (
+        not spouse_palace or any(item != spouse_palace for item in spouse_claims)
+    ):
+        violations.append("relationship_fact_contradiction")
+    relationship = _mapping(facts.get("relationship"))
+    signals = relationship.get("stability_signals")
+    signal_text = json.dumps(signals or [], ensure_ascii=False)
+    explicit_clash = re.search(
+        rf"(?:(?:命盘|本命|盘中|夫妻宫|婚姻宫)(?:存在|有)"
+        rf"[^，。；\r\n]{{0,8}}冲|[{BRANCHES}][{BRANCHES}]冲)",
+        combined,
+    )
+    explicit_no_clash = re.search(
+        r"(?:命盘|本命|盘中|夫妻宫|婚姻宫)(?:不存在|没有|无)"
+        r"[^，。；\r\n]{0,8}冲",
+        combined,
+    )
+    if explicit_clash and "冲为无" in signal_text:
+        violations.append("relationship_fact_contradiction")
+    if explicit_no_clash and (
+        "冲为无" not in signal_text and "无冲" not in signal_text
+    ):
+        violations.append("relationship_fact_contradiction")
+    explicit_combine = re.search(
+        rf"(?:(?:命盘|本命|盘中|夫妻宫|婚姻宫)(?:存在|有)"
+        rf"[^，。；\r\n]{{0,8}}合|[{BRANCHES}][{BRANCHES}]合)",
+        combined,
+    )
+    explicit_no_combine = re.search(
+        r"(?:命盘|本命|盘中|夫妻宫|婚姻宫)(?:不存在|没有|无)"
+        r"[^，。；\r\n]{0,8}合",
+        combined,
+    )
+    if explicit_combine and "合为无" in signal_text:
+        violations.append("relationship_fact_contradiction")
+    if explicit_no_combine and (
+        "合为无" not in signal_text and "无合" not in signal_text
+    ):
+        violations.append("relationship_fact_contradiction")
+    peach_counts = re.findall(
+        r"桃花(?:星)?(?:共有|共计|共|有|为|是)\s*(\d+)\s*个?",
+        combined,
+    )
+    canonical_peach_count = relationship.get("peach_count")
+    if peach_counts and (
+        canonical_peach_count is None
+        or any(
+            not _numeric_equal(claimed, canonical_peach_count)
+            for claimed in peach_counts
+        )
+    ):
+        violations.append("relationship_fact_contradiction")
+    return tuple(dict.fromkeys(violations))
+
+
 def validate_ai_answer(answer: BaziAIAnswer, context: AIRequestContext) -> GuardResult:
     combined = "。".join(
         [
@@ -85,8 +497,11 @@ def validate_ai_answer(answer: BaziAIAnswer, context: AIRequestContext) -> Guard
         ]
     )
     violations: list[str] = []
-    if any(phrase in combined for phrase in DETERMINISTIC_PHRASES):
+    if _has_deterministic_claim(combined):
         violations.append("deterministic_claim")
+    violations.extend(
+        _has_canonical_fact_contradiction(combined, context.chart_facts)
+    )
     current_marriage_question = (
         context.category == "relationship"
         and is_current_marriage_question(context.question)

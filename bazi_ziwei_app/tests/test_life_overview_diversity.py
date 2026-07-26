@@ -98,7 +98,10 @@ class LifeOverviewDiversityV104Tests(unittest.TestCase):
         from core.bazi_engine import build_bazi_chart
         from core.life_overview_engine import analyze_life_overview
 
-        with open(os.path.join(ROOT, "data", "bazi_reference_cases.json"), encoding="utf-8") as f:
+        with open(
+            os.path.join(ROOT, "tests", "fixtures", "bazi_reference_cases.json"),
+            encoding="utf-8",
+        ) as f:
             cases = json.load(f)["cases"]
 
         visible = {"wealth": set(), "romance": set(), "health": set()}

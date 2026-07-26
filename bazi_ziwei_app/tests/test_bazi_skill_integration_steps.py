@@ -14,7 +14,7 @@ if str(ROOT) not in sys.path:
 
 
 class BaziSkillIntegrationStepsTests(unittest.TestCase):
-    """覆盖算法复核、早晚子时提示、调候解释和样本校准产物。"""
+    """覆盖算法复核、早晚子时提示和调候解释。"""
 
     def test_late_zi_time_warning_is_user_visible(self):
         from core.calendar_engine import get_zi_time_boundary_note
@@ -64,28 +64,13 @@ class BaziSkillIntegrationStepsTests(unittest.TestCase):
         self.assertIn("plain_text", strength["season_adjustment"])
         self.assertTrue(strength["season_adjustment"]["plain_text"])
 
-    def test_review_and_calibration_reports_can_be_generated(self):
+    def test_review_report_can_be_generated(self):
         from tools.bazi_skill_algorithm_review import build_bazi_skill_review_report
-        from tools.master_case_calibration_audit import build_master_case_calibration
 
         review = build_bazi_skill_review_report(write_file=False)
         self.assertIn("立春", review)
         self.assertIn("早晚子时", review)
         self.assertIn("真太阳时", review)
-
-        chen = build_master_case_calibration("chen_pengshu_2026_master_monthly")
-        zhou = build_master_case_calibration("zhou_huimin_2026_master_monthly")
-        self.assertGreaterEqual(chen["overall_coverage"], 0.7)
-        self.assertGreaterEqual(zhou["overall_coverage"], 0.7)
-
-    def test_master_case_weight_file_has_two_case_rules(self):
-        import json
-
-        path = ROOT / "rules" / "master_case_combination_weights.json"
-        data = json.loads(path.read_text(encoding="utf-8"))
-        ids = {item.get("case_id") for item in data.get("rules", [])}
-        self.assertIn("chen_pengshu_2026_master_monthly", ids)
-        self.assertIn("zhou_huimin_2026_master_monthly", ids)
 
 
 if __name__ == "__main__":

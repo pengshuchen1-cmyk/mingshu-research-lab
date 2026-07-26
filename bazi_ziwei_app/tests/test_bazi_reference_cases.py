@@ -8,7 +8,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-CASE_PATH = ROOT / "data" / "bazi_reference_cases.json"
+CASE_PATH = ROOT / "tests" / "fixtures" / "bazi_reference_cases.json"
 
 
 class BaziReferenceCaseTests(unittest.TestCase):

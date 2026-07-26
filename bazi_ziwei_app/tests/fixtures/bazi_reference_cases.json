@@ -1,6 +1,6 @@
 {
   "version": "v1.0.0-bazi-reference-cases",
-  "description": "客户八字参考案例库。用于后续命盘校准、报告口径复核和流月事件映射参考；不作为硬规则覆盖算法结果。",
+  "description": "测试专用八字参考案例库。仅用于离线验收和算法回归，不进入生产规则或客户运行时。",
   "cases": [
     {
       "case_id": "bazi_ref_tang_rui_1997_2026",

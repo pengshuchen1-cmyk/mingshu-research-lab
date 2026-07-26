@@ -112,6 +112,7 @@ def append_chat_message(
     content: str,
     *,
     source: str | None = None,
+    provider: str | None = None,
     details: dict | None = None,
 ) -> None:
     messages = list(state.get(CHAT_MESSAGES_KEY, []))
@@ -119,6 +120,8 @@ def append_chat_message(
     item = {"role": safe_role, "content": str(content), "created_at": _timestamp()}
     if source in {"cloud_validated", "local_rules"}:
         item["source"] = source
+    if provider in {"kimi", "openai"}:
+        item["provider"] = provider
     if details:
         safe_details: dict[str, object] = {}
         for key in _LIST_DETAIL_KEYS:

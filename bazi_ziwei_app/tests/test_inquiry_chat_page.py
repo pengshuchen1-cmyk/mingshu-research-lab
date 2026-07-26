@@ -73,6 +73,7 @@ def test_assistant_message_renders_natural_answer_without_fixed_section_headers(
             "role": "assistant",
             "content": "这是针对当前问题的自然回答。",
             "source": "cloud_validated",
+            "provider": "kimi",
             "details": {
                 "chart_evidence": ["壬日主"],
                 "rule_evidence": ["承财先看强弱"],
@@ -104,6 +105,7 @@ def test_saved_answer_renders_naturally_with_evidence_in_expander(
         practical_advice=("唯一现实建议",),
         uncertainty=("唯一不确定性",),
         source="cloud_validated",
+        provider="openai",
     )
 
     inquiry_page._save_answer(fake.session_state, result)
@@ -112,6 +114,7 @@ def test_saved_answer_renders_naturally_with_evidence_in_expander(
     assert fake.markdowns[0] == "完整 Markdown 回答"
     assert fake.expanders == ["查看补充的机器校验明细"]
     assert fake.writes == ["• 唯一命盘证据", "• 唯一规则证据", "• 唯一不确定性"]
+    assert fake.captions == ["OpenAI 云端分析 · 本地规则校验"]
 
 
 def test_legacy_answer_without_sections_keeps_evidence_expander(monkeypatch):
@@ -237,6 +240,18 @@ def test_privacy_center_discloses_deidentified_cloud_payload_and_exclusions():
         "出生地点或 API Key。"
     )
     assert notice in source
+
+
+def test_privacy_document_distinguishes_kimi_chat_completions_and_openai_storage():
+    privacy = (ROOT / "PRIVACY.md").read_text(encoding="utf-8")
+
+    assert "Kimi" in privacy
+    assert "Moonshot" in privacy
+    assert "Chat Completions" in privacy
+    assert "不使用 OpenAI Responses API 的 `store=False` 参数" in privacy
+    assert "使用 OpenAI 时" in privacy
+    assert "Responses API" in privacy
+    assert "`store=False`" in privacy
 
 
 def test_ai_question_page_is_reachable_from_product_navigation():

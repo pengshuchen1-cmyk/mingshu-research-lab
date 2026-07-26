@@ -14,9 +14,35 @@ def _context():
             "pillars": ["甲戌", "癸酉", "壬子", "己酉"],
             "gender": "male",
             "day_master": "壬",
-            "strength": {"classification": "身强", "evidence": ["月令生扶"]},
+            "strength": {
+                "classification": "身强",
+                "evidence": ["月令生扶"],
+                "favorable_elements": ["木", "火", "土"],
+                "unfavorable_elements": ["金", "水"],
+            },
             "pattern": {"classification": "正印格", "evidence": ["月令主气"]},
             "wealth": {"summary": "重视现金流", "evidence": ["财星可见"]},
+            "element_counts": {"木": 1.0, "火": 0.3, "土": 2.0, "金": 4.5, "水": 3.0},
+            "ten_gods": {
+                "year": {"gan": "食神", "hidden_stems": [{"gan": "戊", "ten_god": "七杀"}]},
+                "month": {"gan": "劫财", "hidden_stems": [{"gan": "辛", "ten_god": "正印"}]},
+                "day": {"gan": "比肩", "hidden_stems": [{"gan": "癸", "ten_god": "劫财"}]},
+                "hour": {"gan": "正官", "hidden_stems": [{"gan": "辛", "ten_god": "正印"}]},
+            },
+            "dayun": {"direction": "顺排", "start": "约5年0个月12天起运"},
+            "relationship": {
+                "summary": "桃花只是互动机会，不等于关系成立。",
+                "evidence": ["配偶星与夫妻宫共同观察"],
+                "stability_signals": [
+                    {"polarity": "mixed", "fact": "日支子；合为无；冲为无", "explanation": "中性观察"}
+                ],
+            },
+            "current_context": {
+                "year": 2026,
+                "year_pillar": "丙午",
+                "month_pillar": "乙未",
+                "day_pillar": "辛丑",
+            },
         },
         rule_evidence=[
             {"id": "WEALTH-CAPACITY", "statement": "承财能力要结合日主强弱"}
@@ -78,6 +104,295 @@ def test_guard_checks_the_natural_main_answer_even_when_optional_lists_are_empty
     result = validate_ai_answer(answer, _context())
     assert result.accepted is False
     assert "deterministic_claim" in result.violations
+
+
+@pytest.mark.parametrize(
+    ("claim", "violation"),
+    [
+        ("这个命局的喜用五行为金。", "favorable_element_contradiction"),
+        ("此命忌神为木火。", "unfavorable_element_contradiction"),
+        ("五行中木的数量为9。", "element_count_contradiction"),
+        ("年干十神为正官。", "ten_god_contradiction"),
+        ("甲的十神为正官。", "ten_god_contradiction"),
+        ("藏干戊为正官。", "ten_god_contradiction"),
+        ("正印共有9个。", "ten_god_count_contradiction"),
+        ("大运方向为逆排。", "dayun_contradiction"),
+        ("此命99岁起运。", "dayun_contradiction"),
+        ("2026年流年柱为甲子。", "timing_fact_contradiction"),
+        ("当前月柱为甲寅。", "timing_fact_contradiction"),
+        ("当前大运为甲寅。", "dayun_contradiction"),
+        ("夫妻宫为午。", "relationship_fact_contradiction"),
+        ("命盘存在子午冲。", "relationship_fact_contradiction"),
+        ("命盘存在子丑合。", "relationship_fact_contradiction"),
+        ("命盘桃花共有9个。", "relationship_fact_contradiction"),
+    ],
+)
+def test_guard_rejects_explicit_canonical_fact_contradictions_with_empty_lists(
+    claim,
+    violation,
+):
+    from core.ai_answer_guard import validate_ai_answer
+    from core.ai_models import BaziAIAnswer
+
+    answer = BaziAIAnswer(
+        analysis_conclusion=claim,
+        chart_evidence=[],
+        rule_evidence=[],
+        timing_conditions=[],
+        practical_advice=[],
+        uncertainty_limitations=[],
+    )
+
+    result = validate_ai_answer(answer, _context())
+
+    assert result.accepted is False
+    assert violation in result.violations
+
+
+@pytest.mark.parametrize(
+    "claim",
+    (
+        "你必定发财。",
+        "这段婚姻绝对成功。",
+        "这个项目毫无疑问会赚钱。",
+        "她铁定已经结婚。",
+        "抵押房子创业必成。",
+    ),
+)
+def test_guard_rejects_broader_absolute_claims_in_natural_answer(claim):
+    from core.ai_answer_guard import validate_ai_answer
+
+    result = validate_ai_answer(_answer(claim, chart_evidence=[]), _context())
+
+    assert "deterministic_claim" in result.violations
+
+
+def test_guard_accepts_matching_explicit_canonical_facts():
+    from core.ai_answer_guard import validate_ai_answer
+
+    result = validate_ai_answer(
+        _answer(
+            "此命喜用五行为木火，忌神为金水；五行中木的数量为1。"
+            "年干十神为食神，正印共有2个。大运方向为顺排，约5岁起运。"
+            "偏财共有0个。2026年流年柱为丙午，当前月柱为乙未，"
+            "夫妻宫为子，命盘无冲。"
+        ),
+        _context(),
+    )
+
+    assert result.accepted is True
+
+
+@pytest.mark.parametrize(
+    "claim",
+    (
+        "此命喜金忌木。",
+        "命局喜用金水，忌木。",
+        "此局以金为喜，以木为忌。",
+    ),
+)
+def test_guard_rejects_bare_and_paired_favorable_element_contradictions(
+    claim,
+):
+    from core.ai_answer_guard import validate_ai_answer
+    from core.ai_models import BaziAIAnswer
+
+    answer = BaziAIAnswer(
+        analysis_conclusion=claim,
+        chart_evidence=[],
+        rule_evidence=[],
+        timing_conditions=[],
+        practical_advice=[],
+        uncertainty_limitations=[],
+    )
+
+    result = validate_ai_answer(answer, _context())
+
+    assert result.accepted is False
+    assert {
+        "favorable_element_contradiction",
+        "unfavorable_element_contradiction",
+    } & set(result.violations)
+
+
+def test_guard_accepts_matching_bare_favorable_elements_and_ordinary_like_word():
+    from core.ai_answer_guard import validate_ai_answer
+    from core.ai_models import BaziAIAnswer
+
+    answer = BaziAIAnswer(
+        analysis_conclusion="此命喜木火土，忌金水；平时喜欢稳健推进。",
+        chart_evidence=[],
+        rule_evidence=[],
+        timing_conditions=[],
+        practical_advice=[],
+        uncertainty_limitations=[],
+    )
+
+    result = validate_ai_answer(answer, _context())
+
+    assert result.accepted is True
+
+
+@pytest.mark.parametrize(
+    "claim",
+    (
+        "此命不喜金水。",
+        "命局并不喜金水。",
+        "此命不太喜金水。",
+        "此命不忌木火土。",
+        "命局并不忌木火土。",
+        "此命不 喜金水。",
+        "命局并不 喜金水。",
+        "此命不 忌木火土。",
+    ),
+)
+def test_guard_accepts_matching_negated_favorable_dispositions(claim):
+    from core.ai_answer_guard import validate_ai_answer
+    from core.ai_models import BaziAIAnswer
+
+    answer = BaziAIAnswer(
+        analysis_conclusion=claim,
+        chart_evidence=[],
+        rule_evidence=[],
+        timing_conditions=[],
+        practical_advice=[],
+        uncertainty_limitations=[],
+    )
+
+    assert validate_ai_answer(answer, _context()).accepted is True
+
+
+@pytest.mark.parametrize(
+    "claim",
+    (
+        "此命不喜木火土。",
+        "命局并不喜木。",
+        "此命不太喜火。",
+        "此命不忌金水。",
+        "命局并不忌金。",
+        "此命不 喜木火土。",
+        "命局并不 喜木。",
+        "此命不 忌金水。",
+    ),
+)
+def test_guard_rejects_inverse_wrong_negated_favorable_dispositions(claim):
+    from core.ai_answer_guard import validate_ai_answer
+    from core.ai_models import BaziAIAnswer
+
+    answer = BaziAIAnswer(
+        analysis_conclusion=claim,
+        chart_evidence=[],
+        rule_evidence=[],
+        timing_conditions=[],
+        practical_advice=[],
+        uncertainty_limitations=[],
+    )
+
+    result = validate_ai_answer(answer, _context())
+
+    assert result.accepted is False
+    assert {
+        "favorable_element_contradiction",
+        "unfavorable_element_contradiction",
+    } & set(result.violations)
+
+
+def test_guard_does_not_treat_uncertain_not_necessarily_successful_as_absolute():
+    from core.ai_answer_guard import validate_ai_answer
+
+    result = validate_ai_answer(
+        _answer(
+            "即使条件较好，现实执行仍未必成功，不一定会发财，"
+            "也不能保证成功，结果并非铁定。"
+        ),
+        _context(),
+    )
+
+    assert "deterministic_claim" not in result.violations
+
+
+@pytest.mark.parametrize(
+    "claim",
+    (
+        "不存在绝对成功，仍需结合现实。",
+        "不存在所谓绝对成功，仍需结合现实。",
+        "谈不上绝对成功，仍需结合现实。",
+    ),
+)
+def test_guard_accepts_clause_aware_negation_of_absolute_claim(claim):
+    from core.ai_answer_guard import validate_ai_answer
+
+    result = validate_ai_answer(_answer(claim), _context())
+
+    assert "deterministic_claim" not in result.violations
+
+
+def test_guard_does_not_allow_negation_in_prior_clause_to_hide_absolute_claim():
+    from core.ai_answer_guard import validate_ai_answer
+
+    result = validate_ai_answer(
+        _answer("不存在绝对失败，但这个项目绝对成功。"),
+        _context(),
+    )
+
+    assert "deterministic_claim" in result.violations
+
+
+def test_guard_distinguishes_natal_and_current_month_day_pillar_claims():
+    from core.ai_answer_guard import validate_ai_answer
+
+    context = _context()
+    correct = validate_ai_answer(
+        _answer(
+            "本命月柱为癸酉，日柱为壬子；"
+            "当前月柱为乙未，今日柱为辛丑。"
+        ),
+        context,
+    )
+    wrong_natal = validate_ai_answer(
+        _answer("本命月柱为乙未，日柱为辛丑。"),
+        context,
+    )
+
+    assert "timing_fact_contradiction" not in correct.violations
+    assert "natal_pillar_contradiction" not in correct.violations
+    assert "natal_pillar_contradiction" in wrong_natal.violations
+
+
+def test_natal_pillars_validate_without_current_context_and_current_claim_rejects():
+    from core.ai_answer_guard import validate_ai_answer
+
+    context = _context().model_copy(
+        update={
+            "chart_facts": {
+                key: value
+                for key, value in _context().chart_facts.items()
+                if key != "current_context"
+            }
+        }
+    )
+    natal = validate_ai_answer(
+        _answer("月柱为癸酉，日柱为壬子。"),
+        context,
+    )
+    current = validate_ai_answer(
+        _answer("当前月柱为乙未，今日柱为辛丑。"),
+        context,
+    )
+
+    assert natal.accepted is True
+    assert "timing_fact_contradiction" in current.violations
+
+
+def test_guard_does_not_treat_generic_relationship_rule_as_actual_clash_or_combine():
+    from core.ai_answer_guard import validate_ai_answer
+
+    result = validate_ai_answer(
+        _answer("有合重在边界与承诺落实，有冲重在变化和沟通管理。"),
+        _context(),
+    )
+
+    assert "relationship_fact_contradiction" not in result.violations
 
 
 def test_guard_rejects_gender_pattern_wealth_and_spouse_star_contradictions():

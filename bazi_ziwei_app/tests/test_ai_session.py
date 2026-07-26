@@ -51,6 +51,7 @@ def test_chat_message_has_timestamp_and_allowlisted_details_without_sections():
         "assistant",
         "回答",
         source="cloud_validated",
+        provider="openai",
         details={
             "chart_evidence": ["命盘证据", 123, ""],
             "rule_evidence": ["规则证据"],
@@ -65,6 +66,7 @@ def test_chat_message_has_timestamp_and_allowlisted_details_without_sections():
 
     item = state["bazi_chat_messages"][0]
     assert item["created_at"].endswith("+00:00")
+    assert item["provider"] == "openai"
     assert set(item["details"]) == {
         "chart_evidence",
         "rule_evidence",
@@ -76,6 +78,21 @@ def test_chat_message_has_timestamp_and_allowlisted_details_without_sections():
     assert item["details"]["chart_evidence"] == ["命盘证据"]
     assert "sections" not in item["details"]
     assert item["details"]["degraded_reason"] == "network_error"
+
+
+def test_chat_drops_unknown_cloud_provider_label():
+    from core.ai_session import append_chat_message
+
+    state = {}
+    append_chat_message(
+        state,
+        "assistant",
+        "回答",
+        source="cloud_validated",
+        provider="attacker-controlled",
+    )
+
+    assert "provider" not in state["bazi_chat_messages"][0]
 
 
 def test_chat_drops_arbitrary_degradation_reason_and_sections():

@@ -1,7 +1,7 @@
 # 问真可观察结果对照与算法修改闸门
 
 日期：2026-07-15
-内部数据版本：`data/bazi_reference_cases.json` / `v1.0.0-bazi-reference-cases`
+内部测试数据版本：`tests/fixtures/bazi_reference_cases.json` / `v1.0.0-bazi-reference-cases`
 
 ## 边界声明
 
@@ -31,7 +31,7 @@
 
 十神计数、藏干、五行权重和关系签名均保存在下方机器可读快照中。内部快照不代表外部问真输出。字段来源如下：
 
-- `input`：原始输入逐字段来自 `data/bazi_reference_cases.json` 的 `profile`；`engine_profile` 明确记录当前引擎复算时的规范化结果（农历案例使用案例库已换算的公历生日、缺失分钟按案例既定中段值、未提供地点规范化为空字符串、真太阳时关闭）。
+- `input`：原始输入逐字段来自 `tests/fixtures/bazi_reference_cases.json` 的 `profile`；`engine_profile` 明确记录当前引擎复算时的规范化结果（农历案例使用案例库已换算的公历生日、缺失分钟按案例既定中段值、未提供地点规范化为空字符串、真太阳时关闭）。
 - `pillars`、`ten_god_counts`、`five_elements`、`day_master_strength`：同时与案例库 `standard_time_chart` 和当前 `build_bazi_chart` 输出比对。
 - `hidden_stems`：来自当前引擎 `core.bazi_constants.BRANCH_HIDDEN_STEMS` 标准映射，并与 `build_bazi_chart` 输出比对；不声称原案例库自带此字段。
 - `relationship_signature`：来自当前 `analyze_life_overview(chart)["romance_overview"]["relationship_signature"]`，不是把案例叙述手工改写成结构化签名。
@@ -54,9 +54,9 @@
 ```json benchmark-data
 {
   "schema_version": "1.0",
-  "snapshot_source": "data/bazi_reference_cases.json#v1.0.0-bazi-reference-cases",
+  "snapshot_source": "tests/fixtures/bazi_reference_cases.json#v1.0.0-bazi-reference-cases",
   "field_sources": {
-    "input": "data/bazi_reference_cases.json profile + explicit engine_profile normalization",
+    "input": "tests/fixtures/bazi_reference_cases.json profile + explicit engine_profile normalization",
     "pillars": "standard_time_chart.pillars cross-checked with build_bazi_chart",
     "ten_god_counts": "standard_time_chart.ten_god_counts cross-checked with build_bazi_chart",
     "hidden_stems": "core.bazi_constants.BRANCH_HIDDEN_STEMS cross-checked with build_bazi_chart; not supplied by reference cases",

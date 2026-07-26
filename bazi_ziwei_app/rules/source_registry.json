@@ -299,46 +299,6 @@
     "broadness_penalty": 0,
     "note": "用于命宫、身宫、十二宫位的基础解释。"
   },
-  "master_case_chen_pengshu_2026": {
-    "title": "陈芃澍 2026 现实师傅流月样本",
-    "category": "命例参考",
-    "used_for": [
-      "真实师傅流月样本",
-      "流月事件校准",
-      "现实应事蒸馏"
-    ],
-    "authority_weight": 0.78,
-    "specificity": "case",
-    "domains": [
-      "事业项目",
-      "合同合作",
-      "流月事件校准",
-      "现实应事蒸馏"
-    ],
-    "broadness_penalty": 0,
-    "note": "用户提供的现实师傅 2026 流月事件样本，用于校准事件库的现实映射、优先级和解释方式，不作为单独覆盖主规则的硬规则。"
-  },
-  "master_case_zhou_huimin_2026": {
-    "title": "周惠敏 2026 现实师傅流月样本",
-    "category": "命例参考",
-    "used_for": [
-      "真实师傅流月样本",
-      "流月事件校准",
-      "现实应事蒸馏"
-    ],
-    "authority_weight": 0.78,
-    "specificity": "case",
-    "domains": [
-      "财务支出",
-      "感情婚恋",
-      "社交人情",
-      "家庭长辈",
-      "风险损耗",
-      "合同法务"
-    ],
-    "broadness_penalty": 0,
-    "note": "用户提供的周惠敏 2026 现实师傅流月事件样本，用于校准近亲人事、财务投资、感情经营、贵人旧资源、家庭责任和业务内耗等现实映射；部分手写内容仍需复核，不作为单独覆盖主规则的硬规则。"
-  },
   "traditional_ziwei_sihua_system": {
     "title": "传统紫微斗数四化体系",
     "category": "紫微斗数四化",

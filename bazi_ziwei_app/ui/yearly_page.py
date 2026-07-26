@@ -82,22 +82,15 @@ _EVIDENCE_TYPE_COPY = {
     "branch_in": "地支关系提示本月留意变化",
     "gender": "个人命盘条件提供相关线索",
     "month_index": "本月节奏位置触发相关提醒",
-    "master_case_reference": "历史样本规则提示相关主题需留意",
-    "master_case_combination": "多项结构信号同时出现",
-    "combination_logic": "多项结构信号同时出现",
 }
 _NEUTRAL_EVIDENCE_TYPES = {
     "month_index",
-    "master_case_reference",
-    "master_case_combination",
-    "combination_logic",
 }
 _INTERNAL_EVIDENCE_MARKERS = (
     "month_index",
     "period_id",
     "case_id",
     "pattern_id",
-    "master_case",
     "师傅原文",
     "样本编号",
 )

@@ -42,9 +42,17 @@ def _runtime_ai_config() -> AIConfig:
     return AIConfig.from_environment(secrets)
 
 
-def answer_source_label(source: str, degraded_reason: str | None) -> str:
+def answer_source_label(
+    source: str,
+    degraded_reason: str | None,
+    provider: str | None = None,
+) -> str:
     if source == "cloud_validated":
-        return "Kimi 云端分析 · 本地规则校验"
+        provider_name = {"kimi": "Kimi", "openai": "OpenAI"}.get(
+            provider,
+            "云端 AI",
+        )
+        return f"{provider_name} 云端分析 · 本地规则校验"
     labels = {
         _MISSING_CREDENTIAL_REASON: "本地完整分析 · 云端服务未配置",
         "insufficient_quota": "本地完整分析 · 云端额度不足",
@@ -131,6 +139,7 @@ def _render_message(item: dict) -> None:
                 answer_source_label(
                     str(item.get("source", "local_rules")),
                     degraded_reason,
+                    str(item.get("provider") or "") or None,
                 )
             )
             _render_supporting_details(item)
@@ -144,6 +153,7 @@ def _save_answer(state, result: AnswerResult) -> None:
         "assistant",
         result.answer,
         source=result.source,
+        provider=result.provider,
         details={
             "chart_evidence": list(result.chart_evidence),
             "rule_evidence": list(result.rule_evidence),

@@ -16,7 +16,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 BENCHMARK_PATH = ROOT / "acceptance_samples" / "wenzhen_observable_benchmark.md"
-REFERENCE_CASES_PATH = ROOT / "data" / "bazi_reference_cases.json"
+REFERENCE_CASES_PATH = ROOT / "tests" / "fixtures" / "bazi_reference_cases.json"
 
 REQUIRED_SNAPSHOT_FIELDS = {
     "input",

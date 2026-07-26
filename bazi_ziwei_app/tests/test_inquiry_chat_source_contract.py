@@ -4,21 +4,28 @@ from __future__ import annotations
 def test_answer_source_labels_are_explicit_and_stable():
     from ui.inquiry_page import answer_source_label
 
-    assert answer_source_label("cloud_validated", None) == "Kimi 云端分析 · 本地规则校验"
     assert (
-        answer_source_label("local_rules", "missing_api_key")
+        answer_source_label("cloud_validated", None, "kimi")
+        == "Kimi 云端分析 · 本地规则校验"
+    )
+    assert (
+        answer_source_label("cloud_validated", None, "openai")
+        == "OpenAI 云端分析 · 本地规则校验"
+    )
+    assert (
+        answer_source_label("local_rules", "missing_api_key", None)
         == "本地完整分析 · 云端服务未配置"
     )
     assert (
-        answer_source_label("local_rules", "insufficient_quota")
+        answer_source_label("local_rules", "insufficient_quota", None)
         == "本地完整分析 · 云端额度不足"
     )
     assert (
-        answer_source_label("local_rules", "network_error")
+        answer_source_label("local_rules", "network_error", None)
         == "本地完整分析 · 网络或服务异常"
     )
     assert (
-        answer_source_label("local_rules", "local_validation_failed")
+        answer_source_label("local_rules", "local_validation_failed", None)
         == "本地完整分析 · 云端回答校验未通过"
     )
 

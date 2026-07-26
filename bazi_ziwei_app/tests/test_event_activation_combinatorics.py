@@ -138,10 +138,10 @@ class TestEventActivationCombinatorics(unittest.TestCase):
         from core.monthly_event_activation_bridge import load_activation_assets
 
         event_count = len(load_activation_assets()["ontology"])
-        self.assertEqual(event_count, 270)
-        self.assertEqual(math.comb(event_count, 2), 36315)
-        self.assertEqual(math.comb(event_count, 3), 3244140)
-        self.assertEqual(event_count * (event_count - 1) * (event_count - 2), 19464840)
+        self.assertEqual(event_count, 262)
+        self.assertEqual(math.comb(event_count, 2), 34191)
+        self.assertEqual(math.comb(event_count, 3), 2963220)
+        self.assertEqual(event_count * (event_count - 1) * (event_count - 2), 17779320)
 
     def test_every_event_type_has_a_generated_context_that_activates_it(self):
         from core.monthly_event_activation_bridge import activate_events_by_rules, load_activation_assets

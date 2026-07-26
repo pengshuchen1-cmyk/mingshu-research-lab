@@ -86,14 +86,6 @@ EXTRA_TARGET_EVENTS = {
     "gift_expense",
     "banquet_party",
     "old_friend_contact",
-    # 真实师傅样本新增现实词，需要从近似事件升级为独立证据链事件。
-    "sudden_change_warning",
-    "trapped_commitment",
-    "short_term_cooperation",
-    "female_friend_social",
-    "business_procedure_handling",
-    "child_family_responsibility",
-    "partner_tolerance",
 }
 
 
@@ -109,10 +101,10 @@ class EventChainExpansionV1045Tests(unittest.TestCase):
             if rule.get("target_event_type")
         }
 
-    def test_event_count_reaches_150_and_can_absorb_master_case_events(self):
+    def test_event_count_keeps_the_generic_evidence_chain_pool(self):
         chain_events = [event_type for event_type, item in self.ontology.items() if CHAIN_FIELDS <= set(item)]
-        self.assertGreaterEqual(len(self.ontology), 163)
-        self.assertGreaterEqual(len(chain_events), 151)
+        self.assertGreaterEqual(len(self.ontology), 155)
+        self.assertGreaterEqual(len(chain_events), 143)
         self.assertLessEqual(len(chain_events), len(self.ontology))
 
     def test_priority_three_blocks_are_fully_evidence_chain_events(self):

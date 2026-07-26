@@ -137,3 +137,4 @@ class AnswerResult:
     uncertainty: tuple[str, ...]
     source: Literal["cloud_validated", "local_rules"]
     degraded_reason: DegradationReason | None = None
+    provider: Literal["kimi", "openai"] | None = None

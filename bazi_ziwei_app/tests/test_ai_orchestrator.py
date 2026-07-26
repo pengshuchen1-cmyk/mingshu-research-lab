@@ -37,6 +37,46 @@ def test_orchestrator_builds_configured_provider_when_client_not_injected(monkey
 
     assert captured == ["kimi"]
     assert result.source == "cloud_validated"
+    assert result.provider == "kimi"
+
+
+def test_unknown_disabled_provider_returns_service_unavailable_not_missing_key():
+    from core.ai_models import AIConfig
+    from core.ai_orchestrator import answer_question
+
+    result = answer_question(
+        _chart(),
+        "财运如何？",
+        [],
+        config=AIConfig("", False, provider="unknown"),
+    )
+
+    assert result.source == "local_rules"
+    assert result.degraded_reason == "service_unavailable"
+
+
+def test_unexpected_client_construction_error_returns_safe_complete_fallback(
+    monkeypatch,
+):
+    import core.ai_orchestrator as orchestrator
+    from core.ai_models import AIConfig
+
+    def _explode(_config):
+        raise RuntimeError("constructor leaked sk-secret and provider internals")
+
+    monkeypatch.setattr(orchestrator, "build_ai_client", _explode)
+
+    result = orchestrator.answer_question(
+        _chart(),
+        "财运如何？",
+        [],
+        config=AIConfig("key", True, provider="kimi"),
+    )
+
+    assert result.source == "local_rules"
+    assert result.degraded_reason == "service_unavailable"
+    assert result.answer.strip()
+    assert "constructor leaked" not in result.answer
 
 
 def _chart():
