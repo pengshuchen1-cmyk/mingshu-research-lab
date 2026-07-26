@@ -31,14 +31,6 @@ SUGGESTED_QUESTIONS = (
     "这个八字的姻缘桃花与婚姻建议是什么？",
     "未来一年需要重点注意什么？",
 )
-SIX_SECTION_TITLES = (
-    "分析结论",
-    "命盘依据",
-    "规则依据",
-    "阶段与触发条件",
-    "现实建议",
-    "不确定性与限制",
-)
 _MISSING_CREDENTIAL_REASON = "_".join(("missing", "api", "key"))
 
 
@@ -52,7 +44,7 @@ def _runtime_ai_config() -> AIConfig:
 
 def answer_source_label(source: str, degraded_reason: str | None) -> str:
     if source == "cloud_validated":
-        return "云端 AI 分析 · 本地规则校验"
+        return "Kimi 云端分析 · 本地规则校验"
     labels = {
         _MISSING_CREDENTIAL_REASON: "本地完整分析 · 云端服务未配置",
         "insufficient_quota": "本地完整分析 · 云端额度不足",
@@ -129,29 +121,19 @@ def _render_message(item: dict) -> None:
     role = item.get("role", "assistant")
     with st.chat_message(role):
         details = item.get("details", {}) or {}
-        sections = details.get("sections", {})
         if role == "assistant":
-            has_structured_sections = isinstance(sections, dict) and bool(sections)
             degraded_reason = details.get("degraded_reason")
             warning = degradation_warning(degraded_reason)
             if warning:
                 st.warning(warning)
-            if has_structured_sections:
-                for title in SIX_SECTION_TITLES:
-                    content = sections.get(title)
-                    if content:
-                        st.markdown(f"### {title}")
-                        st.write(content)
-            else:
-                st.markdown(str(item.get("content", "")))
+            st.markdown(str(item.get("content", "")))
             st.caption(
                 answer_source_label(
                     str(item.get("source", "local_rules")),
                     degraded_reason,
                 )
             )
-            if not has_structured_sections:
-                _render_supporting_details(item)
+            _render_supporting_details(item)
         else:
             st.markdown(str(item.get("content", "")))
 
@@ -168,7 +150,6 @@ def _save_answer(state, result: AnswerResult) -> None:
             "timing_conditions": list(result.timing_conditions),
             "practical_advice": list(result.practical_advice),
             "uncertainty": list(result.uncertainty),
-            "sections": dict(result.sections),
             "degraded_reason": result.degraded_reason,
         },
     )

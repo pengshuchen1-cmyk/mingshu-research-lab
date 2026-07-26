@@ -24,7 +24,6 @@ DETAIL_KEYS = (
     "timing_conditions",
     "practical_advice",
     "uncertainty",
-    "sections",
     "degraded_reason",
 )
 _LIST_DETAIL_KEYS = (
@@ -33,14 +32,6 @@ _LIST_DETAIL_KEYS = (
     "timing_conditions",
     "practical_advice",
     "uncertainty",
-)
-_SECTION_TITLES = (
-    "分析结论",
-    "命盘依据",
-    "规则依据",
-    "阶段与触发条件",
-    "现实建议",
-    "不确定性与限制",
 )
 _DEGRADATION_REASONS = frozenset(
     {
@@ -140,15 +131,6 @@ def append_chat_message(
                 ]
                 if safe_values:
                     safe_details[key] = safe_values
-        sections = details.get("sections")
-        if isinstance(sections, dict):
-            safe_sections = {
-                title: sections[title].strip()[:4000]
-                for title in _SECTION_TITLES
-                if isinstance(sections.get(title), str) and sections[title].strip()
-            }
-            if safe_sections:
-                safe_details["sections"] = safe_sections
         degraded_reason = details.get("degraded_reason")
         if degraded_reason in _DEGRADATION_REASONS:
             safe_details["degraded_reason"] = degraded_reason

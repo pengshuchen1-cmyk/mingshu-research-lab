@@ -5,16 +5,6 @@ from types import SimpleNamespace
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SECTION_TITLES = (
-    "分析结论",
-    "命盘依据",
-    "规则依据",
-    "阶段与触发条件",
-    "现实建议",
-    "不确定性与限制",
-)
-
-
 class _Context:
     def __enter__(self):
         return self
@@ -70,32 +60,33 @@ def test_ai_question_page_has_chat_controls_and_safe_limits():
     assert "无需在问答中输入姓名或重复输入出生资料" in source
 
 
-def test_assistant_message_renders_warning_and_all_six_sections_directly(monkeypatch):
+def test_assistant_message_renders_natural_answer_without_fixed_section_headers(
+    monkeypatch,
+):
     import ui.inquiry_page as inquiry_page
 
     fake = _FakeStreamlit()
     monkeypatch.setattr(inquiry_page, "st", fake)
-    sections = {title: f"{title}内容" for title in SECTION_TITLES}
 
     inquiry_page._render_message(
         {
             "role": "assistant",
-            "content": "不应依赖整段 Markdown",
-            "source": "local_rules",
+            "content": "这是针对当前问题的自然回答。",
+            "source": "cloud_validated",
             "details": {
-                "sections": sections,
-                "degraded_reason": "network_error",
+                "chart_evidence": ["壬日主"],
+                "rule_evidence": ["承财先看强弱"],
             },
         }
     )
 
-    assert "网络或 AI 服务出现短暂异常" in fake.warnings[0]
-    assert fake.markdowns == [f"### {title}" for title in SECTION_TITLES]
-    assert fake.writes == [sections[title] for title in SECTION_TITLES]
-    assert fake.captions == ["本地完整分析 · 网络或服务异常"]
+    assert fake.markdowns == ["这是针对当前问题的自然回答。", "**命盘证据**", "**规则依据**"]
+    assert all(not text.startswith("### ") for text in fake.markdowns)
+    assert fake.expanders == ["查看补充的机器校验明细"]
+    assert fake.captions == ["Kimi 云端分析 · 本地规则校验"]
 
 
-def test_saved_structured_answer_does_not_repeat_section_evidence_in_expander(
+def test_saved_answer_renders_naturally_with_evidence_in_expander(
     monkeypatch,
 ):
     import ui.inquiry_page as inquiry_page
@@ -104,17 +95,9 @@ def test_saved_structured_answer_does_not_repeat_section_evidence_in_expander(
 
     fake = _FakeStreamlit()
     monkeypatch.setattr(inquiry_page, "st", fake)
-    sections = {
-        "分析结论": "唯一分析结论",
-        "命盘依据": "- 唯一命盘证据",
-        "规则依据": "- 唯一规则证据",
-        "阶段与触发条件": "- 唯一阶段条件",
-        "现实建议": "- 唯一现实建议",
-        "不确定性与限制": "- 唯一不确定性",
-    }
     result = AnswerResult(
         answer="完整 Markdown 回答",
-        sections=sections,
+        sections={},
         chart_evidence=("唯一命盘证据",),
         rule_evidence=("唯一规则证据",),
         timing_conditions=("唯一阶段条件",),
@@ -126,16 +109,9 @@ def test_saved_structured_answer_does_not_repeat_section_evidence_in_expander(
     inquiry_page._save_answer(fake.session_state, result)
     inquiry_page._render_message(fake.session_state[CHAT_MESSAGES_KEY][0])
 
-    rendered = "\n".join(fake.writes)
-    for token in (
-        "唯一命盘证据",
-        "唯一规则证据",
-        "唯一阶段条件",
-        "唯一现实建议",
-        "唯一不确定性",
-    ):
-        assert rendered.count(token) == 1
-    assert fake.expanders == []
+    assert fake.markdowns[0] == "完整 Markdown 回答"
+    assert fake.expanders == ["查看补充的机器校验明细"]
+    assert fake.writes == ["• 唯一命盘证据", "• 唯一规则证据", "• 唯一不确定性"]
 
 
 def test_legacy_answer_without_sections_keeps_evidence_expander(monkeypatch):
@@ -172,10 +148,9 @@ def test_fallback_log_uses_exact_reason_code_without_content_or_pii(monkeypatch)
 
     fake = _FakeStreamlit()
     events = []
-    sections = {title: f"{title}内容" for title in SECTION_TITLES}
     result = AnswerResult(
         answer="回答正文",
-        sections=sections,
+        sections={},
         chart_evidence=("命盘证据",),
         rule_evidence=("规则证据",),
         timing_conditions=("阶段条件",),

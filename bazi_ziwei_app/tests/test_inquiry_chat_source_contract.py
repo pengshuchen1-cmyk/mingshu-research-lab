@@ -4,7 +4,7 @@ from __future__ import annotations
 def test_answer_source_labels_are_explicit_and_stable():
     from ui.inquiry_page import answer_source_label
 
-    assert answer_source_label("cloud_validated", None) == "云端 AI 分析 · 本地规则校验"
+    assert answer_source_label("cloud_validated", None) == "Kimi 云端分析 · 本地规则校验"
     assert (
         answer_source_label("local_rules", "missing_api_key")
         == "本地完整分析 · 云端服务未配置"
