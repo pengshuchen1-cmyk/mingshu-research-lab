@@ -2,6 +2,15 @@
 
 from __future__ import annotations
 
+_QUOTA_ERROR_MARKERS = {
+    "insufficient_quota",
+    "exceeded_current_quota",
+    "exceeded_current_quota_error",
+    "balance_not_enough",
+    "billing",
+    "quota",
+}
+
 
 class AIServiceError(RuntimeError):
     def __init__(self, code: str):
@@ -14,20 +23,10 @@ def classify_service_error(exc: Exception) -> str:
     status = getattr(exc, "status_code", None)
     code = str(getattr(exc, "code", "") or "").lower()
     error_type = str(getattr(exc, "type", "") or "").lower()
-    safe_tokens = f"{code} {error_type}".lower()
 
     if isinstance(exc, TimeoutError) or "timeout" in exception_name:
         return "timeout"
-    if any(
-        token in safe_tokens
-        for token in (
-            "insufficient_quota",
-            "exceeded_current_quota",
-            "balance_not_enough",
-            "billing",
-            "quota",
-        )
-    ) and status in {402, 403, 429}:
+    if {code, error_type} & _QUOTA_ERROR_MARKERS and status in {402, 403, 429}:
         return "insufficient_quota"
     if status in {401, 403}:
         return "invalid_credentials"

@@ -36,6 +36,45 @@ def test_shared_error_classifier_is_deterministic(error, expected):
     assert classify_service_error(error) == expected
 
 
+@pytest.mark.parametrize(
+    ("error", "expected"),
+    [
+        (
+            ProviderError("ignored", status_code=429, code="not_quota_related"),
+            "rate_limited",
+        ),
+        (
+            ProviderError(
+                "ignored",
+                status_code=429,
+                error_type="not_quota_related",
+            ),
+            "rate_limited",
+        ),
+        (
+            ProviderError(
+                "ignored",
+                status_code=403,
+                code="billing_address_invalid",
+            ),
+            "invalid_credentials",
+        ),
+        (
+            ProviderError(
+                "ignored",
+                status_code=403,
+                error_type="billing_address_invalid",
+            ),
+            "invalid_credentials",
+        ),
+    ],
+)
+def test_shared_error_classifier_requires_exact_quota_metadata(error, expected):
+    from services.ai_service_errors import classify_service_error
+
+    assert classify_service_error(error) == expected
+
+
 def test_service_error_never_exposes_raw_provider_message():
     from services.ai_service_errors import AIServiceError
 
