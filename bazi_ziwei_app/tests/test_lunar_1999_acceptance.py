@@ -76,12 +76,14 @@ def test_lunar_1999_cloud_and_no_key_paths_return_guarded_adaptive_answers():
     assert cloud.source == "cloud_validated"
     assert cloud.sections == {}
     assert cloud.answer.strip()
+    assert "### 分析结论" not in cloud.answer
     assert "单凭八字，不能确认现实中的婚姻登记状态" in cloud.answer
     assert cloud.degraded_reason is None
 
     assert local.source == "local_rules"
     assert local.sections == {}
     assert local.answer.strip()
+    assert "### 分析结论" not in local.answer
     assert local.degraded_reason == "missing_api_key"
     assert "不能确认现实中的婚姻登记状态" in local.answer
 

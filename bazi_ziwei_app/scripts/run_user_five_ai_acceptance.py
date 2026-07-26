@@ -78,7 +78,9 @@ def render(*, live: bool = False) -> str:
     cases, questions = _load_inputs()
     config = AIConfig.from_environment() if live else AIConfig("fixture-key", True)
     if live and not config.enabled:
-        raise RuntimeError("live mode requires OPENAI_API_KEY")
+        raise RuntimeError(
+            "live mode requires configured Kimi/OpenAI API credentials"
+        )
     client = None if live else DeterministicAcceptanceClient()
     lines = [
         "# 用户五命例·AI 问答验收",

@@ -35,7 +35,7 @@ lsof -ti :8501 | xargs kill -9
 - 大运阶段、未来十年流年、年度运程、12 个月流月事件倾向
 - 年度运程页面和导出报告共用同一套流月 Top 事件推断
 - 事业、财运、婚恋专项报告
-- AI 问答：客户自由提问，回答以本地四柱事实为依据；云端结构化回答必须通过本地校验，未配置密钥时自动使用本地规则回答
+- AI 问答：客户自由提问，默认使用 Kimi K3 生成问题自适应回答；命盘事实以本地四柱规则为准，云端回答必须通过本地校验，未配置密钥时自动使用本地完整回答
 - 验收中心：在 8501 主程序内查看 5 个固定样例和差异化检查结果
 - 紫微综合报告（八宫综合 + 四化摘要 + 大限基础）
 - 紫微人生说明书报告（事业、财富、关系、迁移、福德五个专题）
@@ -97,15 +97,24 @@ bash run_mac.sh
 
 ## AI 问答配置
 
-AI 问答默认可以在纯本地规则模式下使用。如需开启云端综合分析，只在服务器环境中配置：
+AI 问答默认使用 Kimi K3；如果没有配置密钥，仍可使用本地四柱规则生成完整回答，但页面会明确提示云端服务不可用。
+
+### 本机 Kimi K3
+
+复制 `.streamlit/secrets.toml.example` 为 `.streamlit/secrets.toml`，
+只把自己的 Kimi 开放平台 Key 填入本机文件。真实 secrets 文件已被 Git 忽略。
+
+### 服务器部署
 
 ```bash
-export OPENAI_API_KEY="your-server-side-key"
-export MINGSHU_AI_MODEL="gpt-5.6-sol"
-export MINGSHU_AI_REASONING="medium"
+export MINGSHU_AI_PROVIDER="kimi"
+export MOONSHOT_API_KEY="your-server-side-key"
+export MINGSHU_AI_MODEL="kimi-k3"
+export MINGSHU_AI_BASE_URL="https://api.moonshot.cn/v1"
+export MINGSHU_AI_REASONING="high"
 ```
 
-网页不读取、不显示密钥。云端请求使用 Responses API 的结构化输出，并设置 `store=False`；只发送去身份化的最小命盘事实、相关本地规则和最近 6 条对话。不发送姓名、原始出生日期时间、地点、经度或档案编号。
+服务器环境变量优先于本机 secrets。网页不读取、不显示密钥。Kimi 只接收去身份化命盘事实、相关本地规则、问题和最近六条清理后的对话；不发送姓名、原始出生日期时间、地点、经度、档案编号或 API Key。云端负责理解问题和组织自然语言，本地“四柱八字分析规则”仍是命盘事实与校验的唯一规范来源。
 
 ## 常见问题
 

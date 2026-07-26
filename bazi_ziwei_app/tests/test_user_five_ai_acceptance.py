@@ -60,6 +60,7 @@ def test_all_six_ai_questions_are_grounded_for_each_user_chart(case):
         assert result.source == "cloud_validated"
         assert result.sections == {}
         assert result.answer.strip()
+        assert "### 分析结论" not in result.answer
         assert result.chart_evidence
         assert result.rule_evidence
         assert result.timing_conditions
@@ -128,6 +129,23 @@ def test_five_chart_ai_acceptance_script_runs_to_explicit_temporary_output(tmp_p
     assert str(target) in completed.stdout
     assert target.read_text(encoding="utf-8") == render()
     assert TRACKED_ARTIFACT.read_bytes() == tracked_before
+
+
+def test_live_acceptance_without_credentials_names_supported_providers(monkeypatch):
+    from scripts.run_user_five_ai_acceptance import render
+
+    for name in (
+        "MINGSHU_AI_PROVIDER",
+        "MOONSHOT_API_KEY",
+        "OPENAI_API_KEY",
+    ):
+        monkeypatch.delenv(name, raising=False)
+
+    with pytest.raises(
+        RuntimeError,
+        match="live mode requires configured Kimi/OpenAI API credentials",
+    ):
+        render(live=True)
 
 
 @pytest.mark.parametrize(
