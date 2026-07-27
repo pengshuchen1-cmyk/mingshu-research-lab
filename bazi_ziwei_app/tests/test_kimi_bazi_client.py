@@ -72,18 +72,13 @@ def _payload():
     return json.dumps(
         {
             "analysis_conclusion": "财务重点是承载能力。",
-            "chart_evidence": ["丙日主"],
-            "rule_evidence": ["承财看日主能力"],
-            "timing_conditions": [],
-            "practical_advice": ["先核对现金流"],
-            "uncertainty_limitations": [],
         },
         ensure_ascii=False,
     )
 
 
 def test_kimi_client_uses_k3_json_schema_and_deidentified_messages():
-    from core.ai_models import AIConfig, BaziAIAnswer
+    from core.ai_models import AIConfig, CloudBaziAnalysis
     from services.kimi_bazi_client import KimiBaziClient
 
     completions = _Completions(_Response(_payload()))
@@ -100,13 +95,21 @@ def test_kimi_client_uses_k3_json_schema_and_deidentified_messages():
     call = completions.calls[0]
 
     assert result.analysis_conclusion == "财务重点是承载能力。"
+    assert result.chart_evidence == []
+    assert result.rule_evidence == []
+    assert result.timing_conditions == []
+    assert result.practical_advice == []
+    assert result.uncertainty_limitations == []
     assert call["model"] == "kimi-k3"
     assert call["stream"] is False
-    assert call["max_completion_tokens"] == 4000
+    assert call["max_completion_tokens"] == 6000
     assert call["response_format"]["type"] == "json_schema"
-    assert call["response_format"]["json_schema"]["name"] == "bazi_ai_answer"
+    assert call["response_format"]["json_schema"]["name"] == "bazi_cloud_analysis"
     assert call["response_format"]["json_schema"]["strict"] is True
-    assert call["response_format"]["json_schema"]["schema"] == BaziAIAnswer.model_json_schema()
+    assert (
+        call["response_format"]["json_schema"]["schema"]
+        == CloudBaziAnalysis.model_json_schema()
+    )
     assert call["extra_body"] == {"reasoning_effort": "high"}
     assert call["timeout"] == 30
     serialized = json.dumps(call["messages"], ensure_ascii=False)
@@ -144,6 +147,7 @@ def test_kimi_client_constructs_sdk_with_moonshot_key_and_base_url(monkeypatch):
         {
             "api_key": "moonshot-secret",
             "base_url": "https://api.moonshot.cn/v1",
+            "max_retries": 0,
         }
     ]
     assert "moonshot-secret" not in str(client)

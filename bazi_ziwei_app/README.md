@@ -111,10 +111,11 @@ export MINGSHU_AI_PROVIDER="kimi"
 export MOONSHOT_API_KEY="your-server-side-key"
 export MINGSHU_AI_MODEL="kimi-k3"
 export MINGSHU_AI_BASE_URL="https://api.moonshot.cn/v1"
-export MINGSHU_AI_REASONING="high"
+export MINGSHU_AI_REASONING="low"
+export MINGSHU_AI_TIMEOUT_SECONDS="90"
 ```
 
-服务器环境变量优先于本机 secrets。网页不读取、不显示密钥。Kimi 只接收去身份化命盘事实、相关本地规则、问题和最近六条清理后的对话；不发送姓名、原始出生日期时间、地点、经度、档案编号或 API Key。云端负责理解问题和组织自然语言，本地“四柱八字分析规则”仍是命盘事实与校验的唯一规范来源。
+服务器环境变量优先于本机 secrets。网页不读取、不显示密钥。Kimi 只接收去身份化命盘事实、相关本地规则、问题和最近六条清理后的对话；不发送姓名、原始出生日期时间、地点、经度、档案编号或 API Key。云端每个问题只调用一次，只返回自然分析正文；命盘证据和规则证据由本地装配。SDK 不自动重试，单次等待上限为 90 秒。云端负责理解问题和组织自然语言，本地“四柱八字分析规则”仍是命盘事实与校验的唯一规范来源。
 
 ## 常见问题
 

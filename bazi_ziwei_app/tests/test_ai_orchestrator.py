@@ -87,27 +87,31 @@ def _chart():
     )
 
 
-def _answer(text, evidence):
+def _answer(
+    text,
+    evidence,
+    rule_evidence="财运承载需结合日主强弱、印比支持与食伤生财路径判断。",
+):
     from core.ai_models import BaziAIAnswer
 
     return BaziAIAnswer(
         analysis_conclusion=text,
         chart_evidence=[evidence],
-        rule_evidence=["财运承载需结合日主强弱、印比支持与食伤生财路径判断。"],
+        rule_evidence=[rule_evidence],
         timing_conditions=["具体阶段需结合流年事实观察。"],
         practical_advice=["先核对现金流，再决定行动。"],
         uncertainty_limitations=["现实结果取决于执行，不替代财务决策。"],
     )
 
 
-def test_orchestrator_retries_once_after_guard_rejection():
+def test_orchestrator_does_not_retry_after_guard_rejection():
     from core.ai_models import AIConfig
     from core.ai_orchestrator import answer_question
 
     fake = _FakeClient(
         [
             _answer("乙巳日主肯定发财。", "日柱乙巳"),
-            _answer("壬日主的财务重点是承载能力和现金流。", "壬日主"),
+            _answer("丙午日主一定会发财。", "日柱丙午"),
         ]
     )
     result = answer_question(
@@ -118,14 +122,13 @@ def test_orchestrator_retries_once_after_guard_rejection():
         client=fake,
     )
 
-    assert result.source == "cloud_validated"
+    assert result.source == "local_rules"
     assert result.sections == {}
     assert result.answer.strip()
     assert result.timing_conditions
     assert result.practical_advice
-    assert result.degraded_reason is None
-    assert len(fake.contexts) == 2
-    assert "纠正要求" in fake.contexts[1].question
+    assert result.degraded_reason == "local_validation_failed"
+    assert len(fake.contexts) == 1
 
 
 def test_orchestrator_uses_local_rules_when_cloud_disabled():
@@ -171,7 +174,7 @@ def test_missing_api_key_returns_complete_wealth_fallback_with_exact_reason():
     assert result.answer.strip()
 
 
-def test_orchestrator_retries_once_for_malformed_structured_output():
+def test_orchestrator_does_not_retry_malformed_structured_output():
     from core.ai_models import AIConfig
     from core.ai_orchestrator import answer_question
     from services.openai_bazi_client import AIServiceError
@@ -190,8 +193,9 @@ def test_orchestrator_retries_once_for_malformed_structured_output():
         client=fake,
     )
 
-    assert result.source == "cloud_validated"
-    assert len(fake.contexts) == 2
+    assert result.source == "local_rules"
+    assert result.degraded_reason == "unparseable_response"
+    assert len(fake.contexts) == 1
 
 
 @pytest.mark.parametrize(
@@ -226,7 +230,7 @@ def test_orchestrator_preserves_service_error_reason_without_retry(error_code):
     assert len(fake.contexts) == 1
 
 
-def test_orchestrator_returns_unparseable_reason_after_one_retry():
+def test_orchestrator_returns_unparseable_reason_after_one_call():
     from core.ai_models import AIConfig
     from core.ai_orchestrator import answer_question
     from services.openai_bazi_client import AIServiceError
@@ -247,10 +251,10 @@ def test_orchestrator_returns_unparseable_reason_after_one_retry():
 
     assert result.source == "local_rules"
     assert result.degraded_reason == "unparseable_response"
-    assert len(fake.contexts) == 2
+    assert len(fake.contexts) == 1
 
 
-def test_orchestrator_returns_validation_reason_after_two_guard_rejections():
+def test_orchestrator_returns_validation_reason_after_one_guard_rejection():
     from core.ai_models import AIConfig
     from core.ai_orchestrator import answer_question
 
@@ -270,7 +274,65 @@ def test_orchestrator_returns_validation_reason_after_two_guard_rejections():
 
     assert result.source == "local_rules"
     assert result.degraded_reason == "local_validation_failed"
-    assert len(fake.contexts) == 2
+    assert len(fake.contexts) == 1
+
+
+def test_cloud_rule_paraphrase_is_replaced_by_local_evidence():
+    from core.ai_models import AIConfig
+    from core.ai_orchestrator import answer_question
+
+    fake = _FakeClient(
+        [
+            _answer(
+                "壬日主身强，财务重点是承载能力、现金流和风险边界。",
+                "云端自行改写、不能逐字映射的命盘证据",
+                "云端自行改写、不能逐字映射的规则证据",
+            )
+        ]
+    )
+
+    result = answer_question(
+        _chart(),
+        "财运如何？",
+        [],
+        config=AIConfig("key", True),
+        client=fake,
+    )
+
+    assert result.source == "cloud_validated"
+    assert result.degraded_reason is None
+    assert len(fake.contexts) == 1
+    assert result.chart_evidence
+    assert result.rule_evidence
+    assert all("云端自行改写" not in item for item in result.chart_evidence)
+    assert all("云端自行改写" not in item for item in result.rule_evidence)
+
+
+def test_cloud_strength_contradiction_is_still_rejected_once():
+    from core.ai_models import AIConfig
+    from core.ai_orchestrator import answer_question
+
+    fake = _FakeClient(
+        [
+            _answer(
+                "壬日主身弱，财务重点是先控制风险。",
+                "云端证据",
+            ),
+            _answer("壬日主身强。", "第二次不应被读取"),
+        ]
+    )
+
+    result = answer_question(
+        _chart(),
+        "财运如何？",
+        [],
+        config=AIConfig("key", True),
+        client=fake,
+    )
+
+    assert result.source == "local_rules"
+    assert result.degraded_reason == "local_validation_failed"
+    assert len(fake.contexts) == 1
 
 
 def test_orchestrator_does_not_expose_raw_unexpected_exception():

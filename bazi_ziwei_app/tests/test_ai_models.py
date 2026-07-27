@@ -33,6 +33,23 @@ def test_ai_answer_allows_empty_machine_lists_and_rejects_unknown_fields():
         BaziAIAnswer.model_validate({**data, "extra": "not allowed"})
 
 
+def test_cloud_analysis_contract_accepts_only_natural_answer():
+    from core.ai_models import CloudBaziAnalysis
+
+    result = CloudBaziAnalysis.model_validate(
+        {"analysis_conclusion": "依据本地事实展开的自然回答。"}
+    )
+
+    assert result.analysis_conclusion
+    with pytest.raises(ValidationError):
+        CloudBaziAnalysis.model_validate(
+            {
+                "analysis_conclusion": "回答",
+                "rule_evidence": ["模型改写的规则"],
+            }
+        )
+
+
 def test_ai_config_is_disabled_without_key(monkeypatch):
     from core.ai_models import AIConfig
 
@@ -44,7 +61,7 @@ def test_ai_config_is_disabled_without_key(monkeypatch):
     assert config.enabled is False
     assert config.provider == "kimi"
     assert config.model == "kimi-k3"
-    assert config.reasoning_effort == "high"
+    assert config.reasoning_effort == "low"
 
 
 def test_ai_config_validates_server_overrides(monkeypatch):
@@ -86,7 +103,7 @@ def test_kimi_is_default_and_streamlit_secrets_enable_cloud(monkeypatch):
     assert config.provider == "kimi"
     assert config.model == "kimi-k3"
     assert config.base_url == "https://api.moonshot.cn/v1"
-    assert config.reasoning_effort == "high"
+    assert config.reasoning_effort == "low"
 
 
 def test_server_environment_overrides_streamlit_secrets(monkeypatch):
@@ -108,6 +125,16 @@ def test_server_environment_overrides_streamlit_secrets(monkeypatch):
     assert config.api_key == "server-secret"
     assert config.model == "kimi-k3"
     assert config.reasoning_effort == "max"
+
+
+def test_ai_config_allows_single_90_second_request(monkeypatch):
+    from core.ai_models import AIConfig
+
+    monkeypatch.setenv("MINGSHU_AI_TIMEOUT_SECONDS", "120")
+
+    config = AIConfig.from_environment()
+
+    assert config.timeout_seconds == 90
 
 
 def test_openai_provider_keeps_its_own_key(monkeypatch):

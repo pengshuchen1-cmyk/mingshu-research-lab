@@ -53,6 +53,29 @@ def _local_result(
     )
 
 
+def _cloud_prose_candidate(answer: BaziAIAnswer) -> BaziAIAnswer:
+    """Keep only cloud prose; machine evidence is never trusted from cloud."""
+    return BaziAIAnswer(
+        analysis_conclusion=answer.analysis_conclusion,
+        chart_evidence=[],
+        rule_evidence=[],
+        timing_conditions=[],
+        practical_advice=[],
+        uncertainty_limitations=[],
+    )
+
+
+def _with_local_evidence(
+    answer: BaziAIAnswer,
+    context: AIRequestContext,
+) -> BaziAIAnswer:
+    """Attach deterministic local details after cloud prose is validated."""
+    local = build_local_answer(context)
+    return local.model_copy(
+        update={"analysis_conclusion": answer.analysis_conclusion},
+    )
+
+
 _SERVICE_DEGRADATION_REASONS = frozenset(
     {
         "insufficient_quota",
@@ -94,28 +117,20 @@ def answer_question(
     except Exception:
         return _local_result(context, "service_unavailable")
 
-    last_violations: tuple[str, ...] = ()
-    for attempt in range(2):
-        request_context = context
-        if attempt and last_violations:
-            correction = "纠正要求：修正以下校验问题：" + "、".join(last_violations)
-            corrected_question = f"{context.question}\n{correction}"[-500:]
-            request_context = context.model_copy(update={"question": corrected_question})
-        try:
-            answer = service.answer(request_context)
-        except AIServiceError as exc:
-            if exc.code == "unparseable_response" and attempt == 0:
-                last_violations = ("malformed_structured_output",)
-                continue
-            return _local_result(context, _degradation_reason(exc.code))
-        except Exception:
-            return _local_result(context, "service_unavailable")
-        guard = validate_ai_answer(answer, context)
-        if guard.accepted:
-            return _answer_result(
-                answer,
-                source="cloud_validated",
-                provider=config.provider,
-            )
-        last_violations = guard.violations
-    return _local_result(context, "local_validation_failed")
+    try:
+        cloud_answer = service.answer(context)
+    except AIServiceError as exc:
+        return _local_result(context, _degradation_reason(exc.code))
+    except Exception:
+        return _local_result(context, "service_unavailable")
+
+    candidate = _cloud_prose_candidate(cloud_answer)
+    guard = validate_ai_answer(candidate, context)
+    if not guard.accepted:
+        return _local_result(context, "local_validation_failed")
+    grounded = _with_local_evidence(candidate, context)
+    return _answer_result(
+        grounded,
+        source="cloud_validated",
+        provider=config.provider,
+    )

@@ -52,20 +52,15 @@ def _context():
 
 
 def _answer():
-    from core.ai_models import BaziAIAnswer
+    from core.ai_models import CloudBaziAnalysis
 
-    return BaziAIAnswer(
+    return CloudBaziAnalysis(
         analysis_conclusion="财运需要结合承载能力。",
-        chart_evidence=["丙日主"],
-        rule_evidence=["承财看日主能力"],
-        timing_conditions=["具体阶段需结合流年观察"],
-        practical_advice=["先核对现实现金流"],
-        uncertainty_limitations=["不保证投资结果"],
     )
 
 
 def test_client_uses_structured_responses_api_without_storage():
-    from core.ai_models import AIConfig, BaziAIAnswer
+    from core.ai_models import AIConfig, CloudBaziAnalysis
     from services.openai_bazi_client import OpenAIBaziClient
 
     responses = _Responses(parsed=_answer())
@@ -77,10 +72,12 @@ def test_client_uses_structured_responses_api_without_storage():
     call = responses.calls[0]
 
     assert result.analysis_conclusion
+    assert result.chart_evidence == []
+    assert result.rule_evidence == []
     assert call["model"] == "gpt-5.6-sol"
     assert call["store"] is False
     assert call["reasoning"] == {"effort": "medium"}
-    assert call["text_format"] is BaziAIAnswer
+    assert call["text_format"] is CloudBaziAnalysis
     assert call["timeout"] == 30
     assert "server-key" not in str(call)
 
@@ -215,7 +212,14 @@ def test_invalid_parsed_object_is_unparseable_response():
 
     client = OpenAIBaziClient(
         AIConfig("server-key", True),
-        client=_Client(_Responses(parsed={"analysis_conclusion": "缺少其余五段"})),
+        client=_Client(
+            _Responses(
+                parsed={
+                    "analysis_conclusion": "含有未知字段。",
+                    "extra": "not allowed",
+                }
+            )
+        ),
     )
 
     with pytest.raises(AIServiceError) as captured:
@@ -234,3 +238,11 @@ def test_openai_prompt_requires_adaptive_answer_and_only_supplied_evidence():
     assert "不得重新计算四柱" in system_prompt
     assert "仅使用请求中提供" in system_prompt
     assert "不得补充未提供" in system_prompt
+    assert "按问题范围自适应回答深度" in system_prompt
+    assert "单点问题" in system_prompt
+    assert "专题问题" in system_prompt
+    assert "长周期问题" in system_prompt
+    assert "命盘证据" in system_prompt
+    assert "现实建议" in system_prompt
+    assert "只返回 analysis_conclusion" in system_prompt
+    assert "强弱结论必须原样使用" in system_prompt

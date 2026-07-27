@@ -4,7 +4,12 @@ from __future__ import annotations
 
 import json
 
-from core.ai_models import AIConfig, AIRequestContext, BaziAIAnswer
+from core.ai_models import (
+    AIConfig,
+    AIRequestContext,
+    BaziAIAnswer,
+    CloudBaziAnalysis,
+)
 from services.ai_service_errors import AIServiceError, classify_service_error
 from services.bazi_ai_prompt import build_messages
 
@@ -16,9 +21,9 @@ def _response_format() -> dict[str, object]:
     return {
         "type": "json_schema",
         "json_schema": {
-            "name": "bazi_ai_answer",
+            "name": "bazi_cloud_analysis",
             "strict": True,
-            "schema": BaziAIAnswer.model_json_schema(),
+            "schema": CloudBaziAnalysis.model_json_schema(),
         },
     }
 
@@ -34,6 +39,7 @@ class KimiBaziClient:
             self._client = OpenAI(
                 api_key=config.api_key,
                 base_url=config.base_url,
+                max_retries=0,
             )
         else:
             self._client = None
@@ -49,7 +55,7 @@ class KimiBaziClient:
                 messages=build_messages(context),
                 response_format=_response_format(),
                 stream=False,
-                max_completion_tokens=4000,
+                max_completion_tokens=6000,
                 extra_body={
                     "reasoning_effort": self._config.reasoning_effort,
                 },
@@ -59,8 +65,16 @@ class KimiBaziClient:
             if not choices or getattr(choices[0], "finish_reason", None) == "length":
                 raise AIServiceError("unparseable_response")
             content = getattr(getattr(choices[0], "message", None), "content", None)
-            parsed = json.loads(content) if isinstance(content, str) else None
-            return BaziAIAnswer.model_validate(parsed)
+            raw = json.loads(content) if isinstance(content, str) else None
+            parsed = CloudBaziAnalysis.model_validate(raw)
+            return BaziAIAnswer(
+                analysis_conclusion=parsed.analysis_conclusion,
+                chart_evidence=[],
+                rule_evidence=[],
+                timing_conditions=[],
+                practical_advice=[],
+                uncertainty_limitations=[],
+            )
         except AIServiceError:
             raise
         except (json.JSONDecodeError, TypeError, ValueError):

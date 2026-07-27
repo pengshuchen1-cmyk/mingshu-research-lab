@@ -28,6 +28,14 @@ class BaziAIAnswer(BaseModel):
     )
 
 
+class CloudBaziAnalysis(BaseModel):
+    """Minimal cloud contract; all machine evidence is attached locally."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    analysis_conclusion: str = Field(min_length=1, max_length=6000)
+
+
 class ChatMessage(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
@@ -70,7 +78,7 @@ class AIConfig:
     api_key: str = field(repr=False)
     enabled: bool
     model: str = "kimi-k3"
-    reasoning_effort: str = "high"
+    reasoning_effort: str = "low"
     timeout_seconds: int = 30
     provider: str = "kimi"
     base_url: str = "https://api.moonshot.cn/v1"
@@ -91,11 +99,16 @@ class AIConfig:
             else "https://api.moonshot.cn/v1"
         )
         model = _setting(source, "MINGSHU_AI_MODEL", default_model)
-        reasoning = _setting(source, "MINGSHU_AI_REASONING", "high").lower()
+        default_reasoning = "medium" if provider == "openai" else "low"
+        reasoning = _setting(
+            source,
+            "MINGSHU_AI_REASONING",
+            default_reasoning,
+        ).lower()
         if provider == "kimi":
-            reasoning = "high" if reasoning == "medium" else reasoning
+            reasoning = "low" if reasoning == "medium" else reasoning
             if reasoning not in {"low", "high", "max"}:
-                reasoning = "high"
+                reasoning = "low"
         elif reasoning not in {"low", "medium", "high"}:
             reasoning = "medium"
         try:
@@ -107,7 +120,7 @@ class AIConfig:
             enabled=bool(api_key) and provider in {"kimi", "openai"},
             model=model,
             reasoning_effort=reasoning,
-            timeout_seconds=min(60, max(5, timeout)),
+            timeout_seconds=min(90, max(5, timeout)),
             provider=provider,
             base_url=_setting(source, "MINGSHU_AI_BASE_URL", default_base_url),
         )

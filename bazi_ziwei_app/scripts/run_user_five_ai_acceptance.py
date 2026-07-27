@@ -46,10 +46,6 @@ class _FakeKimiCompletions:
         self.calls.append(kwargs)
         request = json.loads(kwargs["messages"][1]["content"])
         question = str(request["question"])
-        facts = request["chart_facts"]
-        rules = request["rule_evidence"]
-        pillar = str((facts.get("pillars") or ["本盘"])[0])
-        rule = str(rules[0]["statement"])
         if "抵押" in question or "保证" in question:
             text = "命盘只能提供风险观察，不能保证抵押房产创业的结果；应先做现实现金流与最坏损失测算。"
         elif "当前婚姻状态" in question:
@@ -64,11 +60,6 @@ class _FakeKimiCompletions:
             json.dumps(
                 {
                     "analysis_conclusion": text,
-                    "chart_evidence": [f"命盘四柱中年柱为{pillar}"],
-                    "rule_evidence": [rule],
-                    "timing_conditions": ["具体阶段需结合大运、流年事实与现实环境观察。"],
-                    "practical_advice": ["重大投资、借贷或婚姻决策应以现实调查为准。"],
-                    "uncertainty_limitations": ["命理倾向不等于现实事件已经发生。"],
                 },
                 ensure_ascii=False,
             )
