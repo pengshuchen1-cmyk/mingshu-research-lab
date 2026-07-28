@@ -115,6 +115,8 @@ _DIRECT_SENSITIVE_PATTERNS = (
         r"(?i)(?<![A-Z0-9._%+-])[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b"
     ),
     re.compile(r"(?<!\d)(?:\+?86[\s-]?)?1[3-9]\d[\s-]?\d{4}[\s-]?\d{4}(?!\d)"),
+    # Chinese resident identity numbers are personal identifiers even when unlabeled.
+    re.compile(r"(?<!\d)\d{17}[\dXx](?!\d)"),
     # Exact machine-readable dates and exact clock times are not needed for advice.
     re.compile(r"(?<!\d)(?:19|20)\d{2}[-/.]\d{1,2}[-/.]\d{1,2}(?!\d)"),
     re.compile(r"(?<!\d)(?:[01]?\d|2[0-3]):[0-5]\d(?!\d)"),
@@ -294,6 +296,13 @@ _NATURAL_NAME = re.compile(
     rf"[\u3400-\u9fff·]{{1,3}})"
     r"(?=(?:准备|打算|目前|现在|如今|现阶段|常驻|现居|人在|"
     r"位于|计划|考虑|想|需要|建议|分析|咨询|询问|看看))",
+    re.MULTILINE,
+)
+_STANDALONE_NATURAL_NAME = re.compile(
+    rf"(?:^|(?<=[，,。；;！？!?\r\n]))\s*"
+    rf"(?P<value>(?:欧阳|司马|上官|诸葛|[{_COMMON_SURNAME}])"
+    rf"[\u3400-\u9fff·]{{1,2}})"
+    r"\s*(?=$|[，,。；;！？!?\r\n])",
     re.MULTILINE,
 )
 _ADMIN_LOCATION = (
@@ -517,6 +526,10 @@ def _provenance_segments(text: str) -> list[tuple[bool, str]]:
     for pattern in _DIRECT_SENSITIVE_PATTERNS:
         spans.extend(match.span() for match in pattern.finditer(text))
     spans.extend(match.span("value") for match in _NATURAL_NAME.finditer(text))
+    spans.extend(
+        match.span("value")
+        for match in _STANDALONE_NATURAL_NAME.finditer(text)
+    )
     spans.extend(match.span("value") for match in _NATURAL_LOCATION.finditer(text))
     spans.extend(
         match.span("value")
@@ -603,8 +616,8 @@ def redact_customer_text(
 ) -> str:
     """Project safe semantics from provenance-aware, non-sensitive source spans.
 
-    Sensitive labeled fields and log spans are segmented before semantic matching, so
-    values that collide with safe terms can never be recovered by the allowlist.
+    Sensitive provenance spans are segmented before semantic projection, so their
+    values cannot be recovered by later normalization.
     """
     bounded_text = _bounded_complete_input(text, max_input_chars)
     segments = _provenance_segments(bounded_text)

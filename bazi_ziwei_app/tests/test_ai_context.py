@@ -26,6 +26,17 @@ def test_privacy_projection_removes_identity_but_keeps_question():
     assert "明年财运如何" in value
 
 
+@pytest.mark.parametrize("identity", ("张三", "110101199001011234"))
+def test_privacy_projection_masks_unlabelled_identity_tokens(identity):
+    from core.ai_context import REDACTION_MARKER, redact_customer_text
+
+    assert redact_customer_text(identity) == REDACTION_MARKER
+
+    value = redact_customer_text(f"{identity}；明年财运如何")
+    assert identity not in value
+    assert "明年财运如何" in value
+
+
 @pytest.mark.parametrize(
     ("question", "category", "timing"),
     [
