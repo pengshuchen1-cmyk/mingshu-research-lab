@@ -197,6 +197,8 @@ def cached_answer(
     state: MutableMapping,
     fingerprint: str,
 ) -> str:
+    if expire_chat_session(state):
+        return ""
     request_state = _request_state(state)
     result = request_state.get("result")
     if (
@@ -250,6 +252,8 @@ def complete_chat_request(
     source: str,
 ) -> None:
     """Store a validated answer only when it belongs to the active request."""
+    if expire_chat_session(state):
+        return
     request_state = _request_state(state)
     if (
         not request_state.get("busy")

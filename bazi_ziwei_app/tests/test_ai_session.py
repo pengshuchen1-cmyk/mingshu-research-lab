@@ -160,3 +160,109 @@ def test_chat_summary_and_request_idempotency():
     )
     assert dialogue_summary(state).domain == "wealth"
     assert dialogue_summary(state).target_years == [2027]
+
+    completed_duplicate = begin_chat_request(state, "chart-fp", resolved)
+    assert completed_duplicate.accepted is False
+    assert completed_duplicate.request_id == first.request_id
+    assert completed_duplicate.cached_answer == "已验证答案"
+
+
+def _resolved_question(question: str = "2027年财运怎么样"):
+    from core.ai_models import ResolvedQuestion
+
+    return ResolvedQuestion(
+        safe_question=question,
+        domain="wealth",
+        time_scope="target_year",
+        target_years=[2027],
+        requested_depth="single_year",
+    )
+
+
+def test_busy_request_rejects_different_fingerprint_without_returning_its_cache():
+    from core.ai_session import begin_chat_request, complete_chat_request
+
+    state = {}
+    first_resolved = _resolved_question()
+    second_resolved = _resolved_question("2028年财运怎么样")
+    first = begin_chat_request(state, "chart-fp", first_resolved)
+    rejected = begin_chat_request(state, "chart-fp", second_resolved)
+
+    assert rejected.accepted is False
+    assert rejected.request_id == first.request_id
+    assert rejected.cached_answer == ""
+
+    complete_chat_request(
+        state,
+        first.request_id,
+        resolved=first_resolved,
+        answer="仅属于第一个问题的答案",
+        source="cloud_validated",
+    )
+    completed_second = begin_chat_request(state, "chart-fp", second_resolved)
+    assert completed_second.accepted is True
+    assert completed_second.cached_answer == ""
+
+
+def test_chart_switch_clears_completed_chat_cache():
+    from core.ai_session import begin_chat_request, complete_chat_request
+
+    state = {}
+    resolved = _resolved_question()
+    first = begin_chat_request(state, "chart-a", resolved)
+    complete_chat_request(
+        state,
+        first.request_id,
+        resolved=resolved,
+        answer="只属于命盘 A 的答案",
+        source="cloud_validated",
+    )
+
+    switched = begin_chat_request(state, "chart-b", resolved)
+
+    assert switched.accepted is True
+    assert switched.cached_answer == ""
+    assert "result" not in state["bazi_chat_request_state"]
+
+
+def test_expired_chat_cache_is_not_read_or_restored():
+    from core.ai_session import begin_chat_request, cached_answer, complete_chat_request, request_fingerprint
+
+    state = {}
+    resolved = _resolved_question()
+    first = begin_chat_request(state, "chart-fp", resolved)
+    complete_chat_request(
+        state,
+        first.request_id,
+        resolved=resolved,
+        answer="已经到期的答案",
+        source="cloud_validated",
+    )
+    state["bazi_chat_last_activity"] = (
+        datetime.now(timezone.utc) - timedelta(minutes=31)
+    ).isoformat()
+
+    assert cached_answer(state, request_fingerprint("chart-fp", resolved)) == ""
+    assert "bazi_chat_request_state" not in state
+
+
+def test_expired_request_id_cannot_write_a_late_answer():
+    from core.ai_session import begin_chat_request, complete_chat_request
+
+    state = {}
+    resolved = _resolved_question()
+    first = begin_chat_request(state, "chart-fp", resolved)
+    state["bazi_chat_last_activity"] = (
+        datetime.now(timezone.utc) - timedelta(minutes=31)
+    ).isoformat()
+
+    complete_chat_request(
+        state,
+        first.request_id,
+        resolved=resolved,
+        answer="迟到的答案不应写回",
+        source="cloud_validated",
+    )
+
+    assert "bazi_chat_request_state" not in state
+    assert "bazi_chat_messages" not in state
