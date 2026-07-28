@@ -28,6 +28,14 @@ _CN = {
     "六": 6, "七": 7, "八": 8, "九": 9, "十": 10,
 }
 
+_MONTHLY_TERMS = ("每个月", "每月", "逐月", "流月")
+_NEGATED_MONTHLY_REQUEST = re.compile(
+    r"(?:不要|不看|不用|别)(?:看)?\s*"
+    r"(?:(?:今年|明年|后年|(?:19|20)\d{2}年?|上半年|下半年|"
+    r"[一二三四五六七八九十\d]+月)\s*)*"
+    r"(?:每个月|每月|逐月|流月)"
+)
+
 
 def _number(value: str) -> int:
     if value.isdigit():
@@ -75,7 +83,10 @@ def _years(text: str, current_year: int) -> tuple[list[int], bool]:
         return [current_year + _number(after.group(1))], False
     future = re.search(r"未来([一二三四五六七八九十\d]+)年", text)
     if future:
-        number = min(60, _number(future.group(1)))
+        number = _number(future.group(1))
+        # Keep a 61-item sentinel so the caller can report the contract
+        # violation without allocating an unbounded range from user input.
+        number = min(61, number)
         return list(range(current_year, current_year + number)), False
     if "今年" in text or "上半年" in text or "下半年" in text:
         return [current_year], False
@@ -99,6 +110,40 @@ def _discrete_year_receipt(years: list[int]) -> str:
     return f"本次按{len(years)}个离散年份分析；请缩小年份数量以展示完整干支回执。"
 
 
+def _continuous_year_range_receipt(years: list[int]) -> str:
+    start, end = years[0], years[-1]
+    prefix = (
+        f"本次按{start}年（{get_year_pillar(start)}）至{end}年"
+        f"（{get_year_pillar(end)}）的连续年份范围（共{len(years)}年）"
+    )
+    entries = "、".join(
+        f"{year}年（{get_year_pillar(year)}）" for year in years
+    )
+    detailed = f"{prefix}逐年分析：{entries}。"
+    return detailed if len(detailed) <= 240 else f"{prefix}分析。"
+
+
+def _month_receipt_label(months: list[int]) -> str:
+    if months == list(range(1, 7)):
+        return "上半年（1—6月）"
+    if months == list(range(7, 13)):
+        return "下半年（7—12月）"
+    if months == list(range(1, 13)):
+        return "每月（1—12月）"
+    return "、".join(f"{month}月" for month in months)
+
+
+def _explicit_forecast_month(text: str) -> int | None:
+    for match in re.finditer(r"([一二三四五六七八九十\d]+)月", text):
+        surrounding = text[max(0, match.start() - 6):min(len(text), match.end() + 6)]
+        if "出生" in surrounding:
+            continue
+        month = _number(match.group(1))
+        if 1 <= month <= 12:
+            return month
+    return None
+
+
 def resolve_question(
     question: str,
     *,
@@ -115,6 +160,7 @@ def resolve_question(
     too_many_years = len(years) > 60
     if too_many_years:
         years = []
+    invalid_year_range = reversed_range or too_many_years
     years_inherited = False
     if (
         not years
@@ -128,8 +174,8 @@ def resolve_question(
 
     months: list[int] = []
     monthly_request = (
-        any(term in text for term in ("每个月", "逐月", "流月"))
-        and not re.search(r"(?:不要|不看|不用|别)(?:看)?\s*(?:每个月|逐月|流月)", text)
+        any(term in text for term in _MONTHLY_TERMS)
+        and not _NEGATED_MONTHLY_REQUEST.search(text)
     )
     if "上半年" in text:
         months = list(range(1, 7))
@@ -138,12 +184,10 @@ def resolve_question(
     elif monthly_request:
         months = list(range(1, 13))
     else:
-        month_match = re.search(r"([一二三四五六七八九十\d]+)月", text)
-        if month_match:
-            month = _number(month_match.group(1))
-            if 1 <= month <= 12:
-                months = [month]
-    if months and not years:
+        explicit_month = _explicit_forecast_month(text)
+        if explicit_month is not None:
+            months = [explicit_month]
+    if months and not years and not invalid_year_range:
         years = list(previous.target_years) if previous and previous.target_years else [now.year]
 
     age_match = re.search(r"(\d{1,3})(?:周|虚)?岁", text)
@@ -182,18 +226,15 @@ def resolve_question(
         depth = "topic" if len(text) > 24 else "direct"
 
     receipt = ""
-    if years:
+    if years and not invalid_year_range:
         if len(years) == 1:
             receipt = f"本次按{years[0]}年（{get_year_pillar(years[0])}）分析。"
         elif explicit_year_range or "未来" in text:
-            receipt = f"本次按{years[0]}—{years[-1]}年分析。"
+            receipt = _continuous_year_range_receipt(years)
         else:
             receipt = _discrete_year_receipt(years)
     if months and years:
-        receipt = (
-            f"本次按{years[0]}年（{get_year_pillar(years[0])}）1—12月分析。"
-            if len(months) == 12 else receipt
-        )
+        receipt = f"本次按{years[0]}年（{get_year_pillar(years[0])}）{_month_receipt_label(months)}分析。"
 
     return ResolvedQuestion(
         safe_question=text,
