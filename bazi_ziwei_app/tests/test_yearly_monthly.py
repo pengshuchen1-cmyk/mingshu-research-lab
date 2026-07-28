@@ -1,6 +1,7 @@
 import os
 import sys
 import unittest
+from unittest.mock import patch
 
 
 APP_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -52,6 +53,35 @@ class YearlyMonthlyTests(unittest.TestCase):
         self.assertIsInstance(result["opportunity_months"], list)
         self.assertGreater(len(result["suitable_actions"]), 0)
         self.assertGreater(len(result["actions_to_avoid"]), 0)
+
+    def test_yearly_summary_mode_skips_monthly_enrichment_and_keeps_core_facts(self):
+        from core import monthly_engine
+        from core.yearly_engine import analyze_yearly_fortune
+
+        with patch(
+            "core.monthly_engine.analyze_monthly_fortune",
+            wraps=monthly_engine.analyze_monthly_fortune,
+        ) as observed_monthly:
+            default = analyze_yearly_fortune(sample_chart(), 2026)
+            default_calls = observed_monthly.call_count
+            observed_monthly.reset_mock()
+            summary = analyze_yearly_fortune(
+                sample_chart(),
+                2026,
+                include_monthly_analysis=False,
+            )
+
+        self.assertGreater(default_calls, 0)
+        self.assertEqual(observed_monthly.call_count, 0)
+        for key in (
+            "year",
+            "pillar",
+            "ten_god",
+            "branch_ten_god",
+            "relation_to_favorable",
+            "overall_level",
+        ):
+            self.assertEqual(summary[key], default[key])
 
     def test_monthly_fortune_returns_twelve_items(self):
         from core.monthly_engine import analyze_monthly_fortune

@@ -78,7 +78,12 @@ def _birth_from_profile(profile: dict) -> BirthInput:
     )
 
 
-def get_luck_cycles(profile: dict, chart: dict | None = None) -> dict:
+def get_luck_cycles(
+    profile: dict,
+    chart: dict | None = None,
+    *,
+    include_yearly_list: bool = True,
+) -> dict:
     try:
         chart = chart or {}
         birth = _birth_from_profile(profile)
@@ -133,7 +138,7 @@ def get_luck_cycles(profile: dict, chart: dict | None = None) -> dict:
             "start_text": basis.start_text,
             "dayun_basis": basis_dict,
             "dayun_list": dayun_list,
-            "yearly_list": _build_yearly_list(chart, 10),
+            "yearly_list": _build_yearly_list(chart, 10) if include_yearly_list else [],
             "data_warnings": [],
         }
     except Exception as exc:

@@ -16,7 +16,39 @@ from core.yearly_engine import analyze_yearly_fortune, get_year_pillar
 
 
 class FactCompilationError(ValueError):
-    pass
+    _MESSAGES = {
+        "FACT_SCOPE_AMBIGUOUS": "问题时间范围尚未明确。",
+        "FACT_CHART_FACTS_INVALID": "本地命盘事实暂不可用。",
+        "FACT_LUCK_ENGINE_ERROR": "本地大运引擎暂不可用。",
+        "FACT_LUCK_OUTPUT_INVALID": "本地大运引擎返回了无效结果。",
+        "FACT_DAYUN_FACTS_MISSING": "未找到覆盖目标时间的大运事实。",
+        "FACT_AGE_RANGE_MISSING": "未找到目标年龄的公历范围事实。",
+        "FACT_YEAR_ENGINE_ERROR": "本地流年引擎暂不可用。",
+        "FACT_YEAR_OUTPUT_INVALID": "本地流年引擎返回了无效结果。",
+        "FACT_YEAR_FACTS_MISSING": "未找到全部目标年份事实。",
+        "FACT_MONTH_ENGINE_ERROR": "本地流月引擎暂不可用。",
+        "FACT_MONTH_OUTPUT_INVALID": "本地流月引擎返回了无效结果。",
+        "FACT_MONTH_FACTS_MISSING": "未找到全部目标月份事实。",
+    }
+
+    def __init__(self, code: str):
+        self.code = code
+        message = self._MESSAGES.get(code, "本地事实编译暂不可用。")
+        super().__init__(f"{code}: {message}")
+
+
+_EXTENDED_RULE_DOMAINS = frozenset(
+    {
+        "career",
+        "family",
+        "health_advisory",
+        "children",
+        "education",
+        "relocation",
+        "property",
+        "benefactor",
+    }
+)
 
 
 def _clip(value: object, limit: int = 500) -> str:
@@ -109,7 +141,7 @@ def _age_ranges(
 
 
 def _age_items(
-    chart: Mapping[str, object],
+    ranges: list[tuple[int, date, date, str]],
     resolved: ResolvedQuestion,
 ) -> list[FactItem]:
     return [
@@ -119,7 +151,7 @@ def _age_items(
             f"{label}对应本地公历范围：{start.isoformat()}至{end.isoformat()}。",
             "chart",
         )
-        for age, start, end, label in _age_ranges(chart, resolved)
+        for age, start, end, label in ranges
     ]
 
 
@@ -130,31 +162,73 @@ def _periods(luck: Mapping[str, object]) -> list[Mapping[str, object]]:
     return [item for item in raw if isinstance(item, Mapping)]
 
 
+def _luck_data(chart: dict) -> Mapping[str, object]:
+    try:
+        luck = get_luck_cycles(
+            chart.get("profile", {}),
+            chart,
+            include_yearly_list=False,
+        )
+    except Exception:
+        raise FactCompilationError("FACT_LUCK_ENGINE_ERROR") from None
+    if not isinstance(luck, Mapping):
+        raise FactCompilationError("FACT_LUCK_OUTPUT_INVALID")
+    if luck.get("available") is not True:
+        raise FactCompilationError("FACT_LUCK_ENGINE_ERROR")
+    raw_periods = luck.get("dayun_list")
+    if not isinstance(raw_periods, list):
+        raise FactCompilationError("FACT_LUCK_OUTPUT_INVALID")
+    for period in raw_periods:
+        if not isinstance(period, Mapping):
+            raise FactCompilationError("FACT_LUCK_OUTPUT_INVALID")
+        try:
+            pillar = str(period["pillar"]).strip()
+            start_age = int(period["start_age"])
+            end_age = int(period["end_age"])
+            int(period["start_year"])
+            int(period["end_year"])
+            start_date = date.fromisoformat(str(period["start_date"]))
+            end_date = date.fromisoformat(str(period["end_date"]))
+        except (KeyError, TypeError, ValueError):
+            raise FactCompilationError("FACT_LUCK_OUTPUT_INVALID") from None
+        if not pillar or start_age > end_age or start_date > end_date:
+            raise FactCompilationError("FACT_LUCK_OUTPUT_INVALID")
+    return luck
+
+
 def _period_is_relevant(
     period: Mapping[str, object],
     resolved: ResolvedQuestion,
+    age_ranges: list[tuple[int, date, date, str]],
 ) -> bool:
     if resolved.time_scope == "dayun":
         return True
+    if age_ranges:
+        try:
+            period_start = date.fromisoformat(str(period["start_date"]))
+            period_end = date.fromisoformat(str(period["end_date"]))
+        except (KeyError, TypeError, ValueError):
+            return False
+        return any(
+            period_start <= age_end and age_start <= period_end
+            for _, age_start, age_end, _ in age_ranges
+        )
     try:
-        start_age = int(period["start_age"])
-        end_age = int(period["end_age"])
         start_year = int(period["start_year"])
         end_year = int(period["end_year"])
     except (KeyError, TypeError, ValueError):
         return False
-    if any(start_age <= age <= end_age for age in resolved.age_values):
-        return True
     return any(start_year <= year <= end_year for year in resolved.target_years)
 
 
 def _dayun_items(
     luck: Mapping[str, object],
     resolved: ResolvedQuestion,
+    age_ranges: list[tuple[int, date, date, str]],
 ) -> list[FactItem]:
     items = []
     for index, period in enumerate(_periods(luck), start=1):
-        if not _period_is_relevant(period, resolved):
+        if not _period_is_relevant(period, resolved, age_ranges):
             continue
         try:
             pillar = str(period["pillar"]).strip()
@@ -188,10 +262,25 @@ def _year_items(
     luck: Mapping[str, object],
     year: int,
 ) -> list[FactItem]:
-    pillar = get_year_pillar(year)
-    yearly = analyze_yearly_fortune(chart, year, dict(luck))
+    try:
+        pillar = get_year_pillar(year)
+        yearly = analyze_yearly_fortune(
+            chart,
+            year,
+            dict(luck),
+            include_monthly_analysis=False,
+        )
+    except Exception:
+        raise FactCompilationError("FACT_YEAR_ENGINE_ERROR") from None
     if not isinstance(yearly, Mapping):
-        return []
+        raise FactCompilationError("FACT_YEAR_OUTPUT_INVALID")
+    try:
+        result_year = int(yearly.get("year"))
+    except (TypeError, ValueError):
+        raise FactCompilationError("FACT_YEAR_FACTS_MISSING") from None
+    yearly_pillar = str(yearly.get("pillar") or "").strip()
+    if result_year != year or not pillar or yearly_pillar != pillar:
+        raise FactCompilationError("FACT_YEAR_FACTS_MISSING")
     parts = [f"{year}年流年为{pillar}"]
     for key, label in (
         ("ten_god", "天干十神"),
@@ -217,18 +306,23 @@ def _month_items(
     year: int,
     target_months: list[int],
 ) -> list[FactItem]:
-    monthly = analyze_monthly_fortune(chart, year)
+    try:
+        monthly = analyze_monthly_fortune(chart, year)
+    except Exception:
+        raise FactCompilationError("FACT_MONTH_ENGINE_ERROR") from None
     if not isinstance(monthly, list):
-        return []
+        raise FactCompilationError("FACT_MONTH_OUTPUT_INVALID")
     selected = set(target_months)
     items = []
     for raw in monthly:
         if not isinstance(raw, Mapping):
-            continue
+            raise FactCompilationError("FACT_MONTH_OUTPUT_INVALID")
         try:
             month = int(raw["month"])
         except (KeyError, TypeError, ValueError):
-            continue
+            raise FactCompilationError("FACT_MONTH_OUTPUT_INVALID") from None
+        if not 1 <= month <= 12:
+            raise FactCompilationError("FACT_MONTH_OUTPUT_INVALID")
         if month not in selected:
             continue
         pillar = str(raw.get("pillar") or "").strip()
@@ -251,6 +345,8 @@ def _month_items(
                 "month",
             )
         )
+    if {int(item.id.rsplit(".", 1)[-1]) for item in items} != selected:
+        raise FactCompilationError("FACT_MONTH_FACTS_MISSING")
     return items
 
 
@@ -258,12 +354,18 @@ def _rules_for_domain(
     rule_ids: tuple[str, ...],
     resolved: ResolvedQuestion,
 ) -> list[dict[str, str]]:
-    selected = list(rule_ids)
-    selected.extend(DOMAIN_RULE_IDS.get(resolved.domain, ()))
-    for subdomain in resolved.subdomains:
-        selected.extend(DOMAIN_RULE_IDS.get(subdomain, ()))
-    selected.extend(("SAFETY-NONDETERMINISTIC", "SAFETY-STATUS-UNKNOWN"))
     book = load_rulebook()
+    selected = list(rule_ids)
+    if resolved.domain in _EXTENDED_RULE_DOMAINS:
+        selected.extend(rule.id for rule in book.sections[resolved.domain])
+    else:
+        selected.extend(DOMAIN_RULE_IDS.get(resolved.domain, ()))
+    for subdomain in resolved.subdomains:
+        if subdomain in _EXTENDED_RULE_DOMAINS:
+            selected.extend(rule.id for rule in book.sections[subdomain])
+        else:
+            selected.extend(DOMAIN_RULE_IDS.get(subdomain, ()))
+    selected.extend(("SAFETY-NONDETERMINISTIC", "SAFETY-STATUS-UNKNOWN"))
     evidence = []
     for rule_id in dict.fromkeys(selected):
         try:
@@ -283,16 +385,37 @@ def _dedupe(items: list[FactItem]) -> list[FactItem]:
 
 def compile_fact_packet(chart: dict, resolved: ResolvedQuestion) -> FactPacket:
     if resolved.ambiguity:
-        raise FactCompilationError(resolved.ambiguity)
-    facts = chart_facts_from_chart(chart)
+        raise FactCompilationError("FACT_SCOPE_AMBIGUOUS")
+    try:
+        facts = chart_facts_from_chart(chart)
+    except Exception:
+        raise FactCompilationError("FACT_CHART_FACTS_INVALID") from None
     items = _base_fact_items(facts)
-    luck = get_luck_cycles(chart.get("profile", {}), chart)
-    items.extend(_age_items(chart, resolved))
-    items.extend(_dayun_items(luck, resolved))
+    age_ranges = _age_ranges(chart, resolved)
+    if resolved.age_values and len(age_ranges) != len(set(resolved.age_values)):
+        raise FactCompilationError("FACT_AGE_RANGE_MISSING")
+    luck = _luck_data(chart)
+    items.extend(_age_items(age_ranges, resolved))
+    dayun_items = _dayun_items(luck, resolved, age_ranges)
+    if (
+        resolved.time_scope in {"target_year", "year_range", "age", "month_range", "dayun"}
+        and not dayun_items
+    ):
+        raise FactCompilationError("FACT_DAYUN_FACTS_MISSING")
+    items.extend(dayun_items)
+    year_items = []
+    month_items = []
     for year in resolved.target_years:
-        items.extend(_year_items(chart, luck, year))
+        year_items.extend(_year_items(chart, luck, year))
         if resolved.target_months:
-            items.extend(_month_items(chart, year, resolved.target_months))
+            month_items.extend(_month_items(chart, year, resolved.target_months))
+    if len(year_items) != len(set(resolved.target_years)):
+        raise FactCompilationError("FACT_YEAR_FACTS_MISSING")
+    expected_months = len(set(resolved.target_years)) * len(set(resolved.target_months))
+    if len(month_items) != expected_months:
+        raise FactCompilationError("FACT_MONTH_FACTS_MISSING")
+    items.extend(year_items)
+    items.extend(month_items)
     items.extend(domain_fact_items(chart, resolved.domain))
     rules = _rules_for_domain(facts.rule_ids, resolved)
     safe_resolved = resolved.model_copy(

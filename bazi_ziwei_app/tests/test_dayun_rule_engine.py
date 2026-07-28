@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
@@ -73,6 +74,29 @@ def test_luck_cycles_expose_direction_start_and_ten_year_periods():
     assert luck["start_text"]
     assert len(luck["dayun_list"]) == 10
     assert all(item["end_age"] - item["start_age"] == 9 for item in luck["dayun_list"])
+
+
+def test_luck_cycles_yearly_prebuild_is_default_on_and_can_be_disabled():
+    from core.bazi_engine import build_bazi_chart
+    from core.luck_engine import get_luck_cycles
+
+    profile = {
+        "gender": "男",
+        "calendar_type": "solar",
+        "birth_date": "1994-09-23",
+        "birth_hour": 18,
+        "birth_minute": 0,
+    }
+    chart = build_bazi_chart(profile)
+    sentinel = [{"year": 2026, "pillar": "丙午"}]
+
+    with patch("core.luck_engine._build_yearly_list", return_value=sentinel) as build:
+        default = get_luck_cycles(profile, chart)
+        lazy = get_luck_cycles(profile, chart, include_yearly_list=False)
+
+    assert default["yearly_list"] == sentinel
+    assert lazy["yearly_list"] == []
+    build.assert_called_once_with(chart, 10)
 
 
 def test_period_calendar_year_starts_from_actual_start_datetime_for_u05():

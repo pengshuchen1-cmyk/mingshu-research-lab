@@ -381,7 +381,13 @@ def _enhance_health_text(base_text: str, health_concerns: list[str]) -> str:
     return " ".join(parts)
 
 
-def analyze_yearly_fortune(chart: dict, target_year: int, luck_data: dict | None = None) -> dict:
+def analyze_yearly_fortune(
+    chart: dict,
+    target_year: int,
+    luck_data: dict | None = None,
+    *,
+    include_monthly_analysis: bool = True,
+) -> dict:
     """
     根据命盘和目标年份生成年度运程。
     """
@@ -419,42 +425,44 @@ def analyze_yearly_fortune(chart: dict, target_year: int, luck_data: dict | None
     }
     narrative = build_yearly_narrative(chart, narrative_seed)
     luck_note = _current_luck_note(luck_data, target_year)
-    high_attention_months, opportunity_months = _month_attention(chart, target_year)
-    
-    # 新增：月度分类分析
-    try:
-        from core.monthly_engine import analyze_monthly_fortune
-        monthly_data = analyze_monthly_fortune(chart, target_year)
-        prof = chart.get("profile", {})
-        gender = _gender_from_profile(prof)
-        year_zhi = get_year_pillar(target_year)[1] if len(get_year_pillar(target_year)) >= 2 else ""
-        
-        # 桃花分析
-        peach_months = _get_taohua_month(year_zhi, monthly_data)
-        
-        # 各维度月份分类
-        career_good, career_bad = _classify_months_for(monthly_data, CAREER_GODS)
-        wealth_good, wealth_bad = _classify_months_for(monthly_data, WEALTH_GODS)
-        rel_gods = RELATION_GODS_MALE if gender == "男" else RELATION_GODS_FEMALE
-        rel_good, rel_bad = _classify_months_for(monthly_data, rel_gods)
-        health_concerns = _get_health_concerns(chart, target_year, monthly_data)
-        
-        # 增强文本
-        enhanced_career = _enhance_career_text(narrative["career_text"], career_good, career_bad)
-        enhanced_wealth = _enhance_wealth_text(narrative["wealth_text"], wealth_good, wealth_bad, ten_god, relation, overall_level)
-        enhanced_relationship = _enhance_relationship_text(narrative["relationship_text"], rel_good, rel_bad, peach_months, gender)
-        enhanced_health = _enhance_health_text(narrative["health_text"], health_concerns)
-    except Exception:
-        enhanced_career = narrative["career_text"]
-        enhanced_wealth = narrative["wealth_text"]
-        enhanced_relationship = narrative["relationship_text"]
-        enhanced_health = narrative["health_text"]
-        peach_months = []
-        career_good = career_bad = wealth_good = wealth_bad = rel_good = rel_bad = []
-        health_concerns = []
-        ten_god = yearly_data.get("ten_god", "")
-        relation = yearly_data.get("relation_to_favorable", "")
-        overall_level = yearly_data.get("overall_level", "")
+    high_attention_months = []
+    opportunity_months = []
+    enhanced_career = narrative["career_text"]
+    enhanced_wealth = narrative["wealth_text"]
+    enhanced_relationship = narrative["relationship_text"]
+    enhanced_health = narrative["health_text"]
+    peach_months = []
+    career_good = career_bad = wealth_good = wealth_bad = rel_good = rel_bad = []
+    health_concerns = []
+
+    if include_monthly_analysis:
+        high_attention_months, opportunity_months = _month_attention(chart, target_year)
+
+        # 新增：月度分类分析
+        try:
+            from core.monthly_engine import analyze_monthly_fortune
+            monthly_data = analyze_monthly_fortune(chart, target_year)
+            prof = chart.get("profile", {})
+            gender = _gender_from_profile(prof)
+            year_zhi = get_year_pillar(target_year)[1] if len(get_year_pillar(target_year)) >= 2 else ""
+
+            # 桃花分析
+            peach_months = _get_taohua_month(year_zhi, monthly_data)
+
+            # 各维度月份分类
+            career_good, career_bad = _classify_months_for(monthly_data, CAREER_GODS)
+            wealth_good, wealth_bad = _classify_months_for(monthly_data, WEALTH_GODS)
+            rel_gods = RELATION_GODS_MALE if gender == "男" else RELATION_GODS_FEMALE
+            rel_good, rel_bad = _classify_months_for(monthly_data, rel_gods)
+            health_concerns = _get_health_concerns(chart, target_year, monthly_data)
+
+            # 增强文本
+            enhanced_career = _enhance_career_text(narrative["career_text"], career_good, career_bad)
+            enhanced_wealth = _enhance_wealth_text(narrative["wealth_text"], wealth_good, wealth_bad, ten_god, relation, overall_level)
+            enhanced_relationship = _enhance_relationship_text(narrative["relationship_text"], rel_good, rel_bad, peach_months, gender)
+            enhanced_health = _enhance_health_text(narrative["health_text"], health_concerns)
+        except Exception:
+            pass
 
     signature = build_chart_signature_text(chart, "年度运程差异依据")
     overall_text = f"{narrative['overall_text']}{luck_note}\n{signature}"

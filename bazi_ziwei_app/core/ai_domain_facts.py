@@ -127,13 +127,23 @@ def _elements_text(chart: Mapping[str, object]) -> str:
     values = [(element, value) for element, value in values if element]
     if not values:
         return ""
-    highest = max(values, key=lambda item: item[1])
-    lowest = min(values, key=lambda item: item[1])
     counts = "、".join(f"{element}{value:g}" for element, value in values)
-    return (
-        f"本地五行计数为{counts}；相对偏盛为{highest[0]}，"
-        f"相对偏弱为{lowest[0]}"
-    )
+    highest_value = max(value for _, value in values)
+    lowest_value = min(value for _, value in values)
+    highest = [element for element, value in values if value == highest_value]
+    lowest = [element for element, value in values if value == lowest_value]
+    if highest_value == lowest_value:
+        return f"本地五行计数为{counts}；各元素计数相同，无唯一偏盛或偏弱元素"
+    extrema = []
+    if len(highest) == 1:
+        extrema.append(f"相对偏盛为{highest[0]}")
+    else:
+        extrema.append(f"最高值并列为{'、'.join(highest)}，无唯一偏盛元素")
+    if len(lowest) == 1:
+        extrema.append(f"相对偏弱为{lowest[0]}")
+    else:
+        extrema.append(f"最低值并列为{'、'.join(lowest)}，无唯一偏弱元素")
+    return f"本地五行计数为{counts}；{'；'.join(extrema)}"
 
 
 def _branch_relations_text(chart: Mapping[str, object]) -> str:
@@ -206,14 +216,13 @@ def _health_items(chart: dict) -> list[FactItem]:
         for name, text in candidates
         if text
     ]
-    if items:
-        items.append(
-            _item(
-                "health_advisory",
-                "status_limit",
-                "现实健康状态未知；以上仅用于五行、季节、作息与精力管理参考。",
-            )
+    items.append(
+        _item(
+            "health_advisory",
+            "status_limit",
+            "现实健康状态未知；以上仅用于五行、季节、作息与精力管理参考。",
         )
+    )
     return items
 
 
@@ -237,14 +246,13 @@ def _children_items(chart: dict) -> list[FactItem]:
         for name, text in candidates
         if text
     ]
-    if items:
-        items.append(
-            _item(
-                "children",
-                "status_limit",
-                "现实生育及子女状态未知；时柱与食伤结构只作命盘倾向参考。",
-            )
+    items.append(
+        _item(
+            "children",
+            "status_limit",
+            "现实生育及子女状态未知；时柱与食伤结构只作命盘倾向参考。",
         )
+    )
     return items
 
 
