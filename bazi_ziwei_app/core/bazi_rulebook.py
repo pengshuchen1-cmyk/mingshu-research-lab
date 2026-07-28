@@ -23,6 +23,14 @@ REQUIRED_SECTIONS = frozenset(
         "wealth",
         "relationship",
         "safety",
+        "career",
+        "family",
+        "health_advisory",
+        "children",
+        "education",
+        "relocation",
+        "property",
+        "benefactor",
     }
 )
 

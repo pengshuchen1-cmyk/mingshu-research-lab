@@ -8,6 +8,10 @@
     {
       "path": "classical_rules.json",
       "sha256": "5889c4d3677df902e31b1cee6bcacf6db7604c161eee6ca6f360a341ed397b31"
+    },
+    {
+      "path": "extended_domains.json",
+      "sha256": "015ee2dc49d4589ee7f93e74e29c26bd2fa00cde00916da172b1bf1bad8cd91b"
     }
   ],
   "citation_keys": [
