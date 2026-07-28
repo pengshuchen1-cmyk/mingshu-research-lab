@@ -17,6 +17,7 @@ from core.ai_models import (
 )
 from core.chart_facts import chart_facts_from_chart
 from core.local_bazi_answer import build_local_answer
+from core.luck_engine import get_luck_cycles
 from services.ai_client_factory import build_ai_client
 from services.ai_service_errors import AIServiceError
 
@@ -106,6 +107,17 @@ def answer_question(
     config = config or AIConfig.from_environment()
     facts = chart_facts_from_chart(chart)
     context = build_ai_context(facts, question, history)
+    if context.requires_timing or context.category == "timing":
+        luck = get_luck_cycles(chart.get("profile", {}), chart)
+        raw_periods = luck.get("dayun_list") if luck.get("available") else None
+        periods = raw_periods if isinstance(raw_periods, list) else None
+        facts = chart_facts_from_chart(chart)
+        context = build_ai_context(
+            facts,
+            question,
+            history,
+            dayun_periods=periods,
+        )
     if config.provider not in {"kimi", "openai"}:
         return _local_result(context, "service_unavailable")
     if not config.enabled:

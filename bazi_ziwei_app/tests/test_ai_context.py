@@ -9,6 +9,9 @@ import pytest
         ("这个八字财运怎么样？", "wealth", False),
         ("现金流要注意什么？", "wealth", False),
         ("2027年什么时候适合赚钱？", "wealth", True),
+        ("这个八字在几年后开始走财运", "wealth", True),
+        ("这个八字在几年后开始走正财大运", "wealth", True),
+        ("几岁开始行大运", "timing", True),
         ("事业适合做AI吗？", "career", False),
         ("今年桃花姻缘如何？", "relationship", True),
         ("原生家庭和父母关系怎么样？", "family", False),
@@ -23,6 +26,30 @@ def test_question_router_is_deterministic(question, category, timing):
 
     assert routed.category == category
     assert routed.requires_timing is timing
+
+
+def test_dayun_finance_question_survives_privacy_projection():
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    facts = build_chart_facts(
+        build_bazi_chart(
+            {
+                "gender": "男",
+                "birth_date": "1999-08-11",
+                "birth_hour": 10,
+                "birth_minute": 0,
+            }
+        )
+    )
+    question = "这个八字在几年后开始走正财大运"
+
+    context = build_ai_context(facts, question, [])
+
+    assert context.question == question
+    assert context.category == "wealth"
+    assert context.requires_timing is True
 
 
 def test_context_always_includes_full_normative_chart_domains():

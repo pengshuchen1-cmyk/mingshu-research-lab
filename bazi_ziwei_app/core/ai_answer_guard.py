@@ -358,6 +358,101 @@ def _has_canonical_fact_contradiction(
     ):
         violations.append("dayun_contradiction")
 
+    raw_dayun_periods = facts.get("dayun_periods")
+    dayun_periods = [
+        _mapping(item)
+        for item in raw_dayun_periods
+        if isinstance(raw_dayun_periods, list) and isinstance(item, dict)
+    ] if isinstance(raw_dayun_periods, list) else []
+
+    def period_matches(
+        *,
+        pillar: str,
+        ten_god: str = "",
+        start_year: str = "",
+        end_year: str = "",
+        start_age: str = "",
+    ) -> bool:
+        for period in dayun_periods:
+            if str(period.get("pillar") or "") != pillar:
+                continue
+            if ten_god and str(period.get("ten_god") or "") != ten_god:
+                continue
+            if start_year and not _numeric_equal(
+                start_year, period.get("start_year")
+            ):
+                continue
+            if end_year and not _numeric_equal(end_year, period.get("end_year")):
+                continue
+            if start_age and not _numeric_equal(start_age, period.get("start_age")):
+                continue
+            return True
+        return False
+
+    dayun_ten_god_pattern = "|".join(TEN_GODS)
+    for pillar, ten_god in re.findall(
+        rf"([{STEMS}][{BRANCHES}])(?:属于|为|是)?"
+        rf"\s*({dayun_ten_god_pattern})大运",
+        combined,
+    ):
+        if not period_matches(pillar=pillar, ten_god=ten_god):
+            violations.append("dayun_contradiction")
+            break
+    for start_year, end_year, pillar, ten_god in re.findall(
+        rf"((?:19|20)\d{{2}})\s*[—–~-]\s*((?:19|20)\d{{2}})年"
+        rf"(?:的|为)?\s*([{STEMS}][{BRANCHES}])"
+        rf"(?:({dayun_ten_god_pattern}))?大运",
+        combined,
+    ):
+        if not period_matches(
+            pillar=pillar,
+            ten_god=ten_god,
+            start_year=start_year,
+            end_year=end_year,
+        ):
+            violations.append("dayun_contradiction")
+            break
+    for year, pillar, ten_god in re.findall(
+        rf"((?:19|20)\d{{2}})年[^，,。；;！？!?\r\n]{{0,16}}?"
+        rf"(?:开始|进入|转入|步入|起)[^，,。；;！？!?\r\n]{{0,10}}?"
+        rf"([{STEMS}][{BRANCHES}])(?:({dayun_ten_god_pattern}))?大运",
+        combined,
+    ):
+        if not period_matches(
+            pillar=pillar,
+            ten_god=ten_god,
+            start_year=year,
+        ):
+            violations.append("dayun_contradiction")
+            break
+    for pillar, ten_god, year in re.findall(
+        rf"([{STEMS}][{BRANCHES}])(?:({dayun_ten_god_pattern}))?大运"
+        rf"[^，,。；;！？!?\r\n]{{0,16}}?"
+        rf"(?:从|于)?((?:19|20)\d{{2}})年(?:开始|起|进入|转入)",
+        combined,
+    ):
+        if not period_matches(
+            pillar=pillar,
+            ten_god=ten_god,
+            start_year=year,
+        ):
+            violations.append("dayun_contradiction")
+            break
+    for age, pillar, ten_god in re.findall(
+        rf"(\d{{1,3}})岁(?:左右|前后)?"
+        rf"[^，,。；;！？!?\r\n]{{0,12}}?(?:开始|进入|转入|步入|起)"
+        rf"[^，,。；;！？!?\r\n]{{0,10}}?"
+        rf"([{STEMS}][{BRANCHES}])(?:({dayun_ten_god_pattern}))?大运",
+        combined,
+    ):
+        if not period_matches(
+            pillar=pillar,
+            ten_god=ten_god,
+            start_age=age,
+        ):
+            violations.append("dayun_contradiction")
+            break
+
     target_years = facts.get("target_years")
     year_pillars: dict[str, str] = {}
     if current.get("year") and current.get("year_pillar"):

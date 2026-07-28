@@ -30,6 +30,24 @@ def _context():
                 "hour": {"gan": "正官", "hidden_stems": [{"gan": "辛", "ten_god": "正印"}]},
             },
             "dayun": {"direction": "顺排", "start": "约5年0个月12天起运"},
+            "dayun_periods": [
+                {
+                    "pillar": "己巳",
+                    "start_age": 21,
+                    "end_age": 30,
+                    "start_year": 2020,
+                    "end_year": 2029,
+                    "ten_god": "偏财",
+                },
+                {
+                    "pillar": "戊辰",
+                    "start_age": 31,
+                    "end_age": 40,
+                    "start_year": 2030,
+                    "end_year": 2039,
+                    "ten_god": "正财",
+                },
+            ],
             "relationship": {
                 "summary": "桃花只是互动机会，不等于关系成立。",
                 "evidence": ["配偶星与夫妻宫共同观察"],
@@ -181,6 +199,34 @@ def test_guard_accepts_matching_explicit_canonical_facts():
     )
 
     assert result.accepted is True
+
+
+def test_guard_accepts_locally_supplied_dayun_start_mapping():
+    from core.ai_answer_guard import validate_ai_answer
+
+    result = validate_ai_answer(
+        _answer("2030年开始进入戊辰正财大运，约31岁起。"),
+        _context(),
+    )
+
+    assert result.accepted is True
+
+
+@pytest.mark.parametrize(
+    "claim",
+    (
+        "2028年开始进入戊辰正财大运。",
+        "2030年开始进入己巳偏财大运。",
+        "戊辰属于偏财大运。",
+    ),
+)
+def test_guard_rejects_wrong_dayun_start_mapping(claim):
+    from core.ai_answer_guard import validate_ai_answer
+
+    result = validate_ai_answer(_answer(claim), _context())
+
+    assert result.accepted is False
+    assert "dayun_contradiction" in result.violations
 
 
 @pytest.mark.parametrize(

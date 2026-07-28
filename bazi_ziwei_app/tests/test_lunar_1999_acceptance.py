@@ -126,6 +126,80 @@ def test_lunar_1999_cloud_context_serialization_excludes_raw_birth_and_identity(
         assert forbidden not in serialized
 
 
+def test_dayun_finance_question_receives_canonical_local_periods():
+    from core.ai_models import AIConfig, BaziAIAnswer
+    from core.ai_orchestrator import answer_question
+
+    class CapturingClient:
+        def __init__(self):
+            self.contexts = []
+
+        def answer(self, context):
+            self.contexts.append(context)
+            return BaziAIAnswer(
+                analysis_conclusion=(
+                    "2030年开始进入戊辰正财大运，约31岁起。"
+                    "此前2020—2029年的己巳偏财大运，更偏机会型收入；"
+                    "进入戊辰后，财务主题转向稳定现金流和长期经营。"
+                ),
+                chart_evidence=[],
+                rule_evidence=[],
+                timing_conditions=[],
+                practical_advice=[],
+                uncertainty_limitations=[],
+            )
+
+    client = CapturingClient()
+    result = answer_question(
+        _formal_chart(),
+        "这个八字在几年后开始走正财大运",
+        [],
+        config=AIConfig("fixture-key", True),
+        client=client,
+    )
+
+    assert result.source == "cloud_validated"
+    assert len(client.contexts) == 1
+    context = client.contexts[0]
+    assert context.category == "wealth"
+    assert context.requires_timing is True
+    assert context.question == "这个八字在几年后开始走正财大运"
+    target_period = next(
+        item
+        for item in context.chart_facts["dayun_periods"]
+        if item["pillar"] == "戊辰"
+    )
+    assert {
+        "pillar": target_period["pillar"],
+        "start_age": target_period["start_age"],
+        "end_age": target_period["end_age"],
+        "start_year": target_period["start_year"],
+        "end_year": target_period["end_year"],
+        "ten_god": target_period["ten_god"],
+    } == {
+        "pillar": "戊辰",
+        "start_age": 31,
+        "end_age": 40,
+        "start_year": 2030,
+        "end_year": 2039,
+        "ten_god": "正财",
+    }
+    assert target_period["branch_hidden_stems"] == [
+        {"stem": "戊", "element": "土", "ten_god": "正财"},
+        {"stem": "乙", "element": "木", "ten_god": "比肩"},
+        {"stem": "癸", "element": "水", "ten_god": "偏印"},
+    ]
+
+    serialized = context.model_dump_json()
+    for forbidden in (
+        "lunar_year",
+        "solar_datetime",
+        "birth_date",
+        "birth_place",
+    ):
+        assert forbidden not in serialized
+
+
 def test_original_five_case_chain_remains_exact_and_passing():
     from core.bazi_engine import build_bazi_chart
 

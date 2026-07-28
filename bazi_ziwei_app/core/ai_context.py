@@ -11,8 +11,10 @@ from core.ai_intent import (
     is_current_marriage_question,
 )
 from core.ai_models import AIRequestContext, ChatMessage, RoutedQuestion
+from core.bazi_constants import BRANCH_HIDDEN_STEMS, STEM_ELEMENTS
 from core.bazi_rulebook import load_rulebook
 from core.chart_facts import ChartFacts
+from core.ten_gods import get_ten_god
 
 
 BORROWING_KEYWORDS = (
@@ -22,7 +24,7 @@ CATEGORY_KEYWORDS = (
     (
         "wealth",
         (
-            "财运", "赚钱", "收入", "投资", "创业", "现金流",
+            "财运", "正财", "偏财", "财星", "赚钱", "收入", "投资", "创业", "现金流",
             "基金", "股票", "理财", "预算", "支出", "学费",
             *BORROWING_KEYWORDS,
         ),
@@ -44,7 +46,10 @@ CATEGORY_KEYWORDS = (
     ("family", ("父母", "家庭", "原生家庭", "长辈")),
     ("overview", ("概括", "整体", "整个命盘", "八字怎么样", "强弱和格局")),
 )
-TIMING_KEYWORDS = ("今年", "明年", "后年", "什么时候", "流年", "流月", "每月", "未来")
+TIMING_KEYWORDS = (
+    "今年", "明年", "后年", "什么时候", "何时", "哪年", "几年后", "几岁",
+    "流年", "流月", "每月", "未来", "大运", "行运", "起运",
+)
 DOMAIN_RULE_IDS = {
     "wealth": (
         "WEALTH-STAR-VISIBILITY", "WEALTH-CAPACITY",
@@ -649,6 +654,45 @@ def _target_year_facts(question: str) -> list[dict[str, object]]:
     ]
 
 
+def _safe_dayun_periods(
+    periods: Sequence[Mapping[str, object]] | None,
+    day_master: str,
+) -> list[dict[str, object]]:
+    """Project only canonical, non-identifying dayun facts into cloud context."""
+    safe: list[dict[str, object]] = []
+    for raw in periods or ():
+        pillar = str(raw.get("pillar") or "").strip()
+        ten_god = str(raw.get("ten_god") or "").strip()
+        try:
+            start_age = int(raw["start_age"])
+            end_age = int(raw["end_age"])
+            start_year = int(raw["start_year"])
+            end_year = int(raw["end_year"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        if not re.fullmatch(r"[甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥]", pillar):
+            continue
+        safe.append(
+            {
+                "pillar": pillar,
+                "start_age": start_age,
+                "end_age": end_age,
+                "start_year": start_year,
+                "end_year": end_year,
+                "ten_god": ten_god,
+                "branch_hidden_stems": [
+                    {
+                        "stem": stem,
+                        "element": STEM_ELEMENTS.get(stem, ""),
+                        "ten_god": get_ten_god(day_master, stem),
+                    }
+                    for stem in BRANCH_HIDDEN_STEMS.get(pillar[1], [])
+                ],
+            }
+        )
+    return safe[:10]
+
+
 def classify_question(question: str) -> RoutedQuestion:
     text = str(question or "").strip()
     requires_timing = any(keyword in text for keyword in TIMING_KEYWORDS) or bool(
@@ -691,6 +735,8 @@ def build_ai_context(
     facts: ChartFacts,
     question: str,
     history: Sequence[ChatMessage | Mapping[str, object]],
+    *,
+    dayun_periods: Sequence[Mapping[str, object]] | None = None,
 ) -> AIRequestContext:
     redacted_question = redact_customer_text(
         question,
@@ -714,6 +760,12 @@ def build_ai_context(
     if routed.requires_timing or routed.category == "timing":
         chart_facts["current_context"] = raw["current_context"]
         chart_facts["target_years"] = _target_year_facts(redacted_question)
+        projected_periods = _safe_dayun_periods(
+            dayun_periods,
+            str(raw["day_master"]),
+        )
+        if projected_periods:
+            chart_facts["dayun_periods"] = projected_periods
 
     selected_ids = list(facts.rule_ids)
     selected_ids.extend(DOMAIN_RULE_IDS[routed.category])

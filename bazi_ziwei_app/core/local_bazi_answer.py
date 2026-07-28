@@ -335,6 +335,65 @@ def _timing_conditions(
                     detail += f"年柱{pillar}"
                 conditions.append(f"已提供的目标年份事实：{detail}。")
 
+    dayun_periods = facts.get("dayun_periods")
+    if isinstance(dayun_periods, Sequence) and not isinstance(
+        dayun_periods, (str, bytes)
+    ):
+        supplied_periods = [
+            _mapping(item)
+            for item in dayun_periods
+            if isinstance(item, Mapping)
+        ]
+        try:
+            current_year = int(current.get("year") or 0)
+        except (TypeError, ValueError):
+            current_year = 0
+
+        def numeric(value: object) -> int:
+            try:
+                return int(value or 0)
+            except (TypeError, ValueError):
+                return 0
+
+        def relevance(period: Mapping[str, object]) -> tuple[int, int]:
+            pillar = str(period.get("pillar") or "")
+            ten_god = str(period.get("ten_god") or "")
+            if (pillar and pillar in context.question) or (
+                ten_god and ten_god in context.question
+            ):
+                priority = 0
+            elif current_year and (
+                numeric(period.get("start_year"))
+                <= current_year
+                <= numeric(period.get("end_year"))
+            ):
+                priority = 1
+            elif context.category == "wealth" and ten_god in {"正财", "偏财"}:
+                priority = 2
+            else:
+                priority = 3
+            return priority, numeric(period.get("start_year"))
+
+        for period in sorted(supplied_periods, key=relevance):
+            start_year = str(period.get("start_year") or "").strip()
+            end_year = str(period.get("end_year") or "").strip()
+            start_age = str(period.get("start_age") or "").strip()
+            end_age = str(period.get("end_age") or "").strip()
+            pillar = str(period.get("pillar") or "").strip()
+            ten_god = str(period.get("ten_god") or "").strip()
+            if not (start_year and end_year and pillar):
+                continue
+            age_text = (
+                f"，约{start_age}—{end_age}岁"
+                if start_age and end_age
+                else ""
+            )
+            ten_god_text = f"，十神为{ten_god}" if ten_god else ""
+            conditions.append(
+                f"已提供的大运阶段事实：{start_year}—{end_year}年"
+                f"为{pillar}大运{age_text}{ten_god_text}。"
+            )
+
     if is_current_marriage:
         relationship = _text(_mapping(facts.get("relationship")).get("summary"))
         if has_current_or_target_timing:

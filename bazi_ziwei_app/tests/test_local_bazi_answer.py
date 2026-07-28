@@ -372,3 +372,61 @@ def test_long_facts_keep_required_advice_and_limitations_in_adaptive_answer():
     assert "**需要说明**" in answer.analysis_conclusion
     assert "现金流" in answer.analysis_conclusion
     assert "借贷、抵押、投资或创业结果" in answer.analysis_conclusion
+
+
+def test_timing_fallback_exposes_supplied_dayun_period_facts():
+    from core.local_bazi_answer import build_local_answer
+
+    context = _context(
+        "wealth",
+        "这个八字在几年后开始走正财大运",
+        requires_timing=True,
+    )
+    context = context.model_copy(
+        update={
+            "chart_facts": {
+                **context.chart_facts,
+                "dayun_periods": [
+                    {
+                        "pillar": "辛未",
+                        "start_age": 1,
+                        "end_age": 10,
+                        "start_year": 2000,
+                        "end_year": 2009,
+                        "ten_god": "七杀",
+                    },
+                    {
+                        "pillar": "庚午",
+                        "start_age": 11,
+                        "end_age": 20,
+                        "start_year": 2010,
+                        "end_year": 2019,
+                        "ten_god": "正官",
+                    },
+                    {
+                        "pillar": "己巳",
+                        "start_age": 21,
+                        "end_age": 30,
+                        "start_year": 2020,
+                        "end_year": 2029,
+                        "ten_god": "偏财",
+                    },
+                    {
+                        "pillar": "戊辰",
+                        "start_age": 31,
+                        "end_age": 40,
+                        "start_year": 2030,
+                        "end_year": 2039,
+                        "ten_god": "正财",
+                    }
+                ],
+            }
+        }
+    )
+
+    answer = build_local_answer(context)
+
+    assert "2030—2039年" in answer.analysis_conclusion
+    assert "戊辰" in answer.analysis_conclusion
+    assert "正财" in answer.analysis_conclusion
+    assert "31—40岁" in answer.analysis_conclusion
