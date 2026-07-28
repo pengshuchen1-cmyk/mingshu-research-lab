@@ -51,6 +51,10 @@ def _domain(text: str, previous: ResolvedQuestion | None) -> str:
     return previous.domain if previous and len(text) <= 20 else "overview"
 
 
+def _has_explicit_domain(text: str) -> bool:
+    return any(term in text for _, terms in _DOMAIN_TERMS for term in terms)
+
+
 def _years(text: str, current_year: int) -> tuple[list[int], bool]:
     range_match = re.search(
         r"((?:19|20)\d{2})\s*(?:年)?\s*(?:到|至|—|-)\s*((?:19|20)\d{2})",
@@ -78,6 +82,23 @@ def _years(text: str, current_year: int) -> tuple[list[int], bool]:
     return [], False
 
 
+def _has_explicit_year_range(text: str) -> bool:
+    return bool(
+        re.search(
+            r"(?:19|20)\d{2}\s*(?:年)?\s*(?:到|至|—|-)\s*(?:19|20)\d{2}",
+            text,
+        )
+    )
+
+
+def _discrete_year_receipt(years: list[int]) -> str:
+    entries = [f"{year}年（{get_year_pillar(year)}）" for year in years]
+    receipt = f"本次按{'、'.join(entries)}分析。"
+    if len(receipt) <= 240:
+        return receipt
+    return f"本次按{len(years)}个离散年份分析；请缩小年份数量以展示完整干支回执。"
+
+
 def resolve_question(
     question: str,
     *,
@@ -87,17 +108,41 @@ def resolve_question(
     text = str(question or "").strip()
     scope = check_bazi_scope(text)
     domain = _domain(text, previous)
+    explicit_domain = _has_explicit_domain(text)
+    domain_inherited = bool(previous and not explicit_domain and len(text) <= 20)
     years, reversed_range = _years(text, now.year)
-    if not years and previous and any(cue in text for cue in ("那", "继续", "后面", "刚才")):
+    explicit_year_range = _has_explicit_year_range(text)
+    too_many_years = len(years) > 60
+    if too_many_years:
+        years = []
+    years_inherited = False
+    if (
+        not years
+        and not reversed_range
+        and not too_many_years
+        and previous
+        and any(cue in text for cue in ("那", "继续", "后面", "刚才"))
+    ):
         years = list(previous.target_years)
+        years_inherited = True
 
     months: list[int] = []
+    monthly_request = (
+        any(term in text for term in ("每个月", "逐月", "流月"))
+        and not re.search(r"(?:不要|不看|不用|别)(?:看)?\s*(?:每个月|逐月|流月)", text)
+    )
     if "上半年" in text:
         months = list(range(1, 7))
     elif "下半年" in text:
         months = list(range(7, 13))
-    elif "每个月" in text or "逐月" in text or "流月" in text:
+    elif monthly_request:
         months = list(range(1, 13))
+    else:
+        month_match = re.search(r"([一二三四五六七八九十\d]+)月", text)
+        if month_match:
+            month = _number(month_match.group(1))
+            if 1 <= month <= 12:
+                months = [month]
     if months and not years:
         years = list(previous.target_years) if previous and previous.target_years else [now.year]
 
@@ -108,18 +153,23 @@ def resolve_question(
         else "nominal_age" if age_match and "虚岁" in age_match.group(0)
         else "unspecified"
     )
+    age_requested = bool(ages) or "几岁" in text
 
     ambiguity = ""
-    if reversed_range:
+    if too_many_years:
+        ambiguity = "目标年份数量超过60个，请缩小时间范围。"
+    elif reversed_range:
         ambiguity = "年份范围的起止顺序需要确认。"
     elif months and len(years) > 1:
         ambiguity = "跨年逐月问题需要先选择一个目标年份。"
-    elif ages and age_mode == "unspecified" and "以后" in text:
+    elif ages and age_mode == "unspecified":
         ambiguity = "该年龄问题需要确认按周岁还是虚岁理解。"
+    elif age_requested and not ages:
+        ambiguity = "该年龄问题需要确认具体年龄及按周岁还是虚岁理解。"
 
     if months:
         time_scope, depth = "month_range", "monthly"
-    elif ages:
+    elif age_requested:
         time_scope, depth = "age", "long_range"
     elif len(years) > 1:
         time_scope, depth = "year_range", "long_range"
@@ -135,8 +185,10 @@ def resolve_question(
     if years:
         if len(years) == 1:
             receipt = f"本次按{years[0]}年（{get_year_pillar(years[0])}）分析。"
-        else:
+        elif explicit_year_range or "未来" in text:
             receipt = f"本次按{years[0]}—{years[-1]}年分析。"
+        else:
+            receipt = _discrete_year_receipt(years)
     if months and years:
         receipt = (
             f"本次按{years[0]}年（{get_year_pillar(years[0])}）1—12月分析。"
@@ -147,7 +199,11 @@ def resolve_question(
         safe_question=text,
         domain=domain,
         subdomains=["timing"] if time_scope != "none" else [],
-        follow_up_reference=previous.domain if previous and len(text) <= 20 else "",
+        follow_up_reference=(
+            previous.domain
+            if previous and not explicit_domain and (domain_inherited or years_inherited)
+            else ""
+        ),
         time_scope=time_scope,
         target_years=years,
         target_months=months,
