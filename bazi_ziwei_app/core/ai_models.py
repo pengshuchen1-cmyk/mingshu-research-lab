@@ -53,6 +53,23 @@ class ResolvedQuestion(BaseModel):
     scope_reason: str = Field(default="", max_length=80)
 
 
+class DialogueSummary(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    domain: QuestionDomain = "overview"
+    target_years: list[int] = Field(default_factory=list, max_length=60)
+    target_months: list[int] = Field(default_factory=list, max_length=12)
+    last_claim_ids: list[str] = Field(default_factory=list, max_length=60)
+    constraints: list[str] = Field(default_factory=list, max_length=12)
+
+
+@dataclass(frozen=True)
+class RequestStart:
+    accepted: bool
+    request_id: str
+    cached_answer: str = ""
+
+
 class FactItem(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 

@@ -3,9 +3,18 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from hashlib import sha256
 from typing import MutableMapping
+from uuid import uuid4
 
-from core.ai_models import ChatMessage
+from pydantic import ValidationError
+
+from core.ai_models import (
+    ChatMessage,
+    DialogueSummary,
+    RequestStart,
+    ResolvedQuestion,
+)
 
 
 CHAT_MESSAGES_KEY = "bazi_chat_messages"
@@ -154,6 +163,112 @@ def recent_context_messages(state: MutableMapping) -> list[ChatMessage]:
         for item in items
         if isinstance(item, dict) and item.get("content")
     ]
+
+
+def request_fingerprint(
+    chart_fingerprint: str,
+    resolved: ResolvedQuestion,
+) -> str:
+    """Return a stable, de-identified key for one chart-question request."""
+    payload = f"{chart_fingerprint}{resolved.model_dump_json()}"
+    return sha256(payload.encode("utf-8")).hexdigest()
+
+
+def _request_state(state: MutableMapping) -> dict:
+    request_state = state.get(CHAT_REQUEST_STATE_KEY)
+    if not isinstance(request_state, dict):
+        request_state = {}
+        state[CHAT_REQUEST_STATE_KEY] = request_state
+    return request_state
+
+
+def dialogue_summary(state: MutableMapping) -> DialogueSummary:
+    request_state = _request_state(state)
+    stored = request_state.get("summary")
+    if not isinstance(stored, dict):
+        return DialogueSummary()
+    try:
+        return DialogueSummary.model_validate(stored)
+    except ValidationError:
+        return DialogueSummary()
+
+
+def cached_answer(
+    state: MutableMapping,
+    fingerprint: str,
+) -> str:
+    request_state = _request_state(state)
+    result = request_state.get("result")
+    if (
+        request_state.get("busy")
+        or request_state.get("fingerprint") != fingerprint
+        or not isinstance(result, dict)
+    ):
+        return ""
+    answer = result.get("answer")
+    return str(answer) if isinstance(answer, str) else ""
+
+
+def begin_chat_request(
+    state: MutableMapping,
+    chart_fingerprint: str,
+    resolved: ResolvedQuestion,
+) -> RequestStart:
+    """Start one request, returning the current result for a duplicate click."""
+    expire_chat_session(state)
+    initialize_chat_for_chart(state, chart_fingerprint)
+    request_state = _request_state(state)
+    fingerprint = request_fingerprint(chart_fingerprint, resolved)
+    existing_request_id = str(request_state.get("request_id") or "")
+
+    if request_state.get("fingerprint") == fingerprint and existing_request_id:
+        return RequestStart(
+            accepted=False,
+            request_id=existing_request_id,
+            cached_answer=cached_answer(state, fingerprint),
+        )
+    if request_state.get("busy") and existing_request_id:
+        return RequestStart(accepted=False, request_id=existing_request_id)
+
+    request_id = uuid4().hex
+    state[CHAT_REQUEST_STATE_KEY] = {
+        "busy": True,
+        "request_id": request_id,
+        "fingerprint": fingerprint,
+        "summary": dialogue_summary(state).model_dump(mode="json"),
+    }
+    touch_chat_session(state)
+    return RequestStart(accepted=True, request_id=request_id)
+
+
+def complete_chat_request(
+    state: MutableMapping,
+    request_id: str,
+    *,
+    resolved: ResolvedQuestion,
+    answer: str,
+    source: str,
+) -> None:
+    """Store a validated answer only when it belongs to the active request."""
+    request_state = _request_state(state)
+    if (
+        not request_state.get("busy")
+        or request_state.get("request_id") != request_id
+    ):
+        return
+    summary = DialogueSummary(
+        domain=resolved.domain,
+        target_years=resolved.target_years,
+        target_months=resolved.target_months,
+    )
+    request_state.update(
+        {
+            "busy": False,
+            "result": {"answer": str(answer), "source": str(source)},
+            "summary": summary.model_dump(mode="json"),
+        }
+    )
+    touch_chat_session(state)
 
 
 def validate_question(question: str) -> tuple[bool, str]:

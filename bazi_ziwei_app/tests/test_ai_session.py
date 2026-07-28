@@ -132,3 +132,31 @@ def test_recent_context_truncates_long_answers_without_changing_saved_display():
     assert state["bazi_chat_messages"][0]["content"] == full_answer
     assert len(history) == 1
     assert history[0].content == full_answer[:4000]
+
+
+def test_chat_summary_and_request_idempotency():
+    from core.ai_models import ResolvedQuestion
+    from core.ai_session import (
+        begin_chat_request, complete_chat_request, dialogue_summary,
+    )
+
+    state = {}
+    resolved = ResolvedQuestion(
+        safe_question="2027年财运怎么样",
+        domain="wealth",
+        time_scope="target_year",
+        target_years=[2027],
+        requested_depth="single_year",
+    )
+    first = begin_chat_request(state, "chart-fp", resolved)
+    duplicate = begin_chat_request(state, "chart-fp", resolved)
+    assert first.accepted is True
+    assert duplicate.accepted is False
+    assert duplicate.request_id == first.request_id
+
+    complete_chat_request(
+        state, first.request_id, resolved=resolved,
+        answer="已验证答案", source="cloud_validated",
+    )
+    assert dialogue_summary(state).domain == "wealth"
+    assert dialogue_summary(state).target_years == [2027]
