@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 from collections.abc import Mapping
 from dataclasses import dataclass, field
-from typing import Annotated, Literal
+from typing import Annotated, Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -13,6 +13,82 @@ from pydantic import BaseModel, ConfigDict, Field
 QuestionCategory = Literal[
     "overview", "wealth", "career", "relationship", "timing", "family", "other"
 ]
+QuestionDomain = Literal[
+    "overview", "wealth", "career", "relationship", "family",
+    "health_advisory", "children", "education", "relocation",
+    "property", "benefactor", "timing",
+]
+AnswerDepth = Literal["direct", "single_year", "topic", "long_range", "monthly"]
+TimeScopeKind = Literal[
+    "none", "current_year", "target_year", "year_range",
+    "age", "month_range", "dayun",
+]
+ProgressStage = Literal[
+    "validating_scope", "resolving_question", "compiling_local_facts",
+    "generating_cloud_answer", "validating_answer", "completed",
+    "degraded", "rejected",
+]
+
+
+class ResolvedQuestion(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    safe_question: str = Field(min_length=1, max_length=2000)
+    domain: QuestionDomain
+    subdomains: list[QuestionDomain] = Field(default_factory=list, max_length=4)
+    follow_up_reference: str = Field(default="", max_length=120)
+    time_scope: TimeScopeKind = "none"
+    target_years: list[int] = Field(default_factory=list, max_length=60)
+    target_months: list[Annotated[int, Field(ge=1, le=12)]] = Field(
+        default_factory=list, max_length=12
+    )
+    age_values: list[Annotated[int, Field(ge=0, le=120)]] = Field(
+        default_factory=list, max_length=4
+    )
+    age_mode: Literal["unspecified", "solar_age", "nominal_age"] = "unspecified"
+    requested_depth: AnswerDepth = "direct"
+    ambiguity: str = Field(default="", max_length=240)
+    interpretation_receipt: str = Field(default="", max_length=240)
+    out_of_scope: bool = False
+    scope_reason: str = Field(default="", max_length=80)
+
+
+class FactItem(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    id: str = Field(pattern=r"^[a-z0-9][a-z0-9_.:-]{0,79}$")
+    kind: str = Field(min_length=1, max_length=40)
+    text: str = Field(min_length=1, max_length=500)
+    source: Literal["chart", "dayun", "year", "month", "domain", "rule"]
+
+
+class FactPacket(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    resolved: ResolvedQuestion
+    facts: list[FactItem] = Field(min_length=1, max_length=240)
+    rule_evidence: list[dict[str, str]] = Field(min_length=1, max_length=80)
+
+
+class ClaimPlan(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    id: str = Field(pattern=r"^[a-z0-9][a-z0-9_.:-]{0,79}$")
+    topic: str = Field(min_length=1, max_length=80)
+    allowed_conclusion: str = Field(min_length=1, max_length=800)
+    local_text: str = Field(min_length=1, max_length=1200)
+    fact_ids: list[str] = Field(min_length=1, max_length=24)
+    rule_ids: list[str] = Field(min_length=1, max_length=16)
+    conditions: list[str] = Field(default_factory=list, max_length=8)
+    uncertainty: list[str] = Field(default_factory=list, max_length=8)
+    prohibited_expansion: list[str] = Field(default_factory=list, max_length=8)
+
+
+class AnalysisPlan(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    resolved: ResolvedQuestion
+    claims: list[ClaimPlan] = Field(min_length=1, max_length=60)
 
 
 class BaziAIAnswer(BaseModel):
@@ -28,19 +104,31 @@ class BaziAIAnswer(BaseModel):
     )
 
 
-class CloudBaziAnalysis(BaseModel):
-    """Minimal cloud contract; all machine evidence is attached locally."""
-
+class CloudSegment(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
-    analysis_conclusion: str = Field(min_length=1, max_length=6000)
+    claim_ids: list[str] = Field(min_length=1, max_length=8)
+    text: str = Field(min_length=1, max_length=1600)
+
+
+class CloudBaziAnalysis(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    segments: list[CloudSegment] = Field(min_length=1, max_length=60)
+
+
+@dataclass(frozen=True)
+class CloudGeneration:
+    analysis: CloudBaziAnalysis
+    input_tokens: int = 0
+    output_tokens: int = 0
 
 
 class ChatMessage(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
     role: Literal["user", "assistant"]
-    content: str = Field(min_length=1, max_length=4000)
+    content: str = Field(min_length=1, max_length=6000)
 
 
 class RoutedQuestion(BaseModel):
@@ -53,12 +141,15 @@ class RoutedQuestion(BaseModel):
 class AIRequestContext(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    question: str = Field(min_length=1, max_length=500)
-    category: QuestionCategory
+    question: str = Field(min_length=1, max_length=2000)
+    category: QuestionDomain
     requires_timing: bool
     chart_facts: dict[str, object]
-    rule_evidence: list[dict[str, str]] = Field(min_length=1, max_length=24)
-    history: list[ChatMessage] = Field(default_factory=list, max_length=6)
+    rule_evidence: list[dict[str, str]] = Field(min_length=1, max_length=80)
+    history: list[ChatMessage] = Field(default_factory=list, max_length=12)
+    resolved_question: Optional[ResolvedQuestion] = None
+    fact_packet: Optional[FactPacket] = None
+    analysis_plan: Optional[AnalysisPlan] = None
 
 
 def _setting(
@@ -148,6 +239,14 @@ class AnswerResult:
     timing_conditions: tuple[str, ...]
     practical_advice: tuple[str, ...]
     uncertainty: tuple[str, ...]
-    source: Literal["cloud_validated", "local_rules"]
+    source: Literal[
+        "cloud_validated", "local_rules", "boundary", "clarification"
+    ]
     degraded_reason: DegradationReason | None = None
     provider: Literal["kimi", "openai"] | None = None
+    interpretation_receipt: str = ""
+    retryable: bool = False
+    request_id: str = ""
+    violation_codes: tuple[str, ...] = ()
+    input_tokens: int = 0
+    output_tokens: int = 0

@@ -33,20 +33,61 @@ def test_ai_answer_allows_empty_machine_lists_and_rejects_unknown_fields():
         BaziAIAnswer.model_validate({**data, "extra": "not allowed"})
 
 
-def test_cloud_analysis_contract_accepts_only_natural_answer():
+def test_cloud_analysis_contract_accepts_only_claim_linked_segments():
     from core.ai_models import CloudBaziAnalysis
 
     result = CloudBaziAnalysis.model_validate(
-        {"analysis_conclusion": "依据本地事实展开的自然回答。"}
+        {
+            "segments": [
+                {
+                    "claim_ids": ["wealth-2027"],
+                    "text": "依据本地事实展开的自然回答。",
+                }
+            ]
+        }
     )
 
-    assert result.analysis_conclusion
+    assert result.segments[0].claim_ids == ["wealth-2027"]
     with pytest.raises(ValidationError):
         CloudBaziAnalysis.model_validate(
             {
-                "analysis_conclusion": "回答",
-                "rule_evidence": ["模型改写的规则"],
+                "segments": [
+                    {
+                        "claim_ids": ["wealth-2027"],
+                        "text": "回答",
+                        "rule_evidence": ["模型改写的规则"],
+                    }
+                ],
             }
+        )
+
+
+def test_resolved_question_and_cloud_segments_are_strict():
+    from core.ai_models import CloudBaziAnalysis, ResolvedQuestion
+
+    resolved = ResolvedQuestion(
+        safe_question="明年每个月财运如何",
+        domain="wealth",
+        subdomains=["timing"],
+        time_scope="month_range",
+        target_years=[2027],
+        target_months=list(range(1, 13)),
+        requested_depth="monthly",
+        interpretation_receipt="本次按2027丁未年1—12月分析。",
+    )
+    assert resolved.target_years == [2027]
+    assert resolved.target_months[-1] == 12
+
+    cloud = CloudBaziAnalysis(
+        segments=[{"claim_ids": ["wealth-2027"], "text": "先看现金流。"}]
+    )
+    assert cloud.segments[0].claim_ids == ["wealth-2027"]
+
+    with pytest.raises(ValidationError):
+        CloudBaziAnalysis(
+            segments=[
+                {"claim_ids": ["wealth-2027"], "text": "正常", "secret": "x"}
+            ]
         )
 
 
