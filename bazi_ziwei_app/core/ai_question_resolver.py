@@ -1,0 +1,161 @@
+"""Deterministically resolve Bazi question time scopes."""
+
+from __future__ import annotations
+
+import re
+from datetime import datetime
+
+from core.ai_models import ResolvedQuestion
+from core.ai_scope_gate import check_bazi_scope
+from core.yearly_engine import get_year_pillar
+
+
+_DOMAIN_TERMS = (
+    ("wealth", ("财运", "正财", "偏财", "赚钱", "收入", "投资", "创业", "房贷", "抵押")),
+    ("career", ("事业", "工作", "职业", "升职", "行业", "岗位", "官运")),
+    ("relationship", ("姻缘", "桃花", "婚姻", "对象", "感情", "结婚", "配偶")),
+    ("family", ("原生家庭", "父母", "长辈", "家庭")),
+    ("health_advisory", ("健康", "身体", "作息", "精力")),
+    ("children", ("子女", "孩子", "生育", "养育")),
+    ("education", ("学业", "学习", "考试", "升学")),
+    ("relocation", ("迁移", "外地", "出国", "搬家", "异地发展")),
+    ("property", ("房产", "买房", "置业", "住房")),
+    ("benefactor", ("贵人", "助力", "提携", "平台资源")),
+)
+
+_CN = {
+    "一": 1, "二": 2, "三": 3, "四": 4, "五": 5,
+    "六": 6, "七": 7, "八": 8, "九": 9, "十": 10,
+}
+
+
+def _number(value: str) -> int:
+    if value.isdigit():
+        return int(value)
+    if value == "十":
+        return 10
+    if value.startswith("十"):
+        return 10 + _CN[value[-1]]
+    if value.endswith("十"):
+        return _CN[value[0]] * 10
+    if "十" in value:
+        left, right = value.split("十", 1)
+        return _CN[left] * 10 + _CN[right]
+    return _CN[value]
+
+
+def _domain(text: str, previous: ResolvedQuestion | None) -> str:
+    for name, terms in _DOMAIN_TERMS:
+        if any(term in text for term in terms):
+            return name
+    return previous.domain if previous and len(text) <= 20 else "overview"
+
+
+def _years(text: str, current_year: int) -> tuple[list[int], bool]:
+    range_match = re.search(
+        r"((?:19|20)\d{2})\s*(?:年)?\s*(?:到|至|—|-)\s*((?:19|20)\d{2})",
+        text,
+    )
+    if range_match:
+        start, end = map(int, range_match.groups())
+        return (list(range(start, end + 1)), False) if start <= end else ([], True)
+    explicit = [int(value) for value in re.findall(r"((?:19|20)\d{2})(?=年)", text)]
+    if explicit:
+        return list(dict.fromkeys(explicit)), False
+    if "明年" in text:
+        return [current_year + 1], False
+    if "后年" in text:
+        return [current_year + 2], False
+    after = re.search(r"([一二三四五六七八九十\d]+)年后", text)
+    if after:
+        return [current_year + _number(after.group(1))], False
+    future = re.search(r"未来([一二三四五六七八九十\d]+)年", text)
+    if future:
+        number = min(60, _number(future.group(1)))
+        return list(range(current_year, current_year + number)), False
+    if "今年" in text or "上半年" in text or "下半年" in text:
+        return [current_year], False
+    return [], False
+
+
+def resolve_question(
+    question: str,
+    *,
+    now: datetime,
+    previous: ResolvedQuestion | None = None,
+) -> ResolvedQuestion:
+    text = str(question or "").strip()
+    scope = check_bazi_scope(text)
+    domain = _domain(text, previous)
+    years, reversed_range = _years(text, now.year)
+    if not years and previous and any(cue in text for cue in ("那", "继续", "后面", "刚才")):
+        years = list(previous.target_years)
+
+    months: list[int] = []
+    if "上半年" in text:
+        months = list(range(1, 7))
+    elif "下半年" in text:
+        months = list(range(7, 13))
+    elif "每个月" in text or "逐月" in text or "流月" in text:
+        months = list(range(1, 13))
+    if months and not years:
+        years = list(previous.target_years) if previous and previous.target_years else [now.year]
+
+    age_match = re.search(r"(\d{1,3})(?:周|虚)?岁", text)
+    ages = [int(age_match.group(1))] if age_match else []
+    age_mode = (
+        "solar_age" if age_match and "周岁" in age_match.group(0)
+        else "nominal_age" if age_match and "虚岁" in age_match.group(0)
+        else "unspecified"
+    )
+
+    ambiguity = ""
+    if reversed_range:
+        ambiguity = "年份范围的起止顺序需要确认。"
+    elif months and len(years) > 1:
+        ambiguity = "跨年逐月问题需要先选择一个目标年份。"
+    elif ages and age_mode == "unspecified" and "以后" in text:
+        ambiguity = "该年龄问题需要确认按周岁还是虚岁理解。"
+
+    if months:
+        time_scope, depth = "month_range", "monthly"
+    elif ages:
+        time_scope, depth = "age", "long_range"
+    elif len(years) > 1:
+        time_scope, depth = "year_range", "long_range"
+    elif years:
+        time_scope, depth = "target_year", "single_year"
+    elif any(term in text for term in ("大运", "行运", "起运")):
+        time_scope, depth = "dayun", "topic"
+    else:
+        time_scope = "none"
+        depth = "topic" if len(text) > 24 else "direct"
+
+    receipt = ""
+    if years:
+        if len(years) == 1:
+            receipt = f"本次按{years[0]}年（{get_year_pillar(years[0])}）分析。"
+        else:
+            receipt = f"本次按{years[0]}—{years[-1]}年分析。"
+    if months and years:
+        receipt = (
+            f"本次按{years[0]}年（{get_year_pillar(years[0])}）1—12月分析。"
+            if len(months) == 12 else receipt
+        )
+
+    return ResolvedQuestion(
+        safe_question=text,
+        domain=domain,
+        subdomains=["timing"] if time_scope != "none" else [],
+        follow_up_reference=previous.domain if previous and len(text) <= 20 else "",
+        time_scope=time_scope,
+        target_years=years,
+        target_months=months,
+        age_values=ages,
+        age_mode=age_mode,
+        requested_depth=depth,
+        ambiguity=ambiguity,
+        interpretation_receipt=receipt,
+        out_of_scope=not scope.allowed,
+        scope_reason=scope.reason,
+    )
