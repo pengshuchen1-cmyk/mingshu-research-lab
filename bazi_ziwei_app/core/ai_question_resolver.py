@@ -30,11 +30,17 @@ _CN = {
 
 _MONTHLY_TERMS = ("每个月", "每月", "逐月", "流月")
 _NEGATED_MONTHLY_REQUEST = re.compile(
-    r"(?:不要|不看|不用|别)(?:看)?\s*"
+    r"(?:不需要|不想|无需|不要|不看|不用|别)(?:看)?\s*"
     r"(?:(?:今年|明年|后年|(?:19|20)\d{2}年?|上半年|下半年|"
     r"[一二三四五六七八九十\d]+月)\s*)*"
     r"(?:每个月|每月|逐月|流月)"
 )
+_POST_MONTHLY_NEGATION = re.compile(
+    r"(?:每个月|每月|逐月|流月)[^，。；！？!?]{0,12}"
+    r"(?:不需要|不想|无需|不要|不看|不用|别)(?:看)?"
+    r"(?:每个月|每月|逐月|流月)(?:看)?"
+)
+_BIRTH_CONTEXT_TERMS = ("出生", "生日", "生于", "诞生")
 
 
 def _number(value: str) -> int:
@@ -136,7 +142,7 @@ def _month_receipt_label(months: list[int]) -> str:
 def _explicit_forecast_month(text: str) -> int | None:
     for match in re.finditer(r"([一二三四五六七八九十\d]+)月", text):
         surrounding = text[max(0, match.start() - 6):min(len(text), match.end() + 6)]
-        if "出生" in surrounding:
+        if any(term in surrounding for term in _BIRTH_CONTEXT_TERMS):
             continue
         month = _number(match.group(1))
         if 1 <= month <= 12:
@@ -176,6 +182,7 @@ def resolve_question(
     monthly_request = (
         any(term in text for term in _MONTHLY_TERMS)
         and not _NEGATED_MONTHLY_REQUEST.search(text)
+        and not _POST_MONTHLY_NEGATION.search(text)
     )
     if "上半年" in text:
         months = list(range(1, 7))
@@ -226,14 +233,14 @@ def resolve_question(
         depth = "topic" if len(text) > 24 else "direct"
 
     receipt = ""
-    if years and not invalid_year_range:
+    if years and not invalid_year_range and not ambiguity:
         if len(years) == 1:
             receipt = f"本次按{years[0]}年（{get_year_pillar(years[0])}）分析。"
         elif explicit_year_range or "未来" in text:
             receipt = _continuous_year_range_receipt(years)
         else:
             receipt = _discrete_year_receipt(years)
-    if months and years:
+    if months and years and not ambiguity:
         receipt = f"本次按{years[0]}年（{get_year_pillar(years[0])}）{_month_receipt_label(months)}分析。"
 
     return ResolvedQuestion(

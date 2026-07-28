@@ -197,6 +197,23 @@ def test_numeric_age_without_mode_always_requests_clarification():
     assert result.ambiguity == "该年龄问题需要确认按周岁还是虚岁理解。"
 
 
+@pytest.mark.parametrize(
+    "question",
+    (
+        "2027到2032年每月财运",
+        "未来五年逐月财运",
+        "2027年30岁财运",
+    ),
+)
+def test_unresolved_ambiguity_never_receives_an_interpretation_receipt(question):
+    from core.ai_question_resolver import resolve_question
+
+    result = resolve_question(question, now=NOW)
+
+    assert result.ambiguity
+    assert result.interpretation_receipt == ""
+
+
 def test_discrete_year_receipt_lists_each_requested_year_and_pillar():
     from core.ai_question_resolver import resolve_question
     from core.yearly_engine import get_year_pillar
@@ -240,14 +257,51 @@ def test_monthly_keyword_every_month_is_supported():
     assert result.time_scope == "month_range"
 
 
-def test_birth_month_is_not_interpreted_as_a_forecast_month():
+@pytest.mark.parametrize(
+    "question",
+    (
+        "我3月出生，明年财运如何",
+        "我的生日是3月，明年财运如何",
+        "我生于3月，明年财运如何",
+        "我诞生于3月，明年财运如何",
+    ),
+)
+def test_birth_month_context_is_not_interpreted_as_a_forecast_month(question):
     from core.ai_question_resolver import resolve_question
 
-    result = resolve_question("我3月出生，明年财运如何", now=NOW)
+    result = resolve_question(question, now=NOW)
 
     assert result.target_years == [2027]
     assert result.target_months == []
     assert result.time_scope == "target_year"
+
+
+@pytest.mark.parametrize(
+    "question",
+    (
+        "明年每月财运不想逐月看",
+        "明年每月财运不需要逐月看",
+        "明年每月财运无需逐月看",
+    ),
+)
+def test_same_clause_post_monthly_negation_disables_monthly_analysis(question):
+    from core.ai_question_resolver import resolve_question
+
+    result = resolve_question(question, now=NOW)
+
+    assert result.target_years == [2027]
+    assert result.target_months == []
+    assert result.time_scope == "target_year"
+
+
+def test_unrelated_post_monthly_negation_does_not_disable_monthly_analysis():
+    from core.ai_question_resolver import resolve_question
+
+    result = resolve_question("明年每月财运不想错过", now=NOW)
+
+    assert result.target_years == [2027]
+    assert result.target_months == list(range(1, 13))
+    assert result.time_scope == "month_range"
 
 
 @pytest.mark.parametrize(
