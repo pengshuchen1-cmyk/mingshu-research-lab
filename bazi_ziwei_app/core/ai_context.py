@@ -61,6 +61,24 @@ DOMAIN_RULE_IDS = {
         "REL-SPOUSE-STAR", "REL-PALACE-STABILITY", "REL-STAGES", "REL-STATUS-UNKNOWN",
     ),
     "family": ("REL-PALACE-STABILITY", "SAFETY-NONDETERMINISTIC"),
+    "health_advisory": (
+        "STRENGTH-SEASON",
+        "SAFETY-STATUS-UNKNOWN",
+        "SAFETY-NONDETERMINISTIC",
+    ),
+    "children": ("SAFETY-STATUS-UNKNOWN", "SAFETY-NONDETERMINISTIC"),
+    "education": (
+        "STRENGTH-SEASON",
+        "PATTERN-MONTH-QI",
+        "SAFETY-NONDETERMINISTIC",
+    ),
+    "relocation": ("STRENGTH-SEASON", "SAFETY-NONDETERMINISTIC"),
+    "property": (
+        "WEALTH-CAPACITY",
+        "WEALTH-RISK-ADVICE",
+        "SAFETY-STATUS-UNKNOWN",
+    ),
+    "benefactor": ("PATTERN-MONTH-QI", "SAFETY-NONDETERMINISTIC"),
     "overview": (
         "STRENGTH-SEASON", "PATTERN-MONTH-QI",
         "WEALTH-REVENUE-RETENTION", "REL-STAGES",
