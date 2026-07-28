@@ -34,11 +34,12 @@ def test_chat_keeps_twenty_display_messages_and_sends_six_recent_messages():
     ]
 
 
-def test_question_validation_rejects_blank_and_more_than_five_hundred_chars():
+def test_question_validation_rejects_blank_and_more_than_two_thousand_chars():
     from core.ai_session import validate_question
 
     assert validate_question("  ")[0] is False
-    assert validate_question("甲" * 501)[0] is False
+    assert validate_question("甲" * 2000) == (True, "")
+    assert validate_question("甲" * 2001) == (False, "问题请控制在 2000 字以内。")
     assert validate_question("这个八字的财运怎么样？") == (True, "")
 
 

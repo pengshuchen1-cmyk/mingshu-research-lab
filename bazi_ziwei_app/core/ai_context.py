@@ -68,26 +68,9 @@ DOMAIN_RULE_IDS = {
     "other": ("SAFETY-NONDETERMINISTIC",),
 }
 REDACTION_MARKER = "[已隐去]"
-_MAX_QUESTION_INPUT_CHARS = 500
+_MAX_QUESTION_INPUT_CHARS = 2000
 _MAX_HISTORY_INPUT_CHARS = 4000
 _MAX_REDACTION_INPUT_CHARS = 4000
-_SAFE_QUERY_TERMS = tuple(
-    dict.fromkeys(
-        (
-            *(
-                keyword
-                for _category, keywords in CATEGORY_KEYWORDS
-                for keyword in keywords
-            ),
-            *TIMING_KEYWORDS,
-            "分析", "为什么", "为何", "怎么", "怎样", "如何", "什么",
-            "是否", "需要", "注意", "条件", "原因", "影响", "风险",
-            "机会", "建议", "策略", "处理", "控制", "安排", "讨论",
-            "确认", "授权", "结构", "核验", "现实", "转型", "转换",
-            "调整", "规划", "选择", "适合", "发展",
-        )
-    )
-)
 
 _CHINESE_MONTH = r"(?:1[0-2]|0?[1-9]|十[一二]?|[一二三四五六七八九])"
 _BIRTH_EXPRESSION_PATTERNS = (
@@ -559,11 +542,6 @@ def _provenance_segments(text: str) -> list[tuple[bool, str]]:
 def _project_safe_segment(text: str) -> str:
     if not text:
         return ""
-    if not (
-        any(term in text for term in _SAFE_QUERY_TERMS)
-        or re.search(r"(?:19|20)\d{2}年", text)
-    ):
-        return REDACTION_MARKER
     projected = _NORMALIZABLE_MONTH.sub(
         lambda match: _normalize_safe_span(match.group(0)),
         text,

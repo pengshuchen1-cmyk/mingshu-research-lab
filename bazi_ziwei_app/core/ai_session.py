@@ -160,6 +160,6 @@ def validate_question(question: str) -> tuple[bool, str]:
     text = str(question or "").strip()
     if not text:
         return False, "请输入您想问的问题。"
-    if len(text) > 500:
-        return False, "问题请控制在 500 字以内。"
+    if len(text) > 2000:
+        return False, "问题请控制在 2000 字以内。"
     return True, ""

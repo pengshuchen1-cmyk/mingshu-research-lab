@@ -4,6 +4,29 @@ import pytest
 
 
 @pytest.mark.parametrize(
+    "text",
+    ("那后面呢", "继续说", "刚才第二点再详细说说", "那婚后呢"),
+)
+def test_privacy_projection_preserves_follow_up_semantics(text):
+    from core.ai_context import redact_customer_text
+
+    assert redact_customer_text(text) == text
+
+
+def test_privacy_projection_removes_identity_but_keeps_question():
+    from core.ai_context import redact_customer_text
+
+    value = redact_customer_text(
+        "姓名张三，生日1999年8月11日，电话13800138000；明年财运如何"
+    )
+
+    assert "张三" not in value
+    assert "1999" not in value
+    assert "13800138000" not in value
+    assert "明年财运如何" in value
+
+
+@pytest.mark.parametrize(
     ("question", "category", "timing"),
     [
         ("这个八字财运怎么样？", "wealth", False),
