@@ -252,6 +252,20 @@ DegradationReason = Literal[
     "duplicate_request",
     "concurrency_limit",
 ]
+RETRYABLE_DEGRADATION_REASONS = frozenset(
+    {
+        "rate_limited",
+        "network_error",
+        "timeout",
+        "service_unavailable",
+        "unparseable_response",
+        "concurrency_limit",
+    }
+)
+
+
+def is_retryable_degradation(reason: str | None) -> bool:
+    return reason in RETRYABLE_DEGRADATION_REASONS
 
 
 @dataclass(frozen=True)

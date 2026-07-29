@@ -81,6 +81,66 @@ def test_chat_message_has_timestamp_and_allowlisted_details_without_sections():
     assert item["details"]["degraded_reason"] == "network_error"
 
 
+def test_chat_message_keeps_safe_request_receipt_and_retry_metadata():
+    from core.ai_session import append_chat_message
+
+    state = {}
+    append_chat_message(
+        state,
+        "assistant",
+        "本地完整回答",
+        source="local_rules",
+        request_id="request-123",
+        details={
+            "degraded_reason": "timeout",
+            "interpretation_receipt": "已按 2027 年理解。",
+            "retryable": True,
+            "request_id": "伪造字段不应进入 details",
+        },
+    )
+
+    item = state["bazi_chat_messages"][0]
+    assert item["request_id"] == "request-123"
+    assert item["details"] == {
+        "degraded_reason": "timeout",
+        "interpretation_receipt": "已按 2027 年理解。",
+        "retryable": True,
+    }
+
+
+def test_chat_message_revalidates_retryability_before_saving():
+    from core.ai_session import append_chat_message
+
+    state = {}
+    append_chat_message(
+        state,
+        "assistant",
+        "云端回答",
+        source="cloud_validated",
+        request_id="request-cloud",
+        details={
+            "degraded_reason": "timeout",
+            "retryable": True,
+        },
+    )
+    append_chat_message(
+        state,
+        "assistant",
+        "认证失败的本地回答",
+        source="local_rules",
+        request_id="request-auth",
+        details={
+            "degraded_reason": "invalid_credentials",
+            "retryable": True,
+        },
+    )
+
+    cloud_details = state["bazi_chat_messages"][0]["details"]
+    auth_details = state["bazi_chat_messages"][1]["details"]
+    assert "retryable" not in cloud_details
+    assert "retryable" not in auth_details
+
+
 def test_chat_drops_unknown_cloud_provider_label():
     from core.ai_session import append_chat_message
 

@@ -31,6 +31,7 @@ from core.ai_models import (
     DegradationReason,
     ProgressStage,
     ResolvedQuestion,
+    is_retryable_degradation,
 )
 from core.ai_question_resolver import resolve_question
 from core.ai_request_control import (
@@ -44,6 +45,7 @@ from core.local_bazi_answer import build_local_answer, render_local_plan
 from core.luck_engine import get_luck_cycles
 from services.ai_client_factory import build_ai_client
 from services.ai_service_errors import AIServiceError
+from services.kimi_bazi_client import KIMI_MODEL
 
 
 _TRADITIONAL_CULTURE_DISCLAIMER = (
@@ -125,6 +127,7 @@ def _local_result(
     resolved: ResolvedQuestion,
     degraded_reason: DegradationReason,
     *,
+    retryable: bool | None = None,
     violation_codes: tuple[str, ...] = (),
 ) -> AnswerResult:
     return _answer_result(
@@ -132,6 +135,11 @@ def _local_result(
         source="local_rules",
         degraded_reason=degraded_reason,
         interpretation_receipt=resolved.interpretation_receipt,
+        retryable=(
+            is_retryable_degradation(degraded_reason)
+            if retryable is None
+            else retryable
+        ),
         violation_codes=violation_codes,
     )
 
@@ -339,6 +347,18 @@ def answer_question(
             local,
             resolved,
             "service_unavailable",
+            retryable=False,
+        )
+    if (
+        selected_config.provider == "kimi"
+        and selected_config.model != KIMI_MODEL
+    ):
+        emit("degraded")
+        return _local_result(
+            local,
+            resolved,
+            "service_unavailable",
+            retryable=False,
         )
     if not selected_config.enabled:
         emit("degraded")

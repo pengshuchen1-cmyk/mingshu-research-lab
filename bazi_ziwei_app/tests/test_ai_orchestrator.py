@@ -283,6 +283,7 @@ def test_unknown_cloud_claim_structure_returns_full_local_answer():
     assert client.calls == 1
     assert result.source == "local_rules"
     assert result.degraded_reason == "local_validation_failed"
+    assert result.retryable is False
     assert "不应泄露的云端原文" not in result.answer
     assert result.answer.strip()
     assert result.chart_evidence
@@ -440,6 +441,26 @@ def test_unknown_disabled_provider_returns_service_unavailable_not_missing_key()
 
     assert result.source == "local_rules"
     assert result.degraded_reason == "service_unavailable"
+    assert result.retryable is False
+
+
+def test_unsupported_kimi_model_returns_nonretryable_fallback_before_client():
+    from core.ai_models import AIConfig
+    from core.ai_orchestrator import answer_question
+
+    client = _CountingClient()
+    result = answer_question(
+        _chart(),
+        "财运如何？",
+        [],
+        config=AIConfig("key", True, model="kimi-k2", provider="kimi"),
+        client=client,
+    )
+
+    assert result.source == "local_rules"
+    assert result.degraded_reason == "service_unavailable"
+    assert result.retryable is False
+    assert client.calls == 0
 
 
 def test_unexpected_client_construction_error_returns_safe_complete_fallback(
@@ -559,6 +580,7 @@ def test_missing_api_key_returns_complete_wealth_fallback_with_exact_reason():
 
     assert result.source == "local_rules"
     assert result.degraded_reason == "missing_api_key"
+    assert result.retryable is False
     assert result.sections == {}
     assert result.answer.strip()
 
@@ -588,17 +610,44 @@ def test_orchestrator_does_not_retry_malformed_structured_output():
 
 
 @pytest.mark.parametrize(
-    "error_code",
+    ("reason", "expected"),
     [
-        "insufficient_quota",
-        "invalid_credentials",
-        "rate_limited",
-        "network_error",
-        "timeout",
-        "service_unavailable",
+        ("rate_limited", True),
+        ("network_error", True),
+        ("timeout", True),
+        ("service_unavailable", True),
+        ("unparseable_response", True),
+        ("concurrency_limit", True),
+        ("missing_api_key", False),
+        ("insufficient_quota", False),
+        ("invalid_credentials", False),
+        ("daily_budget", False),
+        ("duplicate_request", False),
+        ("local_validation_failed", False),
     ],
 )
-def test_orchestrator_preserves_service_error_reason_without_retry(error_code):
+def test_retryable_degradation_allowlist(reason, expected):
+    from core.ai_models import is_retryable_degradation
+
+    assert is_retryable_degradation(reason) is expected
+
+
+@pytest.mark.parametrize(
+    ("error_code", "expected_retryable"),
+    [
+        ("insufficient_quota", False),
+        ("invalid_credentials", False),
+        ("rate_limited", True),
+        ("network_error", True),
+        ("timeout", True),
+        ("service_unavailable", True),
+        ("unparseable_response", True),
+    ],
+)
+def test_orchestrator_marks_only_retryable_service_failures(
+    error_code,
+    expected_retryable,
+):
     from core.ai_models import AIConfig
     from core.ai_orchestrator import answer_question
     from services.openai_bazi_client import AIServiceError
@@ -614,6 +663,7 @@ def test_orchestrator_preserves_service_error_reason_without_retry(error_code):
 
     assert result.source == "local_rules"
     assert result.degraded_reason == error_code
+    assert result.retryable is expected_retryable
     assert result.sections == {}
     assert result.answer.strip()
     assert len(fake.contexts) == 1

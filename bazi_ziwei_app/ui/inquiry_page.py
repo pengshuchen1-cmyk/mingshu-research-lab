@@ -5,12 +5,19 @@ from __future__ import annotations
 import hashlib
 import json
 import time
+from datetime import datetime
 from uuid import uuid4
+from zoneinfo import ZoneInfo
 
 import streamlit as st
 
 from core.ai_context import classify_question
-from core.ai_models import AIConfig, AnswerResult
+from core.ai_models import (
+    AIConfig,
+    AnswerResult,
+    ProgressStage,
+    is_retryable_degradation,
+)
 from core.ai_orchestrator import answer_question
 from core.ai_request_control import request_controller_for_config
 from core.ai_session import (
@@ -35,6 +42,17 @@ SUGGESTED_QUESTIONS = (
 )
 _MISSING_CREDENTIAL_REASON = "_".join(("missing", "api", "key"))
 _AI_SESSION_ID_KEY = "bazi_ai_anonymous_session_id"
+_SHANGHAI_TIMEZONE = ZoneInfo("Asia/Shanghai")
+_PROGRESS_LABELS = {
+    "validating_scope": "正在确认问题范围…",
+    "resolving_question": "正在理解问题和时间…",
+    "compiling_local_facts": "正在整理本地命盘事实…",
+    "generating_cloud_answer": "Kimi 正在深入分析…",
+    "validating_answer": "正在进行本地四柱规则校验…",
+    "completed": "分析完成",
+    "degraded": "已切换为本地完整分析",
+    "rejected": "该问题超出四柱问答范围",
+}
 
 
 def _runtime_ai_config() -> AIConfig:
@@ -143,7 +161,12 @@ def _render_supporting_details(item: dict) -> None:
                 st.write(f"• {text}")
 
 
-def _render_message(item: dict) -> None:
+def _render_message(
+    item: dict,
+    *,
+    retry_question: str = "",
+    retry_key: str = "",
+) -> bool:
     role = item.get("role", "assistant")
     with st.chat_message(role):
         details = item.get("details", {}) or {}
@@ -152,6 +175,11 @@ def _render_message(item: dict) -> None:
             warning = degradation_warning(degraded_reason)
             if warning:
                 st.warning(warning)
+            interpretation_receipt = str(
+                details.get("interpretation_receipt") or ""
+            ).strip()
+            if interpretation_receipt:
+                st.caption(f"问题理解：{interpretation_receipt}")
             st.markdown(str(item.get("content", "")))
             st.caption(
                 answer_source_label(
@@ -161,17 +189,60 @@ def _render_message(item: dict) -> None:
                 )
             )
             _render_supporting_details(item)
+            if retry_question:
+                return st.button(
+                    "重新获取云端详细分析",
+                    key=retry_key,
+                    use_container_width=False,
+                )
         else:
             st.markdown(str(item.get("content", "")))
+    return False
 
 
-def _save_answer(state, result: AnswerResult) -> None:
+def _retry_question_for_message(messages: list[dict], index: int) -> str:
+    if not 0 <= index < len(messages):
+        return ""
+    item = messages[index]
+    if (
+        not isinstance(item, dict)
+        or item.get("role") != "assistant"
+        or item.get("source") != "local_rules"
+    ):
+        return ""
+    details = item.get("details", {}) or {}
+    if (
+        not isinstance(details, dict)
+        or details.get("retryable") is not True
+        or not is_retryable_degradation(details.get("degraded_reason"))
+    ):
+        return ""
+    request_id = str(item.get("request_id") or "")
+    if not request_id:
+        return ""
+    for candidate in reversed(messages[:index]):
+        if (
+            isinstance(candidate, dict)
+            and candidate.get("role") == "user"
+            and candidate.get("request_id") == request_id
+        ):
+            return str(candidate.get("content") or "").strip()
+    return ""
+
+
+def _save_answer(
+    state,
+    result: AnswerResult,
+    *,
+    request_id: str = "",
+) -> None:
     append_chat_message(
         state,
         "assistant",
         result.answer,
         source=result.source,
         provider=result.provider,
+        request_id=result.request_id or request_id,
         details={
             "chart_evidence": list(result.chart_evidence),
             "rule_evidence": list(result.rule_evidence),
@@ -179,6 +250,8 @@ def _save_answer(state, result: AnswerResult) -> None:
             "practical_advice": list(result.practical_advice),
             "uncertainty": list(result.uncertainty),
             "degraded_reason": result.degraded_reason,
+            "interpretation_receipt": result.interpretation_receipt,
+            "retryable": result.retryable,
         },
     )
 
@@ -200,21 +273,50 @@ def _answer(chart: dict, question: str) -> None:
         category=category,
         model_alias=model_alias,
     )
-    append_chat_message(st.session_state, "user", text)
     started = time.monotonic()
     request_id = uuid4().hex
+    append_chat_message(
+        st.session_state,
+        "user",
+        text,
+        request_id=request_id,
+    )
+    status = st.status("正在理解问题…", expanded=True)
+
+    def on_progress(stage: ProgressStage) -> None:
+        terminal = stage in {"completed", "degraded", "rejected"}
+        state = (
+            "complete"
+            if stage == "completed"
+            else "error"
+            if terminal
+            else "running"
+        )
+        status.update(
+            label=_PROGRESS_LABELS[stage],
+            state=state,
+            expanded=not terminal,
+        )
+
     try:
-        with st.spinner("正在根据本地四柱规则整理回答…"):
+        with status:
             result = answer_question(
                 chart,
                 text,
                 history,
+                now=datetime.now(_SHANGHAI_TIMEZONE),
                 config=config,
+                on_progress=on_progress,
                 request_controller=request_controller_for_config(config),
                 session_id=_anonymous_session_id(st.session_state),
                 request_id=request_id,
             )
     except Exception:
+        status.update(
+            label="本次回答未能完成",
+            state="error",
+            expanded=False,
+        )
         log_ai_event(
             event_code="AI_QA_FALLBACK",
             category=category,
@@ -224,7 +326,7 @@ def _answer(chart: dict, question: str) -> None:
         )
         st.error("本次回答未能完成，请稍后再试。")
         return
-    _save_answer(st.session_state, result)
+    _save_answer(st.session_state, result, request_id=request_id)
     elapsed = (time.monotonic() - started) * 1000
     if result.source == "cloud_validated":
         log_ai_event(
@@ -316,8 +418,17 @@ def render_inquiry_page() -> None:
         st.success("本次对话已清空。")
         st.rerun()
 
-    for item in st.session_state.get(CHAT_MESSAGES_KEY, []):
-        _render_message(item)
+    messages = list(st.session_state.get(CHAT_MESSAGES_KEY, []))
+    for index, item in enumerate(messages):
+        retry_question = _retry_question_for_message(messages, index)
+        retry_requested = _render_message(
+            item,
+            retry_question=retry_question,
+            retry_key=f"ai_retry_{item.get('request_id', index)}_{index}",
+        )
+        if retry_requested:
+            _answer(chart, retry_question)
+            st.rerun()
 
     st.markdown("#### 你可以这样问")
     columns = st.columns(2)
@@ -327,7 +438,7 @@ def render_inquiry_page() -> None:
             if st.button(prompt, key=f"ai_suggestion_{index}", use_container_width=True):
                 suggested = prompt
 
-    typed = st.chat_input("请输入关于强弱、格局、财运、事业、姻缘或流年的问题（最多 500 字）")
+    typed = st.chat_input("请输入关于强弱、格局、财运、事业、姻缘或流年的问题（最多 2000 字）")
     question = suggested or typed
     if question is not None:
         _answer(chart, question)

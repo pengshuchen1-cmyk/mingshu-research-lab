@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from datetime import datetime, timezone
 from hashlib import sha256
 from typing import MutableMapping
@@ -14,6 +15,7 @@ from core.ai_models import (
     DialogueSummary,
     RequestStart,
     ResolvedQuestion,
+    is_retryable_degradation,
 )
 
 
@@ -34,6 +36,8 @@ DETAIL_KEYS = (
     "practical_advice",
     "uncertainty",
     "degraded_reason",
+    "interpretation_receipt",
+    "retryable",
 )
 _LIST_DETAIL_KEYS = (
     "chart_evidence",
@@ -58,6 +62,7 @@ _DEGRADATION_REASONS = frozenset(
         "concurrency_limit",
     }
 )
+_REQUEST_ID_PATTERN = re.compile(r"^[A-Za-z0-9_-]{1,128}$")
 
 
 def _as_utc(value: datetime) -> datetime:
@@ -125,6 +130,7 @@ def append_chat_message(
     *,
     source: str | None = None,
     provider: str | None = None,
+    request_id: str = "",
     details: dict | None = None,
 ) -> None:
     messages = list(state.get(CHAT_MESSAGES_KEY, []))
@@ -139,6 +145,9 @@ def append_chat_message(
         item["source"] = source
     if provider in {"kimi", "openai"}:
         item["provider"] = provider
+    safe_request_id = str(request_id or "").strip()
+    if _REQUEST_ID_PATTERN.fullmatch(safe_request_id):
+        item["request_id"] = safe_request_id
     if details:
         safe_details: dict[str, object] = {}
         for key in _LIST_DETAIL_KEYS:
@@ -157,6 +166,17 @@ def append_chat_message(
             and degraded_reason in _DEGRADATION_REASONS
         ):
             safe_details["degraded_reason"] = degraded_reason
+        interpretation_receipt = details.get("interpretation_receipt")
+        if isinstance(interpretation_receipt, str):
+            safe_receipt = interpretation_receipt.strip()[:240]
+            if safe_receipt:
+                safe_details["interpretation_receipt"] = safe_receipt
+        if (
+            source == "local_rules"
+            and is_retryable_degradation(degraded_reason)
+            and details.get("retryable") is True
+        ):
+            safe_details["retryable"] = True
         if safe_details:
             item["details"] = safe_details
     messages.append(item)

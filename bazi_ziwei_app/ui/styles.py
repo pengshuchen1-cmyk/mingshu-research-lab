@@ -74,6 +74,15 @@ def get_global_css() -> str:
     div[data-testid="stCaptionContainer"], div[data-testid="stCaptionContainer"] p,
     div[data-testid="stCaptionContainer"] span, .mingshu-muted, .zw-readable-text,
     .zw-triangle-card p { color: var(--ms-muted) !important; }
+    div[data-testid="stStatusWidget"] {
+        background: var(--ms-surface-muted) !important;
+        border: 1px solid var(--ms-line) !important;
+        border-radius: var(--ms-radius) !important;
+        box-shadow: none !important;
+    }
+    div[data-testid="stStatusWidget"] details summary {
+        color: var(--ms-ink) !important;
+    }
 
     .main .block-container {
         max-width: 1200px !important;
