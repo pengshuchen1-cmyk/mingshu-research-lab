@@ -5,12 +5,14 @@ from __future__ import annotations
 import hashlib
 import json
 import time
+from uuid import uuid4
 
 import streamlit as st
 
 from core.ai_context import classify_question
 from core.ai_models import AIConfig, AnswerResult
 from core.ai_orchestrator import answer_question
+from core.ai_request_control import request_controller_for_config
 from core.ai_session import (
     CHAT_MESSAGES_KEY,
     append_chat_message,
@@ -32,6 +34,7 @@ SUGGESTED_QUESTIONS = (
     "未来一年需要重点注意什么？",
 )
 _MISSING_CREDENTIAL_REASON = "_".join(("missing", "api", "key"))
+_AI_SESSION_ID_KEY = "bazi_ai_anonymous_session_id"
 
 
 def _runtime_ai_config() -> AIConfig:
@@ -40,6 +43,15 @@ def _runtime_ai_config() -> AIConfig:
     except (FileNotFoundError, RuntimeError):
         secrets = {}
     return AIConfig.from_environment(secrets)
+
+
+def _anonymous_session_id(state) -> str:
+    existing = state.get(_AI_SESSION_ID_KEY)
+    if isinstance(existing, str) and existing:
+        return existing
+    value = uuid4().hex
+    state[_AI_SESSION_ID_KEY] = value
+    return value
 
 
 def answer_source_label(
@@ -58,6 +70,9 @@ def answer_source_label(
         "insufficient_quota": "本地完整分析 · 云端额度不足",
         "invalid_credentials": "本地完整分析 · 云端认证异常",
         "rate_limited": "本地完整分析 · 网络或服务异常",
+        "daily_budget": "本地完整分析 · 今日云端预算已用完",
+        "duplicate_request": "本地完整分析 · 重复请求已拦截",
+        "concurrency_limit": "本地完整分析 · 当前请求较多",
         "network_error": "本地完整分析 · 网络或服务异常",
         "timeout": "本地完整分析 · 网络或服务异常",
         "service_unavailable": "本地完整分析 · 网络或服务异常",
@@ -75,6 +90,9 @@ def degradation_warning(degraded_reason: str | None) -> str:
         "insufficient_quota": "云端 AI 服务余额或额度不足。",
         "invalid_credentials": "API Key 无效或无权限。",
         "rate_limited": "网络或 AI 服务出现短暂异常。",
+        "daily_budget": "今日云端 AI Token 预算已用完。",
+        "duplicate_request": "检测到重复请求。",
+        "concurrency_limit": "当前云端 AI 请求较多。",
         "network_error": "网络或 AI 服务出现短暂异常。",
         "timeout": "网络或 AI 服务出现短暂异常。",
         "service_unavailable": "网络或 AI 服务出现短暂异常。",
@@ -184,9 +202,18 @@ def _answer(chart: dict, question: str) -> None:
     )
     append_chat_message(st.session_state, "user", text)
     started = time.monotonic()
+    request_id = uuid4().hex
     try:
         with st.spinner("正在根据本地四柱规则整理回答…"):
-            result = answer_question(chart, text, history, config=config)
+            result = answer_question(
+                chart,
+                text,
+                history,
+                config=config,
+                request_controller=request_controller_for_config(config),
+                session_id=_anonymous_session_id(st.session_state),
+                request_id=request_id,
+            )
     except Exception:
         log_ai_event(
             event_code="AI_QA_FALLBACK",
@@ -206,6 +233,22 @@ def _answer(chart: dict, question: str) -> None:
             model_alias=model_alias,
             latency_ms=elapsed,
         )
+    elif result.source == "boundary":
+        log_ai_event(
+            event_code="AI_QA_SCOPE_REJECTED",
+            category=category,
+            model_alias=model_alias,
+            latency_ms=elapsed,
+            reason_code="scope_rejected",
+        )
+    elif result.source == "clarification":
+        log_ai_event(
+            event_code="AI_QA_RETRY_REQUESTED",
+            category=category,
+            model_alias=model_alias,
+            latency_ms=elapsed,
+            reason_code="clarification_required",
+        )
     else:
         log_ai_event(
             event_code="AI_QA_FALLBACK",
@@ -213,6 +256,14 @@ def _answer(chart: dict, question: str) -> None:
             model_alias=model_alias,
             latency_ms=elapsed,
             reason_code=result.degraded_reason,
+        )
+    for violation_code in result.violation_codes:
+        log_ai_event(
+            event_code="AI_QA_SEGMENT_REPLACED",
+            category=category,
+            model_alias=model_alias,
+            latency_ms=elapsed,
+            violation_code=violation_code,
         )
     touch_private_session(st.session_state)
     _render_message(st.session_state[CHAT_MESSAGES_KEY][-1])

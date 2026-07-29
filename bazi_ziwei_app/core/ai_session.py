@@ -53,6 +53,9 @@ _DEGRADATION_REASONS = frozenset(
         "service_unavailable",
         "unparseable_response",
         "local_validation_failed",
+        "daily_budget",
+        "duplicate_request",
+        "concurrency_limit",
     }
 )
 
@@ -127,7 +130,12 @@ def append_chat_message(
     messages = list(state.get(CHAT_MESSAGES_KEY, []))
     safe_role = role if role in {"user", "assistant"} else "assistant"
     item = {"role": safe_role, "content": str(content), "created_at": _timestamp()}
-    if source in {"cloud_validated", "local_rules"}:
+    if source in {
+        "cloud_validated",
+        "local_rules",
+        "boundary",
+        "clarification",
+    }:
         item["source"] = source
     if provider in {"kimi", "openai"}:
         item["provider"] = provider
@@ -144,7 +152,10 @@ def append_chat_message(
                 if safe_values:
                     safe_details[key] = safe_values
         degraded_reason = details.get("degraded_reason")
-        if degraded_reason in _DEGRADATION_REASONS:
+        if (
+            source not in {"boundary", "clarification"}
+            and degraded_reason in _DEGRADATION_REASONS
+        ):
             safe_details["degraded_reason"] = degraded_reason
         if safe_details:
             item["details"] = safe_details

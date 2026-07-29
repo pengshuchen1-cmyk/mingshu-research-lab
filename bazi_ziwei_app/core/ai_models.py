@@ -190,6 +190,10 @@ class AIConfig:
     timeout_seconds: int = 30
     provider: str = "kimi"
     base_url: str = "https://api.moonshot.cn/v1"
+    per_session_per_minute: int = 3
+    per_session_daily_requests: int = 30
+    daily_token_budget: int = 500_000
+    max_concurrent_requests: int = 4
 
     @classmethod
     def from_environment(
@@ -244,6 +248,9 @@ DegradationReason = Literal[
     "service_unavailable",
     "unparseable_response",
     "local_validation_failed",
+    "daily_budget",
+    "duplicate_request",
+    "concurrency_limit",
 ]
 
 

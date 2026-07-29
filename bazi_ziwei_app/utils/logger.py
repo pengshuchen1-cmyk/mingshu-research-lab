@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 import os
 import re
+from logging.handlers import TimedRotatingFileHandler
 
 from utils.runtime_mode import is_public_mode
 
@@ -26,6 +27,9 @@ _AI_EVENT_CODES = {
     "AI_QA_VALIDATED",
     "AI_QA_FALLBACK",
     "AI_QA_CLEARED",
+    "AI_QA_SCOPE_REJECTED",
+    "AI_QA_SEGMENT_REPLACED",
+    "AI_QA_RETRY_REQUESTED",
 }
 
 
@@ -69,18 +73,22 @@ def build_ai_log_record(
     *,
     event_code: str,
     category: str = "other",
+    time_scope: str = "none",
     model_alias: str = "local",
     latency_ms: float = 0.0,
     reason_code: str = "none",
+    violation_code: str = "none",
     **_forbidden_fields,
 ) -> dict:
     """Return a strict metadata-only AI audit record."""
     return {
         "event_code": event_code if event_code in _AI_EVENT_CODES else "AI_QA_UNKNOWN",
         "category": _sanitize_log_value(category),
+        "time_scope": _sanitize_log_value(time_scope, "none"),
         "model_alias": _sanitize_log_value(model_alias),
         "latency_bucket": _latency_bucket(latency_ms),
         "reason_code": _sanitize_log_value(reason_code, "none"),
+        "violation_code": _sanitize_log_value(violation_code, "none"),
     }
 
 
@@ -98,7 +106,14 @@ def get_logger() -> logging.Logger:
             handler = logging.StreamHandler()
         else:
             os.makedirs(LOG_DIR, exist_ok=True)
-            handler = logging.FileHandler(LOG_PATH, encoding="utf-8")
+            handler = TimedRotatingFileHandler(
+                LOG_PATH,
+                when="midnight",
+                interval=1,
+                backupCount=30,
+                encoding="utf-8",
+                utc=True,
+            )
         handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
         logger.addHandler(handler)
         logger.setLevel(logging.INFO)

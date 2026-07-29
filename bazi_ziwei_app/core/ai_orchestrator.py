@@ -5,6 +5,7 @@ from __future__ import annotations
 from copy import deepcopy
 from datetime import datetime
 from typing import Callable, Literal, Mapping, Sequence, cast
+from uuid import uuid4
 
 from core.ai_analysis_plan import build_analysis_plan
 from core.ai_answer_format import render_adaptive_markdown
@@ -32,6 +33,10 @@ from core.ai_models import (
     ResolvedQuestion,
 )
 from core.ai_question_resolver import resolve_question
+from core.ai_request_control import (
+    AIRequestController,
+    request_controller_for_config,
+)
 from core.ai_scope_gate import check_bazi_scope
 from core.ai_segment_guard import validate_and_repair_segments
 from core.chart_facts import chart_facts_from_chart
@@ -60,6 +65,9 @@ _SERVICE_DEGRADATION_REASONS = frozenset(
         "timeout",
         "service_unavailable",
         "unparseable_response",
+        "daily_budget",
+        "duplicate_request",
+        "concurrency_limit",
     }
 )
 
@@ -276,6 +284,9 @@ def answer_question(
     config: AIConfig | None = None,
     client: object | None = None,
     on_progress: Callable[[ProgressStage], None] | None = None,
+    request_controller: AIRequestController | None = None,
+    session_id: str = "anonymous",
+    request_id: str = "",
 ) -> AnswerResult:
     def emit(stage: ProgressStage) -> None:
         if on_progress is not None:
@@ -338,23 +349,6 @@ def answer_question(
         )
 
     try:
-        service = client or build_ai_client(selected_config)
-    except AIServiceError as exc:
-        emit("degraded")
-        return _local_result(
-            local,
-            resolved,
-            _degradation_reason(exc.code),
-        )
-    except Exception:
-        emit("degraded")
-        return _local_result(
-            local,
-            resolved,
-            "service_unavailable",
-        )
-
-    try:
         context = build_ai_context(
             packet,
             plan,
@@ -372,80 +366,126 @@ def answer_question(
             "local_validation_failed",
         )
 
-    emit("generating_cloud_answer")
-    try:
-        generation = service.answer(context)
-    except AIServiceError as exc:
+    controller = request_controller or request_controller_for_config(
+        selected_config,
+    )
+    control_request_id = request_id or uuid4().hex
+    decision = controller.preflight(
+        session_id,
+        control_request_id,
+    )
+    if not decision.allowed:
         emit("degraded")
         return _local_result(
             local,
             resolved,
-            _degradation_reason(exc.code),
-        )
-    except Exception:
-        emit("degraded")
-        return _local_result(
-            local,
-            resolved,
-            "service_unavailable",
-        )
-
-    emit("validating_answer")
-    if (
-        not isinstance(generation, CloudGeneration)
-        or not isinstance(generation.analysis, CloudBaziAnalysis)
-        or type(generation.input_tokens) is not int
-        or type(generation.output_tokens) is not int
-        or generation.input_tokens < 0
-        or generation.output_tokens < 0
-    ):
-        emit("degraded")
-        return _local_result(
-            local,
-            resolved,
-            "local_validation_failed",
-            violation_codes=("CLOUD_STRUCTURE_INVALID",),
+            _degradation_reason(str(decision.reason or "")),
         )
 
     try:
-        guarded = validate_and_repair_segments(generation, plan, context)
-    except Exception:
-        emit("degraded")
-        return _local_result(
-            local,
-            resolved,
-            "local_validation_failed",
-            violation_codes=("CLOUD_STRUCTURE_INVALID",),
+        try:
+            service = client or build_ai_client(selected_config)
+        except AIServiceError as exc:
+            emit("degraded")
+            return _local_result(
+                local,
+                resolved,
+                _degradation_reason(exc.code),
+            )
+        except Exception:
+            emit("degraded")
+            return _local_result(
+                local,
+                resolved,
+                "service_unavailable",
+            )
+
+        emit("generating_cloud_answer")
+        try:
+            generation = service.answer(context)
+        except AIServiceError as exc:
+            emit("degraded")
+            return _local_result(
+                local,
+                resolved,
+                _degradation_reason(exc.code),
+            )
+        except Exception:
+            emit("degraded")
+            return _local_result(
+                local,
+                resolved,
+                "service_unavailable",
+            )
+
+        if isinstance(generation, CloudGeneration):
+            controller.record_usage(
+                control_request_id,
+                input_tokens=generation.input_tokens,
+                output_tokens=generation.output_tokens,
+            )
+
+        emit("validating_answer")
+        if (
+            not isinstance(generation, CloudGeneration)
+            or not isinstance(generation.analysis, CloudBaziAnalysis)
+            or type(generation.input_tokens) is not int
+            or type(generation.output_tokens) is not int
+            or generation.input_tokens < 0
+            or generation.output_tokens < 0
+        ):
+            emit("degraded")
+            return _local_result(
+                local,
+                resolved,
+                "local_validation_failed",
+                violation_codes=("CLOUD_STRUCTURE_INVALID",),
+            )
+
+        try:
+            guarded = validate_and_repair_segments(generation, plan, context)
+        except Exception:
+            emit("degraded")
+            return _local_result(
+                local,
+                resolved,
+                "local_validation_failed",
+                violation_codes=("CLOUD_STRUCTURE_INVALID",),
+            )
+        if guarded.full_fallback:
+            emit("degraded")
+            return _local_result(
+                local,
+                resolved,
+                "local_validation_failed",
+                violation_codes=guarded.violation_codes,
+            )
+
+        try:
+            cloud_text = _cloud_answer_text(guarded.answer_text, resolved)
+        except ValueError:
+            emit("degraded")
+            return _local_result(
+                local,
+                resolved,
+                "local_validation_failed",
+                violation_codes=("CLOUD_STRUCTURE_INVALID",),
+            )
+        grounded = local.model_copy(
+            update={"analysis_conclusion": cloud_text},
         )
-    if guarded.full_fallback:
-        emit("degraded")
-        return _local_result(
-            local,
-            resolved,
-            "local_validation_failed",
+        emit("completed")
+        return _answer_result(
+            grounded,
+            source="cloud_validated",
+            provider=cast(
+                Literal["kimi", "openai"],
+                selected_config.provider,
+            ),
+            interpretation_receipt=resolved.interpretation_receipt,
             violation_codes=guarded.violation_codes,
+            input_tokens=generation.input_tokens,
+            output_tokens=generation.output_tokens,
         )
-
-    try:
-        cloud_text = _cloud_answer_text(guarded.answer_text, resolved)
-    except ValueError:
-        emit("degraded")
-        return _local_result(
-            local,
-            resolved,
-            "local_validation_failed",
-            violation_codes=("CLOUD_STRUCTURE_INVALID",),
-        )
-    grounded = local.model_copy(
-        update={"analysis_conclusion": cloud_text},
-    )
-    emit("completed")
-    return _answer_result(
-        grounded,
-        source="cloud_validated",
-        provider=cast(Literal["kimi", "openai"], selected_config.provider),
-        interpretation_receipt=resolved.interpretation_receipt,
-        violation_codes=guarded.violation_codes,
-        input_tokens=generation.input_tokens,
-        output_tokens=generation.output_tokens,
-    )
+    finally:
+        controller.release(control_request_id)
