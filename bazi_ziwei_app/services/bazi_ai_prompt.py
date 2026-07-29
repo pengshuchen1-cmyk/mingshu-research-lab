@@ -4,42 +4,82 @@ from __future__ import annotations
 
 import json
 
+from core.ai_intent import (
+    CURRENT_MARRIAGE_DISCLAIMER,
+    is_current_marriage_question,
+)
 from core.ai_models import AIRequestContext
 
 
-SYSTEM_INSTRUCTION = """你是命数研究室的四柱问答助手。
-仅使用请求中提供的去身份化命盘事实和本地规则，不得补充未提供的事实、
-规则或现实状态。不得重新计算四柱、节气、起运或大运。
-analysis_conclusion 必须是一段可直接展示给客户的完整自然回答，并按问题范围自适应回答深度：
-- 单点问题（一个年份、一个判断或一项建议）通常写 800—1500 个中文字符；
-- 专题问题（财运、事业、姻缘或原生家庭等完整主题）通常写 1500—2500 个中文字符；
-- 长周期问题（多年走势、逐年或逐月分析）通常写 2500—4000 个中文字符，
-  并在材料支持时按阶段展开，列出年份或月份、关键转折点与注意事项。
-以上长度是内容充分度目标，不得为凑字数重复、泛化或扩写无关内容。
-无论问题长短，都要让客户看见：明确结论、命盘证据、本地规则推导链、
-适用条件或不同情形、现实建议与必要限制。证据必须紧贴结论，不能只列术语。
-复杂问题可使用自然小标题、列表或表格；简单问题可连续成文，不得固定套用六个栏目展示。
-结构化结果只返回 analysis_conclusion；机器证据由本地规则装配，不要另行返回证据列表。
-如正文提到日主强弱，强弱结论必须原样使用请求中提供的 classification，
-不得添加“身强、身弱、中和、从旺、从弱”中的第二种分类；即使是假设、对比或
-转述其他情况，也不得出现第二种强弱分类。
-如请求中提供 dayun_periods，涉及大运的年份、年龄、干支和十神只能逐项引用该列表；
-不得自行补算、改写映射或引入列表之外的大运柱。年龄字段只写“约X岁”，
-不得自行称为“虚岁”或“周岁”。涉及大运地支藏干时，只能引用
-branch_hidden_stems，不得自行补充未提供的藏干或十神。
-不得保证结婚、离婚、发财、疾病、死亡、法律、投资或借贷结果。
-询问当前婚姻状态时，主回答必须先以
-“单凭八字，不能确认现实中的婚姻登记状态。”开头，再给概率倾向。
+_DEPTH_TARGETS = {
+    "direct": "300—700",
+    "single_year": "700—1200",
+    "topic": "1200—2200",
+    "long_range": "2200—4000",
+    "monthly": "2200—4000",
+}
+
+_SYSTEM_INSTRUCTION = """你是命数研究室的四柱问答表达助手。
+只允许使用用户消息中的 FactPacket 和 AnalysisPlan，不得使用自身命理知识补充材料。
+FactPacket 与 AnalysisPlan 已由本地排盘和规则生成；不得重新计算四柱、节气、
+日柱、时柱、起运、大运、流年或流月，也不得引入材料中没有的干支、十神、
+强弱、格局、年份、规则或现实状态。
+
+返回 CloudBaziAnalysis 的 segments。每个段落必须提供非空 claim_ids 和自然正文 text。
+每个 claim_id 必须存在于 AnalysisPlan.claims[].id；正文只能展开所引用 claim 的
+allowed_conclusion、fact_ids、rule_ids、conditions、uncertainty 和
+prohibited_expansion，不得写入 claim 之外的命理结论，也不得覆盖本地结论。
+
+本次 requested_depth 为 {requested_depth}，全文目标约 {target} 个中文字符。
+长度是内容深度目标，不得凑字数、重复、泛化或扩写无关内容。结论优先，证据紧贴结论，
+自然说明适用条件、现实建议与必要限制。结构化段落仅供内部校验和装配；
+段落正文不得固定套用六个栏目，可以按当前问题自然成文或使用必要的小标题。
+
+不得保证结婚、离婚、发财、疾病、死亡、法律、投资或借贷结果，
+不得断言材料未提供的现实婚姻、健康、财产或法律状态。
 """
 
 
+def _current_marriage_instruction(context: AIRequestContext) -> str:
+    plan = context.analysis_plan
+    if (
+        plan is None
+        or plan.resolved.domain != "relationship"
+        or not is_current_marriage_question(plan.resolved.safe_question)
+    ):
+        return ""
+    supported = any(
+        claim.id.startswith("relationship.") and claim.uncertainty
+        for claim in plan.claims
+    )
+    if not supported:
+        raise ValueError("relationship_uncertainty_required")
+    return (
+        "\n当前问题询问现实婚姻登记状态。整个回答的第一段 text 必须先以"
+        f"“{CURRENT_MARRIAGE_DISCLAIMER}”开头，再基于 relationship claim "
+        "及其 uncertainty 给出概率倾向；不得确定现实登记状态。\n"
+    )
+
+
 def build_messages(context: AIRequestContext) -> list[dict[str, str]]:
+    if context.fact_packet is None or context.analysis_plan is None:
+        raise ValueError("grounded_context_required")
+    requested_depth = context.analysis_plan.resolved.requested_depth
+    system_instruction = _SYSTEM_INSTRUCTION.format(
+        requested_depth=requested_depth,
+        target=_DEPTH_TARGETS[requested_depth],
+    )
+    system_instruction += _current_marriage_instruction(context)
+    payload = {
+        "fact_packet": context.fact_packet.model_dump(mode="json"),
+        "analysis_plan": context.analysis_plan.model_dump(mode="json"),
+    }
     return [
-        {"role": "system", "content": SYSTEM_INSTRUCTION},
+        {"role": "system", "content": system_instruction},
         {
             "role": "user",
             "content": json.dumps(
-                context.model_dump(mode="json"),
+                payload,
                 ensure_ascii=False,
                 sort_keys=True,
             ),

@@ -4,21 +4,24 @@ import pytest
 
 
 class _Response:
-    def __init__(self, parsed):
+    def __init__(self, parsed, usage=None):
         self.output_parsed = parsed
+        if usage is not None:
+            self.usage = usage
 
 
 class _Responses:
-    def __init__(self, parsed=None, error=None):
+    def __init__(self, parsed=None, error=None, usage=None):
         self.parsed = parsed
         self.error = error
+        self.usage = usage
         self.calls = []
 
     def parse(self, **kwargs):
         self.calls.append(kwargs)
         if self.error:
             raise self.error
-        return _Response(self.parsed)
+        return _Response(self.parsed, self.usage)
 
 
 class _Client:
@@ -38,24 +41,77 @@ class _ProviderConnectionError(Exception):
     pass
 
 
-def _context():
-    from core.ai_models import AIRequestContext
+def _context(*, requested_depth="direct"):
+    from core.ai_models import (
+        AIRequestContext,
+        AnalysisPlan,
+        ClaimPlan,
+        FactItem,
+        FactPacket,
+        ResolvedQuestion,
+    )
+
+    resolved = ResolvedQuestion(
+        safe_question="财运如何？",
+        domain="wealth",
+        requested_depth=requested_depth,
+    )
+    fact_packet = FactPacket(
+        resolved=resolved,
+        facts=[
+            FactItem(
+                id="chart.wealth",
+                kind="chart",
+                text="财务判断要结合承载能力。",
+                source="chart",
+            )
+        ],
+        rule_evidence=[
+            {"id": "WEALTH-CAPACITY", "statement": "承财看日主能力"}
+        ],
+    )
+    analysis_plan = AnalysisPlan(
+        resolved=resolved,
+        claims=[
+            ClaimPlan(
+                id="wealth.core",
+                topic="财务承载",
+                allowed_conclusion="财务主题应同时观察机会与承载能力。",
+                local_text="财务主题应同时观察机会与承载能力。",
+                fact_ids=["chart.wealth"],
+                rule_ids=["WEALTH-CAPACITY"],
+                conditions=["结合现实现金流核对。"],
+                uncertainty=["不保证具体财务结果。"],
+                prohibited_expansion=["不得保证结果"],
+            )
+        ],
+    )
 
     return AIRequestContext(
-        question="财运如何？",
+        question="旧问题字段不应进入云端提示词。",
         category="wealth",
         requires_timing=False,
-        chart_facts={"pillars": ["甲子", "乙丑", "丙寅", "丁卯"], "day_master": "丙"},
-        rule_evidence=[{"id": "WEALTH-CAPACITY", "statement": "承财看日主能力"}],
+        chart_facts={"legacy": "旧命盘字段不应进入云端提示词。"},
+        rule_evidence=[
+            {"id": "LEGACY-RULE", "statement": "旧规则不应进入云端提示词。"}
+        ],
         history=[],
+        resolved_question=resolved,
+        fact_packet=fact_packet,
+        analysis_plan=analysis_plan,
     )
 
 
-def _answer():
+def _answer(claim_id="wealth.core"):
     from core.ai_models import CloudBaziAnalysis
 
     return CloudBaziAnalysis(
-        analysis_conclusion="财运需要结合承载能力。",
+        segments=[
+            {
+                "claim_ids": [claim_id],
+                "text": "财运需要结合承载能力。",
+            }
+        ],
     )
 
 
@@ -63,7 +119,8 @@ def test_client_uses_structured_responses_api_without_storage():
     from core.ai_models import AIConfig, CloudBaziAnalysis
     from services.openai_bazi_client import OpenAIBaziClient
 
-    responses = _Responses(parsed=_answer())
+    usage = type("Usage", (), {"input_tokens": 75, "output_tokens": 45})()
+    responses = _Responses(parsed=_answer(), usage=usage)
     client = OpenAIBaziClient(
         AIConfig("server-key", True, "gpt-5.6-sol", "medium", 30),
         client=_Client(responses),
@@ -71,15 +128,47 @@ def test_client_uses_structured_responses_api_without_storage():
     result = client.answer(_context())
     call = responses.calls[0]
 
-    assert result.analysis_conclusion
-    assert result.chart_evidence == []
-    assert result.rule_evidence == []
+    assert result.analysis.segments[0].claim_ids == ["wealth.core"]
+    assert result.analysis.segments[0].text == "财运需要结合承载能力。"
+    assert result.input_tokens == 75
+    assert result.output_tokens == 45
     assert call["model"] == "gpt-5.6-sol"
     assert call["store"] is False
     assert call["reasoning"] == {"effort": "medium"}
     assert call["text_format"] is CloudBaziAnalysis
     assert call["timeout"] == 30
     assert "server-key" not in str(call)
+    serialized = str(call["input"])
+    assert "旧问题字段不应进入云端提示词" not in serialized
+    assert "旧命盘字段不应进入云端提示词" not in serialized
+    assert "旧规则不应进入云端提示词" not in serialized
+
+
+def test_client_defaults_missing_usage_to_zero():
+    from core.ai_models import AIConfig
+    from services.openai_bazi_client import OpenAIBaziClient
+
+    result = OpenAIBaziClient(
+        AIConfig("server-key", True),
+        client=_Client(_Responses(parsed=_answer())),
+    ).answer(_context())
+
+    assert result.input_tokens == 0
+    assert result.output_tokens == 0
+
+
+def test_client_leaves_unknown_claim_id_for_segment_guard():
+    from core.ai_models import AIConfig
+    from services.openai_bazi_client import OpenAIBaziClient
+
+    result = OpenAIBaziClient(
+        AIConfig("server-key", True),
+        client=_Client(
+            _Responses(parsed=_answer("wealth.outside-plan"))
+        ),
+    ).answer(_context())
+
+    assert result.analysis.segments[0].claim_ids == ["wealth.outside-plan"]
 
 
 def test_client_wraps_service_and_parse_failures():
@@ -95,18 +184,18 @@ def test_client_wraps_service_and_parse_failures():
 
 def test_client_classifies_pydantic_parse_failure_as_retryable_unparseable():
     from pydantic import ValidationError
-    from core.ai_models import AIConfig, BaziAIAnswer
+    from core.ai_models import AIConfig, CloudBaziAnalysis
     from services.openai_bazi_client import AIServiceError, OpenAIBaziClient
 
     with pytest.raises(ValidationError) as captured:
-        BaziAIAnswer.model_validate(
+        CloudBaziAnalysis.model_validate(
             {
-                "analysis_conclusion": "",
-                "chart_evidence": [""],
-                "rule_evidence": [""],
-                "timing_conditions": [""],
-                "practical_advice": [""],
-                "uncertainty_limitations": [""],
+                "segments": [
+                    {
+                        "claim_ids": [],
+                        "text": "",
+                    }
+                ],
             }
         )
     responses = _Responses(error=captured.value)
@@ -215,7 +304,12 @@ def test_invalid_parsed_object_is_unparseable_response():
         client=_Client(
             _Responses(
                 parsed={
-                    "analysis_conclusion": "含有未知字段。",
+                    "segments": [
+                        {
+                            "claim_ids": ["wealth.core"],
+                            "text": "含有未知字段。",
+                        }
+                    ],
                     "extra": "not allowed",
                 }
             )
@@ -226,23 +320,3 @@ def test_invalid_parsed_object_is_unparseable_response():
         client.answer(_context())
 
     assert captured.value.code == "unparseable_response"
-
-
-def test_openai_prompt_requires_adaptive_answer_and_only_supplied_evidence():
-    from services.openai_bazi_client import build_messages
-
-    system_prompt = build_messages(_context())[0]["content"]
-
-    assert "完整自然回答" in system_prompt
-    assert "不得固定套用六个栏目" in system_prompt
-    assert "不得重新计算四柱" in system_prompt
-    assert "仅使用请求中提供" in system_prompt
-    assert "不得补充未提供" in system_prompt
-    assert "按问题范围自适应回答深度" in system_prompt
-    assert "单点问题" in system_prompt
-    assert "专题问题" in system_prompt
-    assert "长周期问题" in system_prompt
-    assert "命盘证据" in system_prompt
-    assert "现实建议" in system_prompt
-    assert "只返回 analysis_conclusion" in system_prompt
-    assert "强弱结论必须原样使用" in system_prompt

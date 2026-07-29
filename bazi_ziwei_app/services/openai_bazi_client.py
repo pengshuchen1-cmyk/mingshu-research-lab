@@ -7,8 +7,8 @@ from pydantic import ValidationError
 from core.ai_models import (
     AIConfig,
     AIRequestContext,
-    BaziAIAnswer,
     CloudBaziAnalysis,
+    CloudGeneration,
 )
 from services.ai_service_errors import AIServiceError, classify_service_error
 from services.bazi_ai_prompt import build_messages
@@ -26,7 +26,7 @@ class OpenAIBaziClient:
         else:
             self._client = None
 
-    def answer(self, context: AIRequestContext) -> BaziAIAnswer:
+    def answer(self, context: AIRequestContext) -> CloudGeneration:
         if self._client is None:
             raise AIServiceError("disabled")
         try:
@@ -40,7 +40,7 @@ class OpenAIBaziClient:
             )
         except TimeoutError:
             raise AIServiceError("timeout") from None
-        except ValidationError:
+        except (ValidationError, ValueError):
             raise AIServiceError("unparseable_response") from None
         except Exception as exc:
             raise AIServiceError(classify_service_error(exc)) from None
@@ -53,13 +53,11 @@ class OpenAIBaziClient:
                 if isinstance(parsed, CloudBaziAnalysis)
                 else CloudBaziAnalysis.model_validate(parsed)
             )
-            return BaziAIAnswer(
-                analysis_conclusion=cloud.analysis_conclusion,
-                chart_evidence=[],
-                rule_evidence=[],
-                timing_conditions=[],
-                practical_advice=[],
-                uncertainty_limitations=[],
+            usage = getattr(response, "usage", None)
+            return CloudGeneration(
+                analysis=cloud,
+                input_tokens=int(getattr(usage, "input_tokens", 0) or 0),
+                output_tokens=int(getattr(usage, "output_tokens", 0) or 0),
             )
         except Exception:
             raise AIServiceError("unparseable_response") from None

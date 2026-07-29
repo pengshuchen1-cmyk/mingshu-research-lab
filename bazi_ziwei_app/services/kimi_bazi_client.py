@@ -7,8 +7,8 @@ import json
 from core.ai_models import (
     AIConfig,
     AIRequestContext,
-    BaziAIAnswer,
     CloudBaziAnalysis,
+    CloudGeneration,
 )
 from services.ai_service_errors import AIServiceError, classify_service_error
 from services.bazi_ai_prompt import build_messages
@@ -44,7 +44,7 @@ class KimiBaziClient:
         else:
             self._client = None
 
-    def answer(self, context: AIRequestContext) -> BaziAIAnswer:
+    def answer(self, context: AIRequestContext) -> CloudGeneration:
         if self._config.model != KIMI_MODEL:
             raise AIServiceError("service_unavailable")
         if self._client is None:
@@ -67,13 +67,11 @@ class KimiBaziClient:
             content = getattr(getattr(choices[0], "message", None), "content", None)
             raw = json.loads(content) if isinstance(content, str) else None
             parsed = CloudBaziAnalysis.model_validate(raw)
-            return BaziAIAnswer(
-                analysis_conclusion=parsed.analysis_conclusion,
-                chart_evidence=[],
-                rule_evidence=[],
-                timing_conditions=[],
-                practical_advice=[],
-                uncertainty_limitations=[],
+            usage = getattr(response, "usage", None)
+            return CloudGeneration(
+                analysis=parsed,
+                input_tokens=int(getattr(usage, "prompt_tokens", 0) or 0),
+                output_tokens=int(getattr(usage, "completion_tokens", 0) or 0),
             )
         except AIServiceError:
             raise
