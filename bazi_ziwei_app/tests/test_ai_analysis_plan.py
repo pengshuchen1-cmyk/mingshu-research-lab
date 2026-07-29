@@ -254,6 +254,100 @@ def test_plan_capacity_error_is_stable_instead_of_dropping_facts():
     assert str(caught.value).startswith("PLAN_CAPACITY_EXCEEDED:")
 
 
+@pytest.mark.parametrize("payload_length", [49, 50])
+def test_timing_capacity_counts_first_group_conditions_without_false_failure(
+    payload_length,
+):
+    from core.ai_analysis_plan import build_analysis_plan
+    from core.ai_models import FactItem, FactPacket, ResolvedQuestion
+
+    years = list(range(2020, 2041))
+    resolved = ResolvedQuestion(
+        safe_question="2020到2040年财运",
+        domain="wealth",
+        time_scope="year_range",
+        target_years=years,
+        requested_depth="long_range",
+    )
+    packet = FactPacket(
+        resolved=resolved,
+        facts=[
+            FactItem(
+                id="chart.wealth",
+                kind="chart",
+                text="财富领域事实。",
+                source="chart",
+            ),
+            *[
+                FactItem(
+                    id=f"year.{year}",
+                    kind="year",
+                    text=f"{year}年" + ("长" * payload_length),
+                    source="year",
+                )
+                for year in years
+            ],
+        ],
+        rule_evidence=[
+            {"id": "WEALTH-CAPACITY", "statement": "财富领域规则。"},
+            {"id": "SAFETY-NONDETERMINISTIC", "statement": "安全规则。"},
+        ],
+    )
+
+    plan = build_analysis_plan(packet)
+    timing_claims = plan.claims[1:]
+
+    assert {
+        fact_id
+        for claim in timing_claims
+        for fact_id in claim.fact_ids
+    } == {f"year.{year}" for year in years}
+    assert all(len(claim.local_text) <= 1200 for claim in timing_claims)
+
+
+def test_timing_group_count_is_monotonic_as_facts_get_longer():
+    from core.ai_analysis_plan import build_analysis_plan
+    from core.ai_models import FactItem, FactPacket, ResolvedQuestion
+
+    years = list(range(2020, 2041))
+
+    def group_count(payload_length):
+        resolved = ResolvedQuestion(
+            safe_question="2020到2040年财运",
+            domain="wealth",
+            time_scope="year_range",
+            target_years=years,
+            requested_depth="long_range",
+        )
+        packet = FactPacket(
+            resolved=resolved,
+            facts=[
+                FactItem(
+                    id="chart.wealth",
+                    kind="chart",
+                    text="财富领域事实。",
+                    source="chart",
+                ),
+                *[
+                    FactItem(
+                        id=f"year.{year}",
+                        kind="year",
+                        text=f"{year}年" + ("长" * payload_length),
+                        source="year",
+                    )
+                    for year in years
+                ],
+            ],
+            rule_evidence=[
+                {"id": "WEALTH-CAPACITY", "statement": "财富领域规则。"},
+                {"id": "SAFETY-NONDETERMINISTIC", "statement": "安全规则。"},
+            ],
+        )
+        return len(build_analysis_plan(packet).claims) - 1
+
+    assert group_count(50) >= group_count(49)
+
+
 def test_missing_domain_fact_fails_without_cross_domain_fallback():
     from core.ai_analysis_plan import AnalysisPlanError, build_analysis_plan
 

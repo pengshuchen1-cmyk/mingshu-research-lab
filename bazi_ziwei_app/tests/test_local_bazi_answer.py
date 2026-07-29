@@ -501,6 +501,66 @@ def test_extended_domain_local_plan_remains_complete_without_cloud(
     assert answer.uncertainty_limitations
 
 
+@pytest.mark.parametrize(
+    ("question", "domain"),
+    [
+        ("事业如何发展？", "career"),
+        ("家庭关系如何？", "family"),
+        ("健康如何？", "health_advisory"),
+        ("子女如何？", "children"),
+        ("学业如何？", "education"),
+        ("是否适合搬家？", "relocation"),
+        ("买房置业如何？", "property"),
+        ("有贵人吗？", "benefactor"),
+    ],
+)
+def test_extended_domain_plan_chart_evidence_is_readable_and_guard_mappable(
+    question,
+    domain,
+):
+    import re
+
+    from core.ai_analysis_plan import build_analysis_plan
+    from core.ai_answer_guard import validate_ai_answer
+    from core.ai_context import build_ai_context
+    from core.ai_models import AIRequestContext
+    from core.chart_facts import chart_facts_from_chart
+    from core.local_bazi_answer import render_local_plan
+    from tests.bazi_ai_fixtures import synthetic_chart
+
+    chart = synthetic_chart()
+    packet = _compiled_packet(question)
+    answer = render_local_plan(build_analysis_plan(packet))
+    base_context = build_ai_context(
+        chart_facts_from_chart(chart),
+        "事业如何发展？",
+        [],
+    )
+    context = AIRequestContext(
+        question=question,
+        category=domain,
+        requires_timing=False,
+        chart_facts=base_context.chart_facts,
+        rule_evidence=packet.rule_evidence,
+        history=[],
+    )
+
+    assert answer.chart_evidence
+    assert all(re.search(r"[\u3400-\u9fff]", item) for item in answer.chart_evidence)
+    assert all("domain." not in item and "chart." not in item for item in answer.chart_evidence)
+    assert "unmapped_chart_evidence" not in validate_ai_answer(
+        answer,
+        context,
+    ).violations
+    if domain == "health_advisory":
+        element_fact = next(
+            fact.text
+            for fact in packet.facts
+            if fact.id == "domain.health_advisory.elements"
+        )
+        assert element_fact in answer.analysis_conclusion
+
+
 def test_health_local_plan_is_advisory_and_non_diagnostic():
     from core.ai_analysis_plan import build_analysis_plan
     from core.local_bazi_answer import render_local_plan

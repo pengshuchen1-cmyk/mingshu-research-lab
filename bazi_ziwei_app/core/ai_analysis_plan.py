@@ -142,19 +142,33 @@ _MAX_CLAIM_TEXT = 1200
 _MAX_PLAN_CLAIMS = 60
 
 
+def _compose_local_paragraph(
+    conclusion: str,
+    facts: list[FactItem],
+    conditions: list[str],
+    uncertainty: list[str],
+) -> str:
+    fact_text = "；事实：".join(item.text.strip() for item in facts)
+    parts = [conclusion]
+    if fact_text:
+        parts.append(f"命盘事实：{fact_text}")
+    parts.extend(conditions)
+    parts.extend(uncertainty)
+    return " ".join(part.strip() for part in parts if part.strip())
+
+
 def _local_paragraph(
     conclusion: str,
     facts: list[FactItem],
     conditions: list[str],
     uncertainty: list[str],
 ) -> str:
-    fact_text = "；".join(item.text.strip() for item in facts)
-    parts = [conclusion]
-    if fact_text:
-        parts.append(f"命盘事实：{fact_text}")
-    parts.extend(conditions)
-    parts.extend(uncertainty)
-    paragraph = " ".join(part.strip() for part in parts if part.strip())
+    paragraph = _compose_local_paragraph(
+        conclusion,
+        facts,
+        conditions,
+        uncertainty,
+    )
     if len(paragraph) > _MAX_CLAIM_TEXT:
         raise AnalysisPlanError("PLAN_CAPACITY_EXCEEDED")
     return paragraph
@@ -265,6 +279,10 @@ def _conditions(content: dict[str, str], prefix: str = "") -> list[str]:
 def _base_claims(packet: FactPacket) -> list[ClaimPlan]:
     content = _DOMAIN_CONTENT[packet.resolved.domain]
     domain_facts = _domain_facts(packet)
+    core_facts = _dedupe_facts(
+        domain_facts,
+        4 if packet.resolved.domain == "health_advisory" else 1,
+    )
     chart_facts = [
         item for item in packet.facts if item.source == "chart"
     ] or list(packet.facts)
@@ -275,7 +293,7 @@ def _base_claims(packet: FactPacket) -> list[ClaimPlan]:
             f"{packet.resolved.domain}.core",
             content["topic"],
             content["conclusion"],
-            _dedupe_facts(domain_facts, 1),
+            core_facts,
             domain_rules,
             conditions=_conditions(content),
             uncertainty=[f"限制：{content['limit']}"],
@@ -397,6 +415,20 @@ def _timing_conclusion(facts: Sequence[FactItem]) -> str:
     return f"以下按连续时间顺序聚合{len(facts)}条已提供事实。"
 
 
+def _timing_annotations(index: int) -> tuple[list[str], list[str]]:
+    conditions = (
+        ["条件：仅在请求事实覆盖的时间范围内观察。"]
+        if index == 0
+        else []
+    )
+    uncertainty = (
+        ["限制：时间标签不等于事件必然发生。"]
+        if index == 0
+        else []
+    )
+    return conditions, uncertainty
+
+
 def _timing_groups(timing_facts: list[FactItem]) -> list[list[FactItem]]:
     if len(timing_facts) <= 20:
         return [[item] for item in timing_facts]
@@ -405,10 +437,17 @@ def _timing_groups(timing_facts: list[FactItem]) -> list[list[FactItem]]:
     for item in timing_facts:
         candidate = [*current, item]
         conclusion = _timing_conclusion(candidate)
-        fact_text = "；".join(fact.text for fact in candidate)
+        conditions, uncertainty = _timing_annotations(len(groups))
         fits = (
             len(candidate) <= _MAX_CLAIM_FACTS
-            and len(f"{conclusion} 命盘事实：{fact_text}") <= _MAX_CLAIM_TEXT
+            and len(
+                _compose_local_paragraph(
+                    conclusion,
+                    candidate,
+                    conditions,
+                    uncertainty,
+                )
+            ) <= _MAX_CLAIM_TEXT
             and (not current or item.kind == current[-1].kind)
         )
         if current and not fits:
@@ -438,16 +477,7 @@ def _timing_claims(packet: FactPacket) -> list[ClaimPlan]:
     claims = []
     for index, facts in enumerate(_timing_groups(timing_facts)):
         topic = _timing_topic(facts)
-        conditions = (
-            ["条件：仅在请求事实覆盖的时间范围内观察。"]
-            if index == 0
-            else []
-        )
-        uncertainty = (
-            ["限制：时间标签不等于事件必然发生。"]
-            if index == 0
-            else []
-        )
+        conditions, uncertainty = _timing_annotations(index)
         claims.append(
             _claim(
                 f"{packet.resolved.domain}.{facts[0].id}",

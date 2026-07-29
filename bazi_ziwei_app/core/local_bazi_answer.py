@@ -530,19 +530,25 @@ def _plan_rule_statements(plan: AnalysisPlan) -> list[str]:
 def _plan_fact_texts(plan: AnalysisPlan) -> list[str]:
     facts = []
     for claim in plan.claims:
-        if not any(
-            not fact_id.startswith(("dayun.", "year.", "month.", "age."))
-            for fact_id in claim.fact_ids
-        ):
-            continue
         marker = "命盘事实："
         if marker not in claim.local_text:
             continue
         fact_block = claim.local_text.split(marker, 1)[1]
         for suffix in (" 条件：", " 建议：", " 限制："):
             fact_block = fact_block.split(suffix, 1)[0]
-        if fact_block.strip():
-            facts.append(fact_block.strip())
+        fact_texts = [item.strip() for item in fact_block.split("；事实：")]
+        if len(fact_texts) != len(claim.fact_ids):
+            fact_texts = [fact_block.strip()] * len(claim.fact_ids)
+        for fact_id, fact_text in zip(claim.fact_ids, fact_texts):
+            if fact_id.startswith(("dayun.", "year.", "month.", "age.")):
+                continue
+            if (
+                fact_id.startswith("domain.health_advisory.")
+                and fact_id != "domain.health_advisory.strength"
+            ):
+                continue
+            if fact_text:
+                facts.append(fact_text)
     return _deduplicated(facts)
 
 
