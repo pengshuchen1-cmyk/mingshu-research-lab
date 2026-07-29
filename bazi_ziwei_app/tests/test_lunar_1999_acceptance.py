@@ -10,6 +10,19 @@ ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = json.loads(
     (ROOT / "tests" / "fixtures" / "lunar_1999_bazi_case.json").read_text(encoding="utf-8")
 )
+
+
+def _acceptance_controller():
+    from core.ai_request_control import AIRequestController
+
+    return AIRequestController(
+        per_minute=20,
+        daily_requests=20,
+        daily_tokens=500_000,
+        max_concurrent=4,
+    )
+
+
 def _birth_input():
     from core.birth_input_preview import BirthFormInput
 
@@ -64,6 +77,8 @@ def test_lunar_1999_cloud_and_no_key_paths_return_guarded_adaptive_answers():
         [],
         config=AIConfig("fixture-key", True),
         client=DeterministicAcceptanceClient(),
+        request_controller=_acceptance_controller(),
+        session_id="lunar-1999-cloud-and-local",
     )
     local = answer_question(
         chart,
@@ -71,6 +86,8 @@ def test_lunar_1999_cloud_and_no_key_paths_return_guarded_adaptive_answers():
         [],
         config=AIConfig("", False),
         client=DeterministicAcceptanceClient(),
+        request_controller=_acceptance_controller(),
+        session_id="lunar-1999-cloud-and-local",
     )
 
     assert cloud.source == "cloud_validated"
@@ -103,6 +120,8 @@ def test_lunar_1999_cloud_context_serialization_excludes_raw_birth_and_identity(
         [],
         config=AIConfig("fixture-key", True),
         client=client,
+        request_controller=_acceptance_controller(),
+        session_id="lunar-1999-privacy",
     )
     assert result.source == "cloud_validated"
     assert len(client.contexts) == 1
@@ -170,6 +189,8 @@ def test_dayun_finance_question_receives_canonical_local_periods():
         [],
         config=AIConfig("fixture-key", True),
         client=client,
+        request_controller=_acceptance_controller(),
+        session_id="lunar-1999-dayun",
     )
 
     assert result.source == "cloud_validated"
@@ -245,7 +266,7 @@ def test_original_five_case_chain_remains_exact_and_passing():
 
 
 def test_lunar_1999_receipt_renderer_is_exact_and_deterministic():
-    from scripts.render_lunar_1999_acceptance import OUTPUT, render
+    import scripts.render_lunar_1999_acceptance as receipt
 
     expected = (
         "# 1999 农历命例·输入与问答验收\n"
@@ -257,11 +278,33 @@ def test_lunar_1999_receipt_renderer_is_exact_and_deterministic():
         "云端自然回答模拟：通过\n"
         "本地完整降级：通过\n"
         "隐私边界：通过\n"
+        "\n"
+        "## 验收边界\n"
+        "\n"
+        "真实云端调用：0 次（仅使用离线 Kimi 模拟客户端）\n"
+        "命例仅用于验收，不会进入生产规则或提示\n"
     )
 
-    assert render() == expected
-    assert render() == expected
-    assert OUTPUT.read_text(encoding="utf-8") == expected
+    assert receipt.render() == expected
+    assert receipt.render() == expected
+    assert receipt.OUTPUT.read_text(encoding="utf-8") == expected
+
+
+def test_lunar_1999_script_writes_the_complete_boundary_receipt(
+    tmp_path,
+    monkeypatch,
+):
+    import scripts.render_lunar_1999_acceptance as receipt
+
+    target = tmp_path / "lunar-1999.md"
+    monkeypatch.setattr(receipt, "OUTPUT", target)
+
+    receipt.main()
+
+    rendered = target.read_text(encoding="utf-8")
+    assert rendered == receipt.render()
+    assert "真实云端调用：0 次" in rendered
+    assert "命例仅用于验收，不会进入生产规则或提示" in rendered
 
 
 def test_lunar_1999_receipt_privacy_verdict_uses_actual_cloud_context(monkeypatch):

@@ -16,6 +16,7 @@ if str(ROOT) not in sys.path:
 
 from core.ai_models import AIConfig
 from core.ai_orchestrator import answer_question
+from core.ai_request_control import AIRequestController
 from core.bazi_engine import build_bazi_chart
 from services.kimi_bazi_client import KimiBaziClient
 
@@ -139,6 +140,15 @@ def _build_chart(case: dict) -> dict:
     return build_bazi_chart(profile)
 
 
+def _offline_acceptance_controller() -> AIRequestController:
+    return AIRequestController(
+        per_minute=200,
+        daily_requests=200,
+        daily_tokens=500_000,
+        max_concurrent=4,
+    )
+
+
 def render(*, live: bool = False) -> str:
     cases, questions = _load_inputs()
     config = AIConfig.from_environment() if live else AIConfig("fixture-key", True)
@@ -147,6 +157,7 @@ def render(*, live: bool = False) -> str:
             "live mode requires configured Kimi/OpenAI API credentials"
         )
     client = None if live else KimiAcceptanceClient()
+    controller = None if live else _offline_acceptance_controller()
     lines = [
         "# 用户五命例·AI 问答验收",
         "",
@@ -158,7 +169,18 @@ def render(*, live: bool = False) -> str:
         pillars = " / ".join(chart["pillars"][key]["pillar"] for key in ("year", "month", "day", "hour"))
         lines.extend([f"## {case['id']} · 验收通过", "", f"四柱：{pillars}", ""])
         for index, question in enumerate(questions, 1):
-            result = answer_question(chart, question, [], config=config, client=client)
+            kwargs = {
+                "config": config,
+                "client": client,
+            }
+            if controller is not None:
+                kwargs.update(
+                    {
+                        "request_controller": controller,
+                        "session_id": f"offline-five-case-{case['id']}",
+                    }
+                )
+            result = answer_question(chart, question, [], **kwargs)
             lines.extend([f"### Q{index}", "", f"问：{question}", "", "答：", ""])
             lines.extend([result.answer, ""])
             lines.extend([f"来源：{result.source}", ""])

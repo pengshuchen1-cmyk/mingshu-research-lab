@@ -18,6 +18,17 @@ QUESTIONS = json.loads(
 TRACKED_ARTIFACT = ROOT / "acceptance_samples" / "user_five_ai_acceptance.md"
 
 
+def _acceptance_controller():
+    from core.ai_request_control import AIRequestController
+
+    return AIRequestController(
+        per_minute=200,
+        daily_requests=200,
+        daily_tokens=500_000,
+        max_concurrent=4,
+    )
+
+
 def _assert_artifact_current(path: Path, rendered: str) -> None:
     assert path.read_text(encoding="utf-8") == rendered
 
@@ -47,6 +58,7 @@ def test_all_six_ai_questions_are_grounded_for_each_user_chart(case):
 
     chart = _chart(case)
     client = KimiAcceptanceClient()
+    controller = _acceptance_controller()
     answers = []
     for question in QUESTIONS["standard_questions"] + QUESTIONS["safety_questions"]:
         result = answer_question(
@@ -55,6 +67,8 @@ def test_all_six_ai_questions_are_grounded_for_each_user_chart(case):
             [],
             config=AIConfig("fixture-key", True),
             client=client,
+            request_controller=controller,
+            session_id=f"offline-six-question-{case['id']}",
         )
         answers.append(result)
         assert result.source == "cloud_validated"
@@ -83,10 +97,10 @@ def test_all_six_ai_questions_are_grounded_for_each_user_chart(case):
 
 
 def test_five_chart_ai_acceptance_renderer_is_deterministic():
-    from scripts.run_user_five_ai_acceptance import render
+    import scripts.run_user_five_ai_acceptance as acceptance
 
-    first = render()
-    second = render()
+    first = acceptance.render()
+    second = acceptance.render()
 
     assert first == second
     assert first.count("## U0") == 5
@@ -116,8 +130,10 @@ def test_stale_five_chart_ai_artifact_fails_currentness_check(tmp_path):
         _assert_artifact_current(stale, "fresh content\n")
 
 
-def test_five_chart_ai_acceptance_script_runs_to_explicit_temporary_output(tmp_path):
-    from scripts.run_user_five_ai_acceptance import render
+def test_five_chart_ai_acceptance_script_runs_to_explicit_temporary_output(
+    tmp_path,
+):
+    import scripts.run_user_five_ai_acceptance as acceptance
 
     tracked_before = TRACKED_ARTIFACT.read_bytes()
     target = tmp_path / "user_five_ai_acceptance.md"
@@ -136,7 +152,10 @@ def test_five_chart_ai_acceptance_script_runs_to_explicit_temporary_output(tmp_p
 
     assert completed.returncode == 0, completed.stderr
     assert str(target) in completed.stdout
-    assert target.read_text(encoding="utf-8") == render()
+    output = target.read_text(encoding="utf-8")
+    assert output == acceptance.render()
+    assert output.count("来源：cloud_validated") == 30
+    assert "rate_limited" not in output
     assert TRACKED_ARTIFACT.read_bytes() == tracked_before
 
 
@@ -155,6 +174,32 @@ def test_live_acceptance_without_credentials_names_supported_providers(monkeypat
         match="live mode requires configured Kimi/OpenAI API credentials",
     ):
         render(live=True)
+
+
+def test_live_acceptance_does_not_inject_offline_request_controls(monkeypatch):
+    from types import SimpleNamespace
+
+    from core.ai_models import AIConfig
+    import scripts.run_user_five_ai_acceptance as acceptance
+
+    captured = []
+
+    def fake_answer_question(chart, question, history, **kwargs):
+        captured.append(kwargs)
+        return SimpleNamespace(answer="live answer", source="cloud_validated")
+
+    monkeypatch.setattr(
+        acceptance.AIConfig,
+        "from_environment",
+        lambda: AIConfig("live-key", True),
+    )
+    monkeypatch.setattr(acceptance, "answer_question", fake_answer_question)
+
+    acceptance.render(live=True)
+
+    assert len(captured) == 30
+    assert all("request_controller" not in kwargs for kwargs in captured)
+    assert all("session_id" not in kwargs for kwargs in captured)
 
 
 @pytest.mark.parametrize(
@@ -178,6 +223,8 @@ def test_current_marriage_status_variants_trigger_safe_acceptance_answer(questio
         [],
         config=AIConfig("fixture-key", True),
         client=DeterministicAcceptanceClient(),
+        request_controller=_acceptance_controller(),
+        session_id=f"offline-marriage-variant-{question}",
     )
 
     assert "单凭八字，不能确认现实中的婚姻登记状态" in result.answer

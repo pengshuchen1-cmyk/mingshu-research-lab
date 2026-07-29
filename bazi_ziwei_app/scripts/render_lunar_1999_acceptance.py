@@ -13,6 +13,7 @@ if str(ROOT) not in sys.path:
 
 from core.ai_models import AIConfig
 from core.ai_orchestrator import answer_question
+from core.ai_request_control import AIRequestController
 from core.bazi_engine import build_bazi_chart
 from core.birth_input_preview import BirthFormInput, build_birth_preview
 from scripts.run_user_five_ai_acceptance import DeterministicAcceptanceClient
@@ -63,12 +64,20 @@ def render() -> str:
         "出生地：L1999-QUESTION-PLACE，目前是否结婚？"
     )
     client = DeterministicAcceptanceClient()
+    controller = AIRequestController(
+        per_minute=20,
+        daily_requests=20,
+        daily_tokens=500_000,
+        max_concurrent=4,
+    )
     cloud = answer_question(
         chart,
         raw_question,
         [],
         config=AIConfig("fixture-key", True),
         client=client,
+        request_controller=controller,
+        session_id="offline-lunar-1999-acceptance",
     )
     if (
         cloud.source != "cloud_validated"
@@ -122,6 +131,11 @@ def render() -> str:
         "云端自然回答模拟：通过\n"
         "本地完整降级：通过\n"
         "隐私边界：通过\n"
+        "\n"
+        "## 验收边界\n"
+        "\n"
+        "真实云端调用：0 次（仅使用离线 Kimi 模拟客户端）\n"
+        "命例仅用于验收，不会进入生产规则或提示\n"
     )
 
 

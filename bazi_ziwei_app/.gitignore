@@ -13,3 +13,4 @@ logs/
 .env
 .env.*
 acceptance_runs/
+.superpowers/

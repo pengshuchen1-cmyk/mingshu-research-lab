@@ -8,6 +8,9 @@ from pathlib import Path
 def find_private_release_artifacts(root: str | Path) -> list[Path]:
     base = Path(root)
     candidates: list[Path] = []
+    superpowers_dir = base / ".superpowers"
+    if superpowers_dir.exists():
+        candidates.append(superpowers_dir)
     data_dir = base / "data"
     if data_dir.exists():
         candidates.extend(path for path in data_dir.rglob("*.db") if path.is_file())
