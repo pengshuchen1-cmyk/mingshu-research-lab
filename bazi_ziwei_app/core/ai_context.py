@@ -3,14 +3,20 @@
 from __future__ import annotations
 
 import re
-from typing import Mapping, Sequence
+from typing import Mapping, Sequence, overload
 
 import core.yearly_engine as yearly_engine
 from core.ai_intent import (
     CURRENT_MARRIAGE_STATUS_MARKER,
     is_current_marriage_question,
 )
-from core.ai_models import AIRequestContext, ChatMessage, RoutedQuestion
+from core.ai_models import (
+    AIRequestContext,
+    AnalysisPlan,
+    ChatMessage,
+    FactPacket,
+    RoutedQuestion,
+)
 from core.bazi_constants import BRANCH_HIDDEN_STEMS, STEM_ELEMENTS
 from core.bazi_rulebook import load_rulebook
 from core.chart_facts import ChartFacts
@@ -741,18 +747,15 @@ def _safe_history(history: Sequence[ChatMessage | Mapping[str, object]]) -> list
     return list(reversed(selected))
 
 
-def build_ai_context(
+def build_canonical_chart_facts(
     facts: ChartFacts,
-    question: str,
-    history: Sequence[ChatMessage | Mapping[str, object]],
     *,
+    requires_timing: bool,
+    question: str = "",
+    target_years: Sequence[int] = (),
     dayun_periods: Sequence[Mapping[str, object]] | None = None,
-) -> AIRequestContext:
-    redacted_question = redact_customer_text(
-        question,
-        max_input_chars=_MAX_QUESTION_INPUT_CHARS,
-    )
-    routed = classify_question(redacted_question)
+) -> dict[str, object]:
+    """Project canonical local facts for guards without routing a question."""
     raw = facts.to_dict()
     chart_facts: dict[str, object] = {
         "pillars": raw["pillars"],
@@ -767,15 +770,116 @@ def build_ai_context(
         "relationship": raw["relationship"],
         "dayun": raw["dayun"],
     }
-    if routed.requires_timing or routed.category == "timing":
+    if requires_timing:
         chart_facts["current_context"] = raw["current_context"]
-        chart_facts["target_years"] = _target_year_facts(redacted_question)
+        selected_years = list(dict.fromkeys(int(year) for year in target_years))
+        chart_facts["target_years"] = (
+            [
+                {
+                    "year": year,
+                    "year_pillar": yearly_engine.get_year_pillar(year),
+                }
+                for year in selected_years
+            ]
+            if selected_years
+            else _target_year_facts(question)
+        )
         projected_periods = _safe_dayun_periods(
             dayun_periods,
             str(raw["day_master"]),
         )
         if projected_periods:
             chart_facts["dayun_periods"] = projected_periods
+    return chart_facts
+
+
+def _build_grounded_context(
+    packet: FactPacket,
+    plan: AnalysisPlan,
+    history: Sequence[ChatMessage | Mapping[str, object]],
+    *,
+    canonical_chart_facts: Mapping[str, object] | None,
+) -> AIRequestContext:
+    if packet.resolved != plan.resolved:
+        raise ValueError("grounded_context_resolution_mismatch")
+    chart_facts = (
+        dict(canonical_chart_facts)
+        if canonical_chart_facts is not None
+        else {
+            "fact_items": [
+                item.model_dump(mode="json")
+                for item in packet.facts
+            ]
+        }
+    )
+    return AIRequestContext(
+        question=packet.resolved.safe_question,
+        category=packet.resolved.domain,
+        requires_timing=packet.resolved.time_scope != "none",
+        chart_facts=chart_facts,
+        rule_evidence=list(packet.rule_evidence),
+        history=_safe_history(history),
+        resolved_question=packet.resolved,
+        fact_packet=packet,
+        analysis_plan=plan,
+    )
+
+
+@overload
+def build_ai_context(
+    facts: ChartFacts,
+    question: str,
+    history: Sequence[ChatMessage | Mapping[str, object]],
+    *,
+    dayun_periods: Sequence[Mapping[str, object]] | None = None,
+    canonical_chart_facts: None = None,
+) -> AIRequestContext: ...
+
+
+@overload
+def build_ai_context(
+    facts: FactPacket,
+    question: AnalysisPlan,
+    history: Sequence[ChatMessage | Mapping[str, object]],
+    *,
+    dayun_periods: None = None,
+    canonical_chart_facts: Mapping[str, object] | None = None,
+) -> AIRequestContext: ...
+
+
+def build_ai_context(
+    facts: ChartFacts | FactPacket,
+    question: str | AnalysisPlan,
+    history: Sequence[ChatMessage | Mapping[str, object]],
+    *,
+    dayun_periods: Sequence[Mapping[str, object]] | None = None,
+    canonical_chart_facts: Mapping[str, object] | None = None,
+) -> AIRequestContext:
+    if isinstance(facts, FactPacket):
+        if not isinstance(question, AnalysisPlan):
+            raise TypeError("grounded context requires an AnalysisPlan")
+        return _build_grounded_context(
+            facts,
+            question,
+            history,
+            canonical_chart_facts=canonical_chart_facts,
+        )
+    if not isinstance(question, str):
+        raise TypeError("legacy context requires a question string")
+
+    redacted_question = redact_customer_text(
+        question,
+        max_input_chars=_MAX_QUESTION_INPUT_CHARS,
+    )
+    routed = classify_question(redacted_question)
+    chart_facts = build_canonical_chart_facts(
+        facts,
+        requires_timing=(
+            routed.requires_timing or routed.category == "timing"
+        ),
+        question=redacted_question,
+        dayun_periods=dayun_periods,
+    )
 
     selected_ids = list(facts.rule_ids)
     selected_ids.extend(DOMAIN_RULE_IDS[routed.category])

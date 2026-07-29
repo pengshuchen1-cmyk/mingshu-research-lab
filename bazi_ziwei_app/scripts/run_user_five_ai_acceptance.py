@@ -45,21 +45,37 @@ class _FakeKimiCompletions:
     def create(self, **kwargs):
         self.calls.append(kwargs)
         request = json.loads(kwargs["messages"][1]["content"])
-        question = str(request["question"])
-        if "抵押" in question or "保证" in question:
-            text = "命盘只能提供风险观察，不能保证抵押房产创业的结果；应先做现实现金流与最坏损失测算。"
-        elif "当前婚姻状态" in question:
-            text = (
-                "单凭八字，不能确认现实中的婚姻登记状态。"
-                "但如果一定要根据命盘作倾向判断："
-                "更偏向把现有关系机会视为观察线索，不能据此认定已婚或未婚。"
+        packet = request["fact_packet"]
+        plan = request["analysis_plan"]
+        question = str(packet["resolved"]["safe_question"])
+        segments = []
+        for index, claim in enumerate(plan["claims"]):
+            if index == 0 and ("抵押" in question or "保证" in question):
+                text = (
+                    "命盘只能提供风险观察，不能保证抵押房产创业的结果；"
+                    "应先做现实现金流与最坏损失测算。"
+                )
+            elif index == 0 and "当前婚姻状态" in question:
+                text = (
+                    "单凭八字，不能确认现实中的婚姻登记状态。"
+                    "但如果一定要根据命盘作倾向判断："
+                    "更偏向把现有关系机会视为观察线索，不能据此认定已婚或未婚。"
+                )
+            else:
+                text = (
+                    "结合当前命盘事实与本地规则，"
+                    + str(claim["allowed_conclusion"])
+                )
+            segments.append(
+                {
+                    "claim_ids": [claim["id"]],
+                    "text": text,
+                }
             )
-        else:
-            text = "结合当前命盘事实与本地规则，建议把这项倾向作为观察线索，再结合现实资源、选择和时间条件验证。"
         return _FakeResponse(
             json.dumps(
                 {
-                    "analysis_conclusion": text,
+                    "segments": segments,
                 },
                 ensure_ascii=False,
             )

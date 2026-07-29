@@ -127,7 +127,11 @@ def test_lunar_1999_cloud_context_serialization_excludes_raw_birth_and_identity(
 
 
 def test_dayun_finance_question_receives_canonical_local_periods():
-    from core.ai_models import AIConfig, BaziAIAnswer
+    from core.ai_models import (
+        AIConfig,
+        CloudBaziAnalysis,
+        CloudGeneration,
+    )
     from core.ai_orchestrator import answer_question
 
     class CapturingClient:
@@ -136,17 +140,27 @@ def test_dayun_finance_question_receives_canonical_local_periods():
 
         def answer(self, context):
             self.contexts.append(context)
-            return BaziAIAnswer(
-                analysis_conclusion=(
-                    "2030年开始进入戊辰正财大运，约31岁起。"
-                    "此前2020—2029年的己巳偏财大运，更偏机会型收入；"
-                    "进入戊辰后，财务主题转向稳定现金流和长期经营。"
-                ),
-                chart_evidence=[],
-                rule_evidence=[],
-                timing_conditions=[],
-                practical_advice=[],
-                uncertainty_limitations=[],
+            return CloudGeneration(
+                analysis=CloudBaziAnalysis(
+                        segments=[
+                            {
+                                "claim_ids": [
+                                    claim.id
+                                    for claim in context.analysis_plan.claims
+                                    if any(
+                                        pillar in claim.local_text
+                                        for pillar in ("己巳", "戊辰")
+                                    )
+                                ],
+                            "text": (
+                                "2030年开始进入戊辰正财大运，约31岁起。"
+                                "此前2020—2029年的己巳偏财大运，"
+                                "更偏机会型收入；进入戊辰后，"
+                                "财务主题转向稳定现金流和长期经营。"
+                            ),
+                        }
+                    ]
+                )
             )
 
     client = CapturingClient()

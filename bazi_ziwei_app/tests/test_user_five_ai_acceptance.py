@@ -76,7 +76,10 @@ def test_all_six_ai_questions_are_grounded_for_each_user_chart(case):
         assert call["model"] == "kimi-k3"
         assert call["response_format"]["type"] == "json_schema"
         assert call["stream"] is False
-        assert json.loads(call["messages"][1]["content"])["chart_facts"]
+        payload = json.loads(call["messages"][1]["content"])
+        assert set(payload) == {"fact_packet", "analysis_plan"}
+        assert payload["fact_packet"]["facts"]
+        assert payload["analysis_plan"]["claims"]
 
 
 def test_five_chart_ai_acceptance_renderer_is_deterministic():

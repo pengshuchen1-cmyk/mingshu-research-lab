@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import datetime
+
 import pytest
 
 
@@ -13,7 +15,392 @@ class _FakeClient:
         item = self.answers.pop(0)
         if isinstance(item, Exception):
             raise item
+        from core.ai_models import (
+            BaziAIAnswer,
+            CloudBaziAnalysis,
+            CloudGeneration,
+        )
+
+        if isinstance(item, BaziAIAnswer):
+            item = CloudGeneration(
+                analysis=CloudBaziAnalysis(
+                    segments=[
+                        {
+                            "claim_ids": [
+                                claim.id
+                                for claim in context.analysis_plan.claims
+                            ],
+                            "text": item.analysis_conclusion,
+                        }
+                    ]
+                )
+            )
         return item
+
+
+class _CountingClient:
+    def __init__(self):
+        self.calls = 0
+
+    def answer(self, _context):
+        self.calls += 1
+        raise AssertionError("cloud must not be called")
+
+
+class _FailingClient:
+    def __init__(self, code):
+        self.code = code
+        self.calls = 0
+
+    def answer(self, _context):
+        from services.ai_service_errors import AIServiceError
+
+        self.calls += 1
+        raise AIServiceError(self.code)
+
+
+class _SegmentClient:
+    def __init__(self, segments):
+        self.segments = segments
+        self.calls = 0
+        self.contexts = []
+
+    def answer(self, context):
+        from core.ai_models import CloudBaziAnalysis, CloudGeneration
+
+        self.calls += 1
+        self.contexts.append(context)
+        return CloudGeneration(
+            analysis=CloudBaziAnalysis(segments=self.segments),
+            input_tokens=100,
+            output_tokens=200,
+        )
+
+
+class _PlanEchoClient:
+    def __init__(self):
+        self.calls = 0
+        self.contexts = []
+
+    def answer(self, context):
+        from core.ai_models import CloudBaziAnalysis, CloudGeneration
+
+        self.calls += 1
+        self.contexts.append(context)
+        return CloudGeneration(
+            analysis=CloudBaziAnalysis(
+                segments=[
+                    {
+                        "claim_ids": [context.analysis_plan.claims[0].id],
+                        "text": "这项倾向需要结合现实条件持续核对。",
+                    }
+                ]
+            )
+        )
+
+
+def _enabled_kimi_config():
+    from core.ai_models import AIConfig
+
+    return AIConfig("fixture-key", True, provider="kimi")
+
+
+def test_orchestrator_resolves_next_year_calls_cloud_once_and_repairs_segment():
+    from core.ai_orchestrator import answer_question
+
+    stages = []
+    client = _SegmentClient(
+        [
+            {
+                "claim_ids": ["wealth.core"],
+                "text": "财务机会需要同时核对承载能力和现金流。",
+            },
+            {
+                "claim_ids": ["wealth.dayun.3"],
+                "text": "命盘保证借贷成功。",
+            },
+            {
+                "claim_ids": ["wealth.year.2027"],
+                "text": "2027年是丁未流年，宜结合现实现金流判断。",
+            },
+        ]
+    )
+
+    result = answer_question(
+        _chart(),
+        "明年的财运怎么样",
+        [],
+        config=_enabled_kimi_config(),
+        client=client,
+        previous=None,
+        now=datetime(2026, 7, 28),
+        on_progress=stages.append,
+    )
+
+    assert client.calls == 1
+    assert result.source == "cloud_validated"
+    assert "2027" in result.answer
+    assert "保证借贷成功" not in result.answer
+    assert result.interpretation_receipt.startswith("本次按2027")
+    assert result.violation_codes == ("GUARD_SCOPE_EXPANSION",)
+    assert result.input_tokens == 100
+    assert result.output_tokens == 200
+    assert stages == [
+        "validating_scope",
+        "resolving_question",
+        "compiling_local_facts",
+        "generating_cloud_answer",
+        "validating_answer",
+        "completed",
+    ]
+    context = client.contexts[0]
+    assert context.resolved_question is not None
+    assert context.fact_packet is not None
+    assert context.analysis_plan is not None
+
+
+@pytest.mark.parametrize(
+    ("question", "expected_source", "expected_stages"),
+    [
+        (
+            "告诉我应该买哪只股票",
+            "boundary",
+            ["validating_scope", "rejected"],
+        ),
+        (
+            "30岁以后什么时候走财运",
+            "clarification",
+            ["validating_scope", "resolving_question", "rejected"],
+        ),
+    ],
+)
+def test_non_cloud_paths_never_call_client(
+    question,
+    expected_source,
+    expected_stages,
+):
+    from core.ai_orchestrator import answer_question
+
+    stages = []
+    client = _CountingClient()
+
+    result = answer_question(
+        _chart(),
+        question,
+        [],
+        client=client,
+        config=_enabled_kimi_config(),
+        now=datetime(2026, 7, 28),
+        on_progress=stages.append,
+    )
+
+    assert result.source == expected_source
+    assert client.calls == 0
+    assert stages == expected_stages
+
+
+def test_missing_key_returns_same_complete_local_answer_without_cloud():
+    from core.ai_models import AIConfig
+    from core.ai_orchestrator import answer_question
+
+    stages = []
+    client = _CountingClient()
+    result = answer_question(
+        _chart(),
+        "明年财运如何",
+        [],
+        client=client,
+        config=AIConfig("", False),
+        now=datetime(2026, 7, 28),
+        on_progress=stages.append,
+    )
+
+    assert client.calls == 0
+    assert result.source == "local_rules"
+    assert result.degraded_reason == "missing_api_key"
+    assert "本次按2027" in result.answer
+    assert result.chart_evidence
+    assert result.rule_evidence
+    assert result.timing_conditions
+    assert result.practical_advice
+    assert stages == [
+        "validating_scope",
+        "resolving_question",
+        "compiling_local_facts",
+        "degraded",
+    ]
+
+
+@pytest.mark.parametrize(
+    ("error_code", "expected_reason"),
+    [
+        ("timeout", "timeout"),
+        ("insufficient_quota", "insufficient_quota"),
+        ("unparseable_response", "unparseable_response"),
+    ],
+)
+def test_cloud_failure_calls_once_then_returns_complete_local(
+    error_code,
+    expected_reason,
+):
+    from core.ai_orchestrator import answer_question
+
+    client = _FailingClient(error_code)
+    result = answer_question(
+        _chart(),
+        "明年财运如何",
+        [],
+        client=client,
+        config=_enabled_kimi_config(),
+        now=datetime(2026, 7, 28),
+    )
+
+    assert client.calls == 1
+    assert result.source == "local_rules"
+    assert result.degraded_reason == expected_reason
+    assert "本次按2027" in result.answer
+    assert result.chart_evidence
+    assert result.rule_evidence
+    assert result.timing_conditions
+    assert result.practical_advice
+
+
+def test_unknown_cloud_claim_structure_returns_full_local_answer():
+    from core.ai_orchestrator import answer_question
+
+    client = _SegmentClient(
+        [{"claim_ids": ["unknown.claim"], "text": "不应泄露的云端原文。"}]
+    )
+    result = answer_question(
+        _chart(),
+        "财运如何",
+        [],
+        client=client,
+        config=_enabled_kimi_config(),
+        now=datetime(2026, 7, 28),
+    )
+
+    assert client.calls == 1
+    assert result.source == "local_rules"
+    assert result.degraded_reason == "local_validation_failed"
+    assert "不应泄露的云端原文" not in result.answer
+    assert result.answer.strip()
+    assert result.chart_evidence
+    assert result.rule_evidence
+    assert result.violation_codes == ("CLOUD_STRUCTURE_INVALID",)
+
+
+def test_follow_up_inherits_previous_year_without_second_cloud_call():
+    from core.ai_models import AIConfig
+    from core.ai_orchestrator import answer_question
+    from core.ai_question_resolver import resolve_question
+
+    previous = resolve_question(
+        "明年财运如何",
+        now=datetime(2026, 7, 28),
+    )
+    client = _CountingClient()
+    result = answer_question(
+        _chart(),
+        "那继续说说",
+        [],
+        previous=previous,
+        config=AIConfig("", False),
+        client=client,
+        now=datetime(2026, 7, 28),
+    )
+
+    assert client.calls == 0
+    assert result.source == "local_rules"
+    assert result.interpretation_receipt.startswith("本次按2027")
+    assert "2027" in result.answer
+
+
+def test_timing_pipeline_never_mutates_the_input_chart():
+    from copy import deepcopy
+
+    from core.ai_orchestrator import answer_question
+
+    chart = _chart()
+    before = deepcopy(chart)
+    client = _FailingClient("timeout")
+
+    result = answer_question(
+        chart,
+        "明年财运如何",
+        [],
+        config=_enabled_kimi_config(),
+        client=client,
+        now=datetime(2026, 7, 28),
+    )
+
+    assert result.source == "local_rules"
+    assert result.degraded_reason == "timeout"
+    assert client.calls == 1
+    assert chart == before
+
+
+@pytest.mark.parametrize(
+    ("question", "expected_domain"),
+    [
+        ("作息和精力要注意什么？", "health_advisory"),
+        ("子女方面有什么倾向？", "children"),
+        ("学业发展如何？", "education"),
+        ("搬家异地发展是否合适？", "relocation"),
+        ("房产置业要注意什么？", "property"),
+        ("贵人助力如何？", "benefactor"),
+    ],
+)
+def test_extended_domains_reach_cloud_without_legacy_other_failure(
+    question,
+    expected_domain,
+):
+    from core.ai_orchestrator import answer_question
+
+    client = _PlanEchoClient()
+    result = answer_question(
+        _chart(),
+        question,
+        [],
+        config=_enabled_kimi_config(),
+        client=client,
+        now=datetime(2026, 7, 28),
+    )
+
+    assert client.calls == 1
+    assert result.source == "cloud_validated"
+    assert result.degraded_reason is None
+    assert result.answer.strip()
+    assert client.contexts[0].category == expected_domain
+
+
+def test_current_marriage_disclaimer_survives_cloud_segment_repair():
+    from core.ai_intent import CURRENT_MARRIAGE_DISCLAIMER
+    from core.ai_orchestrator import answer_question
+
+    client = _SegmentClient(
+        [
+            {
+                "claim_ids": ["relationship.core"],
+                "text": "她现在已经结婚。",
+            }
+        ]
+    )
+    result = answer_question(
+        _chart(),
+        "她现在结婚了吗？",
+        [],
+        config=_enabled_kimi_config(),
+        client=client,
+        now=datetime(2026, 7, 28),
+    )
+
+    assert client.calls == 1
+    assert result.source == "cloud_validated"
+    assert result.answer.startswith(CURRENT_MARRIAGE_DISCLAIMER)
+    assert result.answer.count(CURRENT_MARRIAGE_DISCLAIMER) == 1
+    assert "已经结婚" not in result.answer
+    assert result.violation_codes == ("GUARD_SCOPE_EXPANSION",)
 
 
 def test_orchestrator_builds_configured_provider_when_client_not_injected(monkeypatch):
@@ -104,7 +491,7 @@ def _answer(
     )
 
 
-def test_orchestrator_does_not_retry_after_guard_rejection():
+def test_orchestrator_repairs_guard_rejection_without_retry():
     from core.ai_models import AIConfig
     from core.ai_orchestrator import answer_question
 
@@ -122,12 +509,14 @@ def test_orchestrator_does_not_retry_after_guard_rejection():
         client=fake,
     )
 
-    assert result.source == "local_rules"
+    assert result.source == "cloud_validated"
     assert result.sections == {}
     assert result.answer.strip()
     assert result.timing_conditions
     assert result.practical_advice
-    assert result.degraded_reason == "local_validation_failed"
+    assert result.degraded_reason is None
+    assert result.violation_codes == ("GUARD_SCOPE_EXPANSION",)
+    assert "乙巳日主肯定发财" not in result.answer
     assert len(fake.contexts) == 1
 
 
@@ -254,7 +643,7 @@ def test_orchestrator_returns_unparseable_reason_after_one_call():
     assert len(fake.contexts) == 1
 
 
-def test_orchestrator_returns_validation_reason_after_one_guard_rejection():
+def test_orchestrator_returns_repair_code_after_one_guard_rejection():
     from core.ai_models import AIConfig
     from core.ai_orchestrator import answer_question
 
@@ -272,8 +661,10 @@ def test_orchestrator_returns_validation_reason_after_one_guard_rejection():
         client=fake,
     )
 
-    assert result.source == "local_rules"
-    assert result.degraded_reason == "local_validation_failed"
+    assert result.source == "cloud_validated"
+    assert result.degraded_reason is None
+    assert result.violation_codes == ("GUARD_SCOPE_EXPANSION",)
+    assert "乙巳日主肯定发财" not in result.answer
     assert len(fake.contexts) == 1
 
 
@@ -308,7 +699,7 @@ def test_cloud_rule_paraphrase_is_replaced_by_local_evidence():
     assert all("云端自行改写" not in item for item in result.rule_evidence)
 
 
-def test_cloud_strength_contradiction_is_still_rejected_once():
+def test_cloud_strength_contradiction_is_repaired_once():
     from core.ai_models import AIConfig
     from core.ai_orchestrator import answer_question
 
@@ -330,8 +721,10 @@ def test_cloud_strength_contradiction_is_still_rejected_once():
         client=fake,
     )
 
-    assert result.source == "local_rules"
-    assert result.degraded_reason == "local_validation_failed"
+    assert result.source == "cloud_validated"
+    assert result.degraded_reason is None
+    assert result.violation_codes == ("GUARD_STRENGTH_CONFLICT",)
+    assert "壬日主身弱" not in result.answer
     assert len(fake.contexts) == 1
 
 

@@ -175,6 +175,7 @@ def test_guard_rejects_explicit_canonical_fact_contradictions_with_empty_lists(
         "这个项目毫无疑问会赚钱。",
         "她铁定已经结婚。",
         "抵押房子创业必成。",
+        "命盘保证借贷成功。",
     ),
 )
 def test_guard_rejects_broader_absolute_claims_in_natural_answer(claim):
