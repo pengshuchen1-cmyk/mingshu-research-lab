@@ -430,3 +430,156 @@ def test_timing_fallback_exposes_supplied_dayun_period_facts():
     assert "戊辰" in answer.analysis_conclusion
     assert "正财" in answer.analysis_conclusion
     assert "31—40岁" in answer.analysis_conclusion
+
+
+def _compiled_packet(question: str):
+    from datetime import datetime
+
+    from core.ai_fact_compiler import compile_fact_packet
+    from core.ai_question_resolver import resolve_question
+    from tests.bazi_ai_fixtures import synthetic_chart
+
+    return compile_fact_packet(
+        synthetic_chart(),
+        resolve_question(question, now=datetime(2026, 7, 28)),
+    )
+
+
+def test_local_plan_renders_complete_domain_answer():
+    from core.ai_analysis_plan import build_analysis_plan
+    from core.local_bazi_answer import render_local_plan
+
+    answer = render_local_plan(build_analysis_plan(_compiled_packet("明年财运如何")))
+
+    assert answer.analysis_conclusion
+    assert answer.chart_evidence
+    assert answer.rule_evidence
+    assert answer.timing_conditions
+    assert answer.practical_advice
+    assert answer.uncertainty_limitations
+    assert "命理分析仅供传统文化参考" in answer.analysis_conclusion
+
+
+@pytest.mark.parametrize(
+    ("question", "domain"),
+    [
+        ("事业如何发展？", "career"),
+        ("家庭关系如何？", "family"),
+        ("健康如何？", "health_advisory"),
+        ("子女如何？", "children"),
+        ("学业如何？", "education"),
+        ("是否适合搬家？", "relocation"),
+        ("买房置业如何？", "property"),
+        ("有贵人吗？", "benefactor"),
+    ],
+)
+def test_extended_domain_local_plan_remains_complete_without_cloud(
+    question,
+    domain,
+):
+    from core.ai_analysis_plan import build_analysis_plan
+    from core.local_bazi_answer import render_local_plan
+
+    packet = _compiled_packet(question)
+    answer = render_local_plan(build_analysis_plan(packet))
+    domain_facts = [
+        fact.text
+        for fact in packet.facts
+        if fact.id.startswith(f"domain.{domain}.")
+    ]
+    domain_rule_statements = [
+        rule["statement"]
+        for rule in packet.rule_evidence
+        if rule["id"]
+        not in {"SAFETY-NONDETERMINISTIC", "SAFETY-STATUS-UNKNOWN"}
+    ]
+
+    assert any(text in answer.analysis_conclusion for text in domain_facts)
+    assert any(text in answer.rule_evidence for text in domain_rule_statements)
+    assert answer.timing_conditions
+    assert answer.practical_advice
+    assert answer.uncertainty_limitations
+
+
+def test_health_local_plan_is_advisory_and_non_diagnostic():
+    from core.ai_analysis_plan import build_analysis_plan
+    from core.local_bazi_answer import render_local_plan
+
+    answer = render_local_plan(build_analysis_plan(_compiled_packet("健康如何？")))
+    combined = "。".join(
+        [answer.analysis_conclusion, *answer.uncertainty_limitations]
+    )
+
+    assert "不作疾病诊断" in combined
+    assert "患有" not in combined
+
+
+@pytest.mark.parametrize(
+    ("question", "expected_limit"),
+    [
+        ("子女如何？", "现实生育及子女状态未知"),
+        ("婚姻如何？", "现实婚姻状态未知"),
+    ],
+)
+def test_family_status_local_plan_keeps_reality_unknown(question, expected_limit):
+    from core.ai_analysis_plan import build_analysis_plan
+    from core.local_bazi_answer import render_local_plan
+
+    answer = render_local_plan(build_analysis_plan(_compiled_packet(question)))
+    combined = "。".join(
+        [answer.analysis_conclusion, *answer.uncertainty_limitations]
+    )
+
+    assert expected_limit in combined
+
+
+@pytest.mark.parametrize("question", ["明年财运如何", "买房置业如何？"])
+def test_financial_local_plan_never_guarantees_results(question):
+    from core.ai_analysis_plan import build_analysis_plan
+    from core.local_bazi_answer import render_local_plan
+
+    answer = render_local_plan(build_analysis_plan(_compiled_packet(question)))
+    combined = "。".join(
+        [
+            answer.analysis_conclusion,
+            *answer.practical_advice,
+            *answer.uncertainty_limitations,
+        ]
+    )
+
+    assert "不保证财务结果" in combined
+    for deterministic in ("保证成功", "一定赚钱", "必然获利"):
+        assert deterministic not in combined
+
+
+def test_local_plan_is_not_a_fixed_six_heading_template():
+    from core.ai_analysis_plan import build_analysis_plan
+    from core.local_bazi_answer import render_local_plan
+
+    answer = render_local_plan(
+        build_analysis_plan(_compiled_packet("明年逐月财运如何"))
+    )
+
+    old_fixed_headings = (
+        "### 分析结论",
+        "### 命盘事实",
+        "### 规则依据",
+        "### 时间条件",
+        "### 现实建议",
+        "### 不确定性与限制",
+    )
+    assert not all(heading in answer.analysis_conclusion for heading in old_fixed_headings)
+
+
+def test_monthly_local_plan_keeps_every_supplied_month_in_the_body():
+    from core.ai_analysis_plan import build_analysis_plan
+    from core.local_bazi_answer import render_local_plan
+
+    packet = _compiled_packet("明年逐月财运如何")
+    answer = render_local_plan(build_analysis_plan(packet))
+    supplied_months = [
+        fact.text for fact in packet.facts if fact.id.startswith("month.")
+    ]
+
+    assert len(supplied_months) == 12
+    assert all(text in answer.analysis_conclusion for text in supplied_months)

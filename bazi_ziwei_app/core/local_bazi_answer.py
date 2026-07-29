@@ -5,7 +5,8 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 
 from core.ai_intent import is_current_marriage_question
-from core.ai_models import AIRequestContext, BaziAIAnswer
+from core.ai_models import AIRequestContext, AnalysisPlan, BaziAIAnswer
+from core.bazi_rulebook import load_rulebook
 
 
 _BORROWING_TERMS = (
@@ -506,6 +507,85 @@ def build_local_answer(context: AIRequestContext) -> BaziAIAnswer:
         ),
         chart_evidence=chart_evidence,
         rule_evidence=rule_evidence,
+        timing_conditions=timing,
+        practical_advice=advice,
+        uncertainty_limitations=limitations,
+    )
+
+
+def _plan_rule_statements(plan: AnalysisPlan) -> list[str]:
+    book = load_rulebook()
+    statements = []
+    for claim in plan.claims:
+        for rule_id in claim.rule_ids:
+            try:
+                statement = book.by_id(rule_id).statement
+            except KeyError:
+                statement = f"本地规则引用：{rule_id}"
+            statements.append(statement)
+    return _deduplicated(statements)
+
+
+def _prefixed_values(
+    plan: AnalysisPlan,
+    prefix: str,
+    *,
+    limit: int,
+) -> list[str]:
+    values = []
+    for claim in plan.claims:
+        for condition in claim.conditions:
+            if condition.startswith(prefix):
+                values.append(condition[len(prefix):].strip())
+    return _deduplicated(values, limit=limit)
+
+
+def _render_plan_body(plan: AnalysisPlan, rules: Sequence[str]) -> str:
+    depth = plan.resolved.requested_depth
+    paragraphs = []
+    if plan.resolved.interpretation_receipt:
+        paragraphs.append(plan.resolved.interpretation_receipt)
+    if depth in {"direct", "single_year"}:
+        paragraphs.extend(claim.local_text for claim in plan.claims)
+    else:
+        paragraphs.extend(
+            f"**{claim.topic}**\n{claim.local_text}"
+            for claim in plan.claims
+        )
+    if rules:
+        paragraphs.append(
+            "本地规则依据：" + "；".join(rules[:4])
+        )
+    disclaimer = "命理分析仅供传统文化参考，不替代现实中的医疗、法律或财务决策。"
+    body = "\n\n".join(paragraphs)
+    budget = _MAX_LOCAL_MAIN_ANSWER_CHARS - len(disclaimer) - 2
+    return f"{_bounded_block(body, budget)}\n\n{disclaimer}"
+
+
+def render_local_plan(plan: AnalysisPlan) -> BaziAIAnswer:
+    """Render a complete offline answer from an already-grounded plan."""
+    rule_statements = _plan_rule_statements(plan)
+    chart_evidence = _deduplicated(
+        [
+            f"命盘事实引用：{fact_id}"
+            for claim in plan.claims
+            for fact_id in claim.fact_ids
+        ]
+    )
+    timing = _prefixed_values(plan, "条件：", limit=12)
+    advice = _prefixed_values(plan, "建议：", limit=12)
+    limitations = _deduplicated(
+        [
+            limitation.removeprefix("限制：").strip()
+            for claim in plan.claims
+            for limitation in claim.uncertainty
+        ],
+        limit=8,
+    )
+    return BaziAIAnswer(
+        analysis_conclusion=_render_plan_body(plan, rule_statements),
+        chart_evidence=chart_evidence,
+        rule_evidence=rule_statements,
         timing_conditions=timing,
         practical_advice=advice,
         uncertainty_limitations=limitations,
