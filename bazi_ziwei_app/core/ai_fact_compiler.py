@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from calendar import monthrange
 from datetime import date, timedelta
 from typing import Mapping
 
@@ -203,22 +204,38 @@ def _period_is_relevant(
 ) -> bool:
     if resolved.time_scope == "dayun":
         return True
-    if age_ranges:
-        try:
-            period_start = date.fromisoformat(str(period["start_date"]))
-            period_end = date.fromisoformat(str(period["end_date"]))
-        except (KeyError, TypeError, ValueError):
-            return False
-        return any(
-            period_start <= age_end and age_start <= period_end
-            for _, age_start, age_end, _ in age_ranges
-        )
     try:
-        start_year = int(period["start_year"])
-        end_year = int(period["end_year"])
+        period_start = date.fromisoformat(str(period["start_date"]))
+        period_end = date.fromisoformat(str(period["end_date"]))
     except (KeyError, TypeError, ValueError):
         return False
-    return any(start_year <= year <= end_year for year in resolved.target_years)
+    if age_ranges:
+        target_ranges = [
+            (age_start, age_end)
+            for _, age_start, age_end, _ in age_ranges
+        ]
+    else:
+        target_ranges = []
+        try:
+            for year in dict.fromkeys(resolved.target_years):
+                if resolved.target_months:
+                    for month in dict.fromkeys(resolved.target_months):
+                        target_ranges.append(
+                            (
+                                date(year, month, 1),
+                                date(year, month, monthrange(year, month)[1]),
+                            )
+                        )
+                else:
+                    target_ranges.append(
+                        (date(year, 1, 1), date(year, 12, 31))
+                    )
+        except ValueError:
+            return False
+    return any(
+        period_start <= target_end and target_start <= period_end
+        for target_start, target_end in target_ranges
+    )
 
 
 def _dayun_items(

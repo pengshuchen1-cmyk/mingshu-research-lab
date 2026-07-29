@@ -354,3 +354,82 @@ def test_explicit_nominal_age_maps_to_local_calendar_year():
 
     assert "30虚岁" in age_text
     assert "2028-01-01至2028-12-31" in age_text
+
+
+@pytest.mark.parametrize(
+    ("question", "expected_pillars"),
+    (
+        ("2030年财运如何", {"己巳", "戊辰"}),
+        ("2030年2月财运如何", {"己巳"}),
+        ("2030年9月财运如何", {"戊辰"}),
+        ("2030年8月财运如何", {"己巳", "戊辰"}),
+    ),
+)
+def test_target_calendar_range_intersects_exact_dayun_dates(
+    question,
+    expected_pillars,
+):
+    from core.ai_fact_compiler import compile_fact_packet
+    from core.ai_question_resolver import resolve_question
+
+    resolved = resolve_question(question, now=datetime(2026, 7, 28))
+
+    packet = compile_fact_packet(_lunar_1999_chart(), resolved)
+    dayun_texts = [item.text for item in packet.facts if item.kind == "dayun"]
+    actual_pillars = [
+        pillar
+        for text in dayun_texts
+        for pillar in ("己巳", "戊辰")
+        if pillar in text
+    ]
+
+    assert set(actual_pillars) == expected_pillars
+    assert len(actual_pillars) == len(set(actual_pillars))
+
+
+def test_target_month_uses_real_leap_year_month_end_for_dayun_intersection():
+    from core.ai_fact_compiler import compile_fact_packet
+    from core.ai_models import ResolvedQuestion
+    from tests.bazi_ai_fixtures import synthetic_chart
+
+    leap_february_luck = {
+        "available": True,
+        "dayun_list": [
+            {
+                "pillar": "甲子",
+                "start_age": 1,
+                "end_age": 1,
+                "start_year": 2032,
+                "end_year": 2032,
+                "start_date": "2032-02-01",
+                "end_date": "2032-02-29",
+            },
+            {
+                "pillar": "乙丑",
+                "start_age": 2,
+                "end_age": 2,
+                "start_year": 2032,
+                "end_year": 2032,
+                "start_date": "2032-03-01",
+                "end_date": "2032-12-31",
+            },
+        ],
+    }
+    resolved = ResolvedQuestion(
+        safe_question="2032年2月财运如何",
+        domain="wealth",
+        subdomains=["timing"],
+        time_scope="month_range",
+        target_years=[2032],
+        target_months=[2],
+    )
+
+    with patch(
+        "core.ai_fact_compiler.get_luck_cycles",
+        return_value=leap_february_luck,
+    ):
+        packet = compile_fact_packet(synthetic_chart(), resolved)
+
+    dayun_text = " ".join(item.text for item in packet.facts if item.kind == "dayun")
+    assert "甲子" in dayun_text
+    assert "乙丑" not in dayun_text
