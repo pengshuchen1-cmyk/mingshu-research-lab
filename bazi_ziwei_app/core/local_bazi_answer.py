@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 
+from core.ai_analysis_plan import AnalysisPlanError
 from core.ai_intent import is_current_marriage_question
 from core.ai_models import AIRequestContext, AnalysisPlan, BaziAIAnswer
 from core.bazi_rulebook import load_rulebook
@@ -521,9 +522,28 @@ def _plan_rule_statements(plan: AnalysisPlan) -> list[str]:
             try:
                 statement = book.by_id(rule_id).statement
             except KeyError:
-                statement = f"本地规则引用：{rule_id}"
+                raise AnalysisPlanError("PLAN_RULE_ID_MISSING") from None
             statements.append(statement)
     return _deduplicated(statements)
+
+
+def _plan_fact_texts(plan: AnalysisPlan) -> list[str]:
+    facts = []
+    for claim in plan.claims:
+        if not any(
+            not fact_id.startswith(("dayun.", "year.", "month.", "age."))
+            for fact_id in claim.fact_ids
+        ):
+            continue
+        marker = "命盘事实："
+        if marker not in claim.local_text:
+            continue
+        fact_block = claim.local_text.split(marker, 1)[1]
+        for suffix in (" 条件：", " 建议：", " 限制："):
+            fact_block = fact_block.split(suffix, 1)[0]
+        if fact_block.strip():
+            facts.append(fact_block.strip())
+    return _deduplicated(facts)
 
 
 def _prefixed_values(
@@ -559,19 +579,15 @@ def _render_plan_body(plan: AnalysisPlan, rules: Sequence[str]) -> str:
     disclaimer = "命理分析仅供传统文化参考，不替代现实中的医疗、法律或财务决策。"
     body = "\n\n".join(paragraphs)
     budget = _MAX_LOCAL_MAIN_ANSWER_CHARS - len(disclaimer) - 2
-    return f"{_bounded_block(body, budget)}\n\n{disclaimer}"
+    if len(body) > budget:
+        raise AnalysisPlanError("PLAN_RENDER_CAPACITY_EXCEEDED")
+    return f"{body}\n\n{disclaimer}"
 
 
 def render_local_plan(plan: AnalysisPlan) -> BaziAIAnswer:
     """Render a complete offline answer from an already-grounded plan."""
     rule_statements = _plan_rule_statements(plan)
-    chart_evidence = _deduplicated(
-        [
-            f"命盘事实引用：{fact_id}"
-            for claim in plan.claims
-            for fact_id in claim.fact_ids
-        ]
-    )
+    chart_evidence = _plan_fact_texts(plan)
     timing = _prefixed_values(plan, "条件：", limit=12)
     advice = _prefixed_values(plan, "建议：", limit=12)
     limitations = _deduplicated(

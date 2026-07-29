@@ -2,9 +2,30 @@
 
 from __future__ import annotations
 
+import re
 from collections.abc import Sequence
+from datetime import date
 
 from core.ai_models import AnalysisPlan, ClaimPlan, FactItem, FactPacket
+
+
+class AnalysisPlanError(ValueError):
+    """Stable failure for incomplete or unrenderable grounded plans."""
+
+    _MESSAGES = {
+        "PLAN_DOMAIN_FACTS_MISSING": "未找到当前问题领域所需的命盘事实。",
+        "PLAN_DOMAIN_RULES_MISSING": "未找到当前问题领域所需的规则证据。",
+        "PLAN_SAFETY_RULES_MISSING": "未找到本地回答所需的安全规则。",
+        "PLAN_TIMING_FACTS_MISSING": "未找到全部请求时间及相关大运事实。",
+        "PLAN_CAPACITY_EXCEEDED": "请求事实无法在本地结论计划容量内完整表达。",
+        "PLAN_RULE_ID_MISSING": "结论计划引用的本地规则不存在。",
+        "PLAN_RENDER_CAPACITY_EXCEEDED": "本地结论计划无法在回答容量内完整呈现。",
+    }
+
+    def __init__(self, code: str):
+        self.code = code
+        message = self._MESSAGES.get(code, "本地结论计划暂不可用。")
+        super().__init__(f"{code}: {message}")
 
 
 _DOMAIN_CONTENT = {
@@ -109,17 +130,16 @@ _DOMAIN_RULE_PREFIXES = {
     "timing": ("DAYUN-", "CAL-"),
 }
 
-_FACT_KIND_PRIORITY = {
-    "month": 0,
+_TIME_KIND_TIE_PRIORITY = {
+    "dayun": 0,
     "year": 1,
-    "age": 2,
-    "dayun": 3,
+    "month": 2,
+    "age": 3,
 }
-
-
-def _clip(value: str, limit: int) -> str:
-    text = value.strip()
-    return text if len(text) <= limit else f"{text[: limit - 1].rstrip()}…"
+_TIMING_KINDS = frozenset(_TIME_KIND_TIE_PRIORITY)
+_MAX_CLAIM_FACTS = 24
+_MAX_CLAIM_TEXT = 1200
+_MAX_PLAN_CLAIMS = 60
 
 
 def _local_paragraph(
@@ -128,13 +148,16 @@ def _local_paragraph(
     conditions: list[str],
     uncertainty: list[str],
 ) -> str:
-    fact_text = "；".join(_clip(item.text, 260) for item in facts)
+    fact_text = "；".join(item.text.strip() for item in facts)
     parts = [conclusion]
     if fact_text:
         parts.append(f"命盘事实：{fact_text}")
     parts.extend(conditions)
     parts.extend(uncertainty)
-    return _clip(" ".join(part.strip() for part in parts if part.strip()), 1200)
+    paragraph = " ".join(part.strip() for part in parts if part.strip())
+    if len(paragraph) > _MAX_CLAIM_TEXT:
+        raise AnalysisPlanError("PLAN_CAPACITY_EXCEEDED")
+    return paragraph
 
 
 def _claim(
@@ -192,13 +215,18 @@ def _domain_facts(packet: FactPacket) -> list[FactItem]:
     preferred_ids = {
         "wealth": "chart.wealth",
         "overview": "chart.day_master_strength",
+        "relationship": "chart.pillars",
     }
     preferred = preferred_ids.get(packet.resolved.domain)
     if preferred:
         matched = [item for item in packet.facts if item.id == preferred]
         if matched:
             return matched
-    return list(packet.facts)
+    if packet.resolved.domain == "timing":
+        timing = [item for item in packet.facts if item.kind in _TIMING_KINDS]
+        if timing:
+            return timing
+    raise AnalysisPlanError("PLAN_DOMAIN_FACTS_MISSING")
 
 
 def _domain_rules(packet: FactPacket) -> list[dict[str, str]]:
@@ -210,12 +238,7 @@ def _domain_rules(packet: FactPacket) -> list[dict[str, str]]:
     ]
     if domain:
         return _dedupe_rules(domain)
-    non_safety = [
-        item
-        for item in packet.rule_evidence
-        if not str(item.get("id") or "").startswith("SAFETY-")
-    ]
-    return _dedupe_rules(non_safety or packet.rule_evidence)
+    raise AnalysisPlanError("PLAN_DOMAIN_RULES_MISSING")
 
 
 def _safety_rules(packet: FactPacket) -> list[dict[str, str]]:
@@ -224,7 +247,9 @@ def _safety_rules(packet: FactPacket) -> list[dict[str, str]]:
         for item in packet.rule_evidence
         if str(item.get("id") or "").startswith("SAFETY-")
     ]
-    return _dedupe_rules(safety or _domain_rules(packet))
+    if not safety:
+        raise AnalysisPlanError("PLAN_SAFETY_RULES_MISSING")
+    return _dedupe_rules(safety)
 
 
 def _conditions(content: dict[str, str], prefix: str = "") -> list[str]:
@@ -250,7 +275,7 @@ def _base_claims(packet: FactPacket) -> list[ClaimPlan]:
             f"{packet.resolved.domain}.core",
             content["topic"],
             content["conclusion"],
-            _dedupe_facts(domain_facts, 2),
+            _dedupe_facts(domain_facts, 1),
             domain_rules,
             conditions=_conditions(content),
             uncertainty=[f"限制：{content['limit']}"],
@@ -259,7 +284,7 @@ def _base_claims(packet: FactPacket) -> list[ClaimPlan]:
             f"{packet.resolved.domain}.structure",
             "命盘结构",
             "本次结论只从事实包中的结构信息展开，不补算未提供内容。",
-            _dedupe_facts(chart_facts, 2),
+            _dedupe_facts(chart_facts, 1),
             domain_rules,
             conditions=_conditions(
                 content,
@@ -271,7 +296,7 @@ def _base_claims(packet: FactPacket) -> list[ClaimPlan]:
             f"{packet.resolved.domain}.action",
             "现实落点",
             "命盘倾向只有转化为可观察条件和可复盘行动时才具有参考意义。",
-            _dedupe_facts(domain_facts, 2),
+            _dedupe_facts(domain_facts, 1),
             safety_rules,
             conditions=_conditions(content, "行动前先核对现实约束"),
             uncertainty=[f"限制：{content['limit']}"],
@@ -279,9 +304,126 @@ def _base_claims(packet: FactPacket) -> list[ClaimPlan]:
     ]
 
 
+def _date_from_text(text: str) -> date | None:
+    match = re.search(r"((?:19|20)\d{2}-\d{2}-\d{2})", text)
+    if not match:
+        return None
+    try:
+        return date.fromisoformat(match.group(1))
+    except ValueError:
+        return None
+
+
+def _timing_sort_key(item: FactItem) -> tuple[date, int, str]:
+    parsed = _date_from_text(item.text)
+    if item.kind == "year":
+        try:
+            parsed = date(int(item.id.split(".")[1]), 1, 1)
+        except (IndexError, TypeError, ValueError):
+            parsed = parsed or date.max
+    elif item.kind == "month":
+        try:
+            _, raw_year, raw_month = item.id.split(".", 2)
+            parsed = date(int(raw_year), int(raw_month), 1)
+        except (TypeError, ValueError):
+            parsed = parsed or date.max
+    return (
+        parsed or date.max,
+        _TIME_KIND_TIE_PRIORITY[item.kind],
+        item.id,
+    )
+
+
+def _required_timing_ids(packet: FactPacket) -> set[str]:
+    resolved = packet.resolved
+    required = {f"year.{year}" for year in resolved.target_years}
+    required.update(
+        f"month.{year}.{month}"
+        for year in resolved.target_years
+        for month in resolved.target_months
+    )
+    required.update(
+        f"age.{resolved.age_mode}.{age}"
+        for age in resolved.age_values
+    )
+    if resolved.time_scope != "none":
+        required.update(
+            item.id for item in packet.facts if item.kind == "dayun"
+        )
+    return required
+
+
+def _validated_timing_facts(packet: FactPacket) -> list[FactItem]:
+    timing = [item for item in packet.facts if item.kind in _TIMING_KINDS]
+    available_ids = {item.id for item in timing}
+    required_ids = _required_timing_ids(packet)
+    if packet.resolved.time_scope == "dayun" and not any(
+        item.kind == "dayun" for item in timing
+    ):
+        raise AnalysisPlanError("PLAN_TIMING_FACTS_MISSING")
+    if required_ids - available_ids:
+        raise AnalysisPlanError("PLAN_TIMING_FACTS_MISSING")
+    if packet.resolved.time_scope != "none" and not timing:
+        raise AnalysisPlanError("PLAN_TIMING_FACTS_MISSING")
+    return sorted(timing, key=_timing_sort_key)
+
+
+def _timing_topic(facts: Sequence[FactItem]) -> str:
+    first = facts[0]
+    last = facts[-1]
+    if first.kind == "month":
+        if len(facts) == 1:
+            _, year, month = first.id.split(".", 2)
+            return f"{int(year)}年{int(month)}月"
+        _, year, first_month = first.id.split(".", 2)
+        last_month = last.id.rsplit(".", 1)[-1]
+        return f"{int(year)}年{int(first_month)}—{int(last_month)}月"
+    if first.kind == "year":
+        first_year = int(first.id.split(".")[1])
+        last_year = int(last.id.split(".")[1])
+        return (
+            f"{first_year}年流年"
+            if first_year == last_year
+            else f"{first_year}—{last_year}年流年"
+        )
+    if first.kind == "age":
+        return first.text.split("对应", 1)[0] or "年龄范围"
+    return "大运阶段"
+
+
+def _timing_conclusion(facts: Sequence[FactItem]) -> str:
+    if len(facts) == 1:
+        return "该阶段只按已提供的时间事实观察主题条件。"
+    return f"以下按连续时间顺序聚合{len(facts)}条已提供事实。"
+
+
+def _timing_groups(timing_facts: list[FactItem]) -> list[list[FactItem]]:
+    if len(timing_facts) <= 20:
+        return [[item] for item in timing_facts]
+    groups: list[list[FactItem]] = []
+    current: list[FactItem] = []
+    for item in timing_facts:
+        candidate = [*current, item]
+        conclusion = _timing_conclusion(candidate)
+        fact_text = "；".join(fact.text for fact in candidate)
+        fits = (
+            len(candidate) <= _MAX_CLAIM_FACTS
+            and len(f"{conclusion} 命盘事实：{fact_text}") <= _MAX_CLAIM_TEXT
+            and (not current or item.kind == current[-1].kind)
+        )
+        if current and not fits:
+            groups.append(current)
+            current = [item]
+        else:
+            current = candidate
+    if current:
+        groups.append(current)
+    if len(groups) + 1 > _MAX_PLAN_CLAIMS:
+        raise AnalysisPlanError("PLAN_CAPACITY_EXCEEDED")
+    return groups
+
+
 def _timing_claims(packet: FactPacket) -> list[ClaimPlan]:
-    content = _DOMAIN_CONTENT[packet.resolved.domain]
-    base_fact = _domain_facts(packet)[0]
     rules = _dedupe_rules(
         [
             *[
@@ -292,37 +434,29 @@ def _timing_claims(packet: FactPacket) -> list[ClaimPlan]:
             *_domain_rules(packet),
         ]
     )
-    timing_facts = sorted(
-        [
-            item
-            for item in packet.facts
-            if item.kind in _FACT_KIND_PRIORITY
-        ],
-        key=lambda item: (_FACT_KIND_PRIORITY[item.kind], item.id),
-    )
+    timing_facts = _validated_timing_facts(packet)
     claims = []
-    for item in timing_facts:
-        label = {
-            "month": "流月观察",
-            "year": "流年观察",
-            "age": "年龄范围",
-            "dayun": "大运阶段",
-        }[item.kind]
+    for index, facts in enumerate(_timing_groups(timing_facts)):
+        topic = _timing_topic(facts)
+        conditions = (
+            ["条件：仅在请求事实覆盖的时间范围内观察。"]
+            if index == 0
+            else []
+        )
+        uncertainty = (
+            ["限制：时间标签不等于事件必然发生。"]
+            if index == 0
+            else []
+        )
         claims.append(
             _claim(
-                f"{packet.resolved.domain}.{item.id}",
-                label,
-                f"该阶段只按已提供的{label}事实观察主题条件。",
-                _dedupe_facts([item, base_fact], 2),
+                f"{packet.resolved.domain}.{facts[0].id}",
+                topic,
+                _timing_conclusion(facts),
+                list(facts),
                 rules,
-                conditions=_conditions(
-                    content,
-                    "仅在该事实覆盖的时间范围内观察",
-                ),
-                uncertainty=[
-                    f"限制：{content['limit']}",
-                    "限制：时间标签不等于事件必然发生。",
-                ],
+                conditions=conditions,
+                uncertainty=uncertainty,
             )
         )
     return claims
@@ -331,18 +465,28 @@ def _timing_claims(packet: FactPacket) -> list[ClaimPlan]:
 def build_analysis_plan(packet: FactPacket) -> AnalysisPlan:
     """Convert a fact packet into claims grounded in that packet only."""
     base = _base_claims(packet)
-    timing = _timing_claims(packet)
+    timing = (
+        _timing_claims(packet)
+        if packet.resolved.time_scope != "none"
+        else []
+    )
     depth = packet.resolved.requested_depth
     if depth == "direct":
         claims = base[:1]
     elif depth == "single_year":
-        claims = [base[0], *(timing[:2] or base[1:2])]
+        claims = [base[0], *timing]
     elif depth == "topic":
-        claims = base
+        claims = [base[0], *timing] if timing else base
     elif depth == "long_range":
-        claims = [*base, *timing]
+        claims = [base[0], *timing]
     else:
-        monthly = [claim for claim in timing if ".month." in claim.id]
-        other_timing = [claim for claim in timing if ".month." not in claim.id]
-        claims = [base[0], *monthly, *other_timing]
-    return AnalysisPlan(resolved=packet.resolved, claims=claims[:60])
+        claims = [base[0], *timing]
+    if len(claims) > _MAX_PLAN_CLAIMS:
+        raise AnalysisPlanError("PLAN_CAPACITY_EXCEEDED")
+    planned_fact_ids = {
+        fact_id for claim in claims for fact_id in claim.fact_ids
+    }
+    required_ids = _required_timing_ids(packet)
+    if required_ids - planned_fact_ids:
+        raise AnalysisPlanError("PLAN_TIMING_FACTS_MISSING")
+    return AnalysisPlan(resolved=packet.resolved, claims=claims)

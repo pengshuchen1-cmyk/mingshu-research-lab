@@ -583,3 +583,115 @@ def test_monthly_local_plan_keeps_every_supplied_month_in_the_body():
 
     assert len(supplied_months) == 12
     assert all(text in answer.analysis_conclusion for text in supplied_months)
+
+
+def test_plan_chart_evidence_is_human_readable_and_guard_mappable():
+    from core.ai_analysis_plan import build_analysis_plan
+    from core.ai_answer_guard import validate_ai_answer
+    from core.ai_context import build_ai_context
+    from core.chart_facts import chart_facts_from_chart
+    from core.local_bazi_answer import render_local_plan
+    from tests.bazi_ai_fixtures import synthetic_chart
+
+    chart = synthetic_chart()
+    packet = _compiled_packet("财运如何？")
+    answer = render_local_plan(build_analysis_plan(packet))
+    context = build_ai_context(
+        chart_facts_from_chart(chart),
+        "财运如何？",
+        [],
+    )
+
+    assert all("命盘事实引用：" not in item for item in answer.chart_evidence)
+    assert any(
+        fact.text in answer.chart_evidence
+        for fact in packet.facts
+        if fact.id == "chart.wealth"
+    )
+    assert "unmapped_chart_evidence" not in validate_ai_answer(
+        answer,
+        context,
+    ).violations
+
+
+@pytest.mark.parametrize(
+    "question",
+    [
+        "明年逐月财运如何",
+        "2020到2079年财运",
+        "请详细分析大运",
+        "30周岁财运如何",
+    ],
+)
+def test_timing_plan_chart_evidence_remains_guard_mappable(question):
+    from core.ai_analysis_plan import build_analysis_plan
+    from core.ai_answer_guard import validate_ai_answer
+    from core.ai_context import build_ai_context
+    from core.chart_facts import chart_facts_from_chart
+    from core.local_bazi_answer import render_local_plan
+    from tests.bazi_ai_fixtures import synthetic_chart
+
+    chart = synthetic_chart()
+    answer = render_local_plan(build_analysis_plan(_compiled_packet(question)))
+    context = build_ai_context(
+        chart_facts_from_chart(chart),
+        question,
+        [],
+    )
+
+    assert answer.chart_evidence
+    assert "unmapped_chart_evidence" not in validate_ai_answer(
+        answer,
+        context,
+    ).violations
+
+
+def test_renderer_fails_explicitly_when_rulebook_id_is_missing():
+    from core.ai_analysis_plan import AnalysisPlanError, build_analysis_plan
+    from core.local_bazi_answer import render_local_plan
+
+    plan = build_analysis_plan(_compiled_packet("财运如何？"))
+    invalid_claim = plan.claims[0].model_copy(
+        update={"rule_ids": ["RULE-DOES-NOT-EXIST"]}
+    )
+    invalid_plan = plan.model_copy(update={"claims": [invalid_claim]})
+
+    with pytest.raises(AnalysisPlanError) as caught:
+        render_local_plan(invalid_plan)
+
+    assert caught.value.code == "PLAN_RULE_ID_MISSING"
+
+
+def test_monthly_plan_uses_specific_headings_and_shared_text_only_once():
+    from core.ai_analysis_plan import build_analysis_plan
+    from core.local_bazi_answer import render_local_plan
+
+    answer = render_local_plan(
+        build_analysis_plan(_compiled_packet("明年逐月财运如何"))
+    )
+    body = answer.analysis_conclusion
+
+    for month in range(1, 13):
+        assert f"**2027年{month}月**" in body
+    assert body.count("只有现金流、成本和风险边界可承受时") == 1
+    assert body.count("先做预算和下行情景测试") == 1
+    assert body.count("时间标签不等于事件必然发生") == 1
+
+
+def test_sixty_year_local_plan_renders_every_fact_without_hard_truncation():
+    from core.ai_analysis_plan import build_analysis_plan
+    from core.local_bazi_answer import render_local_plan
+
+    packet = _compiled_packet("2020到2079年财运")
+    answer = render_local_plan(build_analysis_plan(packet))
+    planned_ids = {
+        fact_id
+        for claim in build_analysis_plan(packet).claims
+        for fact_id in claim.fact_ids
+    }
+    assert "year.2020" in planned_ids
+    assert "year.2079" in planned_ids
+    assert "2020年" in answer.analysis_conclusion
+    assert "2079年" in answer.analysis_conclusion
+    assert "大运" in answer.analysis_conclusion
+    assert "…（已按本地回答长度上限截断）" not in answer.analysis_conclusion
