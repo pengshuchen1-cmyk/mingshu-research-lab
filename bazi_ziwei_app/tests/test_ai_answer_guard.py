@@ -646,3 +646,31 @@ def test_current_marriage_guard_rejects_limitation_and_fact_in_same_clause(
 
     assert result.accepted is False
     assert "current_marriage_status_claim" in result.violations
+
+
+def test_validate_ai_text_reuses_fact_checks_for_a_single_natural_segment():
+    from core.ai_answer_guard import validate_ai_text
+
+    result = validate_ai_text(
+        "命局身弱，2026年流年柱为甲子，年干十神为正官。",
+        _context(),
+    )
+
+    assert result.accepted is False
+    assert {
+        "strength_contradiction",
+        "timing_fact_contradiction",
+        "ten_god_contradiction",
+    } <= set(result.violations)
+
+
+def test_validate_ai_answer_keeps_structured_evidence_checks_after_extraction():
+    from core.ai_answer_guard import validate_ai_answer
+
+    result = validate_ai_answer(
+        _answer("财务建议需谨慎。", ["命局财务需谨慎"]),
+        _context(),
+    )
+
+    assert result.accepted is False
+    assert "unmapped_chart_evidence" in result.violations

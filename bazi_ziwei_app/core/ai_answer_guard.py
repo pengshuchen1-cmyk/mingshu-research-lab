@@ -580,29 +580,23 @@ def _has_canonical_fact_contradiction(
     return tuple(dict.fromkeys(violations))
 
 
-def validate_ai_answer(answer: BaziAIAnswer, context: AIRequestContext) -> GuardResult:
-    combined = "。".join(
-        [
-            answer.analysis_conclusion,
-            *answer.chart_evidence,
-            *answer.rule_evidence,
-            *answer.timing_conditions,
-            *answer.practical_advice,
-            *answer.uncertainty_limitations,
-        ]
-    )
+def _validate_combined_text(
+    combined: str,
+    context: AIRequestContext,
+    *,
+    require_marriage_disclaimer: bool,
+) -> tuple[str, ...]:
     violations: list[str] = []
     if _has_deterministic_claim(combined):
         violations.append("deterministic_claim")
     violations.extend(
         _has_canonical_fact_contradiction(combined, context.chart_facts)
     )
-    current_marriage_question = (
+    if require_marriage_disclaimer and (
         context.category == "relationship"
         and is_current_marriage_question(context.question)
-    )
-    if current_marriage_question and (
-        not answer.analysis_conclusion.strip().startswith(
+    ) and (
+        not combined.strip().startswith(
             CURRENT_MARRIAGE_DISCLAIMER
         )
         or _has_unqualified_current_marriage_claim(combined)
@@ -681,6 +675,43 @@ def validate_ai_answer(answer: BaziAIAnswer, context: AIRequestContext) -> Guard
         if mentioned_strength and mentioned_strength != {expected_strength}:
             violations.append("strength_contradiction")
 
+    return tuple(dict.fromkeys(violations))
+
+
+def validate_ai_text(text: str, context: AIRequestContext) -> GuardResult:
+    """Validate factual and deterministic claims in one natural-text segment."""
+    violations = _validate_combined_text(
+        text,
+        context,
+        require_marriage_disclaimer=False,
+    )
+    return GuardResult(accepted=not violations, violations=violations)
+
+
+def validate_ai_answer(answer: BaziAIAnswer, context: AIRequestContext) -> GuardResult:
+    combined = "。".join(
+        [
+            answer.analysis_conclusion,
+            *answer.chart_evidence,
+            *answer.rule_evidence,
+            *answer.timing_conditions,
+            *answer.practical_advice,
+            *answer.uncertainty_limitations,
+        ]
+    )
+    violations = list(
+        _validate_combined_text(
+            combined,
+            context,
+            require_marriage_disclaimer=True,
+        )
+    )
+    chart_payload = json.dumps(context.chart_facts, ensure_ascii=False)
+    authorized_pillars = set(
+        re.findall(f"[{STEMS}][{BRANCHES}]", chart_payload)
+    )
+    day_master = str(context.chart_facts.get("day_master", ""))
+    strength = context.chart_facts.get("strength", {})
     authorized_facts = _string_facts(context.chart_facts)
     authorized_facts.update(authorized_pillars)
     if day_master:
