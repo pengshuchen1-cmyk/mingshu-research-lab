@@ -81,6 +81,28 @@ def test_chat_message_has_timestamp_and_allowlisted_details_without_sections():
     assert item["details"]["degraded_reason"] == "network_error"
 
 
+def test_session_keeps_only_safe_violation_codes():
+    from core.ai_session import append_chat_message
+
+    state = {}
+    append_chat_message(
+        state,
+        "assistant",
+        "安全正文",
+        source="cloud_validated",
+        details={
+            "violation_codes": [
+                "CLOUD_UNKNOWN_CLAIM_ID",
+                "非法 code 含客户文本",
+                "CLOUD_UNKNOWN_CLAIM_ID",
+            ]
+        },
+    )
+
+    details = state["bazi_chat_messages"][0]["details"]
+    assert details["violation_codes"] == ["CLOUD_UNKNOWN_CLAIM_ID"]
+
+
 def test_chat_message_keeps_safe_request_receipt_and_retry_metadata():
     from core.ai_session import append_chat_message
 

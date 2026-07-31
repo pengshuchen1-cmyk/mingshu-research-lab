@@ -63,6 +63,7 @@ _DEGRADATION_REASONS = frozenset(
     }
 )
 _REQUEST_ID_PATTERN = re.compile(r"^[A-Za-z0-9_-]{1,128}$")
+_VIOLATION_CODE_PATTERN = re.compile(r"^[A-Z][A-Z0-9_]{2,63}$")
 
 
 def _as_utc(value: datetime) -> datetime:
@@ -177,6 +178,18 @@ def append_chat_message(
             and details.get("retryable") is True
         ):
             safe_details["retryable"] = True
+        raw_codes = details.get("violation_codes", [])
+        if isinstance(raw_codes, (list, tuple)):
+            safe_codes = [
+                code
+                for code in raw_codes[:12]
+                if isinstance(code, str)
+                and _VIOLATION_CODE_PATTERN.fullmatch(code)
+            ]
+            if safe_codes:
+                safe_details["violation_codes"] = list(
+                    dict.fromkeys(safe_codes)
+                )
         if safe_details:
             item["details"] = safe_details
     messages.append(item)

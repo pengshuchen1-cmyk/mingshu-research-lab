@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 
 def test_ai_log_records_only_allowlisted_metadata():
     from utils.logger import build_ai_log_record
@@ -54,6 +56,43 @@ def test_ai_log_record_rejects_raw_content():
     assert record["violation_code"] == "GUARD_YEAR_CONFLICT"
     assert record["time_scope"] == "target_year"
     assert record["event_code"] == "AI_QA_SEGMENT_REPLACED"
+
+
+@pytest.mark.parametrize(
+    "code",
+    [
+        "CLOUD_UNKNOWN_CLAIM_ID",
+        "CLOUD_SEGMENT_GUARD_ERROR",
+        "CLOUD_ANSWER_TOO_LONG",
+    ],
+)
+def test_structural_failure_codes_are_privacy_safe(code):
+    from utils.logger import build_ai_log_record
+
+    record = build_ai_log_record(
+        event_code="AI_QA_SEGMENT_REPLACED",
+        category="wealth",
+        model_alias="kimi:kimi-k3",
+        violation_code=code,
+        question="张三的财运如何",
+        birth_data="1999-08-11 10:00",
+        api_key="moonshot-secret",
+    )
+
+    assert set(record) == {
+        "event_code",
+        "category",
+        "time_scope",
+        "model_alias",
+        "latency_bucket",
+        "reason_code",
+        "violation_code",
+    }
+    assert record["violation_code"] == code
+    serialized = str(record)
+    assert "张三" not in serialized
+    assert "1999-08-11" not in serialized
+    assert "moonshot-secret" not in serialized
 
 
 def test_private_logger_rotates_at_utc_midnight_and_keeps_thirty_backups(

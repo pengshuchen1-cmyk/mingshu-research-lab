@@ -126,6 +126,17 @@ def degradation_warning(degraded_reason: str | None) -> str:
     )
 
 
+def repair_notice(codes: tuple[str, ...] | list[str]) -> str:
+    values = set(codes)
+    if "CLOUD_UNKNOWN_CLAIM_ID" in values:
+        return "部分云端段落引用异常，已按本地四柱规则替换。"
+    if "CLOUD_ANSWER_TOO_LONG" in values:
+        return "云端回答超过安全展示范围，已切换为本地完整分析。"
+    if "CLOUD_SEGMENT_GUARD_ERROR" in values:
+        return "云端段落校验出现异常，已切换为本地完整分析。"
+    return ""
+
+
 def _chart_session_fingerprint(chart: dict) -> str:
     existing = chart.get("chart_fingerprint_v2")
     if existing:
@@ -178,6 +189,10 @@ def _render_message(
             warning = degradation_warning(degraded_reason)
             if warning:
                 st.warning(warning)
+            if item.get("source") == "cloud_validated":
+                notice = repair_notice(details.get("violation_codes", []))
+                if notice:
+                    st.info(notice)
             interpretation_receipt = str(
                 details.get("interpretation_receipt") or ""
             ).strip()
@@ -255,6 +270,7 @@ def _save_answer(
             "degraded_reason": result.degraded_reason,
             "interpretation_receipt": result.interpretation_receipt,
             "retryable": result.retryable,
+            "violation_codes": list(result.violation_codes),
         },
     )
 

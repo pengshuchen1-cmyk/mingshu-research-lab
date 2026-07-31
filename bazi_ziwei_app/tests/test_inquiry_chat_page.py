@@ -26,6 +26,7 @@ class _FakeStatus(_Context):
 class _FakeStreamlit:
     def __init__(self):
         self.warnings = []
+        self.infos = []
         self.markdowns = []
         self.writes = []
         self.captions = []
@@ -39,6 +40,9 @@ class _FakeStreamlit:
 
     def warning(self, text):
         self.warnings.append(str(text))
+
+    def info(self, text):
+        self.infos.append(str(text))
 
     def markdown(self, text, **_kwargs):
         self.markdowns.append(str(text))
@@ -159,6 +163,37 @@ def test_assistant_message_renders_natural_answer_without_fixed_section_headers(
     assert fake.captions == ["Kimi 云端分析 · 本地规则校验"]
 
 
+def test_partial_repair_has_customer_readable_source_note():
+    from ui.inquiry_page import repair_notice
+
+    text = repair_notice(("CLOUD_UNKNOWN_CLAIM_ID",))
+
+    assert text == "部分云端段落引用异常，已按本地四柱规则替换。"
+    assert "claim" not in text.lower()
+
+
+def test_cloud_partial_repair_renders_info_without_fallback_warning(monkeypatch):
+    import ui.inquiry_page as inquiry_page
+
+    fake = _FakeStreamlit()
+    monkeypatch.setattr(inquiry_page, "st", fake)
+
+    inquiry_page._render_message(
+        {
+            "role": "assistant",
+            "content": "合格云端段落与本地替换段落。",
+            "source": "cloud_validated",
+            "provider": "kimi",
+            "details": {
+                "violation_codes": ["CLOUD_UNKNOWN_CLAIM_ID"],
+            },
+        }
+    )
+
+    assert fake.infos == ["部分云端段落引用异常，已按本地四柱规则替换。"]
+    assert fake.warnings == []
+
+
 def test_saved_answer_renders_naturally_with_evidence_in_expander(
     monkeypatch,
 ):
@@ -178,6 +213,7 @@ def test_saved_answer_renders_naturally_with_evidence_in_expander(
         uncertainty=("唯一不确定性",),
         source="cloud_validated",
         provider="openai",
+        violation_codes=("CLOUD_UNKNOWN_CLAIM_ID",),
     )
 
     inquiry_page._save_answer(fake.session_state, result)
@@ -187,6 +223,9 @@ def test_saved_answer_renders_naturally_with_evidence_in_expander(
     assert fake.expanders == ["查看补充的机器校验明细"]
     assert fake.writes == ["• 唯一命盘证据", "• 唯一规则证据", "• 唯一不确定性"]
     assert fake.captions == ["OpenAI 云端分析 · 本地规则校验"]
+    assert fake.session_state[CHAT_MESSAGES_KEY][0]["details"][
+        "violation_codes"
+    ] == ["CLOUD_UNKNOWN_CLAIM_ID"]
 
 
 def test_legacy_answer_without_sections_keeps_evidence_expander(monkeypatch):
