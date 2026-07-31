@@ -74,6 +74,10 @@ _SERVICE_DEGRADATION_REASONS = frozenset(
 )
 
 
+class CloudAnswerCapacityError(ValueError):
+    """Cloud prose exceeded the bounded customer-facing answer contract."""
+
+
 def _answer_result(
     answer: BaziAIAnswer,
     *,
@@ -278,7 +282,7 @@ def _cloud_answer_text(
     if _TRADITIONAL_CULTURE_DISCLAIMER not in text:
         text = f"{text}\n\n{_TRADITIONAL_CULTURE_DISCLAIMER}"
     if not text or len(text) > 6000:
-        raise ValueError("cloud_answer_capacity_invalid")
+        raise CloudAnswerCapacityError("cloud_answer_capacity_invalid")
     return text
 
 
@@ -470,7 +474,7 @@ def answer_question(
                 local,
                 resolved,
                 "local_validation_failed",
-                violation_codes=("CLOUD_STRUCTURE_INVALID",),
+                violation_codes=("CLOUD_SEGMENT_GUARD_ERROR",),
             )
         if guarded.full_fallback:
             emit("degraded")
@@ -483,13 +487,13 @@ def answer_question(
 
         try:
             cloud_text = _cloud_answer_text(guarded.answer_text, resolved)
-        except ValueError:
+        except CloudAnswerCapacityError:
             emit("degraded")
             return _local_result(
                 local,
                 resolved,
                 "local_validation_failed",
-                violation_codes=("CLOUD_STRUCTURE_INVALID",),
+                violation_codes=("CLOUD_ANSWER_TOO_LONG",),
             )
         grounded = local.model_copy(
             update={"analysis_conclusion": cloud_text},

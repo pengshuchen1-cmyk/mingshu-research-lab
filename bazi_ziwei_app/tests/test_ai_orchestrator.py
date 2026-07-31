@@ -139,6 +139,7 @@ def test_orchestrator_resolves_next_year_calls_cloud_once_and_repairs_segment():
 
     assert client.calls == 1
     assert result.source == "cloud_validated"
+    assert result.degraded_reason is None
     assert "2027" in result.answer
     assert "保证借贷成功" not in result.answer
     assert result.interpretation_receipt.startswith("本次按2027")
@@ -265,7 +266,33 @@ def test_cloud_failure_calls_once_then_returns_complete_local(
     assert result.practical_advice
 
 
-def test_unknown_cloud_claim_structure_returns_full_local_answer():
+def test_mixed_valid_and_unknown_segments_keep_cloud_source():
+    from core.ai_orchestrator import answer_question
+
+    client = _SegmentClient(
+        [
+            {"claim_ids": ["wealth.core"], "text": "合格云端段落。"},
+            {"claim_ids": ["unknown.claim"], "text": "不得展示。"},
+        ]
+    )
+    result = answer_question(
+        _chart(),
+        "财运如何",
+        [],
+        client=client,
+        config=_enabled_kimi_config(),
+        now=datetime(2026, 7, 31),
+    )
+
+    assert client.calls == 1
+    assert result.source == "cloud_validated"
+    assert result.degraded_reason is None
+    assert "合格云端段落。" in result.answer
+    assert "不得展示" not in result.answer
+    assert result.violation_codes == ("CLOUD_UNKNOWN_CLAIM_ID",)
+
+
+def test_all_unknown_segments_use_specific_local_fallback_code():
     from core.ai_orchestrator import answer_question
 
     client = _SegmentClient(
@@ -288,7 +315,62 @@ def test_unknown_cloud_claim_structure_returns_full_local_answer():
     assert result.answer.strip()
     assert result.chart_evidence
     assert result.rule_evidence
-    assert result.violation_codes == ("CLOUD_STRUCTURE_INVALID",)
+    assert result.violation_codes == ("CLOUD_UNKNOWN_CLAIM_ID",)
+
+
+def test_segment_guard_exception_has_specific_code(monkeypatch):
+    import core.ai_orchestrator as orchestrator
+
+    client = _SegmentClient(
+        [{"claim_ids": ["wealth.core"], "text": "云端段落。"}]
+    )
+    monkeypatch.setattr(
+        orchestrator,
+        "validate_and_repair_segments",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            RuntimeError("guard failed")
+        ),
+    )
+
+    result = orchestrator.answer_question(
+        _chart(),
+        "财运如何",
+        [],
+        client=client,
+        config=_enabled_kimi_config(),
+        now=datetime(2026, 7, 31),
+    )
+
+    assert client.calls == 1
+    assert result.source == "local_rules"
+    assert result.violation_codes == ("CLOUD_SEGMENT_GUARD_ERROR",)
+
+
+def test_cloud_answer_over_capacity_has_specific_code(monkeypatch):
+    import core.ai_orchestrator as orchestrator
+
+    client = _SegmentClient(
+        [{"claim_ids": ["wealth.core"], "text": "云端段落。"}]
+    )
+
+    def _too_long(*_args, **_kwargs):
+        raise orchestrator.CloudAnswerCapacityError(
+            "cloud_answer_capacity_invalid"
+        )
+
+    monkeypatch.setattr(orchestrator, "_cloud_answer_text", _too_long)
+    result = orchestrator.answer_question(
+        _chart(),
+        "财运如何",
+        [],
+        client=client,
+        config=_enabled_kimi_config(),
+        now=datetime(2026, 7, 31),
+    )
+
+    assert client.calls == 1
+    assert result.source == "local_rules"
+    assert result.violation_codes == ("CLOUD_ANSWER_TOO_LONG",)
 
 
 def test_follow_up_inherits_previous_year_without_second_cloud_call():
@@ -397,7 +479,8 @@ def test_current_marriage_disclaimer_survives_cloud_segment_repair():
     )
 
     assert client.calls == 1
-    assert result.source == "cloud_validated"
+    assert result.source == "local_rules"
+    assert result.degraded_reason == "local_validation_failed"
     assert result.answer.startswith(CURRENT_MARRIAGE_DISCLAIMER)
     assert result.answer.count(CURRENT_MARRIAGE_DISCLAIMER) == 1
     assert "已经结婚" not in result.answer
@@ -530,12 +613,12 @@ def test_orchestrator_repairs_guard_rejection_without_retry():
         client=fake,
     )
 
-    assert result.source == "cloud_validated"
+    assert result.source == "local_rules"
     assert result.sections == {}
     assert result.answer.strip()
     assert result.timing_conditions
     assert result.practical_advice
-    assert result.degraded_reason is None
+    assert result.degraded_reason == "local_validation_failed"
     assert result.violation_codes == ("GUARD_SCOPE_EXPANSION",)
     assert "乙巳日主肯定发财" not in result.answer
     assert len(fake.contexts) == 1
@@ -711,8 +794,8 @@ def test_orchestrator_returns_repair_code_after_one_guard_rejection():
         client=fake,
     )
 
-    assert result.source == "cloud_validated"
-    assert result.degraded_reason is None
+    assert result.source == "local_rules"
+    assert result.degraded_reason == "local_validation_failed"
     assert result.violation_codes == ("GUARD_SCOPE_EXPANSION",)
     assert "乙巳日主肯定发财" not in result.answer
     assert len(fake.contexts) == 1
@@ -771,8 +854,8 @@ def test_cloud_strength_contradiction_is_repaired_once():
         client=fake,
     )
 
-    assert result.source == "cloud_validated"
-    assert result.degraded_reason is None
+    assert result.source == "local_rules"
+    assert result.degraded_reason == "local_validation_failed"
     assert result.violation_codes == ("GUARD_STRENGTH_CONFLICT",)
     assert "壬日主身弱" not in result.answer
     assert len(fake.contexts) == 1
