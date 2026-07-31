@@ -227,6 +227,57 @@ def test_chat_summary_and_request_idempotency():
     assert completed_duplicate.cached_answer == "已验证答案"
 
 
+def test_dialogue_summary_round_trips_nonidentifying_safety_and_time_scope():
+    from core.ai_models import ResolvedQuestion
+    from core.ai_session import (
+        previous_resolved_question,
+        remember_dialogue_summary,
+    )
+
+    state = {}
+    resolved = ResolvedQuestion(
+        safe_question="她是否已婚以及后续大运倾向",
+        domain="relationship",
+        time_scope="dayun",
+        requested_depth="long_range",
+        current_marriage_status_requested=True,
+    )
+
+    remember_dialogue_summary(state, resolved)
+    previous = previous_resolved_question(state)
+
+    assert previous is not None
+    assert previous.domain == "relationship"
+    assert previous.time_scope == "dayun"
+    assert previous.requested_depth == "long_range"
+    assert previous.current_marriage_status_requested is True
+    assert "她是否已婚" not in repr(state)
+
+
+def test_overview_dayun_summary_is_not_treated_as_empty():
+    from core.ai_models import ResolvedQuestion
+    from core.ai_session import (
+        previous_resolved_question,
+        remember_dialogue_summary,
+    )
+
+    state = {}
+    resolved = ResolvedQuestion(
+        safe_question="大运如何",
+        domain="overview",
+        time_scope="dayun",
+        requested_depth="topic",
+    )
+
+    remember_dialogue_summary(state, resolved)
+    previous = previous_resolved_question(state)
+
+    assert previous is not None
+    assert previous.domain == "overview"
+    assert previous.time_scope == "dayun"
+    assert previous.requested_depth == "topic"
+
+
 def _resolved_question(question: str = "2027年财运怎么样"):
     from core.ai_models import ResolvedQuestion
 

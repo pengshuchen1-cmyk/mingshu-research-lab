@@ -371,6 +371,130 @@ def test_answer_passes_shanghai_now_progress_and_links_request_messages(monkeypa
     }
 
 
+def test_inquiry_page_passes_previous_resolved_summary_to_follow_up(monkeypatch):
+    import ui.inquiry_page as inquiry_page
+    from core.ai_models import AnswerResult
+
+    fixed_now = datetime(2026, 7, 29, 9, 30, tzinfo=ZoneInfo("Asia/Shanghai"))
+    captured = []
+    fake = _FakeStreamlit()
+    result = AnswerResult(
+        answer="本地完整回答",
+        sections={},
+        chart_evidence=(),
+        rule_evidence=(),
+        timing_conditions=(),
+        practical_advice=(),
+        uncertainty=(),
+        source="local_rules",
+        degraded_reason="missing_api_key",
+    )
+
+    class _FixedDatetime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return fixed_now
+
+    def _answer_question(*_args, **kwargs):
+        captured.append(kwargs.get("previous"))
+        return result
+
+    monkeypatch.setattr(inquiry_page, "st", fake)
+    monkeypatch.setattr(inquiry_page, "datetime", _FixedDatetime)
+    monkeypatch.setattr(
+        inquiry_page.AIConfig,
+        "from_environment",
+        classmethod(lambda cls, secrets=None: SimpleNamespace(
+            enabled=False,
+            provider="kimi",
+            model="kimi-k3",
+        )),
+    )
+    monkeypatch.setattr(inquiry_page, "answer_question", _answer_question)
+    monkeypatch.setattr(inquiry_page, "log_ai_event", lambda **_kwargs: None)
+    monkeypatch.setattr(inquiry_page, "touch_private_session", lambda _state: None)
+    monkeypatch.setattr(inquiry_page, "_render_message", lambda _item: None)
+
+    inquiry_page._answer({"pillars": {}}, "明年的财运怎么样")
+    inquiry_page._answer({"pillars": {}}, "那每个月呢")
+
+    assert captured[0] is None
+    assert captured[1] is not None
+    assert captured[1].domain == "wealth"
+    assert captured[1].target_years == [2027]
+
+
+def test_inquiry_page_preserves_dayun_and_marriage_follow_up_contracts(
+    monkeypatch,
+):
+    import ui.inquiry_page as inquiry_page
+    from core.ai_models import AnswerResult
+    from core.ai_question_resolver import resolve_question
+    from core.ai_session import clear_chat_session
+
+    fixed_now = datetime(2026, 7, 29, 9, 30, tzinfo=ZoneInfo("Asia/Shanghai"))
+    fake = _FakeStreamlit()
+    resolved_calls = []
+    result = AnswerResult(
+        answer="本地完整回答",
+        sections={},
+        chart_evidence=(),
+        rule_evidence=(),
+        timing_conditions=(),
+        practical_advice=(),
+        uncertainty=(),
+        source="local_rules",
+        degraded_reason="missing_api_key",
+    )
+
+    class _FixedDatetime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return fixed_now
+
+    def _answer_question(_chart, question, _history, **kwargs):
+        resolved_calls.append(
+            resolve_question(
+                question,
+                now=kwargs["now"],
+                previous=kwargs.get("previous"),
+            )
+        )
+        return result
+
+    monkeypatch.setattr(inquiry_page, "st", fake)
+    monkeypatch.setattr(inquiry_page, "datetime", _FixedDatetime)
+    monkeypatch.setattr(
+        inquiry_page.AIConfig,
+        "from_environment",
+        classmethod(lambda cls, secrets=None: SimpleNamespace(
+            enabled=False,
+            provider="kimi",
+            model="kimi-k3",
+        )),
+    )
+    monkeypatch.setattr(inquiry_page, "answer_question", _answer_question)
+    monkeypatch.setattr(inquiry_page, "log_ai_event", lambda **_kwargs: None)
+    monkeypatch.setattr(inquiry_page, "touch_private_session", lambda _state: None)
+    monkeypatch.setattr(inquiry_page, "_render_message", lambda _item: None)
+
+    inquiry_page._answer({"pillars": {}}, "这个八字什么时候走财运")
+    inquiry_page._answer({"pillars": {}}, "那事业呢")
+    assert resolved_calls[-1].time_scope == "dayun"
+    assert resolved_calls[-1].requested_depth == "long_range"
+
+    clear_chat_session(fake.session_state)
+    inquiry_page._answer({"pillars": {}}, "大运如何？")
+    inquiry_page._answer({"pillars": {}}, "那详细说说")
+    assert resolved_calls[-1].time_scope == "dayun"
+
+    clear_chat_session(fake.session_state)
+    inquiry_page._answer({"pillars": {}}, "她是否已婚？")
+    inquiry_page._answer({"pillars": {}}, "那你更倾向哪一种？")
+    assert resolved_calls[-1].domain == "relationship"
+    assert resolved_calls[-1].current_marriage_status_requested is True
+
+
 def test_privacy_center_discloses_deidentified_cloud_payload_and_exclusions():
     source = (ROOT / "ui" / "privacy_center_page.py").read_text(encoding="utf-8")
     notice = (

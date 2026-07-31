@@ -11,7 +11,7 @@ from zoneinfo import ZoneInfo
 
 import streamlit as st
 
-from core.ai_context import classify_question
+from core.ai_context import classify_question, redact_customer_text
 from core.ai_models import (
     AIConfig,
     AnswerResult,
@@ -19,6 +19,7 @@ from core.ai_models import (
     is_retryable_degradation,
 )
 from core.ai_orchestrator import answer_question
+from core.ai_question_resolver import resolve_question
 from core.ai_request_control import request_controller_for_config
 from core.ai_session import (
     CHAT_MESSAGES_KEY,
@@ -26,7 +27,9 @@ from core.ai_session import (
     clear_chat_session,
     expire_chat_session,
     initialize_chat_for_chart,
+    previous_resolved_question,
     recent_context_messages,
+    remember_dialogue_summary,
     validate_question,
 )
 from ui.bazi_components import render_loaded_profile_hint, render_rule_summary
@@ -263,6 +266,13 @@ def _answer(chart: dict, question: str) -> None:
         return
     text = question.strip()
     history = recent_context_messages(st.session_state)
+    now = datetime.now(_SHANGHAI_TIMEZONE)
+    previous = previous_resolved_question(st.session_state)
+    resolved = resolve_question(
+        redact_customer_text(text, max_input_chars=2000),
+        now=now,
+        previous=previous,
+    )
     category = classify_question(text).category
     config = _runtime_ai_config()
     model_alias = (
@@ -304,7 +314,8 @@ def _answer(chart: dict, question: str) -> None:
                 chart,
                 text,
                 history,
-                now=datetime.now(_SHANGHAI_TIMEZONE),
+                previous=previous,
+                now=now,
                 config=config,
                 on_progress=on_progress,
                 request_controller=request_controller_for_config(config),
@@ -327,6 +338,8 @@ def _answer(chart: dict, question: str) -> None:
         st.error("本次回答未能完成，请稍后再试。")
         return
     _save_answer(st.session_state, result, request_id=request_id)
+    if result.source in {"cloud_validated", "local_rules"}:
+        remember_dialogue_summary(st.session_state, resolved)
     elapsed = (time.monotonic() - started) * 1000
     if result.source == "cloud_validated":
         log_ai_event(

@@ -15,6 +15,7 @@ NOW = datetime(2026, 7, 28, 12, 0)
         ("2027到2032财运走势", list(range(2027, 2033)), [], "year_range", "long_range"),
         ("明年每个月财运", [2027], list(range(1, 13)), "month_range", "monthly"),
         ("下半年财运", [2026], list(range(7, 13)), "month_range", "monthly"),
+        ("这个八字什么时候走财运", [], [], "dayun", "long_range"),
         ("30岁以后什么时候走财运", [], [], "age", "long_range"),
     ],
 )
@@ -302,6 +303,225 @@ def test_unrelated_post_monthly_negation_does_not_disable_monthly_analysis():
     assert result.target_years == [2027]
     assert result.target_months == list(range(1, 13))
     assert result.time_scope == "month_range"
+
+
+@pytest.mark.parametrize(
+    "question",
+    (
+        "不想问什么时候走财运，只看整体财运",
+        "别看什么时候走财运，只看整体财运",
+        "不用分析什么时候走财运，只看整体财运",
+        "什么时候走财运不用分析，只看整体财运",
+        "我不想知道什么时候走财运，只看整体财运",
+        "别告诉我什么时候走财运，只看整体财运",
+        "我不需要你告诉我什么时候走财运，只看整体财运",
+        "不用说什么时候走财运，只看整体财运",
+        "什么时候走财运不想知道，只看整体财运",
+    ),
+)
+def test_negated_when_luck_request_does_not_select_dayun(question):
+    from core.ai_question_resolver import resolve_question
+
+    result = resolve_question(question, now=NOW)
+
+    assert result.domain == "wealth"
+    assert result.time_scope == "none"
+    assert result.requested_depth != "long_range"
+
+
+def test_referential_follow_up_inherits_dayun_scope_only_with_cue():
+    from core.ai_question_resolver import resolve_question
+
+    previous = resolve_question("这个八字什么时候走财运", now=NOW)
+    inherited = resolve_question("那事业呢", now=NOW, previous=previous)
+    independent = resolve_question("事业怎么样", now=NOW, previous=previous)
+
+    assert inherited.domain == "career"
+    assert inherited.time_scope == "dayun"
+    assert inherited.requested_depth == "long_range"
+    assert independent.time_scope == "none"
+
+
+def test_any_positive_when_luck_clause_keeps_dayun_scope():
+    from core.ai_question_resolver import resolve_question
+
+    result = resolve_question(
+        "请分析什么时候走财运，但什么时候走事业运不用分析",
+        now=NOW,
+    )
+
+    assert result.time_scope == "dayun"
+    assert result.requested_depth == "long_range"
+
+
+@pytest.mark.parametrize(
+    "question",
+    (
+        "那不用了",
+        "那不继续了",
+        "那看整体财运",
+        "那就看整体吧",
+    ),
+)
+def test_cancel_or_overall_switch_does_not_inherit_dayun(question):
+    from core.ai_question_resolver import resolve_question
+
+    previous = resolve_question("这个八字什么时候走财运", now=NOW)
+    result = resolve_question(question, now=NOW, previous=previous)
+
+    assert result.time_scope == "none"
+    assert result.requested_depth != "long_range"
+
+
+@pytest.mark.parametrize(
+    "question",
+    (
+        "那先不用了",
+        "那不用啦",
+        "那不用了，谢谢",
+        "那不看了",
+        "刚才那个不用了",
+    ),
+)
+def test_polite_or_modified_cancel_does_not_inherit_dayun(question):
+    from core.ai_question_resolver import resolve_question
+
+    previous = resolve_question("这个八字什么时候走财运", now=NOW)
+    result = resolve_question(question, now=NOW, previous=previous)
+
+    assert result.time_scope == "none"
+    assert result.requested_depth != "long_range"
+
+
+@pytest.mark.parametrize(
+    "question",
+    (
+        "那不用了",
+        "那不继续了",
+        "那看整体财运",
+        "那就看整体吧",
+    ),
+)
+def test_cancel_or_overall_switch_does_not_inherit_year(question):
+    from core.ai_question_resolver import resolve_question
+
+    previous = resolve_question("明年财运怎么样", now=NOW)
+    result = resolve_question(question, now=NOW, previous=previous)
+
+    assert result.target_years == []
+    assert result.time_scope == "none"
+
+
+@pytest.mark.parametrize(
+    "question",
+    (
+        "我啥时候走财运？",
+        "财运什么时候来？",
+        "几时开始走财运？",
+    ),
+)
+def test_colloquial_positive_when_luck_requests_select_dayun(question):
+    from core.ai_question_resolver import resolve_question
+
+    result = resolve_question(question, now=NOW)
+
+    assert result.domain == "wealth"
+    assert result.time_scope == "dayun"
+    assert result.requested_depth == "long_range"
+
+
+@pytest.mark.parametrize(
+    "question",
+    (
+        "我不关心什么时候走财运，只看整体财运",
+        "先不聊什么时候走财运，只看整体财运",
+        "暂时不考虑什么时候走财运，只看整体财运",
+        "不是想问什么时候走财运，只看整体财运",
+        "甭告诉我什么时候走财运，只看整体财运",
+    ),
+)
+def test_colloquial_negative_when_luck_requests_do_not_select_dayun(question):
+    from core.ai_question_resolver import resolve_question
+
+    result = resolve_question(question, now=NOW)
+
+    assert result.time_scope == "none"
+
+
+@pytest.mark.parametrize(
+    "question",
+    (
+        "不是不想问什么时候走财运",
+        "并不是不想知道什么时候走财运",
+    ),
+)
+def test_double_negative_when_luck_requests_select_dayun(question):
+    from core.ai_question_resolver import resolve_question
+
+    result = resolve_question(question, now=NOW)
+
+    assert result.time_scope == "dayun"
+
+
+@pytest.mark.parametrize(
+    "question",
+    ("不看大运，只看整体", "不用分析起运，只看基本命盘"),
+)
+def test_negated_explicit_dayun_terms_do_not_select_dayun(question):
+    from core.ai_question_resolver import resolve_question
+
+    result = resolve_question(question, now=NOW)
+
+    assert result.time_scope == "none"
+
+
+@pytest.mark.parametrize(
+    "question",
+    (
+        "什么时候走财运不想知道只分析整体财运",
+        "大运不用看只分析整体财运",
+    ),
+)
+def test_unpunctuated_post_negation_binds_nearest_intent(question):
+    from core.ai_question_resolver import resolve_question
+
+    result = resolve_question(question, now=NOW)
+
+    assert result.time_scope == "none"
+
+
+@pytest.mark.parametrize(
+    "question",
+    (
+        "不得不问什么时候走财运",
+        "不能不考虑财运什么时候来",
+    ),
+)
+def test_modal_double_negative_when_luck_selects_dayun(question):
+    from core.ai_question_resolver import resolve_question
+
+    result = resolve_question(question, now=NOW)
+
+    assert result.time_scope == "dayun"
+
+
+def test_referential_follow_up_inherits_current_marriage_safety_flag():
+    from core.ai_question_resolver import resolve_question
+
+    previous = resolve_question("她是否已婚？", now=NOW)
+    inherited = resolve_question(
+        "那你更倾向哪一种？",
+        now=NOW,
+        previous=previous,
+    )
+    switched = resolve_question("那事业呢", now=NOW, previous=previous)
+    cancelled = resolve_question("那不用再判断了", now=NOW, previous=previous)
+
+    assert inherited.domain == "relationship"
+    assert inherited.current_marriage_status_requested is True
+    assert switched.domain == "career"
+    assert switched.current_marriage_status_requested is False
+    assert cancelled.current_marriage_status_requested is False
 
 
 @pytest.mark.parametrize(

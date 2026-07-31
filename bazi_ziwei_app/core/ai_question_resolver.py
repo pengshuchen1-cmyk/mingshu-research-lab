@@ -30,6 +30,45 @@ _CN = {
 }
 
 _MONTHLY_TERMS = ("每个月", "每月", "逐月", "流月")
+_WHEN_LUCK_WORD = r"(?:什么时候|啥时候|何时|几时|哪几年|哪一年)"
+_LUCK_TOPIC = r"(?:财运|事业运|婚运)"
+_WHEN_LUCK_EXPRESSION = "".join(
+    (
+        r"(?:",
+        _WHEN_LUCK_WORD,
+        r"[^，。；！？!?]{0,12}?",
+        r"(?:走|有|进入|开始走|开始有)?",
+        _LUCK_TOPIC,
+        r"|(?:走财运|赚钱)[^，。；！？!?]{0,12}?",
+        r"(?:什么时候|啥时候|何时|几时|哪几年|哪一年|是在几年)",
+        r"|",
+        _LUCK_TOPIC,
+        r"[^，。；！？!?]{0,8}?",
+        _WHEN_LUCK_WORD,
+        r"(?:来|到|开始|出现)?",
+        r")",
+    )
+)
+_WHEN_LUCK_REQUEST = re.compile(_WHEN_LUCK_EXPRESSION)
+_EXPLICIT_DAYUN_REQUEST = re.compile(r"(?:大运|行运|起运)")
+_WHEN_LUCK_NEGATION = (
+    r"(?:不是(?:想|要|希望|需要)?|并非(?:想|要|希望|需要)?|"
+    r"不需要|不要|无需|无须|不用|不想|不必|甭|不|别)(?:再)?"
+)
+_WHEN_LUCK_NEGATION_OPERATOR = re.compile(_WHEN_LUCK_NEGATION)
+_WHEN_LUCK_DOUBLE_NEGATION = re.compile(
+    r"(?:"
+    r"(?:并)?不是不(?:想|要|希望|需要)?"
+    r"|并非不(?:想|要|希望|需要)?"
+    r"|(?:不得不|不能不|不会不|不可能不)(?:想|要|希望|需要)?"
+    r")"
+)
+_WHEN_LUCK_POSITIVE_OPERATOR = re.compile(
+    r"(?:还是|但|不过|改为|改成|请|想|希望|需要|要|麻烦)"
+)
+_WHEN_LUCK_INTENT_VERB = re.compile(
+    r"(?:问|看|分析|判断|了解|讨论|回答|知道|告诉|说|关心|聊|考虑)"
+)
 _NEGATED_MONTHLY_REQUEST = re.compile(
     r"(?:不需要|不想|无需|不要|不看|不用|别)(?:看)?\s*"
     r"(?:(?:今年|明年|后年|(?:19|20)\d{2}年?|上半年|下半年|"
@@ -42,6 +81,18 @@ _POST_MONTHLY_NEGATION = re.compile(
     r"(?:每个月|每月|逐月|流月)(?:看)?"
 )
 _BIRTH_CONTEXT_TERMS = ("出生", "生日", "生于", "诞生")
+_FOLLOW_UP_CUES = ("那", "继续", "后面", "刚才")
+_FOLLOW_UP_CANCEL = re.compile(
+    r"(?:"
+    r"(?:不需要|不要|无需|无须|不用|不想|不必|别)"
+    r"(?:再)?(?:帮我|给我|去|来|先|一下|\s)*"
+    r"(?:问|看|分析|判断|了解|讨论|回答|继续|知道|告诉|说)"
+    r"|(?:^|[，,。；;！？!?\r\n])(?:那)?(?:就)?"
+    r"(?:不用|不要|不继续|别继续|算了|到此为止)(?:了)?(?:吧)?$"
+    r")"
+)
+_FOLLOW_UP_SCOPE_RESET = re.compile(r"(?:整体|总体|综合|概括|大体)")
+_CLAUSE_BOUNDARY = re.compile(r"[，,。；;！？!?\r\n]")
 
 
 def _number(value: str) -> int:
@@ -151,6 +202,110 @@ def _explicit_forecast_month(text: str) -> int | None:
     return None
 
 
+def _asks_dayun_timing(text: str) -> bool:
+    matches = list(_WHEN_LUCK_REQUEST.finditer(text))
+    if not matches:
+        return False
+    for index, request in enumerate(matches):
+        boundaries = list(
+            _CLAUSE_BOUNDARY.finditer(text, 0, request.start())
+        )
+        clause_start = boundaries[-1].end() if boundaries else 0
+        if index > 0 and matches[index - 1].end() > clause_start:
+            clause_start = matches[index - 1].end()
+        suffix_boundary = _CLAUSE_BOUNDARY.search(text, request.end())
+        clause_end = (
+            suffix_boundary.start() if suffix_boundary else len(text)
+        )
+        if (
+            index + 1 < len(matches)
+            and matches[index + 1].start() < clause_end
+        ):
+            clause_end = matches[index + 1].start()
+        prefix = text[clause_start:request.start()]
+        suffix = text[request.end():clause_end]
+        negated = (
+            _has_negated_when_luck_intent(prefix, direction="prefix")
+            or _has_negated_when_luck_intent(
+                suffix,
+                direction="suffix",
+            )
+        )
+        if not negated:
+            return True
+    return False
+
+
+def _asks_explicit_dayun(text: str) -> bool:
+    requests = list(_EXPLICIT_DAYUN_REQUEST.finditer(text))
+    if not requests:
+        return False
+    for request in requests:
+        boundaries = list(
+            _CLAUSE_BOUNDARY.finditer(text, 0, request.start())
+        )
+        clause_start = boundaries[-1].end() if boundaries else 0
+        suffix_boundary = _CLAUSE_BOUNDARY.search(text, request.end())
+        clause_end = (
+            suffix_boundary.start() if suffix_boundary else len(text)
+        )
+        if not (
+            _has_negated_when_luck_intent(
+                text[clause_start:request.start()],
+                direction="prefix",
+            )
+            or _has_negated_when_luck_intent(
+                text[request.end():clause_end],
+                direction="suffix",
+            )
+        ):
+            return True
+    return False
+
+
+def _has_negated_when_luck_intent(
+    fragment: str,
+    *,
+    direction: str,
+) -> bool:
+    """Bind a request to the nearest intent verb on the relevant side."""
+    verbs = list(_WHEN_LUCK_INTENT_VERB.finditer(fragment))
+    if not verbs:
+        return False
+    if direction == "suffix":
+        verb = verbs[0]
+        phrase_start = 0
+    else:
+        verb = verbs[-1]
+        phrase_start = verbs[-2].end() if len(verbs) > 1 else 0
+    operator_phrase = fragment[phrase_start:verb.start()]
+    if _WHEN_LUCK_DOUBLE_NEGATION.search(operator_phrase):
+        return False
+    negations = list(_WHEN_LUCK_NEGATION_OPERATOR.finditer(operator_phrase))
+    if not negations:
+        return False
+    latest_negation = negations[-1]
+    return not _WHEN_LUCK_POSITIVE_OPERATOR.search(
+        operator_phrase[latest_negation.end():]
+    )
+
+
+def _is_follow_up_cancelled(text: str) -> bool:
+    if _FOLLOW_UP_SCOPE_RESET.search(text):
+        return True
+    if _FOLLOW_UP_CANCEL.search(text):
+        return True
+    compact = re.sub(r"[\s，,。；;！？!?]+", "", text)
+    return bool(
+        re.search(
+            r"(?:那|刚才那个|这个|那个)?(?:先|暂时)?(?:就)?"
+            r"(?:不用|不要|不继续|别继续|不看|别看|算了|到此为止)"
+            r"(?:了|啦|吧)?(?:谢谢(?:你)?)?$",
+            compact,
+        )
+    )
+
+
 def resolve_question(
     question: str,
     *,
@@ -159,15 +314,30 @@ def resolve_question(
 ) -> ResolvedQuestion:
     text = str(question or "").strip()
     scope = check_bazi_scope(text)
-    current_marriage_status_requested = is_current_marriage_question(text)
+    follow_up_cue = bool(
+        previous and any(cue in text for cue in _FOLLOW_UP_CUES)
+    )
+    follow_up_cancelled = _is_follow_up_cancelled(text)
+    explicit_domain_terms = _has_explicit_domain(text)
+    explicit_marriage_status = is_current_marriage_question(text)
+    inherited_marriage_status = bool(
+        previous
+        and previous.current_marriage_status_requested
+        and follow_up_cue
+        and not explicit_domain_terms
+        and not follow_up_cancelled
+    )
+    current_marriage_status_requested = (
+        explicit_marriage_status or inherited_marriage_status
+    )
     domain = (
         "relationship"
         if current_marriage_status_requested
         else _domain(text, previous)
     )
     explicit_domain = (
-        current_marriage_status_requested
-        or _has_explicit_domain(text)
+        explicit_marriage_status
+        or explicit_domain_terms
     )
     domain_inherited = bool(previous and not explicit_domain and len(text) <= 20)
     years, reversed_range = _years(text, now.year)
@@ -182,7 +352,8 @@ def resolve_question(
         and not reversed_range
         and not too_many_years
         and previous
-        and any(cue in text for cue in ("那", "继续", "后面", "刚才"))
+        and follow_up_cue
+        and not follow_up_cancelled
     ):
         years = list(previous.target_years)
         years_inherited = True
@@ -214,6 +385,8 @@ def resolve_question(
         else "unspecified"
     )
     age_requested = bool(ages) or "几岁" in text
+    asks_dayun_timing = _asks_dayun_timing(text)
+    asks_explicit_dayun = _asks_explicit_dayun(text)
 
     ambiguity = ""
     if too_many_years:
@@ -235,8 +408,20 @@ def resolve_question(
         time_scope, depth = "year_range", "long_range"
     elif years:
         time_scope, depth = "target_year", "single_year"
-    elif any(term in text for term in ("大运", "行运", "起运")):
-        time_scope, depth = "dayun", "topic"
+    elif (
+        asks_explicit_dayun
+        or asks_dayun_timing
+    ):
+        time_scope = "dayun"
+        depth = "long_range" if asks_dayun_timing else "topic"
+    elif (
+        previous
+        and follow_up_cue
+        and previous.time_scope == "dayun"
+        and not follow_up_cancelled
+    ):
+        time_scope = "dayun"
+        depth = previous.requested_depth
     else:
         time_scope = "none"
         depth = "topic" if len(text) > 24 else "direct"

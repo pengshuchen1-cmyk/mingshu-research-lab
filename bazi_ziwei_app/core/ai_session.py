@@ -224,6 +224,67 @@ def dialogue_summary(state: MutableMapping) -> DialogueSummary:
         return DialogueSummary()
 
 
+def previous_resolved_question(
+    state: MutableMapping,
+) -> ResolvedQuestion | None:
+    """Rebuild only the de-identified facts needed for a follow-up."""
+    summary = dialogue_summary(state)
+    if (
+        summary.domain == "overview"
+        and summary.time_scope == "none"
+        and not summary.target_years
+        and not summary.target_months
+        and not summary.current_marriage_status_requested
+    ):
+        return None
+    if summary.target_months:
+        time_scope = "month_range"
+        depth = "monthly"
+    elif len(summary.target_years) > 1:
+        time_scope = "year_range"
+        depth = "long_range"
+    elif summary.target_years:
+        time_scope = "target_year"
+        depth = "single_year"
+    else:
+        time_scope = "none"
+        depth = "direct"
+    return ResolvedQuestion(
+        safe_question="上轮对话摘要",
+        domain=summary.domain,
+        time_scope=summary.time_scope if summary.time_scope != "none" else time_scope,
+        target_years=summary.target_years,
+        target_months=summary.target_months,
+        requested_depth=(
+            summary.requested_depth
+            if summary.time_scope != "none"
+            else depth
+        ),
+        current_marriage_status_requested=(
+            summary.current_marriage_status_requested
+        ),
+    )
+
+
+def remember_dialogue_summary(
+    state: MutableMapping,
+    resolved: ResolvedQuestion,
+) -> None:
+    """Store follow-up routing facts without retaining the question text."""
+    request_state = _request_state(state)
+    request_state["summary"] = DialogueSummary(
+        domain=resolved.domain,
+        time_scope=resolved.time_scope,
+        requested_depth=resolved.requested_depth,
+        target_years=resolved.target_years,
+        target_months=resolved.target_months,
+        current_marriage_status_requested=(
+            resolved.current_marriage_status_requested
+        ),
+    ).model_dump(mode="json")
+    touch_chat_session(state)
+
+
 def cached_answer(
     state: MutableMapping,
     fingerprint: str,
@@ -293,8 +354,13 @@ def complete_chat_request(
         return
     summary = DialogueSummary(
         domain=resolved.domain,
+        time_scope=resolved.time_scope,
+        requested_depth=resolved.requested_depth,
         target_years=resolved.target_years,
         target_months=resolved.target_months,
+        current_marriage_status_requested=(
+            resolved.current_marriage_status_requested
+        ),
     )
     request_state.update(
         {

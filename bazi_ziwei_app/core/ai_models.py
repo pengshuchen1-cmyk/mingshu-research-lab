@@ -58,8 +58,11 @@ class DialogueSummary(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     domain: QuestionDomain = "overview"
+    time_scope: TimeScopeKind = "none"
+    requested_depth: AnswerDepth = "direct"
     target_years: list[int] = Field(default_factory=list, max_length=60)
     target_months: list[int] = Field(default_factory=list, max_length=12)
+    current_marriage_status_requested: bool = False
     last_claim_ids: list[str] = Field(default_factory=list, max_length=60)
     constraints: list[str] = Field(default_factory=list, max_length=12)
 
