@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from core.ai_answer_guard import validate_ai_answer, validate_ai_text
 from core.ai_intent import (
     CURRENT_MARRIAGE_DISCLAIMER,
-    is_current_marriage_question,
 )
 from core.ai_models import (
     AIRequestContext,
@@ -43,7 +42,7 @@ def _marriage_violation(
 ) -> tuple[str, ...]:
     if not (
         context.category == "relationship"
-        and is_current_marriage_question(context.question)
+        and context.current_marriage_status_requested
     ):
         return ()
     probe = CURRENT_MARRIAGE_DISCLAIMER + text
@@ -137,7 +136,7 @@ def validate_and_repair_segments(
     if (
         answer_text
         and context.category == "relationship"
-        and is_current_marriage_question(context.question)
+        and context.current_marriage_status_requested
     ):
         without_duplicate_disclaimers = [
             paragraph.removeprefix(CURRENT_MARRIAGE_DISCLAIMER)

@@ -10,6 +10,7 @@ def _context(
     requires_timing: bool = False,
 ):
     from core.ai_models import AIRequestContext
+    from core.ai_intent import is_current_marriage_question
 
     return AIRequestContext(
         question=question,
@@ -83,6 +84,7 @@ def _context(
             },
         ],
         history=[],
+        current_marriage_status_requested=is_current_marriage_question(question),
     )
 
 

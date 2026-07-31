@@ -826,6 +826,24 @@ def test_borrowing_synonym_fallback_has_complete_risk_advice(question):
     assert "保证成功" not in result.answer
 
 
+def test_long_resolved_borrowing_question_keeps_complete_risk_advice():
+    from core.ai_models import AIConfig
+    from core.ai_orchestrator import answer_question
+
+    result = answer_question(
+        _chart(),
+        ("事业" * 300) + "房贷要注意什么？",
+        [],
+        config=AIConfig("", False),
+    )
+    advice = "。".join(result.practical_advice)
+
+    assert result.source == "local_rules"
+    assert result.degraded_reason == "missing_api_key"
+    for required in ("现金流", "最坏情景", "还款", "退出"):
+        assert required in advice
+
+
 @pytest.mark.parametrize(
     "question",
     [
@@ -856,6 +874,163 @@ def test_current_marriage_variant_fallback_cannot_confirm_status(question):
     assert "仍需以本人现实情况为准" in result.answer
     assert any("关系状态的倾向判断" in item for item in result.timing_conditions)
     assert any(
+        "不代表确定已婚或未婚" in item
+        for item in result.uncertainty
+    )
+
+
+@pytest.mark.parametrize(
+    "question",
+    [
+        "她是否已婚，请分析一下。",
+        "她是否已婚请详细分析",
+        "现在婚姻状态如何，请看看。",
+        "想知道有没有配偶，请分析。",
+        "她是否已婚，请帮忙分析一下。",
+        "她是否已婚，请具体分析一下。",
+        "她是否已婚，麻烦你分析一下。",
+        "她是否已婚，请分析一下吧。",
+        "她是否已婚，请结合命盘分析。",
+        "她是否已婚，请给我分析一下。",
+    ],
+)
+def test_current_marriage_query_with_meta_suffix_keeps_status_safety(question):
+    from core.ai_models import AIConfig
+    from core.ai_orchestrator import answer_question
+
+    result = answer_question(
+        _chart(),
+        question,
+        [],
+        config=AIConfig("", False),
+    )
+
+    assert result.source == "local_rules"
+    assert result.degraded_reason == "missing_api_key"
+    assert "单凭八字，不能确认现实中的婚姻登记状态。" in result.answer
+    assert any(
+        "不代表确定已婚或未婚" in item
+        for item in result.uncertainty
+    )
+
+
+def test_long_resolved_current_marriage_question_keeps_status_limitations():
+    from core.ai_models import AIConfig
+    from core.ai_orchestrator import answer_question
+
+    result = answer_question(
+        _chart(),
+        ("事业" * 300) + "她是否已婚？",
+        [],
+        config=AIConfig("", False),
+    )
+
+    assert result.source == "local_rules"
+    assert result.degraded_reason == "missing_api_key"
+    assert "单凭八字，不能确认现实中的婚姻登记状态。" in result.answer
+    assert any(
+        "不代表确定已婚或未婚" in item
+        for item in result.uncertainty
+    )
+
+
+def test_long_primary_marriage_status_request_reaches_cloud_as_relationship():
+    from core.ai_orchestrator import answer_question
+    from services.bazi_ai_prompt import build_messages
+
+    client = _PlanEchoClient()
+    result = answer_question(
+        _chart(),
+        ("事业" * 300) + "她是否已婚？",
+        [],
+        config=_enabled_kimi_config(),
+        client=client,
+    )
+
+    assert result.source == "cloud_validated"
+    assert client.calls == 1
+    assert client.contexts[0].analysis_plan.resolved.domain == "relationship"
+    assert (
+        client.contexts[0]
+        .analysis_plan.resolved.current_marriage_status_requested
+        is True
+    )
+    assert client.contexts[0].category == "relationship"
+    assert client.contexts[0].current_marriage_status_requested is True
+    system_prompt = build_messages(client.contexts[0])[0]["content"]
+    assert (
+        "当前问题询问现实婚姻登记状态。整个回答的第一段 text 必须先以"
+        in system_prompt
+    )
+    assert (
+        "“单凭八字，不能确认现实中的婚姻登记状态。”开头"
+        in system_prompt
+    )
+    assert result.answer.startswith(
+        "单凭八字，不能确认现实中的婚姻登记状态。"
+    )
+
+
+@pytest.mark.parametrize(
+    "question",
+    [
+        "我目前未婚，只想问事业发展。",
+        "不问是否已婚，只问事业发展。",
+        "不问是否已婚只问事业发展",
+        "当前婚姻状态只是背景，只问事业发展",
+    ],
+)
+def test_marriage_background_or_negation_keeps_career_local_answer(question):
+    from core.ai_models import AIConfig
+    from core.ai_orchestrator import answer_question
+
+    result = answer_question(
+        _chart(),
+        question,
+        [],
+        config=AIConfig("", False),
+    )
+
+    assert result.source == "local_rules"
+    assert result.degraded_reason == "missing_api_key"
+    assert "单凭八字，不能确认现实中的婚姻登记状态。" not in result.answer
+    assert any(
+        "岗位与行业匹配度" in item
+        for item in result.practical_advice
+    )
+    assert not any(
+        "不代表确定已婚或未婚" in item
+        for item in result.uncertainty
+    )
+
+
+@pytest.mark.parametrize(
+    "question",
+    [
+        "不用看她是否已婚",
+        "不要判断她是否已婚",
+        "不用判断目前是否已婚",
+        "她是否已婚不用分析",
+        "她是否已婚不要回答",
+        "不用帮我看她是否已婚",
+        "不需要再帮我确认她是否已婚",
+        "不要去判断她是否已婚",
+        "她是否已婚不需要再帮我分析",
+    ],
+)
+def test_negated_marriage_status_request_does_not_answer_status(question):
+    from core.ai_models import AIConfig
+    from core.ai_orchestrator import answer_question
+
+    result = answer_question(
+        _chart(),
+        question,
+        [],
+        config=AIConfig("", False),
+    )
+
+    assert "单凭八字，不能确认现实中的婚姻登记状态。" not in result.answer
+    assert not any(
         "不代表确定已婚或未婚" in item
         for item in result.uncertainty
     )

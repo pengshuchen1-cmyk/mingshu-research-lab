@@ -8,7 +8,6 @@ from dataclasses import dataclass
 
 from core.ai_intent import (
     CURRENT_MARRIAGE_DISCLAIMER,
-    is_current_marriage_question,
 )
 from core.ai_models import AIRequestContext, BaziAIAnswer
 
@@ -595,7 +594,7 @@ def _validate_combined_text(
     )
     if require_marriage_disclaimer and (
         context.category == "relationship"
-        and is_current_marriage_question(context.question)
+        and context.current_marriage_status_requested
     ) and (
         not combined.strip().startswith(
             CURRENT_MARRIAGE_DISCLAIMER

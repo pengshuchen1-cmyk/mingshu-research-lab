@@ -6,6 +6,7 @@ import pytest
 
 
 def _context(*, question: str = "财运如何？", category: str = "wealth"):
+    from core.ai_intent import is_current_marriage_question
     from core.ai_models import AIRequestContext
 
     return AIRequestContext(
@@ -78,6 +79,7 @@ def _context(*, question: str = "财运如何？", category: str = "wealth"):
             }
         ],
         history=[],
+        current_marriage_status_requested=is_current_marriage_question(question),
     )
 
 

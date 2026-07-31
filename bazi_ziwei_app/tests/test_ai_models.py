@@ -74,9 +74,11 @@ def test_resolved_question_and_cloud_segments_are_strict():
         target_months=list(range(1, 13)),
         requested_depth="monthly",
         interpretation_receipt="本次按2027丁未年1—12月分析。",
+        current_marriage_status_requested=False,
     )
     assert resolved.target_years == [2027]
     assert resolved.target_months[-1] == 12
+    assert resolved.model_dump()["current_marriage_status_requested"] is False
 
     cloud = CloudBaziAnalysis(
         segments=[{"claim_ids": ["wealth-2027"], "text": "先看现金流。"}]

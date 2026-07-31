@@ -6,7 +6,6 @@ import json
 
 from core.ai_intent import (
     CURRENT_MARRIAGE_DISCLAIMER,
-    is_current_marriage_question,
 )
 from core.ai_models import AIRequestContext
 
@@ -45,7 +44,7 @@ def _current_marriage_instruction(context: AIRequestContext) -> str:
     if (
         plan is None
         or plan.resolved.domain != "relationship"
-        or not is_current_marriage_question(plan.resolved.safe_question)
+        or not plan.resolved.current_marriage_status_requested
     ):
         return ""
     supported = any(

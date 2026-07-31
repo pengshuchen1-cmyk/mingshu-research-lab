@@ -546,6 +546,7 @@ def test_current_marriage_guard_rejects_unqualified_real_world_status_claim():
         update={
             "question": "当前婚姻状态",
             "category": "relationship",
+            "current_marriage_status_requested": True,
         }
     )
     result = validate_ai_answer(
@@ -564,6 +565,7 @@ def test_current_marriage_guard_requires_disclaimer_before_qualified_tendency():
         update={
             "question": "当前婚姻状态",
             "category": "relationship",
+            "current_marriage_status_requested": True,
         }
     )
     accepted = validate_ai_answer(
@@ -606,6 +608,7 @@ def test_current_marriage_guard_rejects_synonym_and_distant_hedge_bypasses(
         update={
             "question": "我目前的婚姻状况如何？",
             "category": "relationship",
+            "current_marriage_status_requested": True,
         }
     )
     result = validate_ai_answer(
@@ -636,6 +639,7 @@ def test_current_marriage_guard_rejects_limitation_and_fact_in_same_clause(
         update={
             "question": "我目前的婚姻状况如何？",
             "category": "relationship",
+            "current_marriage_status_requested": True,
         }
     )
     result = validate_ai_answer(

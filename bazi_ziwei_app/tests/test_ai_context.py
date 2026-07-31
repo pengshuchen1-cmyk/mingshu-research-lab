@@ -309,6 +309,80 @@ def test_current_marriage_status_wording_survives_safe_projection():
 
     assert "现在是否已经结婚" in context.question
     assert "当前婚姻状态" in context.question
+    assert context.current_marriage_status_requested is True
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        (("事业" * 300) + "她是否已婚？", True),
+        ("我目前的婚姻状况如何？", True),
+        ("当前未婚，想问姻缘", True),
+        ("她是否已婚，请分析一下。", True),
+        ("她是否已婚请详细分析", True),
+        ("现在婚姻状态如何，请看看。", True),
+        ("想知道有没有配偶，请分析。", True),
+        ("她是否已婚，请帮忙分析一下。", True),
+        ("她是否已婚，请具体分析一下。", True),
+        ("她是否已婚，麻烦你分析一下。", True),
+        ("她是否已婚，请分析一下吧。", True),
+        ("她是否已婚，请结合命盘分析。", True),
+        ("她是否已婚，请给我分析一下。", True),
+        ("我目前未婚，只想问事业发展。", False),
+        ("不问是否已婚，只问事业发展。", False),
+        ("不问是否已婚只问事业发展", False),
+        ("当前婚姻状态只是背景，只问事业发展", False),
+        ("不用看她是否已婚", False),
+        ("不要判断她是否已婚", False),
+        ("不用判断目前是否已婚", False),
+        ("她是否已婚不用分析", False),
+        ("她是否已婚不要回答", False),
+        ("不用帮我看她是否已婚", False),
+        ("不需要再帮我确认她是否已婚", False),
+        ("不要去判断她是否已婚", False),
+        ("她是否已婚不需要再帮我分析", False),
+        ("不要判断她是否已婚但还是请回答她是否已婚", True),
+    ],
+)
+def test_current_marriage_predicate_requires_primary_status_intent(text, expected):
+    from core.ai_intent import is_current_marriage_question
+
+    assert is_current_marriage_question(text) is expected
+
+
+@pytest.mark.parametrize(
+    "question",
+    [
+        "不用看她是否已婚",
+        "不要判断她是否已婚",
+        "不用判断目前是否已婚",
+        "她是否已婚不用分析",
+        "她是否已婚不要回答",
+        "不用帮我看她是否已婚",
+        "不需要再帮我确认她是否已婚",
+        "不要去判断她是否已婚",
+        "她是否已婚不需要再帮我分析",
+    ],
+)
+def test_negated_marriage_status_does_not_add_projection_marker(question):
+    from core.ai_context import build_ai_context
+    from core.bazi_engine import build_bazi_chart
+    from core.chart_facts import build_chart_facts
+
+    facts = build_chart_facts(
+        build_bazi_chart(
+            {
+                "gender": "女",
+                "birth_date": "1996-09-04",
+                "birth_hour": 23,
+                "birth_minute": 45,
+            }
+        )
+    )
+    context = build_ai_context(facts, question, [])
+
+    assert "当前婚姻状态" not in context.question
+    assert context.current_marriage_status_requested is False
 
 
 @pytest.mark.parametrize(

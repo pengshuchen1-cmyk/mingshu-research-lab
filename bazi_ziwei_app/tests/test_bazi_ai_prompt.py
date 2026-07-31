@@ -127,6 +127,7 @@ def test_current_marriage_prompt_requires_grounded_disclaimer_first():
         update={
             "safe_question": "她目前的婚姻登记状态如何？",
             "domain": "relationship",
+            "current_marriage_status_requested": True,
         }
     )
     claim = base.analysis_plan.claims[0].model_copy(
@@ -155,6 +156,19 @@ def test_current_marriage_prompt_requires_grounded_disclaimer_first():
     assert CURRENT_MARRIAGE_DISCLAIMER in system_prompt
     assert "必须先以" in system_prompt
     assert "relationship claim" in system_prompt
+    payload = json.loads(build_messages(context)[1]["content"])
+    assert (
+        payload["fact_packet"]["resolved"][
+            "current_marriage_status_requested"
+        ]
+        is True
+    )
+    assert (
+        payload["analysis_plan"]["resolved"][
+            "current_marriage_status_requested"
+        ]
+        is True
+    )
     assert CURRENT_MARRIAGE_DISCLAIMER not in (
         build_messages(_context("direct"))[0]["content"]
     )

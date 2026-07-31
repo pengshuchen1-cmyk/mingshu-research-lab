@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 from datetime import datetime
 
+from core.ai_intent import is_current_marriage_question
 from core.ai_models import ResolvedQuestion
 from core.ai_scope_gate import check_bazi_scope
 from core.yearly_engine import get_year_pillar
@@ -158,8 +159,16 @@ def resolve_question(
 ) -> ResolvedQuestion:
     text = str(question or "").strip()
     scope = check_bazi_scope(text)
-    domain = _domain(text, previous)
-    explicit_domain = _has_explicit_domain(text)
+    current_marriage_status_requested = is_current_marriage_question(text)
+    domain = (
+        "relationship"
+        if current_marriage_status_requested
+        else _domain(text, previous)
+    )
+    explicit_domain = (
+        current_marriage_status_requested
+        or _has_explicit_domain(text)
+    )
     domain_inherited = bool(previous and not explicit_domain and len(text) <= 20)
     years, reversed_range = _years(text, now.year)
     explicit_year_range = _has_explicit_year_range(text)
@@ -262,4 +271,5 @@ def resolve_question(
         interpretation_receipt=receipt,
         out_of_scope=not scope.allowed,
         scope_reason=scope.reason,
+        current_marriage_status_requested=current_marriage_status_requested,
     )

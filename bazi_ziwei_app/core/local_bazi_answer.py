@@ -5,7 +5,6 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 
 from core.ai_analysis_plan import AnalysisPlanError
-from core.ai_intent import is_current_marriage_question
 from core.ai_models import AIRequestContext, AnalysisPlan, BaziAIAnswer
 from core.bazi_rulebook import load_rulebook
 
@@ -174,7 +173,7 @@ def _domain_evidence(
 def _is_current_marriage_question(context: AIRequestContext) -> bool:
     return (
         context.category == "relationship"
-        and is_current_marriage_question(context.question)
+        and context.current_marriage_status_requested
     )
 
 

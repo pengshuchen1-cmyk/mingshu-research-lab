@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 from collections.abc import Mapping
 from dataclasses import dataclass, field
-from typing import Annotated, Literal, Optional
+from typing import Annotated, Literal, Optional, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -51,6 +51,7 @@ class ResolvedQuestion(BaseModel):
     interpretation_receipt: str = Field(default="", max_length=240)
     out_of_scope: bool = False
     scope_reason: str = Field(default="", max_length=80)
+    current_marriage_status_requested: bool = False
 
 
 class DialogueSummary(BaseModel):
@@ -159,7 +160,7 @@ class AIRequestContext(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     question: str = Field(min_length=1, max_length=2000)
-    category: QuestionDomain
+    category: Union[QuestionCategory, QuestionDomain]
     requires_timing: bool
     chart_facts: dict[str, object]
     rule_evidence: list[dict[str, str]] = Field(min_length=1, max_length=80)
@@ -167,6 +168,7 @@ class AIRequestContext(BaseModel):
     resolved_question: Optional[ResolvedQuestion] = None
     fact_packet: Optional[FactPacket] = None
     analysis_plan: Optional[AnalysisPlan] = None
+    current_marriage_status_requested: bool = False
 
 
 def _setting(

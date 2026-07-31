@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from typing import Mapping, Sequence, overload
+from typing import Mapping, Sequence, Union, overload
 
 import core.yearly_engine as yearly_engine
 from core.ai_intent import (
@@ -15,6 +15,9 @@ from core.ai_models import (
     AnalysisPlan,
     ChatMessage,
     FactPacket,
+    QuestionCategory,
+    QuestionDomain,
+    ResolvedQuestion,
     RoutedQuestion,
 )
 from core.bazi_constants import BRANCH_HIDDEN_STEMS, STEM_ELEMENTS
@@ -93,7 +96,7 @@ DOMAIN_RULE_IDS = {
     "other": ("SAFETY-NONDETERMINISTIC",),
 }
 REDACTION_MARKER = "[已隐去]"
-_MAX_QUESTION_INPUT_CHARS = 2000
+_MAX_QUESTION_INPUT_CHARS = 500
 _MAX_HISTORY_INPUT_CHARS = 4000
 _MAX_REDACTION_INPUT_CHARS = 4000
 
@@ -822,6 +825,82 @@ def _build_grounded_context(
         resolved_question=packet.resolved,
         fact_packet=packet,
         analysis_plan=plan,
+        current_marriage_status_requested=(
+            packet.resolved.current_marriage_status_requested
+        ),
+    )
+
+
+def _build_legacy_context(
+    facts: ChartFacts,
+    question: str,
+    history: Sequence[ChatMessage | Mapping[str, object]],
+    *,
+    category: Union[QuestionCategory, QuestionDomain],
+    requires_timing: bool,
+    target_years: Sequence[int] = (),
+    dayun_periods: Sequence[Mapping[str, object]] | None = None,
+    resolved_question: ResolvedQuestion | None = None,
+    current_marriage_status_requested: bool = False,
+) -> AIRequestContext:
+    chart_facts = build_canonical_chart_facts(
+        facts,
+        requires_timing=requires_timing,
+        question=question,
+        target_years=target_years,
+        dayun_periods=dayun_periods,
+    )
+
+    selected_ids = list(facts.rule_ids)
+    selected_ids.extend(DOMAIN_RULE_IDS[category])
+    if requires_timing:
+        selected_ids.extend(DOMAIN_RULE_IDS["timing"])
+    selected_ids.extend(("SAFETY-NONDETERMINISTIC", "SAFETY-STATUS-UNKNOWN"))
+    book = load_rulebook()
+    rule_evidence = []
+    for rule_id in dict.fromkeys(selected_ids):
+        try:
+            rule = book.by_id(rule_id)
+        except KeyError:
+            continue
+        rule_evidence.append({"id": rule.id, "statement": rule.statement})
+
+    return AIRequestContext(
+        question=question,
+        category=category,
+        requires_timing=requires_timing,
+        chart_facts=chart_facts,
+        rule_evidence=rule_evidence,
+        history=_safe_history(history),
+        resolved_question=resolved_question,
+        current_marriage_status_requested=current_marriage_status_requested,
+    )
+
+
+def _build_resolved_legacy_context(
+    facts: ChartFacts,
+    resolved: ResolvedQuestion,
+    history: Sequence[ChatMessage | Mapping[str, object]],
+    *,
+    dayun_periods: Sequence[Mapping[str, object]] | None = None,
+) -> AIRequestContext:
+    """Bridge already projected and scope-gated resolver output to local answers."""
+    safe_question = redact_customer_text(
+        resolved.safe_question,
+        max_input_chars=2000,
+    )
+    return _build_legacy_context(
+        facts,
+        safe_question,
+        history,
+        category=resolved.domain,
+        requires_timing=resolved.time_scope != "none",
+        target_years=resolved.target_years,
+        dayun_periods=dayun_periods,
+        resolved_question=resolved,
+        current_marriage_status_requested=(
+            resolved.current_marriage_status_requested
+        ),
     )
 
 
@@ -872,34 +951,15 @@ def build_ai_context(
         max_input_chars=_MAX_QUESTION_INPUT_CHARS,
     )
     routed = classify_question(redacted_question)
-    chart_facts = build_canonical_chart_facts(
-        facts,
-        requires_timing=(
-            routed.requires_timing or routed.category == "timing"
-        ),
-        question=redacted_question,
-        dayun_periods=dayun_periods,
+    current_marriage_status_requested = is_current_marriage_question(
+        redacted_question
     )
-
-    selected_ids = list(facts.rule_ids)
-    selected_ids.extend(DOMAIN_RULE_IDS[routed.category])
-    if routed.requires_timing:
-        selected_ids.extend(DOMAIN_RULE_IDS["timing"])
-    selected_ids.extend(("SAFETY-NONDETERMINISTIC", "SAFETY-STATUS-UNKNOWN"))
-    book = load_rulebook()
-    rule_evidence = []
-    for rule_id in dict.fromkeys(selected_ids):
-        try:
-            rule = book.by_id(rule_id)
-        except KeyError:
-            continue
-        rule_evidence.append({"id": rule.id, "statement": rule.statement})
-
-    return AIRequestContext(
-        question=redacted_question,
+    return _build_legacy_context(
+        facts,
+        redacted_question,
+        history,
         category=routed.category,
-        requires_timing=routed.requires_timing,
-        chart_facts=chart_facts,
-        rule_evidence=rule_evidence,
-        history=_safe_history(history),
+        requires_timing=routed.requires_timing or routed.category == "timing",
+        dayun_periods=dayun_periods,
+        current_marriage_status_requested=current_marriage_status_requested,
     )

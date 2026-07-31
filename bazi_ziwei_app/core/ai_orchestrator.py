@@ -10,6 +10,7 @@ from uuid import uuid4
 from core.ai_analysis_plan import build_analysis_plan
 from core.ai_answer_format import render_adaptive_markdown
 from core.ai_context import (
+    _build_resolved_legacy_context,
     build_ai_context,
     build_canonical_chart_facts,
     redact_customer_text,
@@ -17,7 +18,6 @@ from core.ai_context import (
 from core.ai_fact_compiler import compile_fact_packet
 from core.ai_intent import (
     CURRENT_MARRIAGE_DISCLAIMER,
-    is_current_marriage_question,
 )
 from core.ai_models import (
     AIConfig,
@@ -177,9 +177,9 @@ def _legacy_context(
     history: Sequence[ChatMessage | Mapping[str, object]],
 ) -> AIRequestContext:
     facts = chart_facts_from_chart(chart)
-    return build_ai_context(
+    return _build_resolved_legacy_context(
         facts,
-        resolved.safe_question,
+        resolved,
         history,
         dayun_periods=_resolved_dayun_periods(chart, resolved),
     )
@@ -228,7 +228,7 @@ def _complete_local_answer(
 ) -> BaziAIAnswer:
     local = render_local_plan(plan)
     if (
-        is_current_marriage_question(plan.resolved.safe_question)
+        plan.resolved.current_marriage_status_requested
         or any(
             marker in plan.resolved.safe_question
             for marker in (
@@ -260,7 +260,7 @@ def _cloud_answer_text(
     if (
         receipt
         and receipt not in text
-        and is_current_marriage_question(resolved.safe_question)
+        and resolved.current_marriage_status_requested
         and text.startswith(CURRENT_MARRIAGE_DISCLAIMER)
     ):
         remainder = text[len(CURRENT_MARRIAGE_DISCLAIMER):].lstrip()
