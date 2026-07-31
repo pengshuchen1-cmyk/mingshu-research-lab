@@ -148,29 +148,58 @@ def test_one_bad_segment_is_replaced_without_losing_good_segment():
     assert "你必定发财" not in result.answer_text
     assert result.violation_codes == ("GUARD_SCOPE_EXPANSION",)
     assert result.replaced_claim_ids == (plan.claims[1].id,)
+    assert result.retained_cloud_segments == 1
     assert generation.input_tokens == 17
     assert generation.output_tokens == 23
 
 
-def test_unknown_claim_id_forces_full_fallback_without_partial_text():
+def test_unknown_claim_id_replaces_only_its_segment():
     from core.ai_segment_guard import validate_and_repair_segments
 
-    plan = _plan(("wealth.core",))
+    plan = _plan(("wealth.core", "wealth.timing"))
     generation = _generation(
         [
             {
-                "claim_ids": [plan.claims[0].id, "unknown.claim"],
-                "text": "这段原本可以保留。",
-            }
+                "claim_ids": [plan.claims[0].id],
+                "text": "云端核心段保留。",
+            },
+            {
+                "claim_ids": [plan.claims[1].id, "unknown.claim"],
+                "text": "混入未知编号的段落不得保留。",
+            },
         ]
     )
 
     result = validate_and_repair_segments(generation, plan, _context())
 
+    assert result.full_fallback is False
+    assert "云端核心段保留。" in result.answer_text
+    assert "混入未知编号" not in result.answer_text
+    assert plan.claims[1].local_text in result.answer_text
+    assert result.violation_codes == ("CLOUD_UNKNOWN_CLAIM_ID",)
+    assert result.replaced_claim_ids == (plan.claims[1].id,)
+    assert result.retained_cloud_segments == 1
+
+
+def test_all_unknown_segments_return_complete_local_text():
+    from core.ai_segment_guard import validate_and_repair_segments
+
+    plan = _plan(("wealth.core", "wealth.timing"))
+    result = validate_and_repair_segments(
+        _generation(
+            [{"claim_ids": ["unknown.claim"], "text": "不得保留。"}]
+        ),
+        plan,
+        _context(),
+    )
+
     assert result.full_fallback is True
-    assert result.answer_text == ""
-    assert result.violation_codes == ("CLOUD_STRUCTURE_INVALID",)
-    assert result.replaced_claim_ids == ()
+    assert result.retained_cloud_segments == 0
+    assert result.answer_text.split("\n\n") == [
+        plan.claims[0].local_text,
+        plan.claims[1].local_text,
+    ]
+    assert result.violation_codes == ("CLOUD_UNKNOWN_CLAIM_ID",)
 
 
 def test_duplicate_claims_are_deduplicated_and_omissions_use_plan_order():
@@ -203,6 +232,7 @@ def test_duplicate_claims_are_deduplicated_and_omissions_use_plan_order():
         plan.claims[2].local_text,
     ]
     assert "不应重复出现" not in result.answer_text
+    assert result.retained_cloud_segments == 1
     assert result.replaced_claim_ids == (
         plan.claims[0].id,
         plan.claims[2].id,
@@ -297,7 +327,8 @@ def test_fact_conflicts_have_stable_codes(text, expected_code):
         _context(),
     )
 
-    assert result.full_fallback is False
+    assert result.full_fallback is True
+    assert result.retained_cloud_segments == 0
     assert expected_code in result.violation_codes
     assert result.answer_text == plan.claims[0].local_text
 

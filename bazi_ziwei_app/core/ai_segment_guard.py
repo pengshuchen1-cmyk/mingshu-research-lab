@@ -33,6 +33,7 @@ class SegmentGuardResult:
     answer_text: str
     violation_codes: tuple[str, ...]
     replaced_claim_ids: tuple[str, ...]
+    retained_cloud_segments: int
     full_fallback: bool
 
 
@@ -80,15 +81,6 @@ def validate_and_repair_segments(
 ) -> SegmentGuardResult:
     """Keep valid cloud prose and replace only invalid or omitted plan claims."""
     claims = {claim.id: claim for claim in plan.claims}
-    for segment in generation.analysis.segments:
-        if any(claim_id not in claims for claim_id in segment.claim_ids):
-            return SegmentGuardResult(
-                answer_text="",
-                violation_codes=("CLOUD_STRUCTURE_INVALID",),
-                replaced_claim_ids=(),
-                full_fallback=True,
-            )
-
     plan_order = {claim.id: index for index, claim in enumerate(plan.claims)}
     covered: set[str] = set()
     replaced: set[str] = set()
@@ -96,11 +88,26 @@ def validate_and_repair_segments(
     codes: list[str] = []
 
     for segment in generation.analysis.segments:
-        fresh_claim_ids = [
+        known_claim_ids = [
             claim_id
             for claim_id in segment.claim_ids
+            if claim_id in claims
+        ]
+        unknown_claim_ids = [
+            claim_id
+            for claim_id in segment.claim_ids
+            if claim_id not in claims
+        ]
+        fresh_claim_ids = [
+            claim_id
+            for claim_id in known_claim_ids
             if claim_id not in covered
         ]
+        if unknown_claim_ids:
+            codes.append("CLOUD_UNKNOWN_CLAIM_ID")
+            replaced.update(fresh_claim_ids)
+            covered.update(fresh_claim_ids)
+            continue
         if not fresh_claim_ids:
             continue
 
@@ -154,5 +161,6 @@ def validate_and_repair_segments(
         replaced_claim_ids=tuple(
             claim.id for claim in plan.claims if claim.id in replaced
         ),
-        full_fallback=False,
+        retained_cloud_segments=len(cloud_paragraphs),
+        full_fallback=not cloud_paragraphs,
     )
