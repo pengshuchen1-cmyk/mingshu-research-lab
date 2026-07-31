@@ -130,7 +130,7 @@ def _payload(claim_id="wealth.core"):
 
 
 def test_kimi_client_uses_k3_json_schema_and_deidentified_messages():
-    from core.ai_models import AIConfig, CloudBaziAnalysis
+    from core.ai_models import AIConfig
     from services.kimi_bazi_client import KimiBaziClient
 
     usage = type(
@@ -161,10 +161,10 @@ def test_kimi_client_uses_k3_json_schema_and_deidentified_messages():
     assert call["response_format"]["type"] == "json_schema"
     assert call["response_format"]["json_schema"]["name"] == "bazi_cloud_analysis"
     assert call["response_format"]["json_schema"]["strict"] is True
-    assert (
-        call["response_format"]["json_schema"]["schema"]
-        == CloudBaziAnalysis.model_json_schema()
-    )
+    claim_items = call["response_format"]["json_schema"]["schema"]["$defs"][
+        "CloudSegment"
+    ]["properties"]["claim_ids"]["items"]
+    assert claim_items["enum"] == ["wealth.core"]
     assert call["extra_body"] == {"reasoning_effort": "high"}
     assert call["timeout"] == 30
     serialized = json.dumps(call["messages"], ensure_ascii=False)

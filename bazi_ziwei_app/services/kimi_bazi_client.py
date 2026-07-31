@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from copy import deepcopy
 
 from core.ai_models import (
     AIConfig,
@@ -17,13 +18,20 @@ from services.bazi_ai_prompt import build_messages
 KIMI_MODEL = "kimi-k3"
 
 
-def _response_format() -> dict[str, object]:
+def _response_format(
+    allowed_claim_ids: tuple[str, ...],
+) -> dict[str, object]:
+    schema = deepcopy(CloudBaziAnalysis.model_json_schema())
+    claim_items = schema["$defs"]["CloudSegment"]["properties"][
+        "claim_ids"
+    ]["items"]
+    claim_items["enum"] = list(allowed_claim_ids)
     return {
         "type": "json_schema",
         "json_schema": {
             "name": "bazi_cloud_analysis",
             "strict": True,
-            "schema": CloudBaziAnalysis.model_json_schema(),
+            "schema": schema,
         },
     }
 
@@ -50,10 +58,14 @@ class KimiBaziClient:
         if self._client is None:
             raise AIServiceError("disabled")
         try:
+            plan = context.analysis_plan
+            if plan is None:
+                raise AIServiceError("unparseable_response")
+            allowed_claim_ids = tuple(claim.id for claim in plan.claims)
             response = self._client.chat.completions.create(
                 model=self._config.model,
                 messages=build_messages(context),
-                response_format=_response_format(),
+                response_format=_response_format(allowed_claim_ids),
                 stream=False,
                 max_completion_tokens=6000,
                 extra_body={

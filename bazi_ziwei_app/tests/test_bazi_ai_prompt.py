@@ -97,7 +97,12 @@ def test_prompt_allows_only_fact_packet_and_analysis_plan():
     system_prompt = messages[0]["content"]
     payload = json.loads(messages[1]["content"])
 
-    assert set(payload) == {"fact_packet", "analysis_plan"}
+    assert set(payload) == {
+        "allowed_claim_ids",
+        "fact_packet",
+        "analysis_plan",
+    }
+    assert payload["allowed_claim_ids"] == ["wealth.core"]
     assert payload["fact_packet"]["resolved"]["safe_question"] == (
         "请依据本地材料分析财运。"
     )
@@ -113,6 +118,8 @@ def test_prompt_allows_only_fact_packet_and_analysis_plan():
 
     assert "每个段落" in system_prompt
     assert "claim_id" in system_prompt
+    assert "必须从 allowed_claim_ids 中原样复制" in system_prompt
+    assert "不得翻译、缩写、拼接、改写或创造新编号" in system_prompt
     assert "不得写入 claim 之外" in system_prompt
     assert "不得重新计算四柱" in system_prompt
     assert "不得固定套用六个栏目" in system_prompt

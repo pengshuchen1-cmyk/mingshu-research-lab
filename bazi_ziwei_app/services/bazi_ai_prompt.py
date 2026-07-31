@@ -25,7 +25,8 @@ FactPacket 与 AnalysisPlan 已由本地排盘和规则生成；不得重新计�
 强弱、格局、年份、规则或现实状态。
 
 返回 CloudBaziAnalysis 的 segments。每个段落必须提供非空 claim_ids 和自然正文 text。
-每个 claim_id 必须存在于 AnalysisPlan.claims[].id；正文只能展开所引用 claim 的
+每个 claim_id 必须从 allowed_claim_ids 中原样复制；不得翻译、缩写、拼接、改写或创造新编号。
+无法展开某个 claim 时省略该段，由本地规则补齐。正文只能展开所引用 claim 的
 allowed_conclusion、fact_ids、rule_ids、conditions、uncertainty 和
 prohibited_expansion，不得写入 claim 之外的命理结论，也不得覆盖本地结论。
 
@@ -70,6 +71,9 @@ def build_messages(context: AIRequestContext) -> list[dict[str, str]]:
     )
     system_instruction += _current_marriage_instruction(context)
     payload = {
+        "allowed_claim_ids": [
+            claim.id for claim in context.analysis_plan.claims
+        ],
         "fact_packet": context.fact_packet.model_dump(mode="json"),
         "analysis_plan": context.analysis_plan.model_dump(mode="json"),
     }
