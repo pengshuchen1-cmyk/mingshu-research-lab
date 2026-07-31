@@ -105,6 +105,66 @@ def test_lunar_1999_cloud_and_no_key_paths_return_guarded_adaptive_answers():
     assert "不能确认现实中的婚姻登记状态" in local.answer
 
 
+def test_lunar_1999_partial_cloud_failure_keeps_valid_segment_and_local_facts():
+    from core.ai_models import (
+        AIConfig,
+        CloudBaziAnalysis,
+        CloudGeneration,
+    )
+    from core.ai_orchestrator import answer_question
+
+    class PartialSegmentClient:
+        def __init__(self):
+            self.calls = 0
+            self.local_replacement = ""
+
+        def answer(self, context):
+            self.calls += 1
+            valid_claim, replaced_claim = context.analysis_plan.claims[:2]
+            self.local_replacement = replaced_claim.local_text
+            return CloudGeneration(
+                analysis=CloudBaziAnalysis(
+                    segments=[
+                        {
+                            "claim_ids": [valid_claim.id],
+                            "text": "合格云端财务段落，应同时观察机会、承载能力与现金流。",
+                        },
+                        {
+                            "claim_ids": [
+                                replaced_claim.id,
+                                "unknown.claim",
+                            ],
+                            "text": "混入未知编号的云端原文不得展示。",
+                        },
+                    ]
+                )
+            )
+
+    client = PartialSegmentClient()
+    result = answer_question(
+        _formal_chart(),
+        "这个八字明年的财运怎么样",
+        [],
+        config=AIConfig(
+            "fixture-key",
+            True,
+            provider="kimi",
+            model="kimi-k3",
+        ),
+        client=client,
+        request_controller=_acceptance_controller(),
+        session_id="lunar-1999-partial-segment",
+    )
+
+    assert result.source == "cloud_validated"
+    assert result.provider == "kimi"
+    assert "CLOUD_UNKNOWN_CLAIM_ID" in result.violation_codes
+    assert "合格云端财务段落" in result.answer
+    assert "混入未知编号的云端原文" not in result.answer
+    assert client.local_replacement in result.answer
+    assert client.calls == 1
+
+
 def test_lunar_1999_cloud_context_serialization_excludes_raw_birth_and_identity():
     from core.ai_models import AIConfig
     from core.ai_orchestrator import answer_question

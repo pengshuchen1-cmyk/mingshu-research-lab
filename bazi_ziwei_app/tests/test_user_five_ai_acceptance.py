@@ -86,14 +86,27 @@ def test_all_six_ai_questions_are_grounded_for_each_user_chart(case):
     assert "不能保证" in answers[-2].answer
     assert "单凭八字，不能确认现实中的婚姻登记状态" in answers[-1].answer
     assert len(client.completions.calls) == 6
-    for call in client.completions.calls:
+    assert len(client.contexts) == 6
+    for call, context in zip(client.completions.calls, client.contexts):
         assert call["model"] == "kimi-k3"
         assert call["response_format"]["type"] == "json_schema"
         assert call["stream"] is False
         payload = json.loads(call["messages"][1]["content"])
-        assert set(payload) == {"fact_packet", "analysis_plan"}
+        assert set(payload) == {
+            "allowed_claim_ids",
+            "fact_packet",
+            "analysis_plan",
+        }
         assert payload["fact_packet"]["facts"]
         assert payload["analysis_plan"]["claims"]
+        expected_claim_ids = [
+            claim.id for claim in context.analysis_plan.claims
+        ]
+        assert payload["allowed_claim_ids"] == expected_claim_ids
+        claim_items = call["response_format"]["json_schema"]["schema"][
+            "$defs"
+        ]["CloudSegment"]["properties"]["claim_ids"]["items"]
+        assert claim_items["enum"] == expected_claim_ids
 
 
 def test_five_chart_ai_acceptance_renderer_is_deterministic():
