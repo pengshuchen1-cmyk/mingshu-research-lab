@@ -1,0 +1,9 @@
+.settings-card { margin-top: 28rpx; padding: 32rpx; }
+.settings-title { display: block; margin-bottom: 24rpx; font-size: 35rpx; font-weight: 800; }
+.connection-text { display: block; margin-top: 14rpx; padding: 14rpx; background: var(--surface-muted); color: var(--muted); font-size: 23rpx; text-align: center; }
+.setting-row { display: flex; align-items: center; justify-content: space-between; gap: 24rpx; min-height: 108rpx; padding: 18rpx 0; border-top: 2rpx solid var(--line); }
+.setting-row > view { flex: 1; }
+.setting-label { display: block; font-size: 26rpx; font-weight: 800; }
+.setting-copy { display: block; margin-top: 3rpx; color: var(--muted); font-size: 21rpx; line-height: 1.5; }
+.compact-picker { min-width: 165rpx; padding: 14rpx; background: var(--surface-muted); border-radius: 12rpx; color: var(--action-dark); font-size: 23rpx; font-weight: 800; text-align: center; }
+.save-button { margin-top: 28rpx; }

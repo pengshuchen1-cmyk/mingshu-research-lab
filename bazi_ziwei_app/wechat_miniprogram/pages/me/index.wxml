@@ -1,0 +1,47 @@
+<view class="page-shell page-narrow">
+  <text class="eyebrow">LOCAL TEST WORKSPACE</text>
+  <text class="page-title">我的</text>
+  <text class="page-subtitle">测试版数据默认保存在你电脑上的本地数据库；这里保留原版的档案、合盘、备份恢复、验收与设置功能。</text>
+
+  <view wx:if="{{loading}}" class="loading-state surface-card">正在连接本地工作区…</view>
+  <block wx:else>
+    <view class="identity-card muted-card">
+      <view class="identity-mark">{{status.has_chart ? '命' : '访'}}</view>
+      <view class="identity-copy">
+        <text class="identity-name serif">{{status.has_chart ? (status.profile.name || '当前命盘') : '尚未载入命盘'}}</text>
+        <text class="identity-meta">{{status.has_chart ? (status.profile.gender + ' · ' + status.profile.birth_date) : '可以新建或从档案载入'}}</text>
+      </view>
+      <text class="status-dot {{status.has_chart ? 'online' : ''}}"></text>
+    </view>
+
+    <view class="button-row primary-actions">
+      <button class="primary-button" bindtap="openProfile">新建命盘</button>
+      <button class="secondary-button" disabled="{{!status.has_chart}}" bindtap="saveCurrent">保存当前</button>
+    </view>
+
+    <text class="section-heading">工作区</text>
+    <view class="menu-list surface-card">
+      <view class="menu-row" bindtap="openArchives"><view><text class="menu-title">命盘档案</text><text class="menu-copy">搜索、加载、编辑与删除本机档案</text></view><text class="arrow">→</text></view>
+      <view class="menu-row" bindtap="openCompatibility"><view><text class="menu-title">合婚匹配</text><text class="menu-copy">选择两份档案进行十一维合盘</text></view><text class="arrow">→</text></view>
+      <view class="menu-row" bindtap="openAcceptance"><view><text class="menu-title">验收中心</text><text class="menu-copy">固定样例与结果差异检查</text></view><text class="arrow">→</text></view>
+      <view class="menu-row" bindtap="openSettings"><view><text class="menu-title">报告与测试设置</text><text class="menu-copy">API 地址、报告长度、技术细节和导出偏好</text></view><text class="arrow">→</text></view>
+      <view class="menu-row" bindtap="openPrivacy"><view><text class="menu-title">隐私与清除</text><text class="menu-copy">查看数据范围、AI 边界并立即清除会话</text></view><text class="arrow">→</text></view>
+    </view>
+
+    <text class="section-heading">数据备份</text>
+    <view class="backup-card surface-card">
+      <text class="backup-copy">JSON 导出和恢复、SQLite 原始数据库备份均沿用原项目能力。导入 JSON 会新增档案记录。</text>
+      <view class="backup-actions">
+        <button class="secondary-button" loading="{{exporting}}" bindtap="exportBackup">导出备份</button>
+        <button class="secondary-button" loading="{{importing}}" bindtap="importBackup">恢复备份</button>
+        <button class="secondary-button" loading="{{exporting}}" bindtap="exportDatabase">SQLite 备份</button>
+      </view>
+    </view>
+
+    <view class="test-meta">
+      <text>本地 API</text><text user-select>{{baseUrl}}</text>
+      <text>会话问答</text><text>{{status.chat_count}} 条</text>
+    </view>
+    <button class="danger-button clear-button" bindtap="clearCurrent">清除当前会话</button>
+  </block>
+</view>

@@ -1,0 +1,7 @@
+.metric-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10rpx; margin-top: 30rpx; }
+.metric { min-width: 0; padding: 20rpx 12rpx; color: var(--muted); font-size: 20rpx; text-align: center; }
+.metric-value { display: block; margin-top: 6rpx; color: var(--ink); font-size: 25rpx; font-weight: 800; }
+.privacy-card { margin-top: 18rpx; padding: 30rpx; }
+.privacy-title { display: block; font-size: 32rpx; font-weight: 800; }
+.privacy-copy { display: block; margin-top: 12rpx; color: var(--muted); font-size: 25rpx; line-height: 1.78; }
+.clear-button { margin-top: 30rpx; }

@@ -1,0 +1,44 @@
+.document-view { width: 100%; }
+.document-hero { padding: 40rpx 34rpx; }
+.hero-title { display: block; margin-top: 12rpx; color: var(--ink); font-family: "Songti SC", STSong, serif; font-size: 52rpx; font-weight: 800; line-height: 1.18; }
+.hero-subtitle { display: block; margin-top: 20rpx; color: var(--muted); font-size: 27rpx; line-height: 1.75; white-space: pre-wrap; }
+.hero-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12rpx; margin-top: 28rpx; }
+.hero-metric { min-width: 0; padding: 18rpx; background: var(--surface); border: 2rpx solid var(--line); border-radius: 14rpx; }
+.metric-label { display: block; color: var(--muted); font-size: 21rpx; }
+.metric-value { display: block; margin-top: 4rpx; color: var(--ink); font-size: 27rpx; font-weight: 750; word-break: break-all; }
+.document-section { margin-top: 46rpx; }
+.section-title { display: block; color: var(--ink); font-family: "Songti SC", STSong, serif; font-size: 38rpx; font-weight: 800; }
+.section-caption { display: block; margin: 8rpx 0 18rpx; color: var(--muted); font-size: 24rpx; line-height: 1.65; }
+.card-list { display: grid; gap: 18rpx; margin-top: 18rpx; }
+.score-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.palace-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.content-card { min-width: 0; padding: 28rpx; }
+.card-heading-row { display: flex; align-items: flex-start; gap: 12rpx; }
+.card-title { flex: 1; min-width: 0; font-family: "Songti SC", STSong, serif; font-size: 31rpx; font-weight: 800; line-height: 1.35; }
+.card-score { color: var(--action); font-size: 38rpx; font-weight: 800; line-height: 1; }
+.month-toggle { color: var(--action); font-size: 23rpx; font-weight: 700; }
+.card-text { display: block; margin-top: 16rpx; color: var(--ink); font-size: 27rpx; line-height: 1.78; white-space: pre-wrap; word-break: break-all; }
+.tag-wrap { margin-top: 10rpx; }
+.card-details { margin-top: 16rpx; padding-top: 4rpx; border-top: 2rpx solid var(--line); }
+.detail-row { padding: 16rpx 0; border-bottom: 2rpx solid var(--surface-muted); }
+.detail-label { display: block; color: var(--muted); font-size: 22rpx; font-weight: 700; }
+.detail-value { display: block; margin-top: 6rpx; color: var(--ink); font-size: 26rpx; line-height: 1.7; white-space: pre-wrap; word-break: break-all; }
+.score-track, .progress-track { height: 14rpx; overflow: hidden; background: var(--surface-muted); border: 2rpx solid var(--line); border-radius: 10rpx; }
+.score-track { margin-top: 20rpx; }
+.score-fill { height: 100%; background: var(--action); }
+.pillar-scroll { width: 100%; margin-top: 18rpx; white-space: nowrap; }
+.pillar-row { display: inline-flex; gap: 14rpx; padding-bottom: 8rpx; }
+.pillar-card { width: 250rpx; padding: 28rpx 22rpx; background: var(--surface); border: 2rpx solid var(--line); border-radius: 16rpx; white-space: normal; }
+.pillar-card.active { border-top: 8rpx solid var(--action); }
+.card-kicker { display: block; color: var(--muted); font-size: 22rpx; font-weight: 700; }
+.pillar-value { display: block; margin: 12rpx 0; font-family: "Songti SC", STSong, serif; font-size: 44rpx; font-weight: 800; letter-spacing: 5rpx; }
+.compact-row { display: flex; justify-content: space-between; gap: 12rpx; margin-top: 10rpx; color: var(--muted); font-size: 21rpx; }
+.progress-list { display: grid; gap: 22rpx; margin-top: 18rpx; padding: 28rpx; background: var(--surface); border: 2rpx solid var(--line); border-radius: 16rpx; }
+.progress-head { display: flex; justify-content: space-between; gap: 20rpx; font-size: 25rpx; }
+.progress-name { font-weight: 800; }
+.progress-track { margin-top: 8rpx; }
+.progress-fill { min-width: 4rpx; height: 100%; background: var(--action); }
+.progress-copy { display: block; margin-top: 12rpx; color: var(--muted); font-size: 24rpx; line-height: 1.65; }
+.tone-wood { background: #4F8A5B; }.tone-fire { background: #C2413B; }.tone-earth { background: #A16207; }.tone-metal { background: #64748B; }.tone-water { background: #2563EB; }
+.tone-border-warning { border-left: 8rpx solid var(--danger); }.tone-border-accent { border-left: 8rpx solid var(--action); }
+@media (min-width: 700px) { .card-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } .score-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }

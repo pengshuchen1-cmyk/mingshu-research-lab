@@ -1,0 +1,27 @@
+<view class="page-shell page-narrow">
+  <text class="eyebrow">DUAL CHART · 11 DIMENSIONS</text>
+  <text class="page-title">合婚匹配</text>
+  <text class="page-subtitle">选择两份已保存档案，继续使用原版合盘、大运同步与十一维评分逻辑。结果用于理解互动模式，不代替现实沟通和决定。</text>
+
+  <view wx:if="{{loading}}" class="loading-state surface-card">正在读取档案…</view>
+  <view wx:elif="{{profiles.length < 2}}" class="empty-state muted-card">
+    <text class="empty-title serif">至少需要两份档案</text>
+    <text class="empty-copy">新建命盘时打开“同时保存到本机档案”，或在命盘页保存当前。</text>
+    <button class="primary-button" bindtap="createProfile">新建命盘</button>
+  </view>
+  <block wx:else>
+    <view class="selector-card surface-card">
+      <view class="person-field">
+        <text class="person-label">甲方档案</text>
+        <picker mode="selector" range="{{profiles}}" range-key="displayName" value="{{firstIndex}}" bindchange="chooseFirst"><view class="profile-picker">{{profiles[firstIndex].displayName}}⌄</view></picker>
+      </view>
+      <text class="versus serif">×</text>
+      <view class="person-field">
+        <text class="person-label">乙方档案</text>
+        <picker mode="selector" range="{{profiles}}" range-key="displayName" value="{{secondIndex}}" bindchange="chooseSecond"><view class="profile-picker">{{profiles[secondIndex].displayName}}⌄</view></picker>
+      </view>
+      <button class="primary-button analyze-button" loading="{{analyzing}}" disabled="{{analyzing}}" bindtap="analyze">开始合盘分析</button>
+    </view>
+    <document-view wx:if="{{document}}" document="{{document}}" />
+  </block>
+</view>

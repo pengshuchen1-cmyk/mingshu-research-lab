@@ -1,0 +1,56 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+env/
+
+# 本地数据库和日志（敏感信息）
+data/*.db
+data/*backup*
+logs/
+*.log
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+
+# 临时文件
+*.tmp
+*.bak
+*.cache
+
+# 测试
+.pytest_cache/
+.coverage
+htmlcov/
+
+# 文档
+*.md
+!README.md
+docs/
+
+# 验收样例（如果不需要打包进镜像）
+acceptance_samples/
+
+# 其他
+*.pdf
+*.txt
+*.html

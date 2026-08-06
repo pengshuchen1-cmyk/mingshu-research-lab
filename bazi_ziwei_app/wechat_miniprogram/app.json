@@ -1,0 +1,39 @@
+{
+  "pages": [
+    "pages/home/index",
+    "pages/today/index",
+    "pages/chart/index",
+    "pages/ai/index",
+    "pages/report/index",
+    "pages/me/index",
+    "pages/profile/index",
+    "pages/feature/index",
+    "pages/archive/index",
+    "pages/compatibility/index",
+    "pages/settings/index",
+    "pages/privacy/index"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#FAFAFA",
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "命数研究室",
+    "backgroundColor": "#FAFAFA",
+    "backgroundTextStyle": "dark"
+  },
+  "tabBar": {
+    "color": "#71717A",
+    "selectedColor": "#EC4899",
+    "backgroundColor": "#FAFAFA",
+    "borderStyle": "white",
+    "list": [
+      { "pagePath": "pages/today/index", "text": "今日" },
+      { "pagePath": "pages/chart/index", "text": "命盘" },
+      { "pagePath": "pages/ai/index", "text": "问答" },
+      { "pagePath": "pages/report/index", "text": "报告" },
+      { "pagePath": "pages/me/index", "text": "我的" }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

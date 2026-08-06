@@ -1,0 +1,31 @@
+.home-page { min-height: 100vh; padding: calc(32rpx + env(safe-area-inset-top)) 32rpx 56rpx; background-color: var(--surface); background-image: radial-gradient(#D4D4D8 1.5rpx, transparent 1.5rpx); background-size: 28rpx 28rpx; }
+.custom-nav { padding-bottom: 30rpx; border-bottom: 2rpx solid var(--ink); }
+.brand { display: block; font-size: 34rpx; font-weight: 800; }
+.nav-caption { display: block; margin-top: 10rpx; color: var(--muted); font-size: 25rpx; letter-spacing: 2rpx; }
+.quick-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 14rpx; margin: 28rpx 0 0; padding-bottom: 28rpx; border-bottom: 2rpx solid var(--ink); }
+.quick-button { min-height: 84rpx; margin: 0; background: var(--surface); border: 2rpx solid var(--ink); border-radius: 16rpx; color: var(--ink); font-size: 27rpx; line-height: 84rpx; }
+.hero-section { padding: 68rpx 0 50rpx; }
+.hero-title { display: block; margin-top: 20rpx; font-size: 72rpx; font-weight: 900; line-height: 1.04; white-space: pre-line; letter-spacing: -2rpx; }
+.hero-copy { display: block; max-width: 660rpx; margin-top: 28rpx; font-size: 30rpx; line-height: 1.8; }
+.hero-button { margin-top: 34rpx; }
+.daily-card { padding: 34rpx; }
+.daily-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 20rpx; }
+.card-kicker { display: block; color: var(--action); font-size: 22rpx; font-weight: 800; letter-spacing: 3rpx; }
+.daily-date { display: block; margin-top: 6rpx; color: var(--muted); font-size: 24rpx; }
+.daily-element { display: flex; align-items: center; justify-content: center; width: 72rpx; height: 72rpx; color: #FFFFFF; background: var(--action); border-radius: 50%; font-family: "Songti SC", STSong, serif; font-size: 36rpx; font-weight: 800; }
+.daily-title { display: block; margin-top: 28rpx; font-size: 42rpx; font-weight: 800; }
+.daily-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 14rpx; margin-top: 24rpx; }
+.daily-metric { padding: 20rpx; background: var(--surface-muted); border-radius: 14rpx; }
+.daily-metric text { display: block; color: var(--muted); font-size: 22rpx; }
+.daily-metric .daily-strong { display: block; margin-top: 6rpx; color: var(--ink); font-size: 27rpx; font-weight: 700; }
+.daily-text { display: block; margin-top: 24rpx; line-height: 1.75; }
+.daily-boundary { display: block; margin-top: 22rpx; padding-top: 20rpx; color: var(--muted); border-top: 2rpx solid var(--line); font-size: 23rpx; line-height: 1.65; }
+.feature-section { padding-top: 20rpx; }
+.section-copy { display: block; margin-top: -10rpx; color: var(--muted); font-size: 25rpx; }
+.feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16rpx; margin-top: 24rpx; }
+.feature-card { min-height: 250rpx; padding: 24rpx; }
+.feature-index { display: block; color: var(--action); font-size: 22rpx; font-weight: 800; }
+.feature-title { display: block; margin-top: 22rpx; font-size: 31rpx; font-weight: 800; }
+.feature-caption { display: block; margin-top: 10rpx; color: var(--muted); font-size: 23rpx; line-height: 1.55; }
+.feature-arrow { display: block; margin-top: 18rpx; color: var(--ink); font-size: 23rpx; font-weight: 800; }
+.retry { margin-top: 24rpx; }

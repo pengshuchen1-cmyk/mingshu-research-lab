@@ -1,0 +1,19 @@
+.search-bar { display: grid; grid-template-columns: 1fr 126rpx 108rpx; gap: 10rpx; margin-top: 28rpx; }
+.search-input { min-width: 0; }
+.gender-picker, .search-button { min-height: 88rpx; padding: 0 12rpx; border: 2rpx solid var(--line); border-radius: 16rpx; font-size: 24rpx; line-height: 88rpx; text-align: center; }
+.gender-picker { background: var(--surface); }
+.search-button { margin: 0; background: var(--ink); color: #FFFFFF; }
+.empty-title { display: block; margin-bottom: 24rpx; font-size: 36rpx; font-weight: 800; }
+.archive-list { display: grid; gap: 18rpx; margin-top: 24rpx; }
+.archive-card { padding: 28rpx; }
+.archive-head { display: flex; justify-content: space-between; gap: 20rpx; }
+.archive-name { display: block; font-size: 34rpx; font-weight: 800; }
+.archive-meta { display: block; margin-top: 4rpx; color: var(--muted); font-size: 23rpx; }
+.archive-id { color: var(--action); font-size: 22rpx; font-weight: 800; }
+.archive-details { display: grid; grid-template-columns: auto 1fr; gap: 8rpx 18rpx; margin-top: 22rpx; padding-top: 18rpx; border-top: 2rpx solid var(--line); font-size: 24rpx; }
+.archive-details text:nth-child(odd) { color: var(--muted); }
+.archive-note { display: block; margin-top: 14rpx; padding: 14rpx; background: var(--surface-muted); color: var(--muted); font-size: 23rpx; }
+.archive-actions { display: grid; grid-template-columns: 1.35fr 1fr 1fr; gap: 10rpx; margin-top: 22rpx; }
+.archive-actions button { min-height: 70rpx; margin: 0; background: var(--surface); border: 2rpx solid var(--line); border-radius: 12rpx; color: var(--ink); font-size: 23rpx; line-height: 70rpx; }
+.archive-actions .load-button { background: var(--action); border-color: var(--action); color: #FFFFFF; }
+.archive-actions .delete-button { color: var(--danger); }

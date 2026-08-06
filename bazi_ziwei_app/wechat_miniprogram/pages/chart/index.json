@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "个人命盘",
+  "usingComponents": {
+    "document-view": "/components/document-view/index"
+  }
+}

@@ -1,0 +1,7 @@
+.empty-title { display: block; font-size: 38rpx; font-weight: 800; }
+.empty-copy { display: block; margin: 12rpx 0 24rpx; color: var(--muted); font-size: 25rpx; }
+.selector-card { margin: 30rpx 0 26rpx; padding: 32rpx; }
+.person-label { display: block; margin-bottom: 10rpx; font-size: 24rpx; font-weight: 800; }
+.profile-picker { min-height: 88rpx; padding: 20rpx 22rpx; background: var(--surface-muted); border: 2rpx solid var(--line); border-radius: 14rpx; font-size: 26rpx; line-height: 1.6; }
+.versus { display: block; margin: 10rpx 0; color: var(--action); font-size: 42rpx; font-weight: 800; text-align: center; }
+.analyze-button { margin-top: 28rpx; }

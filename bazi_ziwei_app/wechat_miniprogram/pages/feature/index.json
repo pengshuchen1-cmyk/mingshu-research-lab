@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "命数研究室",
+  "usingComponents": {
+    "document-view": "/components/document-view/index"
+  }
+}

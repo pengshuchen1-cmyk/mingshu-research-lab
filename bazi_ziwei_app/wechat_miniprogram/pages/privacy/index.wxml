@@ -1,0 +1,25 @@
+<view class="page-shell page-narrow">
+  <text class="eyebrow">PRIVACY &amp; CONTROL</text>
+  <text class="page-title">隐私与清除</text>
+  <text class="page-subtitle">本页把原版隐私中心迁移到小程序测试环境，并明确本地测试和 AI 问答的数据边界。</text>
+
+  <view class="metric-grid">
+    <view class="metric muted-card"><text>当前资料</text><text class="metric-value serif">仅本次会话</text></view>
+    <view class="metric muted-card"><text>本机档案</text><text class="metric-value serif">主动保存</text></view>
+    <view class="metric muted-card"><text>自动清除</text><text class="metric-value serif">30 分钟</text></view>
+  </view>
+
+  <view class="privacy-card surface-card">
+    <text class="privacy-title serif">测试环境的数据去向</text>
+    <text class="privacy-copy">出生资料会发送到你电脑上运行的本地 API，用于排盘、报告和会话。只有你主动保存时才会写入原项目 SQLite 档案；当前会话 30 分钟无操作后从服务内存清除。</text>
+  </view>
+  <view class="privacy-card surface-card">
+    <text class="privacy-title serif">AI 问答边界</text>
+    <text class="privacy-copy">云端仅接收与问题相关的去身份化命盘事实、问题和必要会话摘要，不发送姓名、精确出生日期、出生地点或密钥。未配置外部模型时继续使用本地规则回答。</text>
+  </view>
+  <view class="privacy-card surface-card">
+    <text class="privacy-title serif">传统文化研究说明</text>
+    <text class="privacy-copy">所有内容用于传统文化研究与个人规划参考，不构成医疗、法律、投资或婚姻决定。重要事项请结合现实证据与专业意见。</text>
+  </view>
+  <button class="danger-button clear-button" bindtap="clearSession">立即清除我的会话资料</button>
+</view>

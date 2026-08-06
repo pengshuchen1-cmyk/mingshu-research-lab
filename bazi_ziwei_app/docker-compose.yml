@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  mingshu-public:
+    build: .
+    container_name: mingshu-public
+    ports:
+      - "8501:8501"
+    environment:
+      # 公网模式：不保存命盘到数据库，30分钟会话失效
+      - MINGSHU_RUNTIME_MODE=public
+      
+      # AI 配置（可选，不配置则使用本地规则回答）
+      - MINGSHU_AI_PROVIDER=kimi
+      - MOONSHOT_API_KEY=${MOONSHOT_API_KEY:-}
+      - MINGSHU_AI_MODEL=kimi-k3
+      - MINGSHU_AI_BASE_URL=https://api.moonshot.cn/v1
+      - MINGSHU_AI_REASONING=low
+      - MINGSHU_AI_TIMEOUT_SECONDS=90
+      
+      # Streamlit 配置
+      - STREAMLIT_SERVER_HEADLESS=true
+      - STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
+    
+    restart: unless-stopped
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    # 资源限制（根据实际情况调整）
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 2G

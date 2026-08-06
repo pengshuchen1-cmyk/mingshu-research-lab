@@ -1,0 +1,26 @@
+<view class="page-shell page-narrow">
+  <view wx:if="{{loading}}" class="loading-state surface-card">正在读取个人命盘…</view>
+  <view wx:elif="{{error}}" class="error-state surface-card">{{error}}</view>
+  <view wx:elif="{{!status.has_chart}}" class="chart-empty muted-card">
+    <text class="eyebrow">PERSONAL CHART</text>
+    <text class="empty-title serif">还没有当前命盘</text>
+    <text class="empty-copy">新建资料或从本机档案加载后，八字、五行、大运、流年、紫微和专项报告都会在这里继续使用原版计算核心。</text>
+    <button class="primary-button" bindtap="createChart">新建命盘</button>
+    <button class="secondary-button archive-button" bindtap="openArchive">从档案加载</button>
+  </view>
+  <block wx:else>
+    <view class="chart-actions">
+      <button class="secondary-button" bindtap="createChart">新建</button>
+      <button class="secondary-button" bindtap="openArchive">档案</button>
+      <button class="primary-button" bindtap="saveCurrent">保存当前</button>
+    </view>
+    <document-view document="{{document}}" />
+    <text class="section-heading">继续深入</text>
+    <view class="feature-list">
+      <view wx:for="{{features}}" wx:key="key" class="feature-row surface-card" data-route="{{item.route}}" bindtap="openFeature">
+        <view><text class="feature-name serif">{{item.title}}</text><text class="feature-copy">{{item.caption}}</text></view>
+        <text class="feature-arrow">→</text>
+      </view>
+    </view>
+  </block>
+</view>

@@ -1,0 +1,16 @@
+<view class="page-shell page-narrow">
+  <view wx:if="{{type === 'yearly'}}" class="year-tool surface-card">
+    <view><text class="tool-label">查看年份</text><text class="tool-caption">切换后重新使用原项目流年与月运规则计算</text></view>
+    <picker mode="selector" range="{{yearRange}}" value="{{yearIndex}}" bindchange="changeYear">
+      <view class="year-picker">{{year}} 年⌄</view>
+    </picker>
+  </view>
+
+  <view wx:if="{{loading}}" class="loading-state surface-card">正在计算{{title}}…</view>
+  <view wx:elif="{{error}}" class="error-state surface-card">
+    <text>{{error}}</text>
+    <button wx:if="{{needsChart}}" class="primary-button state-button" bindtap="createChart">新建命盘</button>
+    <button wx:else class="secondary-button state-button" bindtap="loadDocument">重新加载</button>
+  </view>
+  <document-view wx:else document="{{document}}" />
+</view>

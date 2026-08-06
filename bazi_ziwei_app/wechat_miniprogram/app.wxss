@@ -1,0 +1,194 @@
+page {
+  --surface: #FAFAFA;
+  --surface-muted: #F4F4F5;
+  --ink: #18181B;
+  --muted: #71717A;
+  --line: #DEDEE2;
+  --action: #EC4899;
+  --action-dark: #DB2777;
+  --action-soft: #FCE7F3;
+  --danger: #B91C1C;
+  --success: #15803D;
+  min-height: 100%;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: 30rpx;
+  line-height: 1.72;
+}
+
+view, text, button, input, textarea, picker, switch {
+  box-sizing: border-box;
+}
+
+.page-shell {
+  min-height: 100vh;
+  padding: 32rpx 32rpx calc(48rpx + env(safe-area-inset-bottom));
+}
+
+.page-narrow {
+  max-width: 1200rpx;
+  margin: 0 auto;
+}
+
+.serif {
+  font-family: "Songti SC", STSong, serif;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.eyebrow {
+  color: var(--action);
+  font-size: 22rpx;
+  font-weight: 700;
+  letter-spacing: 3rpx;
+  text-transform: uppercase;
+}
+
+.page-title {
+  margin-top: 12rpx;
+  color: var(--ink);
+  font-family: "Songti SC", STSong, serif;
+  font-size: 54rpx;
+  font-weight: 800;
+  line-height: 1.18;
+}
+
+.page-subtitle {
+  margin-top: 18rpx;
+  color: var(--muted);
+  font-size: 28rpx;
+  line-height: 1.75;
+}
+
+.surface-card {
+  background: var(--surface);
+  border: 2rpx solid var(--line);
+  border-radius: 16rpx;
+  box-shadow: 0 2rpx 4rpx rgba(24, 24, 27, .05);
+}
+
+.muted-card {
+  background: var(--surface-muted);
+  border: 2rpx solid var(--line);
+  border-radius: 16rpx;
+}
+
+.primary-button,
+.secondary-button,
+.danger-button {
+  min-height: 88rpx;
+  border-radius: 16rpx;
+  font-size: 29rpx;
+  font-weight: 700;
+  line-height: 88rpx;
+}
+
+.primary-button {
+  background: var(--action);
+  color: #FFFFFF;
+  border: 2rpx solid var(--action);
+}
+
+.secondary-button {
+  background: var(--surface);
+  color: var(--ink);
+  border: 2rpx solid var(--ink);
+}
+
+.danger-button {
+  background: #FEF2F2;
+  color: var(--danger);
+  border: 2rpx solid #FECACA;
+}
+
+button::after {
+  border: none;
+}
+
+.section-heading {
+  margin: 48rpx 0 20rpx;
+  font-family: "Songti SC", STSong, serif;
+  font-size: 38rpx;
+  font-weight: 800;
+}
+
+.field {
+  margin-bottom: 28rpx;
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 10rpx;
+  color: var(--ink);
+  font-size: 25rpx;
+  font-weight: 700;
+}
+
+.field-hint {
+  margin-top: 8rpx;
+  color: var(--muted);
+  font-size: 23rpx;
+}
+
+.input,
+.picker-field,
+.textarea {
+  width: 100%;
+  min-height: 88rpx;
+  padding: 22rpx 24rpx;
+  background: var(--surface);
+  border: 2rpx solid var(--line);
+  border-radius: 16rpx;
+  color: var(--ink);
+  font-size: 29rpx;
+}
+
+.textarea {
+  min-height: 180rpx;
+  line-height: 1.65;
+}
+
+.button-row {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 24rpx;
+}
+
+.button-row button {
+  flex: 1;
+  margin: 0;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48rpx;
+  margin: 8rpx 10rpx 0 0;
+  padding: 4rpx 16rpx;
+  background: var(--surface-muted);
+  border: 2rpx solid var(--line);
+  border-radius: 12rpx;
+  color: var(--ink);
+  font-size: 23rpx;
+}
+
+.empty-state,
+.error-state,
+.loading-state {
+  margin-top: 28rpx;
+  padding: 40rpx 32rpx;
+  text-align: center;
+}
+
+.error-state {
+  color: var(--danger);
+  background: #FEF2F2;
+  border-color: #FECACA;
+}
+
+.safe-bottom {
+  height: env(safe-area-inset-bottom);
+}

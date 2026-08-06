@@ -1,0 +1,23 @@
+.identity-card { display: flex; align-items: center; gap: 22rpx; margin-top: 30rpx; padding: 28rpx; }
+.identity-mark { display: flex; align-items: center; justify-content: center; width: 92rpx; height: 92rpx; background: var(--ink); border-radius: 50%; color: #FFFFFF; font-family: "Songti SC", STSong, serif; font-size: 38rpx; font-weight: 800; }
+.identity-copy { flex: 1; min-width: 0; }
+.identity-name { display: block; font-size: 34rpx; font-weight: 800; }
+.identity-meta { display: block; margin-top: 4rpx; color: var(--muted); font-size: 23rpx; }
+.status-dot { width: 18rpx; height: 18rpx; background: #A1A1AA; border-radius: 50%; }
+.status-dot.online { background: #22C55E; }
+.primary-actions { margin-top: 18rpx; }
+.menu-list { overflow: hidden; }
+.menu-row { display: flex; align-items: center; justify-content: space-between; gap: 20rpx; min-height: 112rpx; padding: 22rpx 28rpx; border-bottom: 2rpx solid var(--line); }
+.menu-row:last-child { border-bottom: 0; }
+.menu-row > view { flex: 1; }
+.menu-title { display: block; font-weight: 800; }
+.menu-copy { display: block; margin-top: 3rpx; color: var(--muted); font-size: 22rpx; line-height: 1.5; }
+.arrow { color: var(--action); font-size: 34rpx; font-weight: 800; }
+.backup-card { padding: 28rpx; }
+.backup-copy { display: block; color: var(--muted); font-size: 24rpx; line-height: 1.7; }
+.backup-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12rpx; margin-top: 22rpx; }
+.backup-actions button { margin: 0; }
+.backup-actions button:last-child { grid-column: 1 / -1; }
+.test-meta { display: grid; grid-template-columns: auto 1fr; gap: 10rpx 20rpx; margin-top: 34rpx; padding: 24rpx 0; border-top: 2rpx solid var(--line); color: var(--muted); font-size: 22rpx; }
+.test-meta text:nth-child(even) { color: var(--ink); text-align: right; word-break: break-all; }
+.clear-button { margin-top: 16rpx; }

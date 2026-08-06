@@ -1,0 +1,18 @@
+.page-head { margin-bottom: 28rpx; }
+.guidance-card { margin-top: 22rpx; padding: 34rpx; }
+.annual-card { border-top: 8rpx solid var(--ink); }
+.guidance-top { display: flex; justify-content: space-between; align-items: center; gap: 20rpx; }
+.card-kicker { color: var(--action); font-size: 22rpx; font-weight: 800; letter-spacing: 3rpx; }
+.pillar-badge { padding: 5rpx 14rpx; background: var(--action-soft); border-radius: 12rpx; color: var(--action-dark); font-family: "Songti SC", STSong, serif; font-weight: 800; }
+.guidance-title { display: block; margin-top: 20rpx; font-size: 42rpx; font-weight: 800; }
+.guidance-focus { display: block; margin-top: 10rpx; font-size: 32rpx; font-weight: 800; }
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14rpx; margin-top: 24rpx; }
+.detail-box { padding: 20rpx; background: var(--surface-muted); border-radius: 14rpx; }
+.detail-box text { display: block; color: var(--muted); font-size: 22rpx; }
+.detail-box .detail-strong { display: block; margin-top: 5rpx; color: var(--ink); font-size: 27rpx; font-weight: 700; }
+.body-copy { display: block; margin-top: 22rpx; line-height: 1.75; }
+.tag-row { margin-top: 14rpx; }
+.boundary { display: block; margin-top: 24rpx; padding-top: 20rpx; border-top: 2rpx solid var(--line); font-size: 25rpx; line-height: 1.7; }
+.boundary .boundary-title, .boundary text { display: block; }
+.boundary .boundary-title { font-weight: 700; }
+.boundary text { margin-top: 5rpx; }

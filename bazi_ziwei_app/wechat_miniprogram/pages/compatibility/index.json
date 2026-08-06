@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "合婚匹配",
+  "usingComponents": {
+    "document-view": "/components/document-view/index"
+  }
+}

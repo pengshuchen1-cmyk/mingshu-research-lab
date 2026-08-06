@@ -1,0 +1,29 @@
+<view class="page-shell page-narrow">
+  <text class="eyebrow">LOCAL ARCHIVES</text>
+  <text class="page-title">命盘档案</text>
+  <text class="page-subtitle">档案仍保存在原项目 SQLite 数据库中；可搜索、加载、编辑出生信息后重新排盘。</text>
+
+  <view class="search-bar">
+    <input class="input search-input" value="{{keyword}}" confirm-type="search" placeholder="姓名、日期、地点或备注" bindinput="updateKeyword" bindconfirm="loadArchives" />
+    <picker mode="selector" range="{{genders}}" value="{{genderIndex}}" bindchange="changeGender"><view class="gender-picker">{{gender}}⌄</view></picker>
+    <button class="search-button" bindtap="loadArchives">搜索</button>
+  </view>
+
+  <view wx:if="{{loading}}" class="loading-state surface-card">正在读取档案…</view>
+  <view wx:elif="{{!items.length}}" class="empty-state muted-card">
+    <text class="empty-title serif">还没有匹配的档案</text>
+    <button class="primary-button" bindtap="createChart">新建并保存</button>
+  </view>
+  <view wx:else class="archive-list">
+    <view wx:for="{{items}}" wx:key="id" class="archive-card surface-card">
+      <view class="archive-head"><view><text class="archive-name serif">{{item.name || '未命名'}}</text><text class="archive-meta">{{item.gender}} · {{item.calendarLabel}} {{item.birth_date}}</text></view><text class="archive-id">#{{item.id}}</text></view>
+      <view class="archive-details"><text>时间</text><text>{{item.birth_hour === null ? '时辰不详' : (item.birth_hour + ':' + item.birth_minute)}}</text><text>地点</text><text>{{item.birth_place || '未填写'}}</text></view>
+      <text wx:if="{{item.note}}" class="archive-note">{{item.note}}</text>
+      <view class="archive-actions">
+        <button class="load-button" data-id="{{item.id}}" bindtap="loadItem">载入</button>
+        <button data-id="{{item.id}}" bindtap="editItem">编辑</button>
+        <button class="delete-button" data-id="{{item.id}}" bindtap="deleteItem">删除</button>
+      </view>
+    </view>
+  </view>
+</view>

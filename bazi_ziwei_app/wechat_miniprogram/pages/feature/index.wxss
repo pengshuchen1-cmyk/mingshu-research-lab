@@ -1,0 +1,6 @@
+.year-tool { display: flex; align-items: center; justify-content: space-between; gap: 20rpx; margin-bottom: 24rpx; padding: 24rpx; }
+.year-tool > view { flex: 1; }
+.tool-label { display: block; font-weight: 800; }
+.tool-caption { display: block; margin-top: 4rpx; color: var(--muted); font-size: 22rpx; line-height: 1.5; }
+.year-picker { min-width: 190rpx; padding: 18rpx 20rpx; background: var(--surface-muted); border-radius: 12rpx; color: var(--action-dark); font-weight: 800; text-align: center; }
+.state-button { margin-top: 24rpx; }

@@ -1,0 +1,74 @@
+<view wx:if="{{document}}" class="document-view">
+  <view class="document-hero muted-card">
+    <text class="eyebrow">{{document.hero.eyebrow}}</text>
+    <text class="hero-title">{{document.hero.title}}</text>
+    <text wx:if="{{document.hero.subtitle}}" class="hero-subtitle">{{document.hero.subtitle}}</text>
+    <view wx:if="{{document.hero.metrics.length}}" class="hero-metrics">
+      <view wx:for="{{document.hero.metrics}}" wx:key="label" class="hero-metric">
+        <text class="metric-label">{{item.label}}</text>
+        <text class="metric-value">{{item.value}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view wx:for="{{document.sections}}" wx:for-item="section" wx:for-index="sectionIndex" wx:key="title" class="document-section">
+    <text class="section-title">{{section.title}}</text>
+    <text wx:if="{{section.caption}}" class="section-caption">{{section.caption}}</text>
+
+    <scroll-view wx:if="{{section.kind === 'pillars'}}" class="pillar-scroll" scroll-x enhanced show-scrollbar="false">
+      <view class="pillar-row">
+        <view wx:for="{{section.items}}" wx:key="title" class="pillar-card {{item.tone === 'accent' ? 'active' : ''}}">
+          <text class="card-kicker">{{item.title}}</text>
+          <text class="pillar-value">{{item.text}}</text>
+          <view class="tag-wrap">
+            <text wx:for="{{item.tags}}" wx:key="*this" wx:if="{{item}}" class="chip">{{item}}</text>
+          </view>
+          <view wx:for="{{item.rows}}" wx:key="label" class="compact-row">
+            <text>{{item.label}}</text><text>{{item.value}}</text>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+
+    <view wx:elif="{{section.kind === 'progress'}}" class="progress-list">
+      <view wx:for="{{section.items}}" wx:key="title" class="progress-item">
+        <view class="progress-head"><text class="progress-name">{{item.title}}</text><text>{{item.text}}</text></view>
+        <view class="progress-track"><view class="progress-fill tone-{{item.tone_class}}" style="width: {{item.score || 0}}%;"></view></view>
+        <text wx:if="{{item.text}}" class="progress-copy">{{item.text}}</text>
+      </view>
+    </view>
+
+    <view wx:else class="card-list {{section.kind === 'scores' ? 'score-grid' : ''}} {{section.kind === 'palaces' ? 'palace-grid' : ''}}">
+      <view
+        wx:for="{{section.items}}"
+        wx:for-item="card"
+        wx:for-index="itemIndex"
+        wx:key="title"
+        class="content-card surface-card tone-border-{{card.tone_class}}"
+        data-section="{{sectionIndex}}"
+        data-item="{{itemIndex}}"
+        data-kind="{{section.kind}}"
+        bindtap="toggleCard"
+      >
+        <view class="card-heading-row">
+          <text class="card-title">{{card.title}}</text>
+          <text wx:if="{{card.score !== null && card.score !== undefined}}" class="card-score">{{card.score}}</text>
+          <text wx:if="{{section.kind === 'months'}}" class="month-toggle">{{activeMonthSection === sectionIndex && activeMonthItem === itemIndex ? '收起' : '展开'}}</text>
+        </view>
+        <text wx:if="{{card.text}}" class="card-text">{{card.text}}</text>
+        <view wx:if="{{card.tags.length}}" class="tag-wrap">
+          <text wx:for="{{card.tags}}" wx:key="*this" wx:if="{{item}}" class="chip">{{item}}</text>
+        </view>
+        <view wx:if="{{section.kind !== 'months' || (activeMonthSection === sectionIndex && activeMonthItem === itemIndex)}}" class="card-details">
+          <view wx:for="{{card.rows}}" wx:key="label" class="detail-row">
+            <text class="detail-label">{{item.label}}</text>
+            <text class="detail-value">{{item.value}}</text>
+          </view>
+        </view>
+        <view wx:if="{{card.score !== null && card.score !== undefined && section.kind === 'scores'}}" class="score-track">
+          <view class="score-fill" style="width: {{card.score}}%;"></view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

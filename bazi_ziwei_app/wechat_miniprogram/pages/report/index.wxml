@@ -1,0 +1,31 @@
+<view class="page-shell page-narrow">
+  <text class="eyebrow">REPORT STUDIO</text>
+  <text class="page-title">报告中心</text>
+  <text class="page-subtitle">完整报告、事业、财运与婚恋专项均由现有报告模块生成，测试版支持 Markdown、TXT 和 PDF。</text>
+
+  <view wx:if="{{loading}}" class="loading-state surface-card">正在生成报告…</view>
+  <view wx:elif="{{!hasChart}}" class="empty-state muted-card">
+    <text class="empty-title serif">当前没有可用命盘</text>
+    <button class="primary-button" bindtap="createChart">新建命盘</button>
+  </view>
+  <block wx:else>
+    <scroll-view class="kind-scroll" scroll-x show-scrollbar="false">
+      <view class="kind-row">
+        <button wx:for="{{kinds}}" wx:key="key" class="kind-button {{kind === item.key ? 'active' : ''}}" data-kind="{{item.key}}" bindtap="chooseKind">{{item.label}}</button>
+      </view>
+    </scroll-view>
+    <view class="export-bar surface-card">
+      <view><text class="export-title">导出当前报告</text><text class="export-copy">文本会复制到剪贴板；PDF 可预览与转发。</text></view>
+      <view class="export-buttons">
+        <button data-format="md" loading="{{exporting}}" bindtap="exportText">MD</button>
+        <button data-format="txt" loading="{{exporting}}" bindtap="exportText">TXT</button>
+        <button loading="{{exporting}}" bindtap="exportPdf">PDF</button>
+      </view>
+    </view>
+    <document-view document="{{document}}" />
+    <view wx:if="{{textPreview}}" class="preview surface-card">
+      <text class="preview-title">最近一次文本导出预览</text>
+      <text class="preview-text" user-select>{{textPreview}}</text>
+    </view>
+  </block>
+</view>

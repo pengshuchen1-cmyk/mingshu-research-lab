@@ -1,0 +1,4 @@
+{
+  "desc": "测试环境默认不开放索引",
+  "rules": [{ "action": "disallow", "page": "*" }]
+}

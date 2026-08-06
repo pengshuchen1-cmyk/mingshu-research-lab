@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  mingshu-local:
+    build: .
+    container_name: mingshu-local
+    ports:
+      - "8501:8501"
+    environment:
+      # 本地模式：持久化命盘数据到 SQLite
+      - MINGSHU_RUNTIME_MODE=local
+      
+      # AI 配置（可选）
+      - MINGSHU_AI_PROVIDER=kimi
+      - MOONSHOT_API_KEY=${MOONSHOT_API_KEY:-}
+      - MINGSHU_AI_MODEL=kimi-k3
+      - MINGSHU_AI_BASE_URL=https://api.moonshot.cn/v1
+      - MINGSHU_AI_REASONING=low
+      - MINGSHU_AI_TIMEOUT_SECONDS=90
+      
+      # Streamlit 配置
+      - STREAMLIT_SERVER_HEADLESS=true
+      - STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
+    
+    volumes:
+      # 持久化数据库和日志（本地模式特有）
+      - ./data:/app/data
+      - ./logs:/app/logs
+      
+      # 如果需要自定义规则，可以挂载 rules 目录
+      # - ./rules:/app/rules:ro
+    
+    restart: unless-stopped
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    # 资源限制
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 2G

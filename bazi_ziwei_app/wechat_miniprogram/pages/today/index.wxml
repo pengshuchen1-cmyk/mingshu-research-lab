@@ -1,0 +1,40 @@
+<view class="page-shell page-narrow">
+  <view class="page-head">
+    <text class="eyebrow">PUBLIC GUIDANCE · ASIA/SHANGHAI</text>
+    <text class="page-title">今日/年度建议</text>
+    <text class="page-subtitle">大众建议不读取个人出生资料；个人年度运程继续使用现有命盘规则。</text>
+  </view>
+
+  <view wx:if="{{loading}}" class="loading-state surface-card">正在计算今日干支…</view>
+  <view wx:elif="{{error}}" class="error-state surface-card">{{error}}</view>
+  <block wx:else>
+    <view class="guidance-card surface-card">
+      <view class="guidance-top"><text class="card-kicker">今日重点</text><text class="pillar-badge">{{daily.day_pillar || daily.pillar}}</text></view>
+      <text class="guidance-title serif">{{daily.title}}</text>
+      <text class="guidance-focus">{{daily.suitable_actions[0]}}</text>
+      <view class="detail-grid">
+        <view class="detail-box"><text>五行主题</text><text class="detail-strong">{{daily.element_theme}}</text></view>
+        <view class="detail-box"><text>颜色与穿搭</text><text class="detail-strong">{{daily.colorText}}</text></view>
+      </view>
+      <text class="body-copy">{{daily.wearing_advice}}</text>
+      <text class="body-copy">放松与恢复：{{daily.relaxation_advice}}</text>
+      <view class="tag-row"><text wx:for="{{daily.suitable_actions}}" wx:key="*this" class="chip">{{item}}</text></view>
+      <view class="boundary"><text class="boundary-title">今日提醒</text><text>{{daily.avoidText}}</text></view>
+      <view class="boundary muted"><text class="boundary-title">依据与边界</text><text>{{daily.basis}} {{daily.boundary_note}}</text></view>
+    </view>
+
+    <view class="guidance-card surface-card annual-card">
+      <view class="guidance-top"><text class="card-kicker">今年的节奏</text><text class="pillar-badge">{{yearly.pillar}}</text></view>
+      <text class="guidance-title serif">{{yearly.title}}</text>
+      <text class="body-copy">{{yearly.annual_tone}}</text>
+      <view class="tag-row"><text wx:for="{{yearly.keywords}}" wx:key="*this" class="chip">{{item}}</text></view>
+      <view class="boundary"><text class="boundary-title">行动方向</text><text>{{yearly.actionText}}</text></view>
+      <text class="boundary muted">{{yearly.boundary_note}}</text>
+    </view>
+
+    <view class="button-row">
+      <button class="primary-button" bindtap="openPersonalYear">查看个人年度</button>
+      <button class="secondary-button" bindtap="createChart">新建命盘</button>
+    </view>
+  </block>
+</view>

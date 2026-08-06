@@ -1,0 +1,33 @@
+<view class="ai-page page-narrow">
+  <view class="ai-head">
+    <text class="eyebrow">CHART-GROUNDED Q&amp;A</text>
+    <text class="page-title">AI 命理问答</text>
+    <text class="page-subtitle">回答会优先引用当前命盘与本地规则证据；未配置外部模型时自动使用原项目的本地降级能力。</text>
+  </view>
+
+  <view wx:if="{{loading}}" class="loading-state surface-card">正在读取会话…</view>
+  <view wx:elif="{{!hasChart}}" class="empty-state muted-card">
+    <text class="empty-title serif">先生成一份命盘</text>
+    <text class="empty-copy">问答不会要求你重复填写出生资料。</text>
+    <button class="primary-button" bindtap="createChart">新建命盘</button>
+  </view>
+  <block wx:else>
+    <view wx:if="{{!messages.length}}" class="suggestion-card muted-card">
+      <text class="suggestion-title serif">你可以这样问</text>
+      <button wx:for="{{suggestions}}" wx:key="*this" class="suggestion" data-text="{{item}}" bindtap="chooseSuggestion">{{item}}</button>
+    </view>
+    <scroll-view class="chat-list" scroll-y scroll-with-animation scroll-into-view="{{scrollTarget}}">
+      <view wx:for="{{messages}}" wx:key="index" id="message-{{index}}" class="message {{item.role === 'user' ? 'user-message' : 'assistant-message'}} {{item.error ? 'message-error' : ''}}">
+        <text class="message-role">{{item.role === 'user' ? '你' : '命数研究室'}}</text>
+        <text class="message-content" user-select>{{item.content}}</text>
+        <text wx:if="{{item.advice}}" class="message-meta">行动建议｜{{item.advice}}</text>
+        <text wx:if="{{item.source}}" class="message-source">来源：{{item.source}}{{item.degraded ? ' · 已使用本地降级' : ''}}</text>
+      </view>
+      <view wx:if="{{asking}}" class="message assistant-message"><text class="message-role">命数研究室</text><text class="message-content">正在结合命盘证据整理回答…</text></view>
+    </scroll-view>
+    <view class="composer">
+      <textarea class="question-input" value="{{question}}" auto-height maxlength="2000" placeholder="输入你的问题…" bindinput="updateQuestion" />
+      <button class="primary-button send-button" loading="{{asking}}" disabled="{{asking || !question}}" bindtap="sendQuestion">发送</button>
+    </view>
+  </block>
+</view>

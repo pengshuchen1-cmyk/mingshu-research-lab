@@ -1,0 +1,21 @@
+.ai-page { min-height: 100vh; padding: 32rpx 28rpx calc(32rpx + env(safe-area-inset-bottom)); }
+.ai-head { padding: 0 4rpx 24rpx; }
+.empty-state { padding: 48rpx 34rpx; }
+.empty-title { display: block; font-size: 40rpx; font-weight: 800; }
+.empty-copy { display: block; margin: 12rpx 0 26rpx; color: var(--muted); }
+.suggestion-card { padding: 26rpx; }
+.suggestion-title { display: block; margin-bottom: 16rpx; font-size: 31rpx; font-weight: 800; }
+.suggestion { min-height: 76rpx; margin: 12rpx 0 0; padding: 16rpx 20rpx; background: var(--surface); border: 2rpx solid var(--line); border-radius: 14rpx; color: var(--ink); font-size: 25rpx; line-height: 1.45; text-align: left; }
+.chat-list { height: calc(100vh - 500rpx - env(safe-area-inset-bottom)); min-height: 500rpx; padding: 24rpx 0; }
+.message { margin-bottom: 18rpx; padding: 26rpx; border: 2rpx solid var(--line); border-radius: 18rpx; }
+.user-message { margin-left: 88rpx; background: var(--action); border-color: var(--action); color: #FFFFFF; }
+.assistant-message { margin-right: 40rpx; background: var(--surface); }
+.message-error { border-color: #FECACA; background: #FEF2F2; color: var(--danger); }
+.message-role { display: block; margin-bottom: 8rpx; font-size: 21rpx; font-weight: 800; opacity: .75; }
+.message-content { display: block; font-size: 27rpx; line-height: 1.78; white-space: pre-wrap; }
+.message-meta { display: block; margin-top: 16rpx; padding-top: 14rpx; border-top: 2rpx solid var(--line); font-size: 23rpx; line-height: 1.65; }
+.user-message .message-meta { border-color: rgba(255,255,255,.35); }
+.message-source { display: block; margin-top: 12rpx; color: var(--muted); font-size: 20rpx; }
+.composer { display: flex; align-items: flex-end; gap: 14rpx; padding-top: 18rpx; border-top: 2rpx solid var(--line); }
+.question-input { flex: 1; min-height: 88rpx; max-height: 220rpx; padding: 20rpx; background: var(--surface); border: 2rpx solid var(--line); border-radius: 16rpx; font-size: 27rpx; line-height: 1.55; }
+.send-button { width: 150rpx; margin: 0; }

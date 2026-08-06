@@ -1,0 +1,58 @@
+<view class="home-page">
+  <view class="custom-nav">
+    <text class="brand serif">命数研究室</text>
+    <text class="nav-caption">公众指导 · 个人阅读</text>
+  </view>
+
+  <view wx:if="{{loading}}" class="loading-state surface-card">正在读取今日内容…</view>
+  <view wx:elif="{{error}}" class="error-state surface-card">
+    <text>{{error}}</text>
+    <button class="secondary-button retry" bindtap="loadHome">重新连接</button>
+  </view>
+
+  <block wx:elif="{{content}}">
+    <view class="quick-nav">
+      <button class="quick-button" bindtap="openToday">今日/年度建议</button>
+      <button class="quick-button" bindtap="openChart">个人命盘</button>
+      <button class="quick-button" bindtap="openReport">简明报告</button>
+      <button class="quick-button" bindtap="openMe">集合/档案</button>
+    </view>
+
+    <view class="hero-section">
+      <text class="eyebrow">{{content.kicker}}</text>
+      <text class="hero-title serif">认识命数\n活出选择</text>
+      <text class="hero-copy">{{content.subtitle}}</text>
+      <button class="primary-button hero-button" bindtap="startChart">开始探索命数</button>
+    </view>
+
+    <view class="daily-card surface-card">
+      <view class="daily-head">
+        <view>
+          <text class="card-kicker">公开 · 每日</text>
+          <text class="daily-date">{{content.daily.date}} · {{content.daily.pillar}}</text>
+        </view>
+        <text class="daily-element">{{content.daily.element_theme}}</text>
+      </view>
+      <text class="daily-title serif">今日建议｜{{content.daily.pillar}}日</text>
+      <view class="daily-metrics">
+        <view class="daily-metric"><text>今日焦点</text><text class="daily-strong">{{content.daily.focusText}}</text></view>
+        <view class="daily-metric"><text>今日宜穿</text><text class="daily-strong">{{content.daily.colorText}}</text></view>
+      </view>
+      <text class="daily-text">{{content.daily.wearing_advice}}</text>
+      <text class="daily-boundary">大众参考｜{{content.daily.boundary_note}}</text>
+    </view>
+
+    <view class="feature-section">
+      <text class="section-heading">完整功能</text>
+      <text class="section-copy">原版功能全部保留，由服务端继续使用同一套排盘与报告核心。</text>
+      <view class="feature-grid">
+        <view wx:for="{{content.features}}" wx:key="key" class="feature-card surface-card" data-route="{{item.route}}" bindtap="openFeature">
+          <text class="feature-index">{{item.displayIndex}}</text>
+          <text class="feature-title serif">{{item.title}}</text>
+          <text class="feature-caption">{{item.caption}}</text>
+          <text class="feature-arrow">进入 →</text>
+        </view>
+      </view>
+    </view>
+  </block>
+</view>

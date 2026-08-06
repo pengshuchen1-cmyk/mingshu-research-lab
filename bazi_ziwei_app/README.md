@@ -95,6 +95,19 @@ bash run_mac.sh
 
 [http://127.0.0.1:8501](http://127.0.0.1:8501)
 
+## 微信小程序测试版
+
+原生微信小程序位于 `wechat_miniprogram/`，通过 `miniapp_api/` 复用现有 Python 排盘、流年、紫微、合盘、AI、报告、档案和备份模块。它是本地测试适配层，不影响原有 8501 网页版。
+
+先启动小程序 API：
+
+```bash
+.venv/bin/python -m pip install -r requirements.txt
+bash run_miniapp_api.sh
+```
+
+服务地址为 `http://127.0.0.1:8502`，接口文档为 `http://127.0.0.1:8502/docs`。然后在微信开发者工具中导入 `wechat_miniprogram/` 目录，使用测试号或游客模式编译。桌面模拟器无需配置域名；真机测试方法和完整验收步骤见 `wechat_miniprogram/README.md`。
+
 ## AI 问答配置
 
 AI 问答默认使用 Kimi K3；如果没有配置密钥，仍可使用本地四柱规则生成完整回答，但页面会明确提示云端服务不可用。

@@ -1,0 +1,17 @@
+.form-card { margin-top: 30rpx; padding: 34rpx; }
+.form-section { display: block; margin: 42rpx 0 24rpx; padding-top: 28rpx; border-top: 2rpx solid var(--line); font-size: 34rpx; font-weight: 800; }
+.form-section:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+.choice-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14rpx; }
+.choice { display: flex; align-items: center; min-height: 84rpx; padding: 0 22rpx; background: var(--surface-muted); border: 2rpx solid var(--line); border-radius: 14rpx; }
+.switch-row { display: flex; align-items: center; justify-content: space-between; gap: 24rpx; margin-bottom: 28rpx; }
+.switch-row > view { flex: 1; }
+.compact { margin: 20rpx 0 0; padding-top: 18rpx; border-top: 2rpx solid var(--line); }
+.time-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14rpx; }
+.privacy-box { margin: 32rpx 0; padding: 24rpx; color: var(--muted); font-size: 24rpx; line-height: 1.65; }
+.preview-card { margin-top: 24rpx; padding: 34rpx; border-top: 8rpx solid var(--action); }
+.preview-title { display: block; margin-top: 12rpx; font-size: 38rpx; font-weight: 800; }
+.preview-pillars { display: block; margin: 24rpx 0; padding: 22rpx; background: var(--surface-muted); font-family: "Songti SC", STSong, serif; font-size: 33rpx; font-weight: 800; text-align: center; letter-spacing: 2rpx; }
+.preview-row { padding: 18rpx 0; border-top: 2rpx solid var(--line); }
+.preview-row text:first-child { display: block; color: var(--muted); font-size: 22rpx; font-weight: 700; }
+.preview-row text:last-child { display: block; margin-top: 6rpx; font-size: 26rpx; line-height: 1.7; }
+.confirm { margin-top: 28rpx; }

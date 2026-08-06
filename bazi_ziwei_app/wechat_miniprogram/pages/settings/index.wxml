@@ -1,0 +1,25 @@
+<view class="page-shell page-narrow">
+  <text class="eyebrow">TEST CONFIGURATION</text>
+  <text class="page-title">测试与报告设置</text>
+  <text class="page-subtitle">桌面模拟器保持 127.0.0.1；真机预览时改成电脑的局域网 IP，并确保手机与电脑在同一网络。</text>
+
+  <view wx:if="{{loading}}" class="loading-state surface-card">正在读取设置…</view>
+  <block wx:else>
+    <view class="settings-card surface-card">
+      <text class="settings-title serif">本地 API</text>
+      <view class="field"><text class="field-label">服务地址</text><input class="input" value="{{baseUrl}}" placeholder="http://127.0.0.1:8502/api" bindinput="updateBaseUrl" /><text class="field-hint">地址需要包含 /api，不要以斜杠结尾。</text></view>
+      <button class="secondary-button" bindtap="testConnection">测试连接</button>
+      <text wx:if="{{connectionText}}" class="connection-text">{{connectionText}}</text>
+    </view>
+
+    <view class="settings-card surface-card">
+      <text class="settings-title serif">报告偏好</text>
+      <view class="setting-row"><view><text class="setting-label">报告长度</text><text class="setting-copy">控制展示信息的密度偏好</text></view><picker mode="selector" range="{{lengths}}" value="{{lengthIndex}}" bindchange="changeLength"><view class="compact-picker">{{form.report_length}}⌄</view></picker></view>
+      <view class="setting-row"><view><text class="setting-label">显示技术细节</text><text class="setting-copy">展示更多干支、十神和规则依据</text></view><switch checked="{{form.show_technical_details}}" color="#EC4899" data-field="show_technical_details" bindchange="updateSwitch" /></view>
+      <view class="setting-row"><view><text class="setting-label">显示边界说明</text><text class="setting-copy">保留非确定性与现实决策提醒</text></view><switch checked="{{form.show_disclaimer}}" color="#EC4899" data-field="show_disclaimer" bindchange="updateSwitch" /></view>
+      <view class="setting-row"><view><text class="setting-label">默认导出格式</text><text class="setting-copy">报告中心仍可临时选择其他格式</text></view><picker mode="selector" range="{{formats}}" value="{{formatIndex}}" bindchange="changeFormat"><view class="compact-picker">{{form.default_export_format}}⌄</view></picker></view>
+      <view class="setting-row"><view><text class="setting-label">启用质量检查</text><text class="setting-copy">保留原版报告质量门禁偏好</text></view><switch checked="{{form.enable_quality_check}}" color="#EC4899" data-field="enable_quality_check" bindchange="updateSwitch" /></view>
+    </view>
+    <button class="primary-button save-button" loading="{{saving}}" disabled="{{saving}}" bindtap="saveSettings">保存设置</button>
+  </block>
+</view>

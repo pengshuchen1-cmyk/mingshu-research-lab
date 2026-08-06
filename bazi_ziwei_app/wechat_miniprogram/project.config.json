@@ -1,0 +1,23 @@
+{
+  "description": "命数研究室微信小程序测试版",
+  "packOptions": {
+    "ignore": []
+  },
+  "setting": {
+    "urlCheck": false,
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "minified": false,
+    "coverView": true,
+    "showShadowRootInWxmlPanel": true,
+    "useCompilerPlugins": false,
+    "compileHotReLoad": true,
+    "minifyWXML": true
+  },
+  "compileType": "miniprogram",
+  "libVersion": "trial",
+  "appid": "touristappid",
+  "projectname": "mingshu-research-lab-miniapp",
+  "condition": {}
+}

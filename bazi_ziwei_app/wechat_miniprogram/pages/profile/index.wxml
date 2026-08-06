@@ -1,0 +1,81 @@
+<view class="page-shell page-narrow">
+  <text class="eyebrow">UNIFIED PROFILE FORM</text>
+  <text class="page-title">{{editing ? '编辑并重新排盘' : '新建命盘'}}</text>
+  <text class="page-subtitle">一次填写完整资料，先校验四柱预览，确认无误后生成个人命盘。统一使用中国标准时间。</text>
+
+  <view class="form-card surface-card">
+    <text class="form-section serif">基本资料</text>
+    <view class="field">
+      <text class="field-label">称呼</text>
+      <input class="input" value="{{form.name}}" placeholder="可填写昵称" data-field="name" bindinput="updateField" />
+    </view>
+    <view class="field">
+      <text class="field-label">性别</text>
+      <radio-group class="choice-row" bindchange="updateGender">
+        <label class="choice"><radio value="男" checked="{{form.gender === '男'}}" color="#EC4899" />男</label>
+        <label class="choice"><radio value="女" checked="{{form.gender === '女'}}" color="#EC4899" />女</label>
+      </radio-group>
+    </view>
+
+    <text class="form-section serif">出生日期</text>
+    <view class="field">
+      <text class="field-label">历法</text>
+      <radio-group class="choice-row" bindchange="updateCalendar">
+        <label class="choice"><radio value="solar" checked="{{form.calendar_type === 'solar'}}" color="#EC4899" />公历</label>
+        <label class="choice"><radio value="lunar" checked="{{form.calendar_type === 'lunar'}}" color="#EC4899" />农历</label>
+      </radio-group>
+    </view>
+    <view class="field">
+      <text class="field-label">{{form.calendar_type === 'solar' ? '公历出生日期' : '农历出生日期'}}</text>
+      <picker mode="date" value="{{form.birth_date}}" start="1900-01-01" bindchange="updateDate">
+        <view class="picker-field">{{form.birth_date}}</view>
+      </picker>
+    </view>
+    <view wx:if="{{form.calendar_type === 'lunar'}}" class="switch-row">
+      <view><text class="field-label">是否闰月</text><text class="field-hint">仅农历输入时生效</text></view>
+      <switch checked="{{form.is_leap_month}}" color="#EC4899" bindchange="updateLeap" />
+    </view>
+
+    <text class="form-section serif">出生时间与地点</text>
+    <view class="switch-row">
+      <view><text class="field-label">知道出生时间</text><text class="field-hint">关闭后按时辰不详处理</text></view>
+      <switch checked="{{form.time_known}}" color="#EC4899" bindchange="updateTimeKnown" />
+    </view>
+    <view wx:if="{{form.time_known}}" class="time-grid">
+      <view class="field">
+        <text class="field-label">小时</text>
+        <picker mode="selector" range="{{hours}}" value="{{form.birth_hour}}" bindchange="updateHour"><view class="picker-field">{{hours[form.birth_hour]}}</view></picker>
+      </view>
+      <view class="field">
+        <text class="field-label">分钟</text>
+        <picker mode="selector" range="{{minutes}}" value="{{form.birth_minute}}" bindchange="updateMinute"><view class="picker-field">{{minutes[form.birth_minute]}}</view></picker>
+      </view>
+    </view>
+    <view class="field">
+      <text class="field-label">出生地点</text>
+      <input class="input" value="{{form.birth_place}}" placeholder="可为空，如上海" data-field="birth_place" bindinput="updateField" />
+    </view>
+    <view class="field">
+      <text class="field-label">备注</text>
+      <textarea class="textarea" value="{{form.note}}" placeholder="可选，仅保存到本机测试档案" data-field="note" bindinput="updateField" />
+    </view>
+
+    <view class="privacy-box muted-card">
+      <text>测试版会把出生资料发送到你本机运行的 8502 API，只用于本次排盘；AI 问答继续遵循原项目的去身份化规则。</text>
+      <view class="switch-row compact"><text class="field-label">我已阅读并同意</text><switch checked="{{privacyConsent}}" color="#EC4899" bindchange="updateConsent" /></view>
+      <view wx:if="{{!editing}}" class="switch-row compact"><text class="field-label">同时保存到本机档案</text><switch checked="{{saveArchive}}" color="#EC4899" bindchange="updateSave" /></view>
+    </view>
+
+    <button class="primary-button" loading="{{loading}}" disabled="{{loading}}" bindtap="previewChart">校验并预览</button>
+  </view>
+
+  <view wx:if="{{preview}}" class="preview-card surface-card">
+    <text class="eyebrow">PREVIEW · 校验通过</text>
+    <text class="preview-title serif">四柱预览</text>
+    <text class="preview-pillars">{{preview.pillarText}}</text>
+    <view class="preview-row"><text>原始输入</text><text>{{preview.input_text}}</text></view>
+    <view class="preview-row"><text>标准时间</text><text>{{preview.solar_datetime}}</text></view>
+    <view class="preview-row"><text>计算依据</text><text>{{preview.calculation_basis}}</text></view>
+    <button class="primary-button confirm" loading="{{loading}}" disabled="{{loading}}" bindtap="generateChart">确认生成命盘</button>
+  </view>
+</view>
