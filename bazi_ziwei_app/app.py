@@ -182,6 +182,35 @@ def render_compliance_footer() -> None:
     )
 
 
+def render_compliance_footer() -> None:
+    """Show mainland filing numbers when configured by the operator."""
+    filing_links: list[str] = []
+    icp_number = os.getenv("MINGSHU_ICP_NUMBER", "").strip()
+    public_security_number = os.getenv(
+        "MINGSHU_PUBLIC_SECURITY_NUMBER", ""
+    ).strip()
+    if icp_number:
+        filing_links.append(
+            '<a href="https://beian.miit.gov.cn/" target="_blank" '
+            f'rel="noopener noreferrer">{escape(icp_number)}</a>'
+        )
+    if public_security_number:
+        filing_links.append(
+            '<a href="https://beian.mps.gov.cn/" target="_blank" '
+            f'rel="noopener noreferrer">{escape(public_security_number)}</a>'
+        )
+    if not filing_links:
+        return
+    st.markdown(
+        '<div style="margin-top:48px;padding:18px 0;text-align:center;'
+        'border-top:1px solid rgba(61,43,26,.12);font-size:12px;'
+        'color:#8C7A64;">'
+        + " · ".join(filing_links)
+        + "</div>",
+        unsafe_allow_html=True,
+    )
+
+
 def get_pages() -> dict:
     """返回全部可访问页面。"""
     pages = {

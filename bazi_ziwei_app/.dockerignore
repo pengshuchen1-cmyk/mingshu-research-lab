@@ -1,12 +1,27 @@
-.venv/
-__pycache__/
-*.pyc
-.git/
+.git
 .gitignore
+.venv
+__pycache__/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.DS_Store
+
+# Never copy local customer data or credentials into the public image.
 data/*.db
+data/*backup*.db
 logs/
 *.log
-.DS_Store
-acceptance_samples/
-docs/
-tests/
+.streamlit/secrets.toml
+.env
+.env.*
+!.env.example
+acceptance_runs/
+.superpowers/
+
+# Local-only launch helpers and archived files are not needed at runtime.
+.idea/
+.vscode/
+*.bak
