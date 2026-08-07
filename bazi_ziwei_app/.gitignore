@@ -10,7 +10,9 @@ logs/
 *.log
 .streamlit/*
 !.streamlit/secrets.toml.example
+!.streamlit/config.toml
 .env
 .env.*
+!.env.example
 acceptance_runs/
 .superpowers/

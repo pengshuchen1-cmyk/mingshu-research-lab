@@ -1,0 +1,56 @@
+services:
+  app:
+    build:
+      context: .
+    environment:
+      MINGSHU_RUNTIME_MODE: public
+      MINGSHU_AI_PROVIDER: ${MINGSHU_AI_PROVIDER:-kimi}
+      MOONSHOT_API_KEY: ${MOONSHOT_API_KEY:-}
+      MINGSHU_AI_MODEL: ${MINGSHU_AI_MODEL:-kimi-k3}
+      MINGSHU_AI_BASE_URL: ${MINGSHU_AI_BASE_URL:-https://api.moonshot.cn/v1}
+      MINGSHU_AI_REASONING: ${MINGSHU_AI_REASONING:-low}
+      MINGSHU_AI_TIMEOUT_SECONDS: ${MINGSHU_AI_TIMEOUT_SECONDS:-90}
+      MINGSHU_ICP_NUMBER: ${MINGSHU_ICP_NUMBER:-}
+      MINGSHU_PUBLIC_SECURITY_NUMBER: ${MINGSHU_PUBLIC_SECURITY_NUMBER:-}
+      TZ: Asia/Shanghai
+    expose:
+      - "8501"
+    init: true
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://127.0.0.1:8501/_stcore/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  caddy:
+    image: caddy:2-alpine
+    environment:
+      MINGSHU_DOMAIN: ${MINGSHU_DOMAIN:?请在.env中设置已备案并解析到本机的域名}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      app:
+        condition: service_healthy
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+volumes:
+  caddy_data:
+  caddy_config:

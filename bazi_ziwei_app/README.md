@@ -95,6 +95,10 @@ bash run_mac.sh
 
 [http://127.0.0.1:8501](http://127.0.0.1:8501)
 
+## 中国大陆服务器部署
+
+公网部署推荐使用中国大陆轻量云服务器、Docker Compose 和 Caddy。部署前需完成 ICP 备案，公网运行时必须设置 `MINGSHU_RUNTIME_MODE=public`。完整的服务器准备、环境变量、启动和验收步骤见 [`DEPLOYMENT.md`](DEPLOYMENT.md)。
+
 ## AI 问答配置
 
 AI 问答默认使用 Kimi K3；如果没有配置密钥，仍可使用本地四柱规则生成完整回答，但页面会明确提示云端服务不可用。
