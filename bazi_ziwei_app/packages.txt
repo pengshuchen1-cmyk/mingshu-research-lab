@@ -1,0 +1,4 @@
+# 系统级依赖包（用于 Streamlit Cloud）
+# 如果 PDF 导出需要额外的字体支持，可以添加：
+# fonts-noto-cjk
+# fonts-wqy-zenhei
