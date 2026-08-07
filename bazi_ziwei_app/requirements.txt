@@ -1,10 +1,7 @@
 streamlit==1.61.1
-streamlit-shadcn-ui==1.0.3
 pandas==3.0.5
 lunar_python==1.4.8
 reportlab==5.0.0
 openai==2.53.0
 pydantic==2.13.4
 altair==6.2.2
-fastapi==0.141.1
-uvicorn==0.52.1

@@ -6,8 +6,6 @@ fileWatcherType = "none"
 enableCORS = true
 enableXsrfProtection = true
 maxUploadSize = 10
-enableStaticServing = true
-maxMessageSize = 50
 
 [browser]
 gatherUsageStats = false
@@ -15,10 +13,3 @@ gatherUsageStats = false
 [client]
 showErrorDetails = "none"
 toolbarMode = "minimal"
-
-[runner]
-fastReruns = true
-magicEnabled = false
-
-[logger]
-level = "error"
