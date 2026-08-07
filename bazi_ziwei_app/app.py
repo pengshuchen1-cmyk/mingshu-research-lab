@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from html import escape
+import os
+
 try:
     import streamlit as st
 except ModuleNotFoundError:
@@ -84,6 +87,35 @@ def render_product_navigation(active_page: str | None) -> None:
                          type="primary" if target == active_page else "secondary",
                          use_container_width=True):
                 _request_navigation(target)
+
+
+def render_compliance_footer() -> None:
+    """Show mainland filing numbers when configured by the operator."""
+    filing_links: list[str] = []
+    icp_number = os.getenv("MINGSHU_ICP_NUMBER", "").strip()
+    public_security_number = os.getenv(
+        "MINGSHU_PUBLIC_SECURITY_NUMBER", ""
+    ).strip()
+    if icp_number:
+        filing_links.append(
+            '<a href="https://beian.miit.gov.cn/" target="_blank" '
+            f'rel="noopener noreferrer">{escape(icp_number)}</a>'
+        )
+    if public_security_number:
+        filing_links.append(
+            '<a href="https://beian.mps.gov.cn/" target="_blank" '
+            f'rel="noopener noreferrer">{escape(public_security_number)}</a>'
+        )
+    if not filing_links:
+        return
+    st.markdown(
+        '<div style="margin-top:48px;padding:18px 0;text-align:center;'
+        'border-top:1px solid rgba(61,43,26,.12);font-size:12px;'
+        'color:#8C7A64;">'
+        + " · ".join(filing_links)
+        + "</div>",
+        unsafe_allow_html=True,
+    )
 
 
 def get_pages() -> dict:
@@ -174,6 +206,7 @@ def main() -> None:
     st.session_state["active_product_page"] = active_page
     render_product_navigation(active_page)
     pages[active_page]()
+    render_compliance_footer()
 
 
 if __name__ == "__main__":

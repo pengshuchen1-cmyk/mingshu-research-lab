@@ -14,6 +14,9 @@ from report.sixty_jiazi_report import build_sixty_jiazi_markdown
 DISCLAIMER = "本报告基于传统命理模型生成，仅供个人兴趣、文化研究和自我规划参考，不应作为医疗、法律、投资、婚姻等重大决策的唯一依据。"
 
 PDF_FONT_CANDIDATES = [
+    ("DroidSansFallback", "/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf"),
+    ("NotoSansCJK", "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc"),
+    ("NotoSerifCJK", "/usr/share/fonts/opentype/noto/NotoSerifCJK-Regular.ttc"),
     ("ArialUnicode", "/System/Library/Fonts/Supplemental/Arial Unicode.ttf"),
     ("Songti", "/System/Library/Fonts/Supplemental/Songti.ttc"),
     ("PingFang", "/System/Library/Fonts/PingFang.ttc"),

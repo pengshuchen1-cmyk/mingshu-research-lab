@@ -445,8 +445,9 @@ def test_public_form_keeps_consent_and_discloses_cloud_ai(monkeypatch):
     assert "我已阅读并同意本次会话隐私说明" in source
     assert "请先阅读并同意本次会话隐私说明" in source
     privacy_notice = (
-        "出生资料只用于本地排盘，不上传云端。进入 AI 问答后，去身份化命盘事实、"
-        "问题和近期对话会发送给已配置的云端 AI 服务；30 分钟无操作后清除本次会话。"
+        "出生资料会传至本站服务器内存用于排盘，不写入公网命盘数据库。进入 AI 问答后，"
+        "去身份化命盘事实、问题和近期对话会发送给已配置的云端 AI 服务；原始生日、姓名和"
+        "地点不会发送给该服务，30 分钟无操作后清除本次会话。"
     )
     assert privacy_notice in source
     assert "touch_private_session(st.session_state)" in source

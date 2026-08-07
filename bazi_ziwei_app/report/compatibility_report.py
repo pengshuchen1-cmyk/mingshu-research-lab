@@ -61,7 +61,10 @@ def build_compatibility_pdf(result: dict, name1: str, name2: str) -> bytes:
     try:
         markdown = build_compatibility_markdown(result, name1, name2)
         font_name = None
-        for fn, fp in [("ArialUnicode", "/System/Library/Fonts/Supplemental/Arial Unicode.ttf"),
+        for fn, fp in [("DroidSansFallback", "/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf"),
+                       ("NotoSansCJK", "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc"),
+                       ("NotoSerifCJK", "/usr/share/fonts/opentype/noto/NotoSerifCJK-Regular.ttc"),
+                       ("ArialUnicode", "/System/Library/Fonts/Supplemental/Arial Unicode.ttf"),
                        ("Songti", "/System/Library/Fonts/Supplemental/Songti.ttc"),
                        ("PingFang", "/System/Library/Fonts/PingFang.ttc")]:
             try:
