@@ -1,36 +1,23 @@
-FROM python:3.12-slim
-
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1 \
-    TZ=Asia/Shanghai \
-    LANG=C.UTF-8 \
-    MINGSHU_RUNTIME_MODE=public
+FROM python:3.11-slim
 
 WORKDIR /app
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        ca-certificates \
-        curl \
-        fonts-droid-fallback \
-        tzdata \
+# 安装系统依赖（中文字体支持）
+RUN apt-get update && apt-get install -y \
+    fonts-noto-cjk \
+    fonts-wqy-zenhei \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt ./
-RUN python -m pip install --upgrade pip \
-    && python -m pip install -r requirements.txt
+# 复制依赖文件
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
+# 复制项目文件
 COPY . .
 
-RUN useradd --create-home --uid 10001 mingshu \
-    && chown -R mingshu:mingshu /app
-
-USER mingshu
+# 创建必要目录
+RUN mkdir -p data logs
 
 EXPOSE 8501
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-    CMD curl --fail --silent http://127.0.0.1:8501/_stcore/health || exit 1
-
-CMD ["python", "-m", "streamlit", "run", "app.py", "--server.address=0.0.0.0", "--server.port=8501"]
+CMD ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0", "--server.headless=true"]
