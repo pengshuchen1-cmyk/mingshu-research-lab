@@ -1,4 +1,4 @@
-"""首页 —— v2 editorial public guidance landing page。"""
+"""首页 —— v3 immersive AI question landing page。"""
 
 from __future__ import annotations
 

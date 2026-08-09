@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 
-import streamlit.components.v1 as components
+import streamlit as st
 
 
 DOT_FIELD_CONFIG = {
@@ -217,4 +217,5 @@ def build_dot_field_script(config: dict[str, object] | None = None) -> str:
 
 def render_homepage_dot_field() -> None:
     """Mount the homepage dot field through Streamlit's component bridge."""
-    components.html(build_dot_field_script(), height=0, width=0)
+    with st.container(key="ms2-dot-field-bridge"):
+        st.iframe(build_dot_field_script(), height=1, width=1, tab_index=-1)

@@ -15,10 +15,11 @@ class VersionVisibleTests(unittest.TestCase):
         with open(os.path.join(APP_DIR, "ui", "homepage_components.py"), "r", encoding="utf-8") as file:
             component_text = file.read()
         self.assertNotIn("v106", text)
-        self.assertIn('HOME_VERSION = "v2.0.0"', component_text)
-        self.assertIn('HOME_CACHE_VERSION_LABEL = "v2-editorial-public-guidance"', component_text)
-        self.assertIn("<h1>认识命数<br>活出选择</h1>", component_text)
-        self.assertIn("开始探索命数", component_text)
+        self.assertIn('HOME_VERSION = "v3.0.0"', component_text)
+        self.assertIn('HOME_CACHE_VERSION_LABEL = "v3-immersive-inquiry-hero"', component_text)
+        self.assertIn('<h1><em>看见</em>你的命数。</h1>', component_text)
+        self.assertIn("TYPEWRITER_QUESTIONS", component_text)
+        self.assertNotIn("问问命数研究室", component_text)
         for stale_marker in ["当前版本：", "首页视觉重构", "运行端口：8501", "AI科技感"]:
             self.assertNotIn(stale_marker, component_text)
 

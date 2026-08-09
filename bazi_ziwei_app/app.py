@@ -31,12 +31,18 @@ from ui.styles import get_global_css
 from ui.yearly_page import render_yearly_page
 from ui.ziwei_page import render_ziwei_page
 from utils.database import init_db
+from utils.navigation_state import (
+    DEFAULT_APP_PAGE,
+    LANDING_PAGE_NAME,
+    enter_app,
+    has_entered_app,
+)
 from utils.runtime_mode import is_public_mode
 from utils.release_privacy import assert_public_release_safe
 from utils.session_privacy import maintain_private_session
 
 
-PUBLIC_PAGE_NAMES = ("首页", "今日/年度建议", "个人命盘", "简明报告", "设置/档案")
+PUBLIC_PAGE_NAMES = ("今日/年度建议", "个人命盘", "AI问答", "简明报告", "设置/档案")
 PRODUCT_NAV_ITEMS = (
     ("今日", "今日/年度建议"),
     ("命盘", "个人命盘"),
@@ -44,12 +50,74 @@ PRODUCT_NAV_ITEMS = (
     ("报告", "简明报告"),
     ("我的", "设置/档案"),
 )
+PRODUCT_NAV_KEYS = {
+    "今日/年度建议": "today",
+    "个人命盘": "chart",
+    "AI问答": "inquiry",
+    "简明报告": "report",
+    "设置/档案": "account",
+}
+PRODUCT_NAV_GROUPS = {
+    "今日/年度建议": {"年度运程"},
+    "个人命盘": {
+        "新建命盘",
+        "八字排盘",
+        "命盘总览",
+        "五行喜忌",
+        "六十甲子",
+        "大运流年",
+        "紫微斗数",
+        "合婚匹配",
+    },
+    "AI问答": {"综合问盘"},
+    "简明报告": {"专项报告", "报告导出"},
+    "设置/档案": {"命盘档案", "数据备份", "设置"},
+}
 
 
 def _request_navigation(target: str) -> None:
     import streamlit as st
+    enter_app(st.session_state)
     st.session_state["navigate_to"] = target
     st.rerun()
+
+
+def _render_navigation_scroll_reset() -> None:
+    """Reset Streamlit's retained scroll position after a route change."""
+    script = """
+    <script>
+    (() => {
+      const parentWindow = window.parent;
+      const resetScroll = () => {
+        const containers = parentWindow.document.querySelectorAll(
+          ".stAppViewContainer, .stMain"
+        );
+        containers.forEach((container) => {
+          if (typeof container.scrollTo === "function") {
+            container.scrollTo({ top: 0, left: 0, behavior: "auto" });
+          } else {
+            container.scrollTop = 0;
+            container.scrollLeft = 0;
+          }
+        });
+      };
+      const root = parentWindow.document.querySelector(".stMain");
+      const observer = root
+        ? new MutationObserver(resetScroll)
+        : null;
+      if (observer && root) {
+        observer.observe(root, { childList: true, subtree: true });
+      }
+      parentWindow.requestAnimationFrame(resetScroll);
+      [80, 220, 500, 900, 1400, 2100].forEach((delay) => {
+        parentWindow.setTimeout(resetScroll, delay);
+      });
+      parentWindow.setTimeout(() => observer?.disconnect(), 2400);
+    })();
+    </script>
+    """
+    with st.container(key="ms-navigation-reset-bridge"):
+        st.iframe(script, height=1, width=1, tab_index=-1)
 
 
 def _resolve_active_page(
@@ -70,23 +138,30 @@ def _resolve_active_page(
         and persisted_active_page not in sidebar_pages
     ):
         return persisted_active_page
-    return sidebar_selection if sidebar_selection in pages else "首页"
+    return sidebar_selection if sidebar_selection in pages else DEFAULT_APP_PAGE
 
 
 def render_product_navigation(active_page: str | None) -> None:
     import streamlit as st
-    if active_page in (None, "首页"):
-        return
-    home, *items = st.columns([1.35] + [1] * len(PRODUCT_NAV_ITEMS))
-    with home:
-        if st.button("命数研究室", key="editorial_nav_home", use_container_width=True):
-            _request_navigation("首页")
-    for column, (label, target) in zip(items, PRODUCT_NAV_ITEMS):
-        with column:
-            if st.button(label, key=f"editorial_nav_{target}",
-                         type="primary" if target == active_page else "secondary",
-                         use_container_width=True):
-                _request_navigation(target)
+    st.markdown("[跳到主要内容](#ms-main)")
+    with st.container(key="editorial-product-nav"):
+        items = st.columns(len(PRODUCT_NAV_ITEMS))
+        for column, (label, target) in zip(items, PRODUCT_NAV_ITEMS):
+            with column:
+                is_active = (
+                    active_page == target
+                    or active_page in PRODUCT_NAV_GROUPS.get(target, set())
+                )
+                nav_key = PRODUCT_NAV_KEYS[target]
+                if st.button(label, key=f"editorial_nav_{nav_key}",
+                             type="primary" if is_active else "secondary",
+                             use_container_width=True):
+                    _request_navigation(target)
+
+
+def render_main_content_anchor() -> None:
+    """Provide one stable skip-link destination for every routed page."""
+    st.markdown('<div id="ms-main" tabindex="-1"></div>', unsafe_allow_html=True)
 
 
 def render_compliance_footer() -> None:
@@ -172,41 +247,55 @@ def main() -> None:
     pages = get_pages()
     sidebar_pages = get_sidebar_pages(pages)
 
-    # 自定义侧边栏标题
-    st.sidebar.markdown(
-        '<div class="sidebar-title">命数研究室</div>'
-        '<div class="sidebar-subtitle">八字 · 紫微 · 命理分析</div>',
-        unsafe_allow_html=True,
-    )
-
-    # 产品导航通过 session state 使用命名页面键，侧栏仅保留键盘回退。
+    # 首页是独立入口；进入产品后才渲染五项导航与键盘回退侧栏。
     nav_target = st.session_state.pop("navigate_to", None)
-    if nav_target in sidebar_pages:
-        st.session_state["sidebar_navigation"] = nav_target
-    elif st.session_state.get("sidebar_navigation") not in sidebar_pages:
-        st.session_state["sidebar_navigation"] = list(sidebar_pages.keys())[0]
+    if nav_target in pages and nav_target != LANDING_PAGE_NAME:
+        enter_app(st.session_state)
+    if has_entered_app(st.session_state):
+        if nav_target == LANDING_PAGE_NAME:
+            nav_target = DEFAULT_APP_PAGE
+        if nav_target in sidebar_pages:
+            st.session_state["sidebar_navigation"] = nav_target
+        elif st.session_state.get("sidebar_navigation") not in sidebar_pages:
+            st.session_state["sidebar_navigation"] = DEFAULT_APP_PAGE
 
-    previous_sidebar = st.session_state.get("last_sidebar_navigation")
-    selected = st.sidebar.radio(
-        "导航",
-        list(sidebar_pages.keys()),
-        key="sidebar_navigation",
-        label_visibility="collapsed",
-    )
-    sidebar_changed = previous_sidebar is not None and selected != previous_sidebar
-    st.session_state["last_sidebar_navigation"] = selected
-    active_page = _resolve_active_page(
-        nav_target,
-        st.session_state.get("active_product_page"),
-        selected,
-        pages,
-        sidebar_pages,
-        sidebar_changed=sidebar_changed,
-    )
+        st.sidebar.markdown(
+            '<div class="sidebar-title">命数研究室</div>'
+            '<div class="sidebar-subtitle">八字 · 紫微 · 命理分析</div>',
+            unsafe_allow_html=True,
+        )
+        previous_sidebar = st.session_state.get("last_sidebar_navigation")
+        selected = st.sidebar.radio(
+            "导航",
+            list(sidebar_pages.keys()),
+            key="sidebar_navigation",
+            label_visibility="collapsed",
+        )
+        sidebar_changed = previous_sidebar is not None and selected != previous_sidebar
+        st.session_state["last_sidebar_navigation"] = selected
+        persisted_page = st.session_state.get("active_product_page")
+        if persisted_page == LANDING_PAGE_NAME:
+            persisted_page = None
+        active_page = _resolve_active_page(
+            nav_target,
+            persisted_page,
+            selected,
+            pages,
+            sidebar_pages,
+            sidebar_changed=sidebar_changed,
+        )
+    else:
+        sidebar_changed = False
+        active_page = LANDING_PAGE_NAME
     st.session_state["active_product_page"] = active_page
-    render_product_navigation(active_page)
+    navigation_changed = nav_target in pages or sidebar_changed
+    if active_page != LANDING_PAGE_NAME:
+        render_product_navigation(active_page)
+        render_main_content_anchor()
     pages[active_page]()
     render_compliance_footer()
+    if navigation_changed:
+        _render_navigation_scroll_reset()
 
 
 if __name__ == "__main__":

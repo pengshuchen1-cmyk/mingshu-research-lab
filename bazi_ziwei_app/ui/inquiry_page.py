@@ -34,7 +34,7 @@ from core.ai_session import (
 )
 from ui.bazi_components import render_loaded_profile_hint, render_rule_summary
 from utils.logger import log_ai_event
-from utils.session_privacy import touch_private_session
+from utils.session_privacy import PENDING_INQUIRY_KEY, touch_private_session
 
 
 SUGGESTED_QUESTIONS = (
@@ -400,6 +400,15 @@ def _answer(chart: dict, question: str) -> None:
     _render_message(st.session_state[CHAT_MESSAGES_KEY][-1])
 
 
+PENDING_QUESTION_KEY = PENDING_INQUIRY_KEY
+
+
+def pop_pending_question(state) -> str | None:
+    """Consume a session-only homepage handoff without bypassing validation."""
+    pending = str(state.pop(PENDING_QUESTION_KEY, "") or "").strip()
+    return pending or None
+
+
 def render_inquiry_page() -> None:
     """Render the customer-facing Bazi AI chat."""
     chart = st.session_state.get("current_chart")
@@ -468,6 +477,7 @@ def render_inquiry_page() -> None:
                 suggested = prompt
 
     typed = st.chat_input("请输入关于强弱、格局、财运、事业、姻缘或流年的问题（最多 2000 字）")
-    question = suggested or typed
+    pending = pop_pending_question(st.session_state)
+    question = pending or suggested or typed
     if question is not None:
         _answer(chart, question)

@@ -17,6 +17,7 @@ from core.birth_input_preview import (
 from report.bazi_report import generate_basic_bazi_report
 from utils.runtime_mode import is_public_mode
 from utils.session_privacy import touch_private_session
+from ui.primitives import page_header
 
 
 PROFILE_DRAFT_KEY = "profile_draft"
@@ -38,6 +39,27 @@ def _mutable_copy(value: Any) -> Any:
     if isinstance(value, (tuple, frozenset)):
         return [_mutable_copy(item) for item in value]
     return value
+
+
+def _render_profile_step_indicator(st, *, preview_ready: bool) -> None:
+    """显示一页式表单当前所处的填写/确认阶段。"""
+    first_class = "complete" if preview_ready else "active"
+    second_class = "active" if preview_ready else ""
+    st.markdown(
+        f"""
+        <div class="ms5-stepper" role="list" aria-label="建立命盘进度">
+          <div class="ms5-step {first_class}" role="listitem" aria-current="{'false' if preview_ready else 'step'}">
+            <span class="ms5-step-number">1</span>
+            <span class="ms5-step-copy"><strong>填写出生资料</strong><small>选择日期、时间与基本资料</small></span>
+          </div>
+          <div class="ms5-step {second_class}" role="listitem" aria-current="{'step' if preview_ready else 'false'}">
+            <span class="ms5-step-number">2</span>
+            <span class="ms5-step-copy"><strong>核对排盘结果</strong><small>确认预览后生成个人命盘</small></span>
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 def parse_birth_longitude(value: str | float | int | None) -> float | None:
@@ -96,8 +118,12 @@ def _render_unified_profile_form(draft: dict) -> None:
     with st.container(key="ms5-profile-card", border=True):
         st.caption("排盘统一采用中国标准时间（北京时间）。")
         st.session_state[PROFILE_DRAFT_KEY] = draft
+        _render_profile_step_indicator(
+            st,
+            preview_ready=bool(st.session_state.get(PROFILE_PREVIEW_KEY)),
+        )
 
-        st.markdown("### 出生日期")
+        st.markdown("## 出生日期")
         st.caption("无需输入姓名，只需选择农历或公历的出生日期及时间；性别仍用于排盘规则。")
         calendar_label = st.radio(
             "出生日期类型",
@@ -108,7 +134,7 @@ def _render_unified_profile_form(draft: dict) -> None:
         )
 
         with st.form("unified_profile_form"):
-            st.markdown("### 基本资料")
+            st.markdown("## 基本资料")
             identity_columns = st.columns(2)
             with identity_columns[0]:
                 name_label = "称呼（可选，建议昵称）" if is_public_mode() else "姓名"
@@ -164,7 +190,7 @@ def _render_unified_profile_form(draft: dict) -> None:
                     value=bool(draft.get("is_leap_month", False)),
                 )
 
-            st.markdown("### 出生时间与地点")
+            st.markdown("## 出生时间与地点")
             time_precision = st.radio(
                 "出生时间精度",
                 ["精确时间", "传统时辰", "时辰不详"],
@@ -363,7 +389,10 @@ def render_profile_form() -> None:
     """渲染带有校验预览的一页式新建命盘表单。"""
     import streamlit as st
 
-    st.title("新建命盘")
-    st.caption("一次填写完整资料，校验预览无误后生成个人命盘。")
+    page_header(
+        "新建命盘",
+        "一次填写完整资料，校验预览无误后生成个人命盘。",
+        eyebrow="CREATE CHART",
+    )
     draft = st.session_state.setdefault(PROFILE_DRAFT_KEY, {})
     _render_unified_profile_form(draft)

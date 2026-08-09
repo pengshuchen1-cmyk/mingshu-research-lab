@@ -11,6 +11,7 @@ from core.yearly_engine import analyze_yearly_fortune
 from report.export_report import build_markdown_report, build_pdf_report, build_text_report
 from utils.runtime_mode import is_public_mode
 from ui.bazi_components import render_rule_summary
+from ui.primitives import empty_state_header, page_header, section_header
 
 
 def _safe_filename(name: str, suffix: str) -> str:
@@ -127,9 +128,9 @@ def _render_report_summary(report: dict, chart: dict) -> None:
         '</div>',
         unsafe_allow_html=True,
     )
-    st.markdown("## 报告摘要")
+    section_header("报告摘要")
     st.write(report.get("summary", "当前报告已生成；你可以先阅读重点，再按需要导出完整文件。"))
-    st.markdown("### 下一步建议")
+    section_header("下一步建议")
     left, right = st.columns(2)
     with left:
         st.caption("先从名片式预览理解重点，再打开完整章节。")
@@ -146,23 +147,29 @@ def render_report_page() -> None:
     chart = st.session_state.get("current_chart")
     report = st.session_state.get("current_report")
     if not chart or not report:
-        st.info("请先在新建命盘页面生成命盘，或从命盘档案中选择一个命盘。")
+        with st.container(key="ms-report-empty"):
+            empty_state_header(
+                "还没有个人命盘",
+                "填写出生资料后，即可查看个人报告；也可以先阅读不使用出生资料的今日建议。",
+            )
+            create_col, daily_col = st.columns(2)
+            with create_col:
+                if st.button("开始建立命盘", type="primary", use_container_width=True):
+                    st.session_state["navigate_to"] = "新建命盘"
+                    st.rerun()
+            with daily_col:
+                if st.button("先看看今日建议", use_container_width=True):
+                    st.session_state["navigate_to"] = "今日/年度建议"
+                    st.rerun()
         return
     if chart.get("error"):
         st.error(chart["error"])
         return
 
-    st.markdown(
-        """
-        <section class="v106c-page-hero">
-          <div class="v106c-page-eyebrow">REPORT EXPORT · v1.0.6</div>
-          <div class="v106c-page-title">报告导出</div>
-          <div class="v106c-page-subtitle">
-            先读摘要，再看依据；需要完整内容时再导出。
-          </div>
-        </section>
-        """,
-        unsafe_allow_html=True,
+    page_header(
+        "报告导出",
+        "先读摘要，再看依据；需要完整内容时再导出。",
+        eyebrow="REPORT EXPORT",
     )
 
     profile = chart.get("profile") or st.session_state.get("current_profile", {})
@@ -222,8 +229,10 @@ def render_report_page() -> None:
             mime="application/pdf",
         )
 
-    st.markdown("### 报告名片预览")
-    st.caption("每一张名片对应完整报告中的一个章节。下方左右按钮只切换预览名片，下载文件仍包含完整报告。")
+    section_header(
+        "报告名片预览",
+        "每一张名片对应完整报告中的一个章节。下方左右按钮只切换预览名片，下载文件仍包含完整报告。",
+    )
     _render_report_card_carousel(markdown)
 
     with st.expander("查看原始 Markdown 文本"):

@@ -473,3 +473,14 @@ def test_profile_card_styles_flatten_the_nested_submit_form():
     rule = css.split(selector, 1)[1].split("}", 1)[0]
     assert "border: 0" in rule
     assert "box-shadow: none" in rule
+
+
+def test_profile_form_shows_two_stage_progress_and_mobile_single_columns():
+    source = (ROOT / "ui" / "profile_form.py").read_text(encoding="utf-8")
+    styles = (ROOT / "ui" / "styles.py").read_text(encoding="utf-8")
+
+    assert "填写出生资料" in source
+    assert "核对排盘结果" in source
+    assert 'aria-label="建立命盘进度"' in source
+    assert '.st-key-ms5-profile-card [data-testid="stHorizontalBlock"]' in styles
+    assert "grid-template-columns: minmax(0, 1fr) !important" in styles

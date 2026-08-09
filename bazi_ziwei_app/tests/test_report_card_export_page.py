@@ -1,4 +1,5 @@
 import unittest
+from pathlib import Path
 
 
 class ReportCardExportPageTests(unittest.TestCase):
@@ -33,6 +34,15 @@ class ReportCardExportPageTests(unittest.TestCase):
         self.assertIn("上一张", text)
         self.assertIn("下一张", text)
         self.assertIn("report_card_index", text)
+
+    def test_empty_report_state_offers_two_recovery_actions(self):
+        source = Path("ui/report_page.py").read_text(encoding="utf-8")
+
+        self.assertIn("还没有个人命盘", source)
+        self.assertIn("开始建立命盘", source)
+        self.assertIn("先看看今日建议", source)
+        self.assertIn('st.session_state["navigate_to"] = "新建命盘"', source)
+        self.assertIn('st.session_state["navigate_to"] = "今日/年度建议"', source)
 
 
 if __name__ == "__main__":

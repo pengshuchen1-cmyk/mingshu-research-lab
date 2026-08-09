@@ -423,9 +423,9 @@ def render_element_wheel(
 ) -> None:
     """在 Streamlit 中渲染五行轮盘。"""
     import streamlit as st
-    from streamlit.components.v1 import html as st_html
+
     html_str = render_element_wheel_html(five_elements, width=width, animated=animated)
-    st_html(html_str, height=width + 20, scrolling=False)
+    st.iframe(html_str, height=width + 20, width="stretch", tab_index=0)
 
 
 # ===================================================================

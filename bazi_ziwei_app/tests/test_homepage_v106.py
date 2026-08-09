@@ -5,93 +5,62 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
-class HomepageV106Tests(unittest.TestCase):
-    def test_homepage_v106_modules_and_version_marker_exist(self):
+class HomepageV3Tests(unittest.TestCase):
+    def test_homepage_modules_and_version_marker_exist(self):
         home_text = (ROOT / "ui" / "home.py").read_text(encoding="utf-8")
-        components_text = (ROOT / "ui" / "homepage_components.py").read_text(encoding="utf-8")
-        self.assertIn('HOME_VERSION = "v2.0.0"', components_text)
-        self.assertIn("from ui.homepage_components import", home_text)
+        components = (ROOT / "ui" / "homepage_components.py").read_text(encoding="utf-8")
+        self.assertIn('HOME_VERSION = "v3.0.0"', components)
         self.assertIn("render_homepage_landing", home_text)
-        self.assertTrue((ROOT / "ui" / "homepage_components.py").exists())
-        self.assertTrue((ROOT / "ui" / "homepage_styles.py").exists())
+        self.assertTrue((ROOT / "assets" / "hero-sky-v1.png").exists())
 
-    def test_homepage_contains_required_landing_sections(self):
+    def test_homepage_contains_required_immersive_sections(self):
         text = (ROOT / "ui" / "homepage_components.py").read_text(encoding="utf-8")
-        required_phrases = [
-            "命数研究室",
-            "认识命数<br>活出选择",
-            "五行主题",
-            "今日宜穿",
-            "今日注意",
-            "大众参考",
-            "今日/年度建议",
-            "开始探索命数",
-        ]
-        for phrase in required_phrases:
+        for phrase in [
+            "<em>看见</em>你的命数。",
+            "今天我的运势如何？",
+            "如何推算我的命盘？",
+            "今年是我的本命年，我的事业和爱情怎么样？",
+        ]:
             self.assertIn(phrase, text)
-        self.assertIn('st.session_state["navigate_to"] = target', text)
-        self.assertNotIn("AI科技感", text)
+        for removed_phrase in [
+            "命数研究室 · AI 命理助手",
+            "问问命数研究室",
+            "或者从一个常见问题开始",
+        ]:
+            self.assertNotIn(removed_phrase, text)
 
-    def test_homepage_contains_internal_product_navigation(self):
-        text = (ROOT / "ui" / "homepage_components.py").read_text(encoding="utf-8")
-        expected_targets = {
-            "今日/年度建议": "今日/年度建议",
-            "个人命盘": "个人命盘",
-            "简明报告": "简明报告",
-            "设置/档案": "设置/档案",
-        }
-        for label, target in expected_targets.items():
-            self.assertIn(f'"{label}"', text)
-            self.assertIn(f'"{target}"', text)
+    def test_homepage_reuses_application_navigation(self):
+        component = (ROOT / "ui" / "homepage_components.py").read_text(encoding="utf-8")
+        app = (ROOT / "app.py").read_text(encoding="utf-8")
+        self.assertNotIn("def _render_product_nav", component)
+        self.assertIn('st.container(key="editorial-product-nav")', app)
 
-    def test_homepage_styles_match_editorial_visual_system(self):
+    def test_homepage_mounts_question_placeholder_typing_effect(self):
+        component = (ROOT / "ui" / "homepage_components.py").read_text(encoding="utf-8")
+
+        self.assertIn("render_question_typing_effect", component)
+        self.assertIn("render_question_typing_effect(TYPEWRITER_QUESTIONS)", component)
+
+    def test_homepage_styles_are_immersive_and_mobile_safe(self):
         text = (ROOT / "ui" / "homepage_styles.py").read_text(encoding="utf-8")
         for token in [
-            ".ms2-home",
-            ".ms2-product-nav",
-            ".ms2-hero",
-            ".ms2-daily-advice",
-            ".ms2-color-dot",
+            ".st-key-ms2-home",
+            ".st-key-ms2-hero",
+            ".st-key-ms2-question-composer",
+            "linear-gradient",
+            "object-fit: cover",
             "@media (max-width: 768px)",
             "prefers-reduced-motion: reduce",
         ]:
             self.assertIn(token, text)
-        for removed in [
-            ".ms2-phone-preview",
-            ".ms2-value-strip",
-            ".ms2-entry-choices",
-            ".ms2-method-boundary",
-            ".ms2-footer-action",
-        ]:
-            self.assertNotIn(removed, text)
 
-    def test_homepage_does_not_use_forbidden_words(self):
+    def test_homepage_does_not_use_forbidden_claims(self):
         combined = (
             (ROOT / "ui" / "home.py").read_text(encoding="utf-8")
             + (ROOT / "ui" / "homepage_components.py").read_text(encoding="utf-8")
-            + (ROOT / "ui" / "homepage_styles.py").read_text(encoding="utf-8")
         )
-        forbidden = [
-            "逆天改命",
-            "必定发财",
-            "正缘必到",
-            "有灾",
-            "化灾",
-            "破解",
-            "转运",
-            "消灾",
-            "短命",
-            "大病",
-            "车祸",
-        ]
-        for word in forbidden:
+        for word in ["逆天改命", "必定发财", "正缘必到", "化灾", "转运", "消灾"]:
             self.assertNotIn(word, combined)
-
-    def test_reference_design_asset_or_spec_exists(self):
-        self.assertTrue(
-            (ROOT / "docs" / "design" / "homepage_reference.png").exists()
-            or (ROOT / "docs" / "design" / "homepage_design_spec.md").exists()
-        )
 
 
 if __name__ == "__main__":

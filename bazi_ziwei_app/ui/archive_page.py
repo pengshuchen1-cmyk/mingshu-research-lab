@@ -19,6 +19,7 @@ from utils.database import (
     update_report,
 )
 from utils.validators import validate_profile
+from ui.primitives import card, empty_state_header, page_header, section_header
 
 
 def _parse_date(value: object) -> date:
@@ -80,8 +81,10 @@ def _render_archive_empty_state() -> None:
     """引导首次使用者创建本机保存的命盘。"""
     import streamlit as st
 
-    st.markdown("## 我的命盘")
-    st.write("数据仅保存在本机。建立命盘后，你可以在这里加载、编辑或删除自己的资料。")
+    empty_state_header(
+        "还没有保存的命盘",
+        "数据仅保存在本机。建立命盘后，你可以在这里加载、编辑或删除自己的资料。",
+    )
     if st.button("开始个人分析", type="primary", use_container_width=True):
         st.session_state["navigate_to"] = "新建命盘"
         st.rerun()
@@ -93,19 +96,25 @@ def render_archive_page() -> None:
     """
     import streamlit as st
 
-    st.title("我的命盘")
+    page_header(
+        "我的命盘",
+        "搜索、加载与维护保存在本机的命盘资料。",
+        eyebrow="ARCHIVE",
+    )
     init_db()
-    st.markdown("### 搜索命盘")
-    col1, col2 = st.columns([2, 1])
-    keyword = col1.text_input("关键词", placeholder="可输入姓名、出生日期、地点或备注")
-    gender = col2.selectbox("性别筛选", ["全部", "男", "女"])
+    with card("archive-search"):
+        section_header("搜索命盘")
+        col1, col2 = st.columns([2, 1])
+        keyword = col1.text_input("关键词", placeholder="可输入姓名、出生日期、地点或备注")
+        gender = col2.selectbox("性别筛选", ["全部", "男", "女"])
 
     profiles = search_profiles(keyword=keyword, gender=gender)
     if not profiles:
-        _render_archive_empty_state()
+        with card("archive-empty", tone="muted", size="lg"):
+            _render_archive_empty_state()
         return
 
-    st.markdown("### 已保存命盘")
+    section_header("已保存命盘")
     st.dataframe(pd.DataFrame(profiles), width='stretch', hide_index=True)
     options = {f"{item['id']}｜{item['name']}｜{item['birth_date']}": item["id"] for item in profiles}
     selected = st.selectbox("选择命盘", list(options.keys()))
@@ -113,7 +122,7 @@ def render_archive_page() -> None:
     loaded = load_profile_chart_report(profile_id)
 
     if loaded:
-        st.markdown("### 命盘基础信息")
+        section_header("命盘基础信息")
         st.write(
             f"姓名：{loaded.get('name', '')}｜性别：{loaded.get('gender', '')}｜"
             f"出生：{loaded.get('birth_date', '')} "
@@ -162,7 +171,7 @@ def render_archive_page() -> None:
             st.session_state["current_report"] = new_report
             st.success("报告已重新生成。")
 
-        st.markdown("### 编辑资料")
+        section_header("编辑资料")
         with st.form(f"edit_profile_{profile_id}"):
             new_name = st.text_input("姓名", value=loaded.get("name", ""))
             new_birth_place = st.text_input("出生地点", value=loaded.get("birth_place", "") or "")
@@ -173,8 +182,7 @@ def render_archive_page() -> None:
             st.success("基础信息已保存。")
             st.rerun()
 
-        st.markdown("### 重新排盘")
-        st.caption("重新排盘会覆盖当前命盘结果，适合出生时间、性别或地点录入错误时使用。")
+        section_header("重新排盘", "重新排盘会覆盖当前命盘结果，适合出生时间、性别或地点录入错误时使用。")
         with st.form(f"rebuild_profile_{profile_id}"):
             rebuild_name = st.text_input("姓名", value=loaded.get("name", ""), key=f"rebuild_name_{profile_id}")
             gender_options = ["男", "女"]
@@ -281,7 +289,7 @@ def render_archive_page() -> None:
                 st.success("已重新排盘，并加载为当前命盘。")
                 st.rerun()
 
-        st.markdown("### 删除命盘")
+        section_header("删除命盘", "删除后无法恢复，请确认当前命盘已经不再需要。")
         confirm_delete = st.checkbox("确认删除：我了解这会删除该命盘及相关报告", key=f"confirm_delete_{profile_id}")
         if st.button("删除命盘", disabled=not confirm_delete):
             delete_profile(profile_id)
