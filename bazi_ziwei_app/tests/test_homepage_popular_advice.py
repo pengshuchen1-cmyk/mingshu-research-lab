@@ -40,51 +40,52 @@ def test_pending_home_question_is_session_only_and_consumed_once():
     assert pop_pending_question(state) is None
 
 
-def test_homepage_arrow_routes_to_chart_and_clears_pending_question(monkeypatch):
+def test_homepage_question_queue_trims_and_routes_through_existing_inquiry(monkeypatch):
     import ui.homepage_components as homepage
     from ui.inquiry_page import PENDING_QUESTION_KEY
 
     class RerunRequested(RuntimeError):
         pass
 
-    state = {PENDING_QUESTION_KEY: "旧问题"}
+    state = {}
+    warnings = []
     fake_streamlit = type(
         "FakeStreamlit",
         (),
         {
             "session_state": state,
+            "warning": staticmethod(lambda message: warnings.append(str(message))),
             "rerun": staticmethod(lambda: (_ for _ in ()).throw(RerunRequested())),
         },
     )()
     monkeypatch.setattr(homepage, "st", fake_streamlit)
 
     with pytest.raises(RerunRequested):
-        homepage._open_product_page("个人命盘")
+        homepage._queue_inquiry("  今天我的运势如何  ")
 
-    assert PENDING_QUESTION_KEY not in state
+    assert state[PENDING_QUESTION_KEY] == "今天我的运势如何"
     assert state["mingshu_app_entered"] is True
-    assert state["navigate_to"] == "个人命盘"
+    assert state["navigate_to"] == "AI问答"
+    assert warnings == []
 
 
 def test_inquiry_without_chart_preserves_pending_question_and_never_answers(monkeypatch):
     import ui.inquiry_page as inquiry
 
     state = {inquiry.PENDING_QUESTION_KEY: "今天我的运势如何"}
-    empty_states = []
+    titles = []
+    infos = []
     fake_streamlit = type(
         "FakeStreamlit",
         (),
         {
             "session_state": state,
+            "title": staticmethod(lambda message: titles.append(str(message))),
+            "info": staticmethod(lambda message: infos.append(str(message))),
             "button": staticmethod(lambda *_args, **_kwargs: False),
         },
     )()
     monkeypatch.setattr(inquiry, "st", fake_streamlit)
-    monkeypatch.setattr(
-        inquiry,
-        "empty_state_header",
-        lambda title, description: empty_states.append((str(title), str(description))),
-    )
     monkeypatch.setattr(
         inquiry,
         "_answer",
@@ -93,10 +94,6 @@ def test_inquiry_without_chart_preserves_pending_question_and_never_answers(monk
 
     inquiry.render_inquiry_page()
 
-    assert empty_states == [
-        (
-            "AI 问答需要个人命盘",
-            "请先新建或选择一个命盘，AI 才能读取本地四柱规则结论。",
-        )
-    ]
+    assert titles == ["AI问答"]
+    assert infos == ["请先新建或选择一个命盘，AI 问答才能读取本地四柱规则结论。"]
     assert state[inquiry.PENDING_QUESTION_KEY] == "今天我的运势如何"

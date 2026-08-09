@@ -24,6 +24,7 @@ from core.ai_request_control import request_controller_for_config
 from core.ai_session import (
     CHAT_MESSAGES_KEY,
     append_chat_message,
+    clear_chat_session,
     expire_chat_session,
     initialize_chat_for_chart,
     previous_resolved_question,
@@ -32,7 +33,6 @@ from core.ai_session import (
     validate_question,
 )
 from ui.bazi_components import render_loaded_profile_hint, render_rule_summary
-from ui.primitives import empty_state_header, page_header
 from utils.logger import log_ai_event
 from utils.session_privacy import PENDING_INQUIRY_KEY, touch_private_session
 
@@ -275,11 +275,11 @@ def _save_answer(
     )
 
 
-def _answer(chart: dict, question: str) -> bool:
+def _answer(chart: dict, question: str) -> None:
     valid, error = validate_question(question)
     if not valid:
         st.warning(error)
-        return False
+        return
     text = question.strip()
     history = recent_context_messages(st.session_state)
     now = datetime.now(_SHANGHAI_TIMEZONE)
@@ -307,10 +307,6 @@ def _answer(chart: dict, question: str) -> bool:
         text,
         request_id=request_id,
     )
-    # Streamlit executes the model call synchronously. Render the saved user
-    # message in this run so it is visible while the status widget is active;
-    # the normal rerun will then place it back in the canonical thread order.
-    _render_message(st.session_state[CHAT_MESSAGES_KEY][-1])
     status = st.status("正在理解问题…", expanded=True)
 
     def on_progress(stage: ProgressStage) -> None:
@@ -356,7 +352,7 @@ def _answer(chart: dict, question: str) -> bool:
             reason_code="unexpected_error",
         )
         st.error("本次回答未能完成，请稍后再试。")
-        return False
+        return
     _save_answer(st.session_state, result, request_id=request_id)
     if result.source in {"cloud_validated", "local_rules"}:
         remember_dialogue_summary(st.session_state, resolved)
@@ -401,7 +397,7 @@ def _answer(chart: dict, question: str) -> bool:
             violation_code=violation_code,
         )
     touch_private_session(st.session_state)
-    return True
+    _render_message(st.session_state[CHAT_MESSAGES_KEY][-1])
 
 
 PENDING_QUESTION_KEY = PENDING_INQUIRY_KEY
@@ -417,10 +413,8 @@ def render_inquiry_page() -> None:
     """Render the customer-facing Bazi AI chat."""
     chart = st.session_state.get("current_chart")
     if not chart:
-        empty_state_header(
-            "AI 问答需要个人命盘",
-            "请先新建或选择一个命盘，AI 才能读取本地四柱规则结论。",
-        )
+        st.title("AI问答")
+        st.info("请先新建或选择一个命盘，AI 问答才能读取本地四柱规则结论。")
         if st.button("新建命盘", type="primary"):
             st.session_state["navigate_to"] = "新建命盘"
             st.rerun()
@@ -434,53 +428,56 @@ def render_inquiry_page() -> None:
     if switched:
         log_ai_event(event_code="AI_QA_CLEARED", reason_code="profile_switch")
 
-    with st.container(key="ms-inquiry-page"):
-        page_header(
-            "命理助手",
-            "本地规则校验 · 对话最多保留 20 条",
-            eyebrow="AI CHAT",
-        )
-
-        with st.container(key="ms-inquiry-context"):
-            render_loaded_profile_hint(st.session_state.get("current_profile", {}), chart)
-            with st.expander("当前命盘的本地规则摘要", expanded=False):
-                render_rule_summary(chart)
-            st.markdown(
-                '<p class="ms-inquiry-safety">无需重复输入姓名或出生资料。'
-                '内容仅作传统文化参考，不替代现实中的医疗、法律或投资判断。</p>',
-                unsafe_allow_html=True,
-            )
-
-        messages = list(st.session_state.get(CHAT_MESSAGES_KEY, []))
-        with st.container(key="ms-inquiry-thread"):
-            for index, item in enumerate(messages):
-                retry_question = _retry_question_for_message(messages, index)
-                retry_requested = _render_message(
-                    item,
-                    retry_question=retry_question,
-                    retry_key=f"ai_retry_{item.get('request_id', index)}_{index}",
-                )
-                if retry_requested:
-                    if _answer(chart, retry_question):
-                        st.rerun()
-
-            if not messages:
-                st.markdown(
-                    """
-                    <div class="ms-inquiry-empty">
-                      <strong>从你真正关心的问题开始</strong>
-                      <span>可以询问命盘结构、事业财运、关系主题或阶段趋势。</span>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
-
-    typed = st.chat_input(
-        "输入你想了解的命理问题",
-        key="ms_inquiry_chat_input",
-        max_chars=2000,
+    st.markdown(
+        """
+        <section class="v106c-page-hero">
+          <div class="v106c-page-eyebrow">LOCAL RULES · AI Q&amp;A</div>
+          <div class="v106c-page-title">AI问答</div>
+          <div class="v106c-page-subtitle">用当前命盘的本地四柱事实回答，并显示依据与不确定性。</div>
+        </section>
+        <div class="ms-report-panel">
+          <span class="ms-mini-metric">对话最多保留 20 条</span>
+          <span class="ms-tag">本地规则校验</span>
+        </div>
+        """,
+        unsafe_allow_html=True,
     )
-    pending = pop_pending_question(st.session_state)
-    question = pending or typed
-    if question is not None and _answer(chart, question):
+    render_loaded_profile_hint(st.session_state.get("current_profile", {}), chart)
+    st.caption("AI 不能确认现实婚姻状态，也不会保证投资结果。")
+    st.info("无需在问答中输入姓名或重复输入出生资料。请直接询问希望了解的命理主题。")
+
+    with st.expander("当前命盘的本地规则摘要", expanded=False):
+        render_rule_summary(chart)
+
+    if st.button("清空对话", use_container_width=False):
+        clear_chat_session(st.session_state)
+        initialize_chat_for_chart(st.session_state, _chart_session_fingerprint(chart))
+        log_ai_event(event_code="AI_QA_CLEARED", reason_code="user_clear")
+        st.success("本次对话已清空。")
         st.rerun()
+
+    messages = list(st.session_state.get(CHAT_MESSAGES_KEY, []))
+    for index, item in enumerate(messages):
+        retry_question = _retry_question_for_message(messages, index)
+        retry_requested = _render_message(
+            item,
+            retry_question=retry_question,
+            retry_key=f"ai_retry_{item.get('request_id', index)}_{index}",
+        )
+        if retry_requested:
+            _answer(chart, retry_question)
+            st.rerun()
+
+    st.markdown("#### 你可以这样问")
+    columns = st.columns(2)
+    suggested = None
+    for index, prompt in enumerate(SUGGESTED_QUESTIONS):
+        with columns[index % 2]:
+            if st.button(prompt, key=f"ai_suggestion_{index}", use_container_width=True):
+                suggested = prompt
+
+    typed = st.chat_input("请输入关于强弱、格局、财运、事业、姻缘或流年的问题（最多 2000 字）")
+    pending = pop_pending_question(st.session_state)
+    question = pending or suggested or typed
+    if question is not None:
+        _answer(chart, question)

@@ -38,21 +38,15 @@ def test_request_navigation_sets_only_named_target_and_reruns(monkeypatch):
     assert rerun_calls == [True]
 
 
-def test_route_change_uses_one_stable_scroll_reset_without_observer_loop():
+def test_route_change_resets_retained_streamlit_scroll_position():
     source = (ROOT / "app.py").read_text(encoding="utf-8")
     styles = (ROOT / "ui" / "styles.py").read_text(encoding="utf-8")
 
     assert "def _render_navigation_scroll_reset" in source
-    assert 'querySelector(".stMain")' in source
-    assert 'main.scrollTo({ top: 0, left: 0, behavior: "auto" })' in source
-    assert 'main.style.overflowAnchor = "none"' in source
-    assert 'main.style.removeProperty("overflow-anchor")' in source
-    scroll_reset = source.split("def _render_navigation_scroll_reset", 1)[1].split(
-        "def _resolve_active_page", 1
-    )[0]
-    assert "MutationObserver" not in scroll_reset
-    assert "setTimeout" not in scroll_reset
-    assert scroll_reset.count(".scrollTo(") == 1
+    assert 'querySelectorAll(\n          ".stAppViewContainer, .stMain"' in source
+    assert 'container.scrollTo({ top: 0, left: 0, behavior: "auto" })' in source
+    assert "new MutationObserver(resetScroll)" in source
+    assert "observer?.disconnect()" in source
     assert 'navigation_changed = nav_target in pages or sidebar_changed' in source
     assert "if navigation_changed:" in source
     assert 'st.container(key="ms-navigation-reset-bridge")' in source
@@ -91,15 +85,17 @@ def test_mobile_navigation_is_fixed_five_item_bar_with_content_clearance():
     assert "editorial_nav_home" not in source
 
 
-def test_product_starts_directly_on_today_with_five_item_navigation():
+def test_landing_is_outside_the_five_item_product_navigation():
     source = (ROOT / "app.py").read_text(encoding="utf-8")
 
     assert '("今日", "今日/年度建议")' in source
-    assert "LANDING_PAGE_NAME" not in source
-    assert '"首页": render_home' not in source
-    assert source.index("st.sidebar.radio") < source.index(
+    assert 'sidebar_changed = False\n        active_page = LANDING_PAGE_NAME' in source
+    assert 'if active_page != LANDING_PAGE_NAME:' in source
+    assert source.index('if active_page != LANDING_PAGE_NAME:') < source.index(
         "render_product_navigation(active_page)"
     )
+    entered_branch = source.split("if has_entered_app(st.session_state):", 1)[1]
+    assert entered_branch.index("st.sidebar.radio") < entered_branch.index("else:")
 
 
 def test_skip_link_has_a_shared_target_before_every_page():
@@ -127,42 +123,21 @@ def test_main_container_uses_current_streamlit_selector_without_default_top_gap(
     assert ".main .block-container" not in homepage_styles
 
 
-def test_desktop_navigation_is_the_same_fixed_mobile_app_bar():
+def test_desktop_navigation_is_flat_and_stays_in_document_flow():
     styles = (ROOT / "ui" / "styles.py").read_text(encoding="utf-8")
 
     nav_rule = styles.split(".st-key-editorial-product-nav {", 1)[1].split("}", 1)[0]
-    assert "position: fixed" in nav_rule
-    assert "bottom:" in nav_rule
-    assert "border-radius: 30px" in styles
-    assert "box-shadow:" in nav_rule
-    assert "backdrop-filter:" in styles
+    assert "position: relative" in nav_rule
+    assert "border-radius: 0" in nav_rule
+    assert "box-shadow: none" in nav_rule
+    assert "backdrop-filter" not in nav_rule
     active_rule = styles.split(
         '.st-key-editorial-product-nav .stButton button[kind="primary"] {', 1
     )[1].split("}", 1)[0]
-    assert "background:" in active_rule
-    assert "var(--cc-primary)" in styles
-
-
-def test_chunui_navigation_is_a_stable_floating_five_item_island():
-    source = (ROOT / "app.py").read_text(encoding="utf-8")
-    styles = (ROOT / "ui" / "styles.py").read_text(encoding="utf-8")
-
-    assert "items = st.columns(len(PRODUCT_NAV_ITEMS))" in source
-    final_layer = styles.split("/* ChunUI Web SSOT", 1)[1]
-    final_nav = final_layer.split(".st-key-editorial-product-nav {", 1)[1].split("}", 1)[0]
-    assert "width: min(calc(100% - 24px), 620px)" in final_nav
-    assert "border-radius: 30px" in final_nav
-    assert "translateX(50%)" in final_nav
-    for key in ("today", "chart", "inquiry", "report", "account"):
-        assert f".st-key-editorial_nav_{key}" in styles
-
-
-def test_inner_product_pages_do_not_mount_the_removed_celestial_background():
-    source = (ROOT / "app.py").read_text(encoding="utf-8")
-
-    assert "homepage_helix_effect" not in source
-    assert "render_product_background" not in source
-    assert not (ROOT / "ui" / "homepage_helix_effect.py").exists()
+    assert "border-top: 0" in active_rule
+    assert "border-right: 0" in active_rule
+    assert "border-bottom: 2px solid var(--ms-action)" in active_rule
+    assert "border-left: 0" in active_rule
 
 
 def test_home_and_inner_pages_share_one_stable_content_width():

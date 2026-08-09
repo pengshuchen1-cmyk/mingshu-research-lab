@@ -40,8 +40,7 @@ def test_global_theme_styles_native_components_consistently():
     ]:
         assert selector in css
 
-    assert "--ms-radius: 30px" in css
-    assert "--cc-radius-card: 30px" in css
+    assert "--ms-radius: 12px" in css
     assert "--ms-radius-small: 8px" in css
     assert "--ms-shadow-raised" in css
 

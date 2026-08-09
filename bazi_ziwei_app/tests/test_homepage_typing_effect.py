@@ -31,12 +31,6 @@ def test_typewriter_bridge_enlarges_and_accessibly_labels_the_input():
     assert "submitButton?.setAttribute('aria-label', '询问')" in source
     assert "border-radius: 999px !important" in source
     assert "height: 56px !important" in source
-    input_rule = source.split('input[data-slot="input"] {', 1)[1].split(
-        "@media (max-width: 768px)", 1
-    )[0]
-    assert "border: 0 !important" in input_rule
-    assert "background: transparent !important" in input_rule
-    assert 'input[data-slot="input"]::placeholder' in source
 
 
 def test_typewriter_never_writes_the_user_value_and_respects_accessibility():

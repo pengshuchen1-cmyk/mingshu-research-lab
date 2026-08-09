@@ -3,27 +3,15 @@
 from __future__ import annotations
 
 from datetime import date
-import hashlib
 from html import escape
-import json
 
 from core.luck_engine import get_luck_cycles
+from core.monthly_engine import analyze_monthly_fortune
+from core.yearly_engine import analyze_yearly_fortune
 from report.export_report import build_markdown_report, build_pdf_report, build_text_report
 from utils.runtime_mode import is_public_mode
-from utils.analysis_session_cache import (
-    get_or_build_year_analysis,
-    year_analysis_key,
-)
-from ui.bazi_components import CACHE_VERSION
 from ui.bazi_components import render_rule_summary
 from ui.primitives import empty_state_header, page_header, section_header
-
-
-_REPORT_EXPORT_VERSION = "report-export-v2"
-_REPORT_EXPORT_KEY = "current_report_export_key"
-_REPORT_MARKDOWN_KEY = "current_report_markdown"
-_REPORT_TEXT_KEY = "current_report_text"
-_REPORT_PDF_KEY = "current_report_pdf"
 
 
 def _safe_filename(name: str, suffix: str) -> str:
@@ -32,63 +20,6 @@ def _safe_filename(name: str, suffix: str) -> str:
         return f"命数研究室_个人报告.{suffix}"
     clean_name = "".join(ch for ch in name if ch not in r'\/:*?"<>|').strip() or "未命名"
     return f"命数研究室_{clean_name}_八字报告.{suffix}"
-
-
-def _get_or_build_text_exports(
-    state,
-    profile: dict,
-    chart: dict,
-    report: dict,
-    luck_data: dict,
-    yearly_data: dict,
-    monthly_data: list[dict],
-    monthly_event_results: list[dict],
-) -> tuple[str, str, str]:
-    """Build Markdown once per session and derive TXT from the same content."""
-    target_year = int(yearly_data.get("year", date.today().year))
-    analysis_key = year_analysis_key(chart, target_year, CACHE_VERSION, luck_data)
-    export_inputs = json.dumps(
-        {"profile": profile, "report": report},
-        ensure_ascii=False,
-        sort_keys=True,
-        separators=(",", ":"),
-        default=str,
-    ).encode("utf-8")
-    content_fingerprint = hashlib.sha256(export_inputs).hexdigest()
-    export_key = f"{_REPORT_EXPORT_VERSION}:{analysis_key}:{content_fingerprint}"
-    markdown = state.get(_REPORT_MARKDOWN_KEY)
-    text_report = state.get(_REPORT_TEXT_KEY)
-    if (
-        state.get(_REPORT_EXPORT_KEY) == export_key
-        and isinstance(markdown, str)
-        and isinstance(text_report, str)
-    ):
-        return export_key, markdown, text_report
-
-    markdown = build_markdown_report(
-        profile,
-        chart,
-        report,
-        luck_data,
-        yearly_data,
-        monthly_data,
-        monthly_event_results,
-    )
-    text_report = build_text_report(
-        profile,
-        chart,
-        report,
-        luck_data,
-        yearly_data,
-        monthly_data,
-        monthly_event_results,
-        markdown_report=markdown,
-    )
-    state[_REPORT_EXPORT_KEY] = export_key
-    state[_REPORT_MARKDOWN_KEY] = markdown
-    state[_REPORT_TEXT_KEY] = text_report
-    state.pop(_REPORT_PDF_KEY, None)
-    return export_key, markdown, text_report
 
 
 def _build_report_preview_cards(markdown: str) -> list[dict]:
@@ -247,24 +178,18 @@ def render_report_page() -> None:
         luck_data = get_luck_cycles(profile, chart)
         st.session_state["current_luck_data"] = luck_data
 
-    target_year = date.today().year
-    yearly_data, monthly_data, monthly_event_results = get_or_build_year_analysis(
-        st.session_state,
-        chart,
-        target_year,
-        luck_data,
-        version=CACHE_VERSION,
-    )
-    export_key, markdown, text_report = _get_or_build_text_exports(
-        st.session_state,
-        profile,
-        chart,
-        report,
-        luck_data,
-        yearly_data,
-        monthly_data,
-        monthly_event_results,
-    )
+    yearly_data = st.session_state.get("current_yearly_data")
+    monthly_data = st.session_state.get("current_monthly_data")
+    if not yearly_data:
+        yearly_data = analyze_yearly_fortune(chart, date.today().year, luck_data)
+        st.session_state["current_yearly_data"] = yearly_data
+    if not monthly_data:
+        monthly_data = analyze_monthly_fortune(chart, int(yearly_data.get("year", date.today().year)))
+        st.session_state["current_monthly_data"] = monthly_data
+
+    markdown = build_markdown_report(profile, chart, report, luck_data, yearly_data, monthly_data)
+    text_report = build_text_report(profile, chart, report, luck_data, yearly_data, monthly_data)
+    pdf_report = build_pdf_report(profile, chart, report, luck_data, yearly_data, monthly_data)
     name = profile.get("name", "未命名")
 
     st.markdown(
@@ -278,6 +203,8 @@ def render_report_page() -> None:
     )
     _render_report_summary(report, chart)
     render_rule_summary(chart)
+    if not pdf_report.startswith(b"%PDF"):
+        st.info("当前环境 PDF 导出暂不可用，请先使用 Markdown 或 TXT 导出。也可以先运行：python -m pip install -r requirements.txt")
 
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -295,37 +222,12 @@ def render_report_page() -> None:
             mime="text/plain",
         )
     with col3:
-        pdf_report = st.session_state.get(_REPORT_PDF_KEY)
-        if isinstance(pdf_report, bytes) and pdf_report.startswith(b"%PDF"):
-            st.download_button(
-                "下载 PDF 报告",
-                data=pdf_report,
-                file_name=_safe_filename(name, "pdf"),
-                mime="application/pdf",
-            )
-        elif st.button("生成 PDF 报告", use_container_width=True):
-            with st.spinner("正在生成 PDF…"):
-                pdf_report = build_pdf_report(
-                    profile,
-                    chart,
-                    report,
-                    luck_data,
-                    yearly_data,
-                    monthly_data,
-                    monthly_event_results,
-                    markdown_report=markdown,
-                )
-            if pdf_report.startswith(b"%PDF"):
-                st.session_state[_REPORT_EXPORT_KEY] = export_key
-                st.session_state[_REPORT_PDF_KEY] = pdf_report
-                st.download_button(
-                    "下载 PDF 报告",
-                    data=pdf_report,
-                    file_name=_safe_filename(name, "pdf"),
-                    mime="application/pdf",
-                )
-            else:
-                st.info("当前环境 PDF 导出暂不可用，请先使用 Markdown 或 TXT 导出。")
+        st.download_button(
+            "下载 PDF 报告",
+            data=pdf_report,
+            file_name=_safe_filename(name, "pdf"),
+            mime="application/pdf",
+        )
 
     section_header(
         "报告名片预览",

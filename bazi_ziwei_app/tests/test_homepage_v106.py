@@ -5,20 +5,18 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
-class HomepageV4Tests(unittest.TestCase):
+class HomepageV3Tests(unittest.TestCase):
     def test_homepage_modules_and_version_marker_exist(self):
         home_text = (ROOT / "ui" / "home.py").read_text(encoding="utf-8")
         components = (ROOT / "ui" / "homepage_components.py").read_text(encoding="utf-8")
-        self.assertIn('HOME_VERSION = "v5.0.0"', components)
-        self.assertNotIn("render_helix_background", components)
+        self.assertIn('HOME_VERSION = "v3.0.0"', components)
         self.assertIn("render_homepage_landing", home_text)
-        self.assertTrue((ROOT / "assets" / "hero-sky-v1.webp").exists())
+        self.assertTrue((ROOT / "assets" / "hero-sky-v1.png").exists())
 
     def test_homepage_contains_required_immersive_sections(self):
         text = (ROOT / "ui" / "homepage_components.py").read_text(encoding="utf-8")
         for phrase in [
-            '<p class="ms2-hero-kicker">看见你的</p>',
-            "<h1>命数</h1>",
+            "<em>看见</em>你的命数。",
             "今天我的运势如何？",
             "如何推算我的命盘？",
             "今年是我的本命年，我的事业和爱情怎么样？",
@@ -41,8 +39,7 @@ class HomepageV4Tests(unittest.TestCase):
         component = (ROOT / "ui" / "homepage_components.py").read_text(encoding="utf-8")
 
         self.assertIn("render_question_typing_effect", component)
-        self.assertIn("render_question_typing_effect(", component)
-        self.assertNotIn("focus_input=", component)
+        self.assertIn("render_question_typing_effect(TYPEWRITER_QUESTIONS)", component)
 
     def test_homepage_styles_are_immersive_and_mobile_safe(self):
         text = (ROOT / "ui" / "homepage_styles.py").read_text(encoding="utf-8")
@@ -52,7 +49,7 @@ class HomepageV4Tests(unittest.TestCase):
             ".st-key-ms2-question-composer",
             "linear-gradient",
             "object-fit: cover",
-            "@media (max-width: 860px)",
+            "@media (max-width: 768px)",
             "prefers-reduced-motion: reduce",
         ]:
             self.assertIn(token, text)

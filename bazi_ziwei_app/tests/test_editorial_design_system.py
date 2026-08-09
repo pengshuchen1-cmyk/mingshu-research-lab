@@ -7,16 +7,10 @@ ROOT = Path(__file__).resolve().parents[1]
 def test_editorial_tokens_and_accessibility_rules_exist():
     css = (ROOT / "ui" / "styles.py").read_text(encoding="utf-8")
     for token in [
-        "--cc-primary: #DCEDE5",
-        "--cc-primary-foreground: #174E3C",
-        "--cc-background: #f5f5f7",
-        "--cc-card: #FFFFFF",
-        "--cc-foreground: #111111",
-        "--cc-muted-foreground: #71717a",
-        "--cc-border: rgba(0, 0, 0, .08)",
-        "--cc-font-sm: 13px",
-        "--cc-font-base: 17px",
-        "--cc-font-lg: 24px",
+        "--ms-surface: #FAFAFA",
+        "--ms-panel: #FFFFFF",
+        "--ms-ink: #18181B",
+        "--ms-action: #BE185D",
         "'Noto Serif SC'",
         "'Noto Sans SC'",
         "min-height: 44px",
@@ -25,21 +19,9 @@ def test_editorial_tokens_and_accessibility_rules_exist():
         "@media (max-width: 640px)",
     ]:
         assert token in css
-    assert "ms-product-celestial-canvas" not in css
-    assert "color-scheme: light" in css
-    assert "border-radius: var(--cc-radius-card) !important" in css
-
-
-def test_chunui_ssot_rejects_generated_dark_cinematic_direction():
-    master = (ROOT / "design-system" / "chunui" / "MASTER.md").read_text(encoding="utf-8")
-
-    assert "本项目 ChunUI 视觉实现的唯一规范" in master
-    assert "#dcede5" in master
-    assert "#174e3c" in master
-    assert "#ff0a78" not in master.lower()
-    assert "13 / 17 / 24px" in master
-    assert "持续动画" in master
-    assert "dark mode, cinematic" not in master
+    for forbidden in ["#05080A", "#D8B96A", "linear-gradient"]:
+        assert forbidden not in css
+    assert "border-radius: var(--ms-radius) !important" in css
 
 
 def test_hidden_sidebar_fallback_expands_and_indicates_focus():
@@ -52,7 +34,7 @@ def test_hidden_sidebar_fallback_expands_and_indicates_focus():
         assert selector in css
 
 
-def test_existing_ziwei_bazi_and_luck_classes_have_theme_compatibility_rules():
+def test_existing_ziwei_bazi_and_luck_classes_have_light_compatibility_rules():
     css = (ROOT / "ui" / "styles.py").read_text(encoding="utf-8")
     for selector in [
         ".zw-hero",
@@ -66,7 +48,7 @@ def test_existing_ziwei_bazi_and_luck_classes_have_theme_compatibility_rules():
         assert selector in css
 
 
-def test_existing_life_report_bazi_and_ziwei_classes_have_theme_compatibility_rules():
+def test_existing_life_report_bazi_and_ziwei_classes_have_light_compatibility_rules():
     css = (ROOT / "ui" / "styles.py").read_text(encoding="utf-8")
     for selector in [
         ".ms-life-summary-title",

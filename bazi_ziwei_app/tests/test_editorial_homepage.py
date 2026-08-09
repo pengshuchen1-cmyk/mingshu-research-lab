@@ -1,6 +1,5 @@
 import ast
 from pathlib import Path
-from types import SimpleNamespace
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -27,33 +26,14 @@ def test_homepage_renders_one_immersive_hero_in_reading_order():
     assert calls == ["_render_immersive_hero"]
 
 
-def test_homepage_uses_project_owned_background_and_reference_aligned_copy():
+def test_homepage_uses_project_owned_background_and_origin_inspired_copy():
     source = _source("homepage_components.py")
 
-    assert '"hero-sky-v1.webp"' in source
+    assert 'assets" / "hero-sky-v1.png"' in source
     assert "useorigin.com" not in source
-    assert '<p class="ms2-hero-kicker">看见你的</p>' in source
-    assert "<h1>命数</h1>" in source
+    assert "<em>看见</em>你的命数。" in source
     assert "从命盘出发，回答此刻真正关心的问题。" in source
     assert "本地排盘 · 隐私优先 · 结论仅供参考" in source
-
-
-def test_homepage_removes_help_identity_and_dashboard_cards():
-    source = _source("homepage_components.py")
-    css = _source("homepage_styles.py")
-
-    for removed in [
-        "HOME_DASHBOARD_CARDS",
-        "ms2-dashboard-grid",
-        "ms2-dashboard-card",
-        "ms2-help",
-        "ms2-profile",
-        "命理探索者",
-    ]:
-        assert removed not in source
-        assert removed not in css
-    assert 'st.container(key="ms2-hero-stage")' in source
-    assert "render_helix_background" not in source
 
 
 def test_homepage_uses_one_shadcn_input_and_one_submit_button():
@@ -68,23 +48,6 @@ def test_homepage_uses_one_shadcn_input_and_one_submit_button():
     assert 'width="stretch"' in source
 
 
-def test_homepage_restores_the_start_cta_above_the_question_composer():
-    source = _source("homepage_components.py")
-    css = _source("homepage_styles.py")
-
-    assert '"GET STARTED →"' in source
-    assert 'st.container(key="ms2-start-action")' in source
-    hero_source = source.split("def _render_immersive_hero", 1)[1].split(
-        "def render_homepage_landing", 1
-    )[0]
-    assert hero_source.index("_render_start_action()") < hero_source.index(
-        "_render_question_composer()"
-    )
-    assert ".st-key-ms2-start-action" in css
-    assert "width: max-content !important" in css
-    assert "min-height: 48px" in css
-
-
 def test_homepage_exposes_only_the_three_typewriter_questions():
     source = _source("homepage_components.py")
 
@@ -95,55 +58,13 @@ def test_homepage_exposes_only_the_three_typewriter_questions():
     assert "或者从一个常见问题开始" not in source
 
 
-def test_homepage_actions_open_today_and_chart_routes():
+def test_homepage_queues_questions_for_existing_ai_route():
     source = _source("homepage_components.py")
 
     assert "PENDING_QUESTION_KEY" in source
-    assert 'st.session_state["navigate_to"] = target' in source
+    assert 'st.session_state["navigate_to"] = "AI问答"' in source
     assert "st.rerun()" in source
-    assert 'st.warning("请先输入一个问题。")' not in source
-    assert "if submitted:" in source
-    assert '_open_product_page("个人命盘")' in source
-    assert "if started:" in source
-    assert '_open_product_page("今日/年度建议")' in source
-
-
-def test_get_started_opens_today_without_queuing_a_question(monkeypatch):
-    from ui import homepage_components as homepage
-
-    state = {homepage.PENDING_QUESTION_KEY: "旧问题"}
-    reruns: list[bool] = []
-    monkeypatch.setattr(
-        homepage,
-        "st",
-        SimpleNamespace(session_state=state, rerun=lambda: reruns.append(True)),
-    )
-
-    homepage._open_product_page("今日/年度建议")
-
-    assert homepage.PENDING_QUESTION_KEY not in state
-    assert state["mingshu_app_entered"] is True
-    assert state["navigate_to"] == "今日/年度建议"
-    assert reruns == [True]
-
-
-def test_arrow_opens_chart_and_clears_stale_pending_question(monkeypatch):
-    from ui import homepage_components as homepage
-
-    state = {homepage.PENDING_QUESTION_KEY: "旧问题"}
-    reruns: list[bool] = []
-    monkeypatch.setattr(
-        homepage,
-        "st",
-        SimpleNamespace(session_state=state, rerun=lambda: reruns.append(True)),
-    )
-
-    homepage._open_product_page("个人命盘")
-
-    assert homepage.PENDING_QUESTION_KEY not in state
-    assert state["mingshu_app_entered"] is True
-    assert state["navigate_to"] == "个人命盘"
-    assert reruns == [True]
+    assert "len(normalized) > 2000" in source
 
 
 def test_homepage_glass_visual_contract_is_scoped_and_responsive():
@@ -151,31 +72,18 @@ def test_homepage_glass_visual_contract_is_scoped_and_responsive():
 
     for token in [
         'body:has(.st-key-ms2-home)',
-        'backdrop-filter: blur(22px)',
+        'backdrop-filter: blur(24px)',
         'border-radius: 999px',
         '.st-key-ms2-question-composer',
         'min-height: 100dvh',
-        '@media (max-width: 860px)',
+        '@media (max-width: 768px)',
         'prefers-reduced-motion: reduce',
     ]:
         assert token in css
     assert '.st-key-editorial-product-nav' not in css
     assert '> div[data-testid="stColumn"]:last-child' in css
     assert 'position: absolute !important' in css
-    assert '.st-key-ms2-question-composer:focus-within' in css
     assert "Origin" not in css.split('"""', 2)[-1]
-
-
-def test_homepage_focuses_on_one_hero_panel_and_reflows_for_mobile():
-    css = _source("homepage_styles.py")
-
-    assert ".st-key-ms2-hero-stage" in css
-    assert ".st-key-ms2-primary-panel" in css
-    assert ".ms2-helix-canvas" not in css
-    assert "grid-template-areas:" not in css
-    phone = css.split("@media (max-width: 860px)", 1)[1]
-    assert "min-height: 100dvh" in phone
-    assert "align-items: flex-start" in phone
 
 
 def test_homepage_background_has_fixed_dimensions_before_paint():
