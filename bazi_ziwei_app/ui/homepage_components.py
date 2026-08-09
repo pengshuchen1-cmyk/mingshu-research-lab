@@ -32,21 +32,17 @@ def _html(markup: str) -> None:
     st.markdown(normalized, unsafe_allow_html=True)
 
 
-def _queue_inquiry(question: str) -> bool:
-    """Queue one question for the existing guarded AI inquiry flow."""
+def _open_inquiry_page(question: str = "") -> None:
+    """Enter the product and open AI inquiry, optionally carrying a question."""
     normalized = str(question or "").strip()
-    if not normalized:
-        st.warning("请先输入一个问题。")
-        return False
-    if len(normalized) > 2000:
-        st.warning("问题最多 2000 字，请精简后再试。")
-        return False
-    st.session_state[PENDING_QUESTION_KEY] = normalized
-    touch_private_session(st.session_state)
+    if normalized:
+        st.session_state[PENDING_QUESTION_KEY] = normalized
+        touch_private_session(st.session_state)
+    else:
+        st.session_state.pop(PENDING_QUESTION_KEY, None)
     enter_app(st.session_state)
     st.session_state["navigate_to"] = "AI问答"
     st.rerun()
-    return True
 
 
 def _render_question_composer() -> None:
@@ -70,7 +66,19 @@ def _render_question_composer() -> None:
                 width="stretch",
             )
         if submitted:
-            _queue_inquiry(question)
+            _open_inquiry_page(question)
+
+
+def _render_start_action() -> None:
+    """Render the primary CTA that opens the AI inquiry page."""
+    with st.container(key="ms2-start-action"):
+        started = st.button(
+            "GET STARTED →",
+            key="ms2_home_start",
+            type="secondary",
+        )
+    if started:
+        _open_inquiry_page()
 
 
 def _render_immersive_hero() -> None:
@@ -87,6 +95,7 @@ def _render_immersive_hero() -> None:
                 </section>
                 """
             )
+            _render_start_action()
             _render_question_composer()
             _html(
                 '<p class="ms2-trust-note">本地排盘 · 隐私优先 · 结论仅供参考</p>'

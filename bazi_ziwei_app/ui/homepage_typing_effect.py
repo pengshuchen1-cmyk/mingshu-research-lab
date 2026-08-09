@@ -96,15 +96,30 @@ def build_question_typing_script(
           inputOverrideStyle = parentDocument.createElement('style');
           inputOverrideStyle.dataset.ms2QuestionInputOverride = 'true';
           inputOverrideStyle.textContent = `
-            [data-ssui-component="input"] { gap: 0 !important; }
+            [data-ssui-component="input"] {
+              gap: 0 !important;
+              border: 0 !important;
+              background: transparent !important;
+              box-shadow: none !important;
+            }
             [data-ssui-component="input"] label { display: none !important; }
             input[data-slot="input"] {
               height: ${config.input_height_px}px !important;
               min-height: ${config.input_height_px}px !important;
               padding-right: ${config.input_right_padding_px}px !important;
               padding-left: ${config.input_horizontal_padding_px}px !important;
-              border-radius: 18px !important;
+              border: 0 !important;
+              border-radius: 999px !important;
+              outline: 0 !important;
+              background: transparent !important;
+              color: #FFFFFF !important;
+              caret-color: #FFFFFF !important;
+              box-shadow: none !important;
               font-size: ${config.input_font_size_px}px !important;
+            }
+            input[data-slot="input"]::placeholder {
+              color: rgba(255, 255, 255, .68) !important;
+              opacity: 1 !important;
             }
             @media (max-width: 768px) {
               input[data-slot="input"] {
@@ -313,7 +328,9 @@ def build_question_typing_script(
     return template.replace("__TYPEWRITER_PAYLOAD__", payload)
 
 
-def render_question_typing_effect(questions: Sequence[str]) -> None:
+def render_question_typing_effect(
+    questions: Sequence[str],
+) -> None:
     """Mount the homepage placeholder animation through a tiny iframe bridge."""
     with st.container(key="ms2-typing-placeholder-bridge"):
         st.iframe(
