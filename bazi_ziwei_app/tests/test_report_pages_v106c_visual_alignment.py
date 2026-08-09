@@ -11,7 +11,8 @@ class ReportPagesV106CVisualAlignmentTests(unittest.TestCase):
             "yearly_page.py": ["ms3-year-cover", "ms3-year-metrics", "ms3-month-card", "ms3-month-tag"],
             "special_reports_page.py": ["v106c-page-hero", "mingshu-report-card", "mingshu-report-body"],
             "report_page.py": [
-                "v106c-page-hero",
+                "page_header",
+                "REPORT EXPORT",
                 "mingshu-report-card",
                 "mingshu-report-body",
                 "报告摘要",

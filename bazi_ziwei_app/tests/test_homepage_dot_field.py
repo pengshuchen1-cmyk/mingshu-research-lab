@@ -75,27 +75,22 @@ def test_dot_field_does_not_keep_animating_when_pointer_is_stationary():
     assert "parentWindow.setTimeout(() =>" in script
 
 
-def test_homepage_mounts_dot_field_after_home_content_exists():
+def test_homepage_does_not_mount_the_dynamic_dot_field():
     source = (ROOT / "ui" / "homepage_components.py").read_text(encoding="utf-8")
 
-    assert "from ui.homepage_dot_field import render_homepage_dot_field" in source
-    assert source.index("_html(get_homepage_css(element_theme))") < source.index(
-        'st.container(key="ms2-home")'
-    )
-    assert source.index('st.container(key="ms2-home")') < source.index(
-        "render_homepage_dot_field()"
-    )
+    assert "homepage_dot_field" not in source
+    assert "render_homepage_dot_field" not in source
 
 
-def test_dot_field_css_keeps_canvas_behind_content_and_non_interactive():
+def test_homepage_css_does_not_reserve_a_canvas_layer():
     css = (ROOT / "ui" / "homepage_styles.py").read_text(encoding="utf-8")
 
-    for token in [
-        "#ms2-dot-field-canvas",
-        "pointer-events: none",
-        "position: absolute",
-        "z-index: 0",
-        ".st-key-ms2-home > *",
-        "z-index: 1",
-    ]:
-        assert token in css
+    assert "#ms2-dot-field-canvas" not in css
+
+
+def test_dot_field_uses_current_streamlit_iframe_api():
+    source = MODULE_PATH.read_text(encoding="utf-8")
+
+    assert "streamlit.components.v1" not in source
+    assert "st.iframe(" in source
+    assert "tab_index=-1" in source

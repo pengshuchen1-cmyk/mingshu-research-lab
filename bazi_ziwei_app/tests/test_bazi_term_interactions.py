@@ -40,7 +40,7 @@ _render_term_dictionary(["day-master", "wealth-star"], chart=None)
 
     app.button[1].click().run()
 
-    assert [button.label for button in app.button] == ["日主", "✓ 财星 · 已展开"]
+    assert [button.label for button in app.button] == ["日主", "✓ 财星"]
     assert sum('class="ms-term-detail"' in item.value for item in app.markdown) == 1
 
 
@@ -115,7 +115,10 @@ def test_page_uses_streamlit_buttons_and_accessible_term_styles():
     assert "ms-term-detail" in styles
     assert "ms_term_button_" in page_source
     assert "min-height: 44px" in styles
-    assert "margin-bottom: 8px" in styles
+    assert "border-radius: 999px" in styles
+    assert "st.expander(" in page_source
+    assert "st.columns(len(row))" in page_source
+    assert "grid-template-columns: repeat(2, minmax(0, 1fr))" in styles
     assert "focus-visible" in styles
     assert "aria-expanded" in page_source
     assert "aria-controls" in page_source
@@ -123,19 +126,22 @@ def test_page_uses_streamlit_buttons_and_accessible_term_styles():
     assert "scrollWidth" not in page_source
     assert "max-width: 100%" in styles
     assert "overflow-wrap: anywhere" in styles
-    assert "点击术语查看定义与命盘中的对应信息；同一时间只展开一项。" in page_source
+    assert "按需点选查看通俗解释；每次只展开一个术语。" not in page_source
     assert "查看定义与命盘中的具体位置" not in page_source
 
 
 def test_dom_semantics_script_sets_aria_controls_and_restores_focus(monkeypatch):
+    from contextlib import nullcontext
+
     import ui.life_overview_page as page
 
     rendered_scripts: list[str] = []
     monkeypatch.setattr(
-        page.components,
-        "html",
+        page.st,
+        "iframe",
         lambda body, **_kwargs: rendered_scripts.append(str(body)),
     )
+    monkeypatch.setattr(page.st, "container", lambda **_kwargs: nullcontext())
 
     page._sync_term_button_semantics(
         [

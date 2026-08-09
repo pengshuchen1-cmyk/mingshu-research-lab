@@ -7,6 +7,7 @@ from typing import MutableMapping
 
 
 LAST_ACTIVE_KEY = "private_session_last_active_at"
+PENDING_INQUIRY_KEY = "inquiry_pending_question"
 PRIVATE_SESSION_KEYS = (
     "profile_draft",
     "profile_use_solar_time",
@@ -27,6 +28,7 @@ PRIVATE_SESSION_KEYS = (
     "bazi_chat_profile_fingerprint",
     "bazi_chat_last_activity",
     "bazi_chat_request_state",
+    PENDING_INQUIRY_KEY,
     LAST_ACTIVE_KEY,
 )
 

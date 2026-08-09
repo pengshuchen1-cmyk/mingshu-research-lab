@@ -52,6 +52,9 @@ def test_personal_overview_leads_with_plain_summary_and_next_action():
     for preserved_copy in ["命理依据", "**判断依据**", "medical_disclaimer"]:
         assert preserved_copy in source
 
+    assert 'st.container(key="ms-life-overview")' in source
+    assert 'st.container(key="ms-life-next-actions")' in source
+
 
 def test_personal_overview_uses_chart_visuals_and_one_five_dimension_section():
     source = (ROOT / "ui" / "life_overview_page.py").read_text(encoding="utf-8")

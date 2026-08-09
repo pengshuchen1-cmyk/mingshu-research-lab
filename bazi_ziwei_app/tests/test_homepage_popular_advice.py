@@ -1,57 +1,22 @@
-import ast
 from pathlib import Path
-from unittest.mock import patch
+
+import pytest
 
 
-def test_homepage_renders_focused_daily_public_advice_section():
-    text = Path(__file__).resolve().parents[1].joinpath("ui", "homepage_components.py").read_text(encoding="utf-8")
-
-    assert "build_daily_advice" in text
-    assert "build_daily_guidance_view" in text
-    assert "def _daily_advice_card_markup" in text
-    assert "今日宜穿" in text
-    assert "今日注意" in text
-    assert "大众参考" in text
-    assert 'daily["wearing_colors"][:3]' in text
-    assert "build_yearly_popular_advice" not in text
-    assert "_render_product_preview" not in text
+ROOT = Path(__file__).resolve().parents[1]
 
 
-def test_public_advice_is_inside_hero_before_the_single_primary_action():
-    text = Path(__file__).resolve().parents[1].joinpath(
-        "ui", "homepage_components.py"
-    ).read_text(encoding="utf-8")
-    tree = ast.parse(text)
-    functions = {
-        node.name: node for node in tree.body if isinstance(node, ast.FunctionDef)
-    }
+def test_homepage_focuses_on_question_entry_instead_of_daily_advice():
+    source = (ROOT / "ui" / "homepage_components.py").read_text(encoding="utf-8")
 
-    render_function = functions["render_homepage_landing"]
-    render_calls = [
-        node.func.id
-        for node in sorted(ast.walk(render_function), key=lambda item: getattr(item, "lineno", 0))
-        if isinstance(node, ast.Call)
-        and isinstance(node.func, ast.Name)
-    ]
-    assert [name for name in render_calls if name.startswith("_render")] == [
-        "_render_editorial_hero",
-    ]
-
-    hero_source = ast.get_source_segment(text, functions["_render_editorial_hero"])
-    assert "_daily_advice_card_markup(daily)" in hero_source
-    assert 'st.container(key="ms2-hero")' in hero_source
-    assert "st.columns([1.08, 0.92]" in hero_source
-    assert hero_source.index("with hero_left:") < hero_source.index("_render_hero_action()")
-    assert hero_source.index("_render_hero_action()") < hero_source.index("with hero_right:")
-    action_source = ast.get_source_segment(text, functions["_render_hero_action"])
-    assert '"\u5f00\u59cb\u63a2\u7d22\u547d\u6570"' in action_source
-    assert "primary=True" in action_source
+    assert "_render_question_composer" in source
+    assert "build_daily_advice" not in source
+    assert "_daily_advice_card_markup" not in source
+    assert "ms2-daily-advice" not in source
 
 
-def test_homepage_has_no_unlabelled_fixed_personal_results():
-    text = Path(__file__).resolve().parents[1].joinpath(
-        "ui", "homepage_components.py"
-    ).read_text(encoding="utf-8")
+def test_homepage_does_not_render_unlabelled_fixed_personal_results():
+    source = (ROOT / "ui" / "homepage_components.py").read_text(encoding="utf-8")
 
     for fixed_claim in [
         "98.7%",
@@ -63,21 +28,72 @@ def test_homepage_has_no_unlabelled_fixed_personal_results():
         "正官格",
         "事业上升期",
     ]:
-        assert fixed_claim not in text
+        assert fixed_claim not in source
 
 
-def test_homepage_renders_a_truthful_empty_card_when_daily_calendar_is_unavailable():
-    from core.popular_advice_engine import PopularAdviceUnavailableError
-    from ui import homepage_components
+def test_pending_home_question_is_session_only_and_consumed_once():
+    from ui.inquiry_page import PENDING_QUESTION_KEY, pop_pending_question
 
-    with patch.object(
-        homepage_components,
-        "build_daily_advice",
-        side_effect=PopularAdviceUnavailableError("calendar unavailable"),
-    ):
-        assert homepage_components._load_daily_advice() is None
+    state = {PENDING_QUESTION_KEY: "  今天我的运势如何  "}
+    assert pop_pending_question(state) == "今天我的运势如何"
+    assert PENDING_QUESTION_KEY not in state
+    assert pop_pending_question(state) is None
 
-    markup = homepage_components._daily_advice_card_markup(None)
-    assert "今日内容暂不可用" in markup
-    assert "不会为你编造今日结论" in markup
-    assert "这是大众参考，不读取出生资料" in markup
+
+def test_homepage_question_queue_trims_and_routes_through_existing_inquiry(monkeypatch):
+    import ui.homepage_components as homepage
+    from ui.inquiry_page import PENDING_QUESTION_KEY
+
+    class RerunRequested(RuntimeError):
+        pass
+
+    state = {}
+    warnings = []
+    fake_streamlit = type(
+        "FakeStreamlit",
+        (),
+        {
+            "session_state": state,
+            "warning": staticmethod(lambda message: warnings.append(str(message))),
+            "rerun": staticmethod(lambda: (_ for _ in ()).throw(RerunRequested())),
+        },
+    )()
+    monkeypatch.setattr(homepage, "st", fake_streamlit)
+
+    with pytest.raises(RerunRequested):
+        homepage._queue_inquiry("  今天我的运势如何  ")
+
+    assert state[PENDING_QUESTION_KEY] == "今天我的运势如何"
+    assert state["mingshu_app_entered"] is True
+    assert state["navigate_to"] == "AI问答"
+    assert warnings == []
+
+
+def test_inquiry_without_chart_preserves_pending_question_and_never_answers(monkeypatch):
+    import ui.inquiry_page as inquiry
+
+    state = {inquiry.PENDING_QUESTION_KEY: "今天我的运势如何"}
+    titles = []
+    infos = []
+    fake_streamlit = type(
+        "FakeStreamlit",
+        (),
+        {
+            "session_state": state,
+            "title": staticmethod(lambda message: titles.append(str(message))),
+            "info": staticmethod(lambda message: infos.append(str(message))),
+            "button": staticmethod(lambda *_args, **_kwargs: False),
+        },
+    )()
+    monkeypatch.setattr(inquiry, "st", fake_streamlit)
+    monkeypatch.setattr(
+        inquiry,
+        "_answer",
+        lambda *_args, **_kwargs: pytest.fail("无命盘时不应提交问答"),
+    )
+
+    inquiry.render_inquiry_page()
+
+    assert titles == ["AI问答"]
+    assert infos == ["请先新建或选择一个命盘，AI 问答才能读取本地四柱规则结论。"]
+    assert state[inquiry.PENDING_QUESTION_KEY] == "今天我的运势如何"

@@ -5,8 +5,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def test_homepage_sections_follow_editorial_reading_order():
-    tree = ast.parse((ROOT / "ui" / "homepage_components.py").read_text(encoding="utf-8"))
+def _source(name: str) -> str:
+    return (ROOT / "ui" / name).read_text(encoding="utf-8")
+
+
+def test_homepage_renders_one_immersive_hero_in_reading_order():
+    tree = ast.parse(_source("homepage_components.py"))
     render = next(
         node
         for node in tree.body
@@ -19,172 +23,73 @@ def test_homepage_sections_follow_editorial_reading_order():
         and isinstance(node.func, ast.Name)
         and node.func.id.startswith("_render")
     ]
-    assert calls == [
-        "_render_editorial_hero",
-    ]
+    assert calls == ["_render_immersive_hero"]
 
 
-def test_homepage_contains_one_public_daily_card_and_no_legacy_sections():
-    source = (ROOT / "ui" / "homepage_components.py").read_text(encoding="utf-8")
-    for expected in [
-        "build_daily_advice",
-        "build_daily_guidance_view",
-        "今日宜穿",
-            "今日注意",
-            "今日重点",
-            "主要行动",
-        "五行主题",
-        "大众参考",
-        'daily["wearing_colors"][:3]',
-        'daily["cautions"][:2]',
+def test_homepage_uses_project_owned_background_and_origin_inspired_copy():
+    source = _source("homepage_components.py")
+
+    assert 'assets" / "hero-sky-v1.png"' in source
+    assert "useorigin.com" not in source
+    assert "<em>看见</em>你的命数。" in source
+    assert "从命盘出发，回答此刻真正关心的问题。" in source
+    assert "本地排盘 · 隐私优先 · 结论仅供参考" in source
+
+
+def test_homepage_uses_one_shadcn_input_and_one_submit_button():
+    source = _source("homepage_components.py")
+
+    assert "import streamlit_shadcn_ui as shadcn" in source
+    assert "shadcn.input(" in source
+    assert "shadcn.badge(" not in source
+    assert source.count("shadcn.button(") == 1
+    assert '"↑"' in source
+    assert 'max_length=2000' in source
+    assert 'width="stretch"' in source
+
+
+def test_homepage_exposes_only_the_three_typewriter_questions():
+    source = _source("homepage_components.py")
+
+    assert "今天我的运势如何？" in source
+    assert "如何推算我的命盘？" in source
+    assert "今年是我的本命年，我的事业和爱情怎么样？" in source
+    assert "TYPEWRITER_QUESTIONS" in source
+    assert "或者从一个常见问题开始" not in source
+
+
+def test_homepage_queues_questions_for_existing_ai_route():
+    source = _source("homepage_components.py")
+
+    assert "PENDING_QUESTION_KEY" in source
+    assert 'st.session_state["navigate_to"] = "AI问答"' in source
+    assert "st.rerun()" in source
+    assert "len(normalized) > 2000" in source
+
+
+def test_homepage_glass_visual_contract_is_scoped_and_responsive():
+    css = _source("homepage_styles.py")
+
+    for token in [
+        'body:has(.st-key-ms2-home)',
+        'backdrop-filter: blur(24px)',
+        'border-radius: 999px',
+        '.st-key-ms2-question-composer',
+        'min-height: 100dvh',
+        '@media (max-width: 768px)',
+        'prefers-reduced-motion: reduce',
     ]:
-        assert expected in source
-    for forbidden in [
-        "_render_value_strip",
-        "_render_product_preview",
-        "_render_entry_choices",
-        "_render_loaded_chart_hint",
-        "_render_method_boundary",
-        "_render_footer_action",
-    ]:
-        assert forbidden not in source
+        assert token in css
+    assert '.st-key-editorial-product-nav' not in css
+    assert '> div[data-testid="stColumn"]:last-child' in css
+    assert 'position: absolute !important' in css
+    assert "Origin" not in css.split('"""', 2)[-1]
 
 
-def test_homepage_title_uses_two_unpunctuated_lines():
-    source = (ROOT / "ui" / "homepage_components.py").read_text(encoding="utf-8")
+def test_homepage_background_has_fixed_dimensions_before_paint():
+    css = _source("homepage_styles.py")
 
-    assert "认识命数<br>活出选择" in source
-    assert "认识命数，" not in source
-    assert "活出选择。" not in source
-
-
-def test_daily_advice_card_labels_every_required_public_field():
-    from ui.homepage_components import _daily_advice_card_markup
-
-    markup = _daily_advice_card_markup(
-        {
-            "date": "2026-07-14",
-            "day_pillar": "己丑",
-            "title": "今日建议",
-        "element_theme": "土",
-        "focus": "保持稳定节奏",
-        "wearing_colors": ["米黄", "大地色"],
-            "wearing_advice": "选择稳定质感的物件",
-            "cautions": ["拖延堆积", "过度担忧"],
-            "primary_action": "整理财务",
-            "boundary_note": "不读取姓名或出生资料。",
-        }
-    )
-
-    for expected in [
-        "2026-07-14",
-        "己丑",
-        "五行主题",
-        "今日宜穿",
-        "米黄",
-        "大地色",
-        "今日注意",
-        "拖延堆积",
-        "今日重点",
-        "保持稳定节奏",
-        "主要行动",
-        "整理财务",
-        "大众参考",
-        "不读取姓名或出生资料",
-    ]:
-        assert expected in markup
-
-
-def test_homepage_uses_real_streamlit_columns_for_hero_and_keeps_cta_left():
-    source = (ROOT / "ui" / "homepage_components.py").read_text(encoding="utf-8")
-    tree = ast.parse(source)
-    functions = {
-        node.name: node for node in tree.body if isinstance(node, ast.FunctionDef)
-    }
-    hero = functions["_render_editorial_hero"]
-    hero_source = ast.get_source_segment(source, hero)
-    landing_source = ast.get_source_segment(source, functions["render_homepage_landing"])
-
-    assert 'st.container(key="ms2-hero")' in hero_source
-    assert "st.columns([1.08, 0.92]" in hero_source
-    assert "with hero_left:" in hero_source
-    assert "with hero_right:" in hero_source
-    assert hero_source.index("with hero_left:") < hero_source.index("with hero_right:")
-    assert hero_source.index("_render_hero_action()") > hero_source.index("with hero_left:")
-    assert hero_source.index("_render_hero_action()") < hero_source.index("with hero_right:")
-    assert "<section class=\"ms2-hero\"" not in hero_source
-    assert "<main class=\"ms2-home\"" not in landing_source
-    assert "</main>" not in landing_source
-
-
-def test_homepage_primary_cta_css_targets_the_actual_left_streamlit_column():
-    css = (ROOT / "ui" / "homepage_styles.py").read_text(encoding="utf-8")
-
-    selector = (
-        '.st-key-ms2-hero div[data-testid="stHorizontalBlock"] '
-        '> div[data-testid="stColumn"]:first-child .stButton > button[kind="primary"]'
-    )
-    assert selector in css
-    scoped_rule = css.split(selector, 1)[1].split("}", 1)[0]
-    assert "#EC4899" in scoped_rule
-    assert "min-height: 44px" in scoped_rule
-
-
-def test_hero_columns_use_a_streamlit_supported_vertical_alignment():
-    source = (ROOT / "ui" / "homepage_components.py").read_text(encoding="utf-8")
-    tree = ast.parse(source)
-    hero = next(
-        node
-        for node in tree.body
-        if isinstance(node, ast.FunctionDef) and node.name == "_render_editorial_hero"
-    )
-    columns_call = next(
-        node
-        for node in ast.walk(hero)
-        if isinstance(node, ast.Call)
-        and isinstance(node.func, ast.Attribute)
-        and node.func.attr == "columns"
-    )
-    alignment = next(
-        keyword.value.value
-        for keyword in columns_call.keywords
-        if keyword.arg == "vertical_alignment" and isinstance(keyword.value, ast.Constant)
-    )
-
-    assert alignment in {"top", "center", "bottom"}
-
-
-def test_hero_title_css_targets_the_rendered_hero_copy():
-    css = (ROOT / "ui" / "homepage_styles.py").read_text(encoding="utf-8")
-
-    assert ".ms2-hero-copy h1" in css
-    assert ".ms2-hero h1" not in css
-
-
-def test_homepage_css_uses_approved_editorial_system():
-    css = (ROOT / "ui" / "homepage_styles.py").read_text(encoding="utf-8")
-    for expected in [
-        "#FAFAFA",
-        "#18181B",
-        "#EC4899",
-        "def get_homepage_css(element_theme: str = \"\")",
-        ".ms2-daily-advice",
-        ".ms2-color-dot",
-        "opacity: .035",
-        "grid-template-columns: 1fr",
-        "min-height: 44px",
-        "prefers-reduced-motion: reduce",
-    ]:
-        assert expected in css
-    for forbidden in [
-        "#05080A",
-        "#D8B96A",
-        "gradient",
-        "v106c-orbit",
-        ".ms2-value-strip",
-        ".ms2-product-preview",
-        "🌳",
-        "🔥",
-        "💧",
-    ]:
-        assert forbidden not in css
+    assert '.st-key-ms2-hero [data-testid="stImage"]' in css
+    assert "height: 100%" in css
+    assert "object-fit: cover" in css
+    assert "overflow-x" not in css

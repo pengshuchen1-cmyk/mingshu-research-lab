@@ -26,7 +26,7 @@ class SidebarNavigationPersistsTest(unittest.TestCase):
 
         self.assertEqual(
             list(sidebar_pages.keys()),
-            ["首页", "今日/年度建议", "个人命盘", "简明报告", "设置/档案"],
+            ["今日/年度建议", "个人命盘", "AI问答", "简明报告", "设置/档案"],
         )
         self.assertNotIn("大运流年", sidebar_pages)
         self.assertNotIn("六十甲子", sidebar_pages)
@@ -41,6 +41,10 @@ class SidebarNavigationPersistsTest(unittest.TestCase):
         self.assertIn("sidebar_pages = get_sidebar_pages(pages)", text)
         self.assertIn('key="sidebar_navigation"', text)
         self.assertIn("st.sidebar.radio", text)
+        self.assertLess(
+            text.index("if has_entered_app(st.session_state):"),
+            text.index("st.sidebar.radio"),
+        )
         self.assertIn("def _resolve_active_page", text)
         self.assertIn("active_page = _resolve_active_page(", text)
         self.assertIn("render_product_navigation(active_page)", text)

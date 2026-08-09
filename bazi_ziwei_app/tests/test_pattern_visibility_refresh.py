@@ -52,10 +52,10 @@ class PatternVisibilityRefreshTests(unittest.TestCase):
         self.assertNotIn("v106", text)
         with open(os.path.join(APP_DIR, "ui", "homepage_components.py"), "r", encoding="utf-8") as file:
             component_text = file.read()
-        self.assertIn('HOME_VERSION = "v2.0.0"', component_text)
-        self.assertIn("<h1>认识命数<br>活出选择</h1>", component_text)
-        self.assertIn("大众参考", component_text)
-        self.assertIn("不读取出生资料", component_text)
+        self.assertIn('HOME_VERSION = "v3.0.0"', component_text)
+        self.assertIn('<h1><em>看见</em>你的命数。</h1>', component_text)
+        self.assertIn("本地排盘", component_text)
+        self.assertIn("隐私优先", component_text)
         self.assertNotIn("当前版本：", component_text)
         self.assertNotIn("AI科技感", component_text)
 

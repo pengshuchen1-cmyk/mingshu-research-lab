@@ -21,6 +21,7 @@ def _private_state(now):
         "bazi_chat_profile_fingerprint": "private-fingerprint",
         "bazi_chat_last_activity": now.isoformat(),
         "bazi_chat_request_state": {"busy": True},
+        "inquiry_pending_question": "我在今年的事业和爱情上有哪些机遇和挑战",
         "life_overview_expanded_term_id": "wealth-star",
         "private_session_last_active_at": now.isoformat(),
         "sidebar_navigation": "个人命盘",
@@ -37,6 +38,7 @@ def test_clear_private_session_removes_raw_and_derived_data_but_keeps_navigation
     assert all(key not in state for key in PRIVATE_SESSION_KEYS)
     assert "profile_birth_preview" not in state
     assert "profile_birth_preview_input" not in state
+    assert "inquiry_pending_question" not in state
     assert state["sidebar_navigation"] == "个人命盘"
 
 

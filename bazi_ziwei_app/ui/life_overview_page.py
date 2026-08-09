@@ -6,7 +6,6 @@ from html import escape
 import json
 
 import streamlit as st
-import streamlit.components.v1 as components
 
 from core.bazi_constants import STEM_ELEMENTS
 from core.bazi_engine import ensure_bazi_analysis_fields
@@ -23,6 +22,7 @@ from ui.chart_visual_components import (
     render_four_pillars_matrix,
 )
 from ui.bazi_components import render_rule_summary
+from ui.primitives import empty_state_header, page_header, section_header
 
 
 _ELEMENT_PATTERN_NAMES = {
@@ -299,33 +299,45 @@ def _sync_term_button_semantics(
     }})();
     </script>
     """
-    components.html(script, height=0, width=0)
+    with st.container(key="ms-term-accessibility-bridge"):
+        st.iframe(script, height=1, width=1, tab_index=-1)
 
 
 def _render_term_dictionary(term_ids: list[str], chart: dict | None) -> None:
-    """使用原生 Streamlit 按钮展示单开术语详情。"""
+    """用渐进披露与紧凑标签网格展示单开术语详情。"""
     if not term_ids:
         return
-    st.markdown("### 命理术语词典")
-    st.caption("点击术语查看定义与命盘中的对应信息；同一时间只展开一项。")
     chips: list[dict] = []
     for term_id in term_ids:
         chip = build_term_chip_view(build_term_view(term_id, chart))
         chips.append(chip)
-        canonical_id = str(chip["term_id"])
-        is_active = st.session_state.get(_TERM_STATE_KEY) == canonical_id
-        label = f'✓ {chip["label"]} · 已展开' if is_active else str(chip["label"])
-        st.button(
-            label,
-            key=f"ms_term_button_{canonical_id}",
-            use_container_width=True,
-            type="primary" if is_active else "secondary",
-            on_click=_toggle_term_dictionary,
-            args=(canonical_id,),
-        )
+
     active_term_id = st.session_state.get(_TERM_STATE_KEY)
-    if active_term_id in term_ids:
-        _render_term_detail(active_term_id, chart)
+    canonical_ids = {str(chip["term_id"]) for chip in chips}
+    with st.container(key="ms-term-dictionary"):
+        with st.expander(
+            f"术语解释 · {len(chips)} 个",
+            expanded=active_term_id in canonical_ids,
+        ):
+            for row_start in range(0, len(chips), 4):
+                row = chips[row_start:row_start + 4]
+                columns = st.columns(len(row))
+                for column, chip in zip(columns, row):
+                    canonical_id = str(chip["term_id"])
+                    is_active = active_term_id == canonical_id
+                    label = f'✓ {chip["label"]}' if is_active else str(chip["label"])
+                    with column:
+                        st.button(
+                            label,
+                            key=f"ms_term_button_{canonical_id}",
+                            use_container_width=True,
+                            type="primary" if is_active else "secondary",
+                            on_click=_toggle_term_dictionary,
+                            args=(canonical_id,),
+                        )
+            if active_term_id in canonical_ids:
+                _render_term_detail(active_term_id, chart)
+
     restore_focus_to = st.session_state.pop(_TERM_FOCUS_RETURN_KEY, None)
     _sync_term_button_semantics(
         chips,
@@ -612,11 +624,14 @@ def render_life_overview_page():
     """渲染个人命盘总览。"""
     chart = st.session_state.get("current_chart")
     if not chart or chart.get("error"):
-        st.markdown("## 尚未建立个人命盘")
-        st.write("你可以先继续阅读今日指引；准备好后，再自愿填写出生资料建立个人摘要。")
-        if st.button("开始个人分析", type="primary", use_container_width=True):
-            st.session_state["navigate_to"] = "新建命盘"
-            st.rerun()
+        with st.container(key="ms-life-empty"):
+            empty_state_header(
+                "尚未建立个人命盘",
+                "填写出生资料后，即可生成个人摘要与完整命盘。",
+            )
+            if st.button("开始个人分析", type="primary", use_container_width=True):
+                st.session_state["navigate_to"] = "新建命盘"
+                st.rerun()
         return
     chart = ensure_bazi_analysis_fields(chart)
     st.session_state["current_chart"] = chart
@@ -629,53 +644,57 @@ def render_life_overview_page():
         st.error(f"命盘总览生成失败：{exc}")
         return
 
-    st.title("个人命盘")
-    st.markdown("## 个人摘要")
-    st.caption("先看结论，再按需要展开完整命盘与专业说明。")
-    st.caption(f'命盘：{profile.get("name", "未命名")} | {dp["overall_pattern"]}')
-    identity_card = _build_life_identity_card(chart, dp)
-    _render_life_identity_card(identity_card)
-    render_rule_summary(chart)
-
-    evidence = list(dp.get("evidence", []))
-    pattern_info = chart.get("pattern_analysis", {})
-    if pattern_info.get("pattern"):
-        evidence.append(
-            f'格局初判：{pattern_info.get("pattern")}，{pattern_info.get("quality", "")}。'
+    with st.container(key="ms-life-overview"):
+        page_header(
+            "个人命盘",
+            f'命盘：{profile.get("name", "未命名")} · {dp["overall_pattern"]}',
+            eyebrow="PERSONAL CHART",
         )
-    term_ids = collect_term_ids(
-        identity_card["term_ids"],
-        [identity_card["summary"], dp.get("overall_pattern", ""), *evidence],
-        chart,
-    )
-    _render_term_dictionary(term_ids, chart)
+        section_header("个人摘要")
+        identity_card = _build_life_identity_card(chart, dp)
+        _render_life_identity_card(identity_card)
+        render_rule_summary(chart)
 
-    render_four_pillars_matrix(chart)
-    render_element_distribution(chart)
+        evidence = list(dp.get("evidence", []))
+        pattern_info = chart.get("pattern_analysis", {})
+        if pattern_info.get("pattern"):
+            evidence.append(
+                f'格局初判：{pattern_info.get("pattern")}，{pattern_info.get("quality", "")}。'
+            )
+        term_ids = collect_term_ids(
+            identity_card["term_ids"],
+            [identity_card["summary"], dp.get("overall_pattern", ""), *evidence],
+            chart,
+        )
+        _render_term_dictionary(term_ids, chart)
 
-    st.markdown("### 下一步建议")
-    advice_col, report_col = st.columns(2)
-    with advice_col:
-        if st.button("查看今日/年度建议", type="primary", use_container_width=True):
-            st.session_state["navigate_to"] = "今日/年度建议"
-            st.rerun()
-    with report_col:
-        if st.button("查看简明报告", use_container_width=True):
-            st.session_state["navigate_to"] = "简明报告"
-            st.rerun()
+        render_four_pillars_matrix(chart)
+        render_element_distribution(chart)
 
-    _render_five_dimension_insights(dp)
-    _render_life_insight_cards(dp)
+        with st.container(key="ms-life-next-actions"):
+            section_header("下一步建议", "继续查看时间建议，或生成便于阅读的简明报告。")
+            advice_col, report_col = st.columns(2)
+            with advice_col:
+                if st.button("查看今日/年度建议", type="primary", use_container_width=True):
+                    st.session_state["navigate_to"] = "今日/年度建议"
+                    st.rerun()
+            with report_col:
+                if st.button("查看简明报告", use_container_width=True):
+                    st.session_state["navigate_to"] = "简明报告"
+                    st.rerun()
 
-    if evidence:
-        with st.expander("命理依据", expanded=False):
-            st.markdown("**判断依据**：")
-            for item in evidence[:8]:
-                st.markdown(f"- {item}")
+        _render_five_dimension_insights(dp)
+        _render_life_insight_cards(dp)
 
-    disclaimer = dp.get("health_overview", {}).get("medical_disclaimer", "")
-    if disclaimer:
-        st.caption(disclaimer)
+        if evidence:
+            with st.expander("命理依据", expanded=False):
+                st.markdown("**判断依据**：")
+                for item in evidence[:8]:
+                    st.markdown(f"- {item}")
 
-    st.divider()
-    st.caption("本报告基于传统命理模型生成，仅供个人兴趣、文化研究和自我规划参考。")
+        disclaimer = dp.get("health_overview", {}).get("medical_disclaimer", "")
+        if disclaimer:
+            st.caption(disclaimer)
+
+        st.divider()
+        st.caption("本报告基于传统命理模型生成，仅供个人兴趣、文化研究和自我规划参考。")

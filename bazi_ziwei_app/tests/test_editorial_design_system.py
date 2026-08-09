@@ -8,8 +8,9 @@ def test_editorial_tokens_and_accessibility_rules_exist():
     css = (ROOT / "ui" / "styles.py").read_text(encoding="utf-8")
     for token in [
         "--ms-surface: #FAFAFA",
+        "--ms-panel: #FFFFFF",
         "--ms-ink: #18181B",
-        "--ms-action: #EC4899",
+        "--ms-action: #BE185D",
         "'Noto Serif SC'",
         "'Noto Sans SC'",
         "min-height: 44px",
@@ -18,8 +19,9 @@ def test_editorial_tokens_and_accessibility_rules_exist():
         "@media (max-width: 640px)",
     ]:
         assert token in css
-    for forbidden in ["#05080A", "#D8B96A", "linear-gradient", "border-radius: 999px"]:
+    for forbidden in ["#05080A", "#D8B96A", "linear-gradient"]:
         assert forbidden not in css
+    assert "border-radius: var(--ms-radius) !important" in css
 
 
 def test_hidden_sidebar_fallback_expands_and_indicates_focus():
@@ -61,3 +63,16 @@ def test_existing_life_report_bazi_and_ziwei_classes_have_light_compatibility_ru
         ".zw-triangle-muted",
     ]:
         assert selector in css
+
+
+def test_selectbox_styles_target_the_react_aria_shell_without_double_border():
+    css = (ROOT / "ui" / "styles.py").read_text(encoding="utf-8")
+
+    assert '.stSelectbox div[role="group"] {' in css
+    assert '.stSelectbox input[role="combobox"] {' in css
+    assert 'input:not([role="combobox"]), textarea' in css
+    assert 'border: 0 !important;' in css.split(
+        '.stSelectbox input[role="combobox"] {', 1
+    )[1].split("}", 1)[0]
+    assert 'div:has(> [role="listbox"]) {' in css
+    assert '[role="listbox"] [role="option"][aria-selected="true"]' in css
