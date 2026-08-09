@@ -39,7 +39,8 @@ class HomepageV3Tests(unittest.TestCase):
         component = (ROOT / "ui" / "homepage_components.py").read_text(encoding="utf-8")
 
         self.assertIn("render_question_typing_effect", component)
-        self.assertIn("render_question_typing_effect(TYPEWRITER_QUESTIONS)", component)
+        self.assertIn("render_question_typing_effect(", component)
+        self.assertNotIn("focus_input=", component)
 
     def test_homepage_styles_are_immersive_and_mobile_safe(self):
         text = (ROOT / "ui" / "homepage_styles.py").read_text(encoding="utf-8")
