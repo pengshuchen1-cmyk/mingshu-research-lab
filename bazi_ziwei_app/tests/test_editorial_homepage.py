@@ -1,5 +1,6 @@
 import ast
 from pathlib import Path
+from types import SimpleNamespace
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -48,6 +49,23 @@ def test_homepage_uses_one_shadcn_input_and_one_submit_button():
     assert 'width="stretch"' in source
 
 
+def test_homepage_restores_the_start_cta_above_the_question_composer():
+    source = _source("homepage_components.py")
+    css = _source("homepage_styles.py")
+
+    assert '"GET STARTED →"' in source
+    assert 'st.container(key="ms2-start-action")' in source
+    hero_source = source.split("def _render_immersive_hero", 1)[1].split(
+        "def render_homepage_landing", 1
+    )[0]
+    assert hero_source.index("_render_start_action()") < hero_source.index(
+        "_render_question_composer()"
+    )
+    assert ".st-key-ms2-start-action" in css
+    assert "align-items: center !important" in css
+    assert "min-height: 64px" in css
+
+
 def test_homepage_exposes_only_the_three_typewriter_questions():
     source = _source("homepage_components.py")
 
@@ -58,13 +76,55 @@ def test_homepage_exposes_only_the_three_typewriter_questions():
     assert "或者从一个常见问题开始" not in source
 
 
-def test_homepage_queues_questions_for_existing_ai_route():
+def test_homepage_actions_open_existing_ai_route_without_empty_input_warning():
     source = _source("homepage_components.py")
 
     assert "PENDING_QUESTION_KEY" in source
     assert 'st.session_state["navigate_to"] = "AI问答"' in source
     assert "st.rerun()" in source
-    assert "len(normalized) > 2000" in source
+    assert 'st.warning("请先输入一个问题。")' not in source
+    assert "if submitted:" in source
+    assert "_open_inquiry_page(question)" in source
+    assert "if started:" in source
+    assert "_open_inquiry_page()" in source
+
+
+def test_empty_homepage_action_opens_ai_page_without_queuing_a_question(monkeypatch):
+    from ui import homepage_components as homepage
+
+    state = {homepage.PENDING_QUESTION_KEY: "旧问题"}
+    reruns: list[bool] = []
+    monkeypatch.setattr(
+        homepage,
+        "st",
+        SimpleNamespace(session_state=state, rerun=lambda: reruns.append(True)),
+    )
+
+    homepage._open_inquiry_page()
+
+    assert homepage.PENDING_QUESTION_KEY not in state
+    assert state["mingshu_app_entered"] is True
+    assert state["navigate_to"] == "AI问答"
+    assert reruns == [True]
+
+
+def test_submit_action_carries_typed_question_to_ai_page(monkeypatch):
+    from ui import homepage_components as homepage
+
+    state: dict = {}
+    reruns: list[bool] = []
+    monkeypatch.setattr(
+        homepage,
+        "st",
+        SimpleNamespace(session_state=state, rerun=lambda: reruns.append(True)),
+    )
+
+    homepage._open_inquiry_page("  今天运势如何？  ")
+
+    assert state[homepage.PENDING_QUESTION_KEY] == "今天运势如何？"
+    assert state["mingshu_app_entered"] is True
+    assert state["navigate_to"] == "AI问答"
+    assert reruns == [True]
 
 
 def test_homepage_glass_visual_contract_is_scoped_and_responsive():
@@ -83,6 +143,7 @@ def test_homepage_glass_visual_contract_is_scoped_and_responsive():
     assert '.st-key-editorial-product-nav' not in css
     assert '> div[data-testid="stColumn"]:last-child' in css
     assert 'position: absolute !important' in css
+    assert '.st-key-ms2-question-composer:focus-within' in css
     assert "Origin" not in css.split('"""', 2)[-1]
 
 

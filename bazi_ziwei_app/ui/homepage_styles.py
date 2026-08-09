@@ -165,18 +165,56 @@ def get_homepage_css() -> str:
         font-weight: 650;
     }
 
+    .st-key-ms2-start-action {
+        width: 100%;
+        margin: 32px auto 0;
+        align-items: center !important;
+    }
+    .st-key-ms2-start-action .stButton {
+        display: flex;
+        width: 100%;
+        justify-content: center;
+    }
+    .st-key-ms2-start-action .stButton > button {
+        min-height: 64px;
+        padding: 0 32px;
+        border: 0 !important;
+        border-radius: 18px !important;
+        background: #FFFFFF !important;
+        color: #111827 !important;
+        box-shadow: 0 12px 30px rgba(2, 12, 20, .18) !important;
+        font-size: 15px;
+        font-weight: 750 !important;
+        letter-spacing: .08em;
+    }
+    .st-key-ms2-start-action .stButton > button p,
+    .st-key-ms2-start-action .stButton > button span {
+        color: #111827 !important;
+    }
+    .st-key-ms2-start-action .stButton > button:hover {
+        background: #F4F4F5 !important;
+    }
+    .st-key-ms2-start-action .stButton > button:focus-visible {
+        outline: 3px solid #FFFFFF !important;
+        outline-offset: 3px !important;
+    }
+
     .st-key-ms2-question-composer {
         position: relative;
         width: min(100%, 1040px);
-        margin: 32px auto 0;
+        margin: 40px auto 0;
         padding: 8px;
-        border: 1px solid var(--ms2-line);
+        border: 1px solid rgba(255, 255, 255, .34);
         border-radius: 999px;
         background: var(--ms2-glass);
         box-shadow: 0 18px 28px rgba(0, 0, 0, .20);
         backdrop-filter: blur(24px) saturate(110%);
         -webkit-backdrop-filter: blur(24px) saturate(110%);
         text-align: left;
+    }
+    .st-key-ms2-question-composer:focus-within {
+        border-color: rgba(255, 255, 255, .62);
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, .12), 0 18px 28px rgba(0, 0, 0, .20);
     }
     .st-key-ms2-question-composer > div:first-child [data-testid="stHorizontalBlock"] {
         position: relative;
@@ -240,6 +278,14 @@ def get_homepage_css() -> str:
             font-size: 16px;
         }
         .ms2-hero-lede br { display: none; }
+        .st-key-ms2-start-action {
+            margin-top: 28px;
+        }
+        .st-key-ms2-start-action .stButton > button {
+            min-height: 56px;
+            padding: 0 24px;
+            font-size: 14px;
+        }
         .st-key-ms2-question-composer {
             margin-top: 28px;
             padding: 6px;
