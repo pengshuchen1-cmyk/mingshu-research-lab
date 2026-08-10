@@ -8,7 +8,12 @@ ROOT = Path(__file__).resolve().parents[1]
 class InquiryLuckV106CVisualAlignmentTests(unittest.TestCase):
     def test_inquiry_and_luck_pages_use_homepage_visual_language(self):
         expected = {
-            "inquiry_page.py": ["v106c-page-hero", "ms-report-panel", "ms-mini-metric", "ms-tag"],
+            "inquiry_page.py": [
+                "ms-inquiry-page",
+                "ms-inquiry-topline",
+                "ms-inquiry-context",
+                "ms-inquiry-thread",
+            ],
             "luck_page.py": ["v106c-page-hero", "ms-report-panel", "ms-mini-metric", "ms-luck-stage-card", "ms-tag"],
         }
         for filename, tokens in expected.items():
@@ -39,6 +44,33 @@ class InquiryLuckV106CVisualAlignmentTests(unittest.TestCase):
         text = (ROOT / "ui" / "styles.py").read_text(encoding="utf-8")
         for token in [".ms-luck-stage-card", ".ms-luck-stage-card.current", ".ms-action-grid"]:
             self.assertIn(token, text)
+
+    def test_inquiry_uses_minimal_chat_workspace_without_old_hero(self):
+        inquiry = (ROOT / "ui" / "inquiry_page.py").read_text(encoding="utf-8")
+        styles = (ROOT / "ui" / "styles.py").read_text(encoding="utf-8")
+
+        for removed in [
+            "LOCAL RULES · AI Q&amp;A",
+            '<div class="v106c-page-title">AI问答</div>',
+            "用当前命盘的本地四柱事实回答，并显示依据与不确定性。",
+            "你可以这样问",
+        ]:
+            self.assertNotIn(removed, inquiry)
+        self.assertIn("本地规则校验 · 对话最多保留 20 条", inquiry)
+        self.assertIn("render_loaded_profile_hint", inquiry)
+        self.assertIn("当前命盘的本地规则摘要", inquiry)
+        self.assertIn('key="ms_inquiry_chat_input"', inquiry)
+        self.assertIn('max_chars=2000', inquiry)
+        for token in [
+            '.st-key-ms-inquiry-page',
+            '[data-testid="stChatMessage"]',
+            '[data-testid="stChatInput"]',
+            '[data-testid="stBottomBlockContainer"]',
+            'align-items: center !important',
+            'min-height: 44px',
+            'bottom: calc(64px + env(safe-area-inset-bottom))',
+        ]:
+            self.assertIn(token, styles)
 
 
 if __name__ == "__main__":

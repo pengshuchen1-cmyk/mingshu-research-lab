@@ -30,9 +30,9 @@ def test_homepage_renders_one_immersive_hero_in_reading_order():
 def test_homepage_uses_project_owned_background_and_origin_inspired_copy():
     source = _source("homepage_components.py")
 
-    assert 'assets" / "hero-sky-v1.png"' in source
+    assert 'assets" / "hero-sky-v1.webp"' in source
     assert "useorigin.com" not in source
-    assert "<em>看见</em>你的命数。" in source
+    assert "<h1>看见  你的命数。</h1>" in source
     assert "从命盘出发，回答此刻真正关心的问题。" in source
     assert "本地排盘 · 隐私优先 · 结论仅供参考" in source
 
@@ -76,20 +76,20 @@ def test_homepage_exposes_only_the_three_typewriter_questions():
     assert "或者从一个常见问题开始" not in source
 
 
-def test_homepage_actions_open_existing_ai_route_without_empty_input_warning():
+def test_homepage_actions_open_today_and_chart_routes():
     source = _source("homepage_components.py")
 
     assert "PENDING_QUESTION_KEY" in source
-    assert 'st.session_state["navigate_to"] = "AI问答"' in source
+    assert 'st.session_state["navigate_to"] = target' in source
     assert "st.rerun()" in source
     assert 'st.warning("请先输入一个问题。")' not in source
     assert "if submitted:" in source
-    assert "_open_inquiry_page(question)" in source
+    assert '_open_product_page("个人命盘")' in source
     assert "if started:" in source
-    assert "_open_inquiry_page()" in source
+    assert '_open_product_page("今日/年度建议")' in source
 
 
-def test_empty_homepage_action_opens_ai_page_without_queuing_a_question(monkeypatch):
+def test_get_started_opens_today_without_queuing_a_question(monkeypatch):
     from ui import homepage_components as homepage
 
     state = {homepage.PENDING_QUESTION_KEY: "旧问题"}
@@ -100,18 +100,18 @@ def test_empty_homepage_action_opens_ai_page_without_queuing_a_question(monkeypa
         SimpleNamespace(session_state=state, rerun=lambda: reruns.append(True)),
     )
 
-    homepage._open_inquiry_page()
+    homepage._open_product_page("今日/年度建议")
 
     assert homepage.PENDING_QUESTION_KEY not in state
     assert state["mingshu_app_entered"] is True
-    assert state["navigate_to"] == "AI问答"
+    assert state["navigate_to"] == "今日/年度建议"
     assert reruns == [True]
 
 
-def test_submit_action_carries_typed_question_to_ai_page(monkeypatch):
+def test_arrow_opens_chart_and_clears_stale_pending_question(monkeypatch):
     from ui import homepage_components as homepage
 
-    state: dict = {}
+    state = {homepage.PENDING_QUESTION_KEY: "旧问题"}
     reruns: list[bool] = []
     monkeypatch.setattr(
         homepage,
@@ -119,11 +119,11 @@ def test_submit_action_carries_typed_question_to_ai_page(monkeypatch):
         SimpleNamespace(session_state=state, rerun=lambda: reruns.append(True)),
     )
 
-    homepage._open_inquiry_page("  今天运势如何？  ")
+    homepage._open_product_page("个人命盘")
 
-    assert state[homepage.PENDING_QUESTION_KEY] == "今天运势如何？"
+    assert homepage.PENDING_QUESTION_KEY not in state
     assert state["mingshu_app_entered"] is True
-    assert state["navigate_to"] == "AI问答"
+    assert state["navigate_to"] == "个人命盘"
     assert reruns == [True]
 
 

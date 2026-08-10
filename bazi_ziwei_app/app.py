@@ -83,36 +83,24 @@ def _request_navigation(target: str) -> None:
 
 
 def _render_navigation_scroll_reset() -> None:
-    """Reset Streamlit's retained scroll position after a route change."""
+    """Reset route scroll once without fighting Streamlit's incremental render."""
     script = """
     <script>
     (() => {
       const parentWindow = window.parent;
-      const resetScroll = () => {
-        const containers = parentWindow.document.querySelectorAll(
-          ".stAppViewContainer, .stMain"
-        );
-        containers.forEach((container) => {
-          if (typeof container.scrollTo === "function") {
-            container.scrollTo({ top: 0, left: 0, behavior: "auto" });
-          } else {
-            container.scrollTop = 0;
-            container.scrollLeft = 0;
-          }
+      const main = parentWindow.document.querySelector(".stMain");
+      if (!main) return;
+
+      // Streamlit updates a route in several DOM commits. Repeated scroll resets
+      // fight browser scroll anchoring and visibly shake the viewport, so reset
+      // exactly once after the current paint and then restore normal anchoring.
+      main.style.overflowAnchor = "none";
+      parentWindow.requestAnimationFrame(() => {
+        main.scrollTo({ top: 0, left: 0, behavior: "auto" });
+        parentWindow.requestAnimationFrame(() => {
+          main.style.removeProperty("overflow-anchor");
         });
-      };
-      const root = parentWindow.document.querySelector(".stMain");
-      const observer = root
-        ? new MutationObserver(resetScroll)
-        : null;
-      if (observer && root) {
-        observer.observe(root, { childList: true, subtree: true });
-      }
-      parentWindow.requestAnimationFrame(resetScroll);
-      [80, 220, 500, 900, 1400, 2100].forEach((delay) => {
-        parentWindow.setTimeout(resetScroll, delay);
       });
-      parentWindow.setTimeout(() => observer?.disconnect(), 2400);
     })();
     </script>
     """

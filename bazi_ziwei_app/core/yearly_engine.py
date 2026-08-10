@@ -156,14 +156,19 @@ def _current_luck_note(luck_data: dict | None, target_year: int) -> str:
     return " 当前未匹配到具体大运区间，可先按流年本身和原局关系观察。"
 
 
-def _month_attention(chart: dict, target_year: int) -> tuple[list[str], list[str]]:
+def _month_attention(
+    chart: dict,
+    target_year: int,
+    monthly_data: list[dict] | None = None,
+) -> tuple[list[str], list[str]]:
     """根据流月喜忌和风险，提取高关注月份与机会月份。"""
-    try:
-        from core.monthly_engine import analyze_monthly_fortune
+    if monthly_data is None:
+        try:
+            from core.monthly_engine import analyze_monthly_fortune
 
-        monthly_data = analyze_monthly_fortune(chart, target_year)
-    except Exception:
-        return [], []
+            monthly_data = analyze_monthly_fortune(chart, target_year)
+        except Exception:
+            return [], []
     high_attention = []
     opportunity = []
     mixed_candidates = []
@@ -387,6 +392,7 @@ def analyze_yearly_fortune(
     luck_data: dict | None = None,
     *,
     include_monthly_analysis: bool = True,
+    monthly_data: list[dict] | None = None,
 ) -> dict:
     """
     根据命盘和目标年份生成年度运程。
@@ -436,12 +442,16 @@ def analyze_yearly_fortune(
     health_concerns = []
 
     if include_monthly_analysis:
-        high_attention_months, opportunity_months = _month_attention(chart, target_year)
-
-        # 新增：月度分类分析
         try:
-            from core.monthly_engine import analyze_monthly_fortune
-            monthly_data = analyze_monthly_fortune(chart, target_year)
+            if monthly_data is None:
+                from core.monthly_engine import analyze_monthly_fortune
+
+                monthly_data = analyze_monthly_fortune(chart, target_year)
+            high_attention_months, opportunity_months = _month_attention(
+                chart,
+                target_year,
+                monthly_data,
+            )
             prof = chart.get("profile", {})
             gender = _gender_from_profile(prof)
             year_zhi = get_year_pillar(target_year)[1] if len(get_year_pillar(target_year)) >= 2 else ""

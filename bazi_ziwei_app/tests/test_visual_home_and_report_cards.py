@@ -18,9 +18,10 @@ class VisualHomeAndReportCardsTests(unittest.TestCase):
         self.assertIn("今天我的运势如何？", text)
         self.assertIn("如何推算我的命盘？", text)
         self.assertIn("今年是我的本命年，我的事业和爱情怎么样？", text)
-        self.assertIn("<em>看见</em>你的命数。", text)
+        self.assertIn("<h1>看见  你的命数。</h1>", text)
         self.assertNotIn("AI科技感", text)
-        self.assertIn('st.session_state["navigate_to"] = "AI问答"', text)
+        self.assertIn('_open_product_page("今日/年度建议")', text)
+        self.assertIn('_open_product_page("个人命盘")', text)
 
     def test_global_css_contains_editorial_visual_system(self):
         global_text = (ROOT / "ui" / "styles.py").read_text(encoding="utf-8")

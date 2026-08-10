@@ -188,18 +188,19 @@ def _monthly_lines(
     chart: dict | None = None,
     yearly_data: dict | None = None,
     luck_data: dict | None = None,
+    event_results: list[dict] | None = None,
 ) -> list[str]:
     """生成流月分析行（含大概率事件Top 3和命理依据）。"""
     if not monthly_data:
         return [f"{bullet} 流月分析：当前未生成流月分析。"]
     lines = []
-    event_results = []
-    if chart:
+    if event_results is None and chart:
         try:
             from core.monthly_event_activation_bridge import build_year_monthly_event_results
             event_results = build_year_monthly_event_results(chart, monthly_data, yearly_data, luck_data)
         except Exception:
             event_results = []
+    event_results = event_results or []
     for index, item in enumerate(monthly_data):
         month_events = event_results[index].get("top_events", []) if index < len(event_results) else []
         tags = "、".join(item.get("event_tags", []))
@@ -381,6 +382,7 @@ def build_markdown_report(
     luck_data: dict | None = None,
     yearly_data: dict | None = None,
     monthly_data: list[dict] | None = None,
+    monthly_event_results: list[dict] | None = None,
 ) -> str:
     """
     生成 Markdown 格式完整命盘报告。
@@ -444,7 +446,13 @@ def build_markdown_report(
         *_yearly_lines(yearly_data),
         "",
         "## 十五、十二个月流月趋势",
-        *_monthly_lines(monthly_data, chart=chart, yearly_data=yearly_data, luck_data=luck_data),
+        *_monthly_lines(
+            monthly_data,
+            chart=chart,
+            yearly_data=yearly_data,
+            luck_data=luck_data,
+            event_results=monthly_event_results,
+        ),
         "",
         "## 十六、综合行动建议",
         *_action_advice_lines(report, yearly_data),
@@ -463,11 +471,22 @@ def build_text_report(
     luck_data: dict | None = None,
     yearly_data: dict | None = None,
     monthly_data: list[dict] | None = None,
+    monthly_event_results: list[dict] | None = None,
+    *,
+    markdown_report: str | None = None,
 ) -> str:
     """
     生成纯文本格式完整命盘报告。
     """
-    markdown = build_markdown_report(profile, chart, report, luck_data, yearly_data, monthly_data)
+    markdown = markdown_report or build_markdown_report(
+        profile,
+        chart,
+        report,
+        luck_data,
+        yearly_data,
+        monthly_data,
+        monthly_event_results,
+    )
     return (
         markdown.replace("# ", "")
         .replace("## ", "")
@@ -515,6 +534,9 @@ def build_pdf_report(
     luck_data: dict | None = None,
     yearly_data: dict | None = None,
     monthly_data: list[dict] | None = None,
+    monthly_event_results: list[dict] | None = None,
+    *,
+    markdown_report: str | None = None,
 ) -> bytes:
     """
     生成 PDF 报告。缺少 PDF 依赖时返回友好提示文本 bytes。
@@ -529,7 +551,15 @@ def build_pdf_report(
         return _pdf_fallback_message()
 
     try:
-        markdown = build_markdown_report(profile, chart, report, luck_data, yearly_data, monthly_data)
+        markdown = markdown_report or build_markdown_report(
+            profile,
+            chart,
+            report,
+            luck_data,
+            yearly_data,
+            monthly_data,
+            monthly_event_results,
+        )
         font_name = _register_renderable_chinese_font(pdfmetrics, TTFont)
         if not font_name:
             return _pdf_fallback_message()

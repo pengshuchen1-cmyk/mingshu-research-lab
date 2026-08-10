@@ -53,7 +53,13 @@ def _build_yearly_list(chart: dict, years: int = 10) -> list[dict]:
     items: list[dict] = []
     for year in range(current_year, current_year + years):
         try:
-            items.append(analyze_yearly_fortune(chart, year))
+            items.append(
+                analyze_yearly_fortune(
+                    chart,
+                    year,
+                    include_monthly_analysis=False,
+                )
+            )
         except Exception:
             continue
     return items

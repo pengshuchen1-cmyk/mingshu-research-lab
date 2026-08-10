@@ -17,15 +17,16 @@ def _compact_pillar_text(chart: dict) -> str:
 
 
 def _clear_home_cache(st) -> None:
-    """清理首页相关旧缓存，避免视觉更新后仍显示旧月度数据。"""
-    try:
-        st.cache_data.clear()
-    except Exception:
-        pass
+    """只清理当前会话的旧分析结果，不影响其他用户。"""
     for key in [
+        "current_year_analysis_key",
         "current_yearly_data",
         "current_monthly_data",
         "current_monthly_event_results",
+        "current_report_export_key",
+        "current_report_markdown",
+        "current_report_text",
+        "current_report_pdf",
     ]:
         st.session_state.pop(key, None)
 
