@@ -164,6 +164,7 @@ def _resolved_dayun_periods(
     luck = get_luck_cycles(
         working_chart.get("profile", {}),
         working_chart,
+        include_yearly_list=False,
     )
     raw_periods = luck.get("dayun_list") if luck.get("available") else None
     if not isinstance(raw_periods, list):

@@ -7,8 +7,14 @@ import os
 from typing import Any
 
 _BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_ACTIVATION_ASSETS_CACHE: dict | None = None
 
 def load_activation_assets(force: bool = False) -> dict:
+    """Load immutable rule assets once per process, with an explicit refresh hook."""
+    global _ACTIVATION_ASSETS_CACHE
+    if _ACTIVATION_ASSETS_CACHE is not None and not force:
+        return _ACTIVATION_ASSETS_CACHE
+
     base = _BASE
     assets = {}
     for name, key in [
@@ -31,15 +37,16 @@ def load_activation_assets(force: bool = False) -> dict:
     from core.bazi_constants import STEM_ELEMENTS, BRANCH_MAIN_ELEMENTS
     assets["stem_elements"] = STEM_ELEMENTS
     assets["branch_main_elements"] = BRANCH_MAIN_ELEMENTS
-    _cached = assets
-    return assets
+    _ACTIVATION_ASSETS_CACHE = assets
+    return _ACTIVATION_ASSETS_CACHE
 
 
 def build_month_context(chart: dict, monthly_item: dict,
                         yearly_data: dict | None = None,
-                        luck_data: dict | None = None) -> dict:
+                        luck_data: dict | None = None,
+                        assets: dict | None = None) -> dict:
     ctx: dict[str, Any] = {}
-    assets = load_activation_assets()
+    assets = assets or load_activation_assets()
     STE = assets.get("stem_elements", {})
     BME = assets.get("branch_main_elements", {})
 
@@ -853,8 +860,8 @@ def infer_monthly_likely_events_full(
 ) -> dict:
     from core.monthly_event_inference_engine import infer_monthly_likely_events_enhanced
     base_result = infer_monthly_likely_events_enhanced(chart, monthly_item, yearly_data, luck_data)
-    ctx = build_month_context(chart, monthly_item, yearly_data, luck_data)
     assets = load_activation_assets()
+    ctx = build_month_context(chart, monthly_item, yearly_data, luck_data, assets)
     bridge_candidates = activate_events_by_rules(ctx, assets)
     best_by_type: dict[str, dict] = {}
     for cand in bridge_candidates:
@@ -884,7 +891,6 @@ def infer_monthly_likely_events_full(
     if len(final) < 3:
         final = _select_diverse_events(final + list(base_events), limit=5)
     base_result["top_events"] = final
-    base_result["bridge_events"] = bridge_candidates
     return base_result
 # ====== v1.0.3-C 桥接层已激活 ======
 
@@ -896,7 +902,14 @@ def build_year_monthly_event_results(chart: dict, monthly_data: list, yearly_dat
     for item in monthly_data:
         r = infer_monthly_likely_events_full(chart, item, yearly_data, luck_data)
         results.append(r)
-    return postprocess_monthly_events(results)
+    processed = postprocess_monthly_events(results)
+    for result in processed:
+        if not isinstance(result, dict):
+            continue
+        result.pop("bridge_events", None)
+        result.pop("event_score_map", None)
+        result.pop("month_unique_triggers", None)
+    return processed
 
 BRIDGE_VERSION = "1.0.3-C"
 BRIDGE_ACTIVE = True

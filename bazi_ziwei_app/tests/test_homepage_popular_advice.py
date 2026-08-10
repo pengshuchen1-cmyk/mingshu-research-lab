@@ -40,14 +40,14 @@ def test_pending_home_question_is_session_only_and_consumed_once():
     assert pop_pending_question(state) is None
 
 
-def test_homepage_question_action_trims_and_routes_through_existing_inquiry(monkeypatch):
+def test_homepage_arrow_routes_to_chart_and_clears_pending_question(monkeypatch):
     import ui.homepage_components as homepage
     from ui.inquiry_page import PENDING_QUESTION_KEY
 
     class RerunRequested(RuntimeError):
         pass
 
-    state = {}
+    state = {PENDING_QUESTION_KEY: "旧问题"}
     fake_streamlit = type(
         "FakeStreamlit",
         (),
@@ -59,11 +59,11 @@ def test_homepage_question_action_trims_and_routes_through_existing_inquiry(monk
     monkeypatch.setattr(homepage, "st", fake_streamlit)
 
     with pytest.raises(RerunRequested):
-        homepage._open_inquiry_page("  今天我的运势如何  ")
+        homepage._open_product_page("个人命盘")
 
-    assert state[PENDING_QUESTION_KEY] == "今天我的运势如何"
+    assert PENDING_QUESTION_KEY not in state
     assert state["mingshu_app_entered"] is True
-    assert state["navigate_to"] == "AI问答"
+    assert state["navigate_to"] == "个人命盘"
 
 
 def test_inquiry_without_chart_preserves_pending_question_and_never_answers(monkeypatch):

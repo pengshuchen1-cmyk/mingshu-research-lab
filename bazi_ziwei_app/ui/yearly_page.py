@@ -8,8 +8,6 @@ import re
 
 import streamlit as st
 
-from core.monthly_engine import analyze_monthly_fortune
-from core.yearly_engine import analyze_yearly_fortune
 from core.enhanced_monthly_engine import build_enhanced_month_item
 from core.bazi_constants import BRANCH_MAIN_ELEMENTS, STEM_ELEMENTS
 from core.branch_relations import analyze_year_branch_relations
@@ -27,6 +25,7 @@ from core.ten_gods import get_ten_god
 
 from core.monthly_event_activation_bridge import build_year_monthly_event_results
 from ui.bazi_components import CACHE_VERSION
+from utils.analysis_session_cache import get_or_build_year_analysis
 
 _ACTIVE_MONTH_KEY = "ms3_active_month_index"
 
@@ -573,25 +572,18 @@ def render_yearly_page():
         return
 
     profile = chart.get("profile") or st.session_state.get("current_profile", {})
-    if st.session_state.get("cache_version") != CACHE_VERSION:
-        st.session_state["cache_version"] = CACHE_VERSION
-        for key in [
-            "current_yearly_data",
-            "current_monthly_data",
-            "current_monthly_event_results",
-        ]:
-            st.session_state.pop(key, None)
 
     current_year = date.today().year
     target_year = st.number_input("选择分析年份", min_value=1900, max_value=2100, value=current_year, step=1)
     target_year = int(target_year)
     luck_data = st.session_state.get("current_luck_data")
-    yearly_data = analyze_yearly_fortune(chart, target_year, luck_data)
-    monthly_data = analyze_monthly_fortune(chart, target_year)
-    monthly_event_results = build_monthly_event_results(chart, monthly_data, yearly_data, luck_data)
-    st.session_state["current_yearly_data"] = yearly_data
-    st.session_state["current_monthly_data"] = monthly_data
-    st.session_state["current_monthly_event_results"] = monthly_event_results
+    yearly_data, monthly_data, monthly_event_results = get_or_build_year_analysis(
+        st.session_state,
+        chart,
+        target_year,
+        luck_data,
+        version=CACHE_VERSION,
+    )
 
     # Build enhanced monthly list with more specific content
     enhanced_months = _build_enhanced_monthly_list(chart, target_year, monthly_data)

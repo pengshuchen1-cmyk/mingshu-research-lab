@@ -283,6 +283,208 @@ def get_global_css() -> str:
         background: var(--ms-action-hover) !important;
         border-color: var(--ms-action-hover) !important;
     }
+
+    /* AI inquiry: quiet, single-column conversation workspace. */
+    .st-key-ms-inquiry-page {
+        width: 100%;
+        max-width: 1040px;
+        min-height: 62vh;
+        margin: 0 auto;
+    }
+    .st-key-ms-inquiry-page > div[data-testid="stVerticalBlock"] {
+        gap: 0 !important;
+    }
+    .ms-inquiry-topline {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        margin: 2px 0 18px;
+        padding: 0 2px 12px;
+        border-bottom: 1px solid var(--ms-line);
+    }
+    .ms-inquiry-title {
+        color: var(--ms-ink);
+        font-size: 16px;
+        font-weight: 750;
+        letter-spacing: -.01em;
+    }
+    .ms-inquiry-meta {
+        color: var(--ms-muted);
+        font-size: 12px;
+        font-weight: 550;
+        line-height: 1.5;
+        text-align: right;
+    }
+    .st-key-ms-inquiry-context {
+        margin-bottom: 28px;
+    }
+    .st-key-ms-inquiry-context > div[data-testid="stVerticalBlock"] {
+        gap: 8px !important;
+    }
+    .st-key-ms-inquiry-context div[data-testid="stExpander"] {
+        border-color: rgba(24, 24, 27, .1) !important;
+        background: transparent !important;
+    }
+    .st-key-ms-inquiry-context div[data-testid="stExpander"] summary {
+        min-height: 46px;
+        color: var(--ms-muted) !important;
+        font-size: 13px;
+    }
+    .ms-inquiry-safety {
+        margin: 6px 2px 0 !important;
+        color: var(--ms-muted) !important;
+        font-size: 12px;
+        line-height: 1.6 !important;
+    }
+    .st-key-ms-inquiry-thread {
+        width: 100%;
+        max-width: 880px;
+        min-height: 340px;
+        margin: 0 auto;
+        padding: 8px 0 40px;
+    }
+    .st-key-ms-inquiry-thread > div[data-testid="stVerticalBlock"] {
+        gap: 12px !important;
+    }
+    .ms-inquiry-empty {
+        display: flex;
+        min-height: 108px;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 8px;
+        padding: 32px 20px;
+        text-align: center;
+    }
+    .ms-inquiry-empty strong {
+        color: var(--ms-ink);
+        font-size: clamp(20px, 3vw, 28px);
+        font-weight: 700;
+        letter-spacing: -.025em;
+    }
+    .ms-inquiry-empty span {
+        max-width: 520px;
+        color: var(--ms-muted);
+        font-size: 14px;
+        line-height: 1.7;
+    }
+    body:has(.st-key-ms-inquiry-page) [data-testid="stChatMessage"] {
+        width: 100%;
+        max-width: 880px;
+        margin: 0 auto;
+        padding: 10px 0;
+        border: 0;
+        background: transparent !important;
+    }
+    body:has(.st-key-ms-inquiry-page) [data-testid="stChatMessageAvatarUser"],
+    body:has(.st-key-ms-inquiry-page) [data-testid="stChatMessageAvatarAssistant"] {
+        display: none !important;
+    }
+    body:has(.st-key-ms-inquiry-page) [data-testid="stChatMessage"][aria-label="Chat message from user"],
+    body:has(.st-key-ms-inquiry-page) [data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-end !important;
+    }
+    body:has(.st-key-ms-inquiry-page) [data-testid="stChatMessage"][aria-label="Chat message from user"]
+    [data-testid="stChatMessageContent"],
+    body:has(.st-key-ms-inquiry-page) [data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"])
+    [data-testid="stChatMessageContent"] {
+        flex: 0 1 auto;
+        display: flex !important;
+        width: fit-content !important;
+        min-height: 44px;
+        box-sizing: border-box;
+        align-items: center !important;
+        max-width: min(78%, 680px);
+        margin-right: 0 !important;
+        margin-left: auto !important;
+        padding: 8px 16px;
+        border-radius: 20px 20px 6px 20px;
+        background: var(--ms-surface-muted) !important;
+    }
+    body:has(.st-key-ms-inquiry-page) [data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"])
+    [data-testid="stChatMessageContent"] > div,
+    body:has(.st-key-ms-inquiry-page) [data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"])
+    [data-testid="stMarkdownContainer"] {
+        display: flex !important;
+        align-items: center !important;
+        margin: 0 !important;
+    }
+    body:has(.st-key-ms-inquiry-page) [data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"])
+    [data-testid="stChatMessageContent"] p {
+        margin: 0 !important;
+        line-height: 1.5 !important;
+    }
+    body:has(.st-key-ms-inquiry-page) [data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarAssistant"])
+    [data-testid="stChatMessageContent"] {
+        width: 100%;
+        padding: 4px 0 12px;
+    }
+    body:has(.st-key-ms-inquiry-page) [data-testid="stChatMessageContent"] p {
+        margin-bottom: .65rem;
+        font-size: 15px;
+        line-height: 1.75 !important;
+    }
+    body:has(.st-key-ms-inquiry-page) [data-testid="stChatMessageContent"] p:last-child {
+        margin-bottom: 0;
+    }
+    body:has(.st-key-ms-inquiry-page) [data-testid="stBottomBlockContainer"] {
+        padding: 14px 24px 20px !important;
+        background: var(--ms-surface) !important;
+    }
+    body:has(.st-key-ms-inquiry-page) [data-testid="stChatInput"] {
+        box-sizing: border-box;
+        width: 100%;
+        max-width: 880px;
+        min-height: 92px;
+        margin: 0 auto;
+        padding: 12px 14px !important;
+        border: 1px solid var(--ms-line) !important;
+        border-radius: 24px !important;
+        background: var(--ms-panel) !important;
+        box-shadow: var(--ms-shadow-raised) !important;
+    }
+    body:has(.st-key-ms-inquiry-page) [data-testid="stChatInput"] div {
+        border: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+    body:has(.st-key-ms-inquiry-page) [data-testid="stChatInput"] textarea {
+        min-height: 60px !important;
+        padding: 8px 4px !important;
+        border: 0 !important;
+        background: transparent !important;
+        color: var(--ms-ink) !important;
+        font-size: 16px !important;
+        line-height: 1.55 !important;
+        box-shadow: none !important;
+    }
+    body:has(.st-key-ms-inquiry-page) [data-testid="stChatInput"] textarea::placeholder {
+        color: var(--ms-muted) !important;
+        opacity: .85;
+    }
+    body:has(.st-key-ms-inquiry-page) button[data-testid="stChatInputSubmitButton"] {
+        width: 44px !important;
+        min-width: 44px !important;
+        height: 44px !important;
+        min-height: 44px !important;
+        margin: 0 2px 2px 10px;
+        border: 0 !important;
+        border-radius: 50% !important;
+        background: var(--ms-ink) !important;
+        color: var(--ms-panel) !important;
+        transition: opacity 180ms ease, background-color 180ms ease;
+    }
+    body:has(.st-key-ms-inquiry-page) button[data-testid="stChatInputSubmitButton"]:disabled {
+        background: var(--ms-surface-muted) !important;
+        color: var(--ms-muted) !important;
+        opacity: .72;
+    }
+    body:has(.st-key-ms-inquiry-page) [data-testid="stMainBlockContainer"] {
+        padding-bottom: 12rem !important;
+    }
     .stButton button:focus-visible, input:not([role="combobox"]):focus-visible,
     textarea:focus-visible,
     .stSelectbox div[role="group"]:focus-within,
@@ -1349,6 +1551,51 @@ def get_global_css() -> str:
             padding-left: 1rem !important;
             padding-right: 1rem !important;
             padding-bottom: calc(6.25rem + env(safe-area-inset-bottom)) !important;
+        }
+        body:has(.st-key-ms-inquiry-page) [data-testid="stMainBlockContainer"] {
+            padding-bottom: calc(14rem + env(safe-area-inset-bottom)) !important;
+        }
+        .ms-inquiry-topline {
+            align-items: flex-start;
+            margin-bottom: 14px;
+        }
+        .ms-inquiry-title { font-size: 15px; }
+        .ms-inquiry-meta {
+            max-width: 180px;
+            font-size: 11px;
+        }
+        .st-key-ms-inquiry-context { margin-bottom: 18px; }
+        .st-key-ms-inquiry-thread {
+            min-height: 260px;
+            padding-bottom: 28px;
+        }
+        .ms-inquiry-empty {
+            min-height: 80px;
+            gap: 4px;
+            padding: 14px 8px;
+        }
+        .ms-inquiry-empty strong { font-size: 21px; }
+        .ms-inquiry-empty span { font-size: 13px; }
+        body:has(.st-key-ms-inquiry-page) [data-testid="stChatMessage"][aria-label="Chat message from user"]
+        [data-testid="stChatMessageContent"],
+        body:has(.st-key-ms-inquiry-page) [data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"])
+        [data-testid="stChatMessageContent"] {
+            max-width: 88%;
+        }
+        body:has(.st-key-ms-inquiry-page) [data-testid="stBottom"] {
+            bottom: calc(64px + env(safe-area-inset-bottom)) !important;
+        }
+        body:has(.st-key-ms-inquiry-page) [data-testid="stBottomBlockContainer"] {
+            padding: 8px 12px 10px !important;
+        }
+        body:has(.st-key-ms-inquiry-page) [data-testid="stChatInput"] {
+            min-height: 72px;
+            padding: 8px 10px !important;
+            border-radius: 20px !important;
+        }
+        body:has(.st-key-ms-inquiry-page) [data-testid="stChatInput"] textarea {
+            min-height: 48px !important;
+            font-size: 16px !important;
         }
         .ms-ui-page-header { margin: 4px 0 24px; }
         .ms-ui-page-header h1 { font-size: clamp(2.15rem, 11vw, 3rem) !important; }

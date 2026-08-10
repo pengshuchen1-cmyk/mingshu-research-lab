@@ -71,13 +71,13 @@ def test_ai_question_page_has_chat_controls_and_safe_limits():
 
     assert "st.chat_message" in source
     assert "st.chat_input" in source
-    assert "清空对话" in source
+    assert "新对话" not in source
     assert "validate_question" in source
     assert "render_rule_summary" in source
     assert "新建命盘" in source
     assert "repr(exc)" not in source
     assert "str(exc)" not in source
-    assert "无需在问答中输入姓名或重复输入出生资料" in source
+    assert "无需重复输入姓名或出生资料" in source
 
 
 def test_inquiry_page_exposes_progress_receipt_and_manual_retry():
@@ -85,8 +85,51 @@ def test_inquiry_page_exposes_progress_receipt_and_manual_retry():
     assert "st.status" in source
     assert "interpretation_receipt" in source
     assert "重新获取云端详细分析" in source
-    assert "最多 2000 字" in source
+    assert "max_chars=2000" in source
     assert "最多 500 字" not in source
+
+
+def test_user_question_is_rendered_before_the_answer_request_starts():
+    source = (ROOT / "ui" / "inquiry_page.py").read_text(encoding="utf-8")
+
+    append_position = source.index('append_chat_message(\n        st.session_state,\n        "user"')
+    render_position = source.index(
+        "_render_message(st.session_state[CHAT_MESSAGES_KEY][-1])",
+        append_position,
+    )
+    status_position = source.index('st.status("正在理解问题…"', render_position)
+    request_position = source.index("result = answer_question(", status_position)
+
+    assert append_position < render_position < status_position < request_position
+
+
+def test_answer_renders_user_question_before_calling_provider(monkeypatch):
+    import ui.inquiry_page as inquiry_page
+    from core.ai_models import AnswerResult
+
+    fake = _FakeStreamlit()
+    result = AnswerResult(
+        answer="本地回答",
+        sections={},
+        chart_evidence=(),
+        rule_evidence=(),
+        timing_conditions=(),
+        practical_advice=(),
+        uncertainty=(),
+        source="local_rules",
+        degraded_reason="missing_api_key",
+    )
+
+    def _answer_question(*_args, **_kwargs):
+        assert fake.markdowns == ["我今年怎么样？"]
+        return result
+
+    monkeypatch.setattr(inquiry_page, "st", fake)
+    monkeypatch.setattr(inquiry_page, "answer_question", _answer_question)
+    monkeypatch.setattr(inquiry_page, "log_ai_event", lambda **_kwargs: None)
+    monkeypatch.setattr(inquiry_page, "touch_private_session", lambda _state: None)
+
+    assert inquiry_page._answer({"pillars": {}}, "我今年怎么样？") is True
 
 
 def test_retry_question_uses_the_linked_user_message():

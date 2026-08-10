@@ -38,15 +38,21 @@ def test_request_navigation_sets_only_named_target_and_reruns(monkeypatch):
     assert rerun_calls == [True]
 
 
-def test_route_change_resets_retained_streamlit_scroll_position():
+def test_route_change_uses_one_stable_scroll_reset_without_observer_loop():
     source = (ROOT / "app.py").read_text(encoding="utf-8")
     styles = (ROOT / "ui" / "styles.py").read_text(encoding="utf-8")
 
     assert "def _render_navigation_scroll_reset" in source
-    assert 'querySelectorAll(\n          ".stAppViewContainer, .stMain"' in source
-    assert 'container.scrollTo({ top: 0, left: 0, behavior: "auto" })' in source
-    assert "new MutationObserver(resetScroll)" in source
-    assert "observer?.disconnect()" in source
+    assert 'querySelector(".stMain")' in source
+    assert 'main.scrollTo({ top: 0, left: 0, behavior: "auto" })' in source
+    assert 'main.style.overflowAnchor = "none"' in source
+    assert 'main.style.removeProperty("overflow-anchor")' in source
+    scroll_reset = source.split("def _render_navigation_scroll_reset", 1)[1].split(
+        "def _resolve_active_page", 1
+    )[0]
+    assert "MutationObserver" not in scroll_reset
+    assert "setTimeout" not in scroll_reset
+    assert scroll_reset.count(".scrollTo(") == 1
     assert 'navigation_changed = nav_target in pages or sidebar_changed' in source
     assert "if navigation_changed:" in source
     assert 'st.container(key="ms-navigation-reset-bridge")' in source
