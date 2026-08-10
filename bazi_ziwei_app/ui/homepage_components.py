@@ -13,12 +13,11 @@ from ui.homepage_styles import get_homepage_css
 from ui.homepage_typing_effect import render_question_typing_effect
 from utils.navigation_state import enter_app
 from utils.session_privacy import PENDING_INQUIRY_KEY as PENDING_QUESTION_KEY
-from utils.session_privacy import touch_private_session
 
 
 HOME_VERSION = "v3.0.0"
 HOME_CACHE_VERSION_LABEL = "v3-immersive-inquiry-hero"
-HERO_BACKGROUND = Path(__file__).resolve().parents[1] / "assets" / "hero-sky-v1.png"
+HERO_BACKGROUND = Path(__file__).resolve().parents[1] / "assets" / "hero-sky-v1.webp"
 TYPEWRITER_QUESTIONS = (
     "今天我的运势如何？",
     "如何推算我的命盘？",
@@ -32,16 +31,11 @@ def _html(markup: str) -> None:
     st.markdown(normalized, unsafe_allow_html=True)
 
 
-def _open_inquiry_page(question: str = "") -> None:
-    """Enter the product and open AI inquiry, optionally carrying a question."""
-    normalized = str(question or "").strip()
-    if normalized:
-        st.session_state[PENDING_QUESTION_KEY] = normalized
-        touch_private_session(st.session_state)
-    else:
-        st.session_state.pop(PENDING_QUESTION_KEY, None)
+def _open_product_page(target: str) -> None:
+    """Enter the product on one explicit top-level destination."""
+    st.session_state.pop(PENDING_QUESTION_KEY, None)
     enter_app(st.session_state)
-    st.session_state["navigate_to"] = "AI问答"
+    st.session_state["navigate_to"] = target
     st.rerun()
 
 
@@ -50,7 +44,7 @@ def _render_question_composer() -> None:
     with st.container(key="ms2-question-composer"):
         question_column, submit_column = st.columns([7, 1], vertical_alignment="bottom")
         with question_column:
-            question = shadcn.input(
+            shadcn.input(
                 "",
                 key="ms2_home_question",
                 placeholder=TYPEWRITER_QUESTIONS[0],
@@ -66,11 +60,11 @@ def _render_question_composer() -> None:
                 width="stretch",
             )
         if submitted:
-            _open_inquiry_page(question)
+            _open_product_page("个人命盘")
 
 
 def _render_start_action() -> None:
-    """Render the primary CTA that opens the AI inquiry page."""
+    """Render the primary CTA that enters the daily guidance page."""
     with st.container(key="ms2-start-action"):
         started = st.button(
             "GET STARTED →",
@@ -78,7 +72,7 @@ def _render_start_action() -> None:
             type="secondary",
         )
     if started:
-        _open_inquiry_page()
+        _open_product_page("今日/年度建议")
 
 
 def _render_immersive_hero() -> None:
@@ -89,7 +83,7 @@ def _render_immersive_hero() -> None:
             _html(
                 """
                 <section class="ms2-hero-copy" id="ms2-main" tabindex="-1">
-                  <h1><em>看见</em>你的命数。</h1>
+                  <h1>看见  你的命数。</h1>
                   <p class="ms2-hero-lede"><strong>从命盘出发，回答此刻真正关心的问题。</strong><br>
                   结合本地规则与 AI 分析，看见趋势、机遇与选择空间。</p>
                 </section>

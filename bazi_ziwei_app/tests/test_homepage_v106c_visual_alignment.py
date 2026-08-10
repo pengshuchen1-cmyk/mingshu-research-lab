@@ -23,13 +23,10 @@ class HomepageImmersiveVisualAlignmentTests(unittest.TestCase):
         self.assertNotIn(".st-key-editorial-product-nav", css)
         self.assertIn("if active_page != LANDING_PAGE_NAME:", app)
 
-    def test_question_input_routes_through_guarded_inquiry_page(self):
+    def test_homepage_entry_actions_route_to_today_and_chart(self):
         component = (ROOT / "ui" / "homepage_components.py").read_text(encoding="utf-8")
-        inquiry = (ROOT / "ui" / "inquiry_page.py").read_text(encoding="utf-8")
-        self.assertIn("PENDING_QUESTION_KEY", component)
-        self.assertIn("pop_pending_question(st.session_state)", inquiry)
-        self.assertIn("question = pending or suggested or typed", inquiry)
-        self.assertIn("_answer(chart, question)", inquiry)
+        self.assertIn('_open_product_page("今日/年度建议")', component)
+        self.assertIn('_open_product_page("个人命盘")', component)
 
     def test_mobile_landing_overlays_submit_button_without_fixed_widths(self):
         css = (ROOT / "ui" / "homepage_styles.py").read_text(encoding="utf-8")
