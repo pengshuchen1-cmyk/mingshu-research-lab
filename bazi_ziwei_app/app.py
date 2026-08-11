@@ -20,6 +20,7 @@ from ui.inquiry_page import render_inquiry_page
 from ui.five_element_page import render_five_element_page
 from ui.life_overview_page import render_life_overview_page
 from ui.home import render_home
+from ui.homepage_helix_effect import render_product_background
 from ui.luck_page import render_luck_page
 from ui.profile_form import render_profile_form
 from ui.privacy_center_page import render_privacy_center_page
@@ -278,6 +279,7 @@ def main() -> None:
     st.session_state["active_product_page"] = active_page
     navigation_changed = nav_target in pages or sidebar_changed
     if active_page != LANDING_PAGE_NAME:
+        render_product_background()
         render_product_navigation(active_page)
         render_main_content_anchor()
     pages[active_page]()

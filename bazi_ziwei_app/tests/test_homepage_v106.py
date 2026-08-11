@@ -5,18 +5,20 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
-class HomepageV3Tests(unittest.TestCase):
+class HomepageV4Tests(unittest.TestCase):
     def test_homepage_modules_and_version_marker_exist(self):
         home_text = (ROOT / "ui" / "home.py").read_text(encoding="utf-8")
         components = (ROOT / "ui" / "homepage_components.py").read_text(encoding="utf-8")
-        self.assertIn('HOME_VERSION = "v3.0.0"', components)
+        self.assertIn('HOME_VERSION = "v4.1.0"', components)
+        self.assertIn("render_helix_background", components)
         self.assertIn("render_homepage_landing", home_text)
-        self.assertTrue((ROOT / "assets" / "hero-sky-v1.webp").exists())
+        self.assertTrue((ROOT / "assets" / "hero-celestial-helix-v1.webp").exists())
 
     def test_homepage_contains_required_immersive_sections(self):
         text = (ROOT / "ui" / "homepage_components.py").read_text(encoding="utf-8")
         for phrase in [
-            "<h1>看见  你的命数。</h1>",
+            '<p class="ms2-hero-kicker">看见你的</p>',
+            "<h1>命数</h1>",
             "今天我的运势如何？",
             "如何推算我的命盘？",
             "今年是我的本命年，我的事业和爱情怎么样？",
@@ -50,7 +52,7 @@ class HomepageV3Tests(unittest.TestCase):
             ".st-key-ms2-question-composer",
             "linear-gradient",
             "object-fit: cover",
-            "@media (max-width: 768px)",
+            "@media (max-width: 860px)",
             "prefers-reduced-motion: reduce",
         ]:
             self.assertIn(token, text)

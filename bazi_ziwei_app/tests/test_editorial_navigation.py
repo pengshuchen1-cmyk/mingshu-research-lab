@@ -129,21 +129,32 @@ def test_main_container_uses_current_streamlit_selector_without_default_top_gap(
     assert ".main .block-container" not in homepage_styles
 
 
-def test_desktop_navigation_is_flat_and_stays_in_document_flow():
+def test_desktop_navigation_uses_celestial_glass_and_stays_in_document_flow():
     styles = (ROOT / "ui" / "styles.py").read_text(encoding="utf-8")
 
     nav_rule = styles.split(".st-key-editorial-product-nav {", 1)[1].split("}", 1)[0]
     assert "position: relative" in nav_rule
-    assert "border-radius: 0" in nav_rule
-    assert "box-shadow: none" in nav_rule
-    assert "backdrop-filter" not in nav_rule
+    assert "border-radius: 22px" in nav_rule
+    assert "box-shadow:" in nav_rule
+    assert "backdrop-filter: blur(22px)" in nav_rule
     active_rule = styles.split(
         '.st-key-editorial-product-nav .stButton button[kind="primary"] {', 1
     )[1].split("}", 1)[0]
-    assert "border-top: 0" in active_rule
-    assert "border-right: 0" in active_rule
-    assert "border-bottom: 2px solid var(--ms-action)" in active_rule
-    assert "border-left: 0" in active_rule
+    assert "background: var(--ms-accent-soft)" in active_rule
+    assert "border: 1px solid rgba(242, 168, 95, .34)" in active_rule
+
+
+def test_inner_product_pages_mount_the_shared_celestial_background():
+    source = (ROOT / "app.py").read_text(encoding="utf-8")
+    effect = (ROOT / "ui" / "homepage_helix_effect.py").read_text(encoding="utf-8")
+
+    assert "from ui.homepage_helix_effect import render_product_background" in source
+    entered = source.split("if active_page != LANDING_PAGE_NAME:", 1)[1]
+    assert entered.index("render_product_background()") < entered.index(
+        "render_product_navigation(active_page)"
+    )
+    assert '"target_selector": ".stMain"' in effect
+    assert '"canvas_class": "ms-product-celestial-canvas"' in effect
 
 
 def test_home_and_inner_pages_share_one_stable_content_width():
