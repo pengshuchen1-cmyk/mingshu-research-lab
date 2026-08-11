@@ -1,4 +1,4 @@
-"""命数研究室 · 编辑式浅色视觉基础。"""
+"""命数研究室 · 深色星空产品视觉基础。"""
 
 ELEMENT_COLORS = {
     "木": "#4F8A5B",
@@ -29,35 +29,35 @@ def get_global_css() -> str:
     """返回完整的全局 CSS 字符串，在 app.py 入口注入。"""
     return """
     :root {
-        --ms-surface: #FAFAFA;
-        --ms-surface-muted: #F4F4F5;
-        --ms-panel: #FFFFFF;
-        --ms-ink: #18181B;
-        --ms-muted: #71717A;
-        --ms-line: rgba(24, 24, 27, .14);
-        --ms-action: #BE185D;
-        --ms-action-hover: #9D174D;
-        --ms-on-action: #FFFFFF;
-        --ms-danger: #B91C1C;
-        --ms-radius: 12px;
+        --ms-surface: #030714;
+        --ms-surface-muted: rgba(16, 20, 31, .82);
+        --ms-panel: rgba(11, 15, 26, .78);
+        --ms-ink: #FFFDF9;
+        --ms-muted: #AEB4C2;
+        --ms-line: rgba(255, 244, 226, .14);
+        --ms-action: #F2A85F;
+        --ms-action-hover: #FFC47D;
+        --ms-on-action: #1A1009;
+        --ms-danger: #FF8A80;
+        --ms-radius: 18px;
         --ms-radius-small: 8px;
         --ms-bg: var(--ms-surface);
         --ms-bg-2: var(--ms-surface-muted);
         --ms-surface-2: var(--ms-surface-muted);
-        --ms-surface-soft: #FCE7F3;
+        --ms-surface-soft: rgba(242, 168, 95, .14);
         --ms-border: var(--ms-line);
-        --ms-border-strong: rgba(24, 24, 27, .28);
+        --ms-border-strong: rgba(255, 244, 226, .28);
         --ms-text: var(--ms-ink);
         --ms-text-strong: var(--ms-ink);
         --ms-readable-muted: var(--ms-muted);
         --ms-muted-2: var(--ms-muted);
         --ms-accent: var(--ms-action);
-        --ms-accent-soft: #FCE7F3;
-        --ms-success: #15803D;
-        --ms-info: #2563EB;
+        --ms-accent-soft: rgba(242, 168, 95, .14);
+        --ms-success: #79C99E;
+        --ms-info: #84BDF5;
         --ms-card-radius: var(--ms-radius);
-        --ms-shadow: 0 1px 2px rgba(24, 24, 27, .04), 0 1px 3px rgba(24, 24, 27, .06);
-        --ms-shadow-raised: 0 8px 24px rgba(24, 24, 27, .07);
+        --ms-shadow: 0 16px 42px rgba(0, 0, 0, .22);
+        --ms-shadow-raised: 0 24px 64px rgba(0, 0, 0, .34);
     }
 
     #root, .stApp, .stMain > div {
@@ -226,13 +226,14 @@ def get_global_css() -> str:
         position: relative !important;
         z-index: 10;
         width: 100%;
-        margin: 0 0 32px;
-        padding: 0 0 12px;
-        background: transparent;
-        border: 0;
-        border-bottom: 1px solid var(--ms-line);
-        border-radius: 0;
-        box-shadow: none;
+        margin: 0 0 38px;
+        padding: 8px;
+        background: rgba(8, 11, 20, .72);
+        border: 1px solid var(--ms-line);
+        border-radius: 22px;
+        box-shadow: 0 18px 48px rgba(0, 0, 0, .24);
+        backdrop-filter: blur(22px) saturate(118%);
+        -webkit-backdrop-filter: blur(22px) saturate(118%);
         transform: none;
     }
     .st-key-editorial-product-nav [data-testid="stHorizontalBlock"] {
@@ -241,20 +242,21 @@ def get_global_css() -> str:
     .st-key-editorial-product-nav .stButton button {
         min-height: 44px;
         border-color: transparent !important;
-        border-radius: 0 !important;
+        border-radius: 14px !important;
         background: transparent !important;
+        color: var(--ms-muted) !important;
         font-size: 14px;
+        transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease;
     }
     .st-key-editorial-product-nav .stButton button:hover {
-        background: var(--ms-surface-muted) !important;
+        background: rgba(255, 255, 255, .06) !important;
+        color: var(--ms-ink) !important;
     }
     .st-key-editorial-product-nav .stButton button[kind="primary"] {
-        background: transparent !important;
-        border-top: 0 !important;
-        border-right: 0 !important;
-        border-bottom: 2px solid var(--ms-action) !important;
-        border-left: 0 !important;
+        background: var(--ms-accent-soft) !important;
+        border: 1px solid rgba(242, 168, 95, .34) !important;
         color: var(--ms-action) !important;
+        box-shadow: inset 0 0 22px rgba(242, 168, 95, .06) !important;
     }
     .stButton button {
         min-height: 44px;
@@ -278,10 +280,172 @@ def get_global_css() -> str:
     .st-key-editorial-product-nav .stButton button[kind="primary"] span {
         color: var(--ms-action) !important;
     }
-    .stButton button:hover { background: var(--ms-surface-muted) !important; }
+    .stButton button:hover { background: rgba(255, 255, 255, .07) !important; }
     .stButton button[kind="primary"]:hover {
         background: var(--ms-action-hover) !important;
         border-color: var(--ms-action-hover) !important;
+    }
+    .st-key-editorial-product-nav .stButton button[kind="primary"]:hover {
+        background: rgba(242, 168, 95, .20) !important;
+        border-color: rgba(242, 168, 95, .42) !important;
+        color: var(--ms-action) !important;
+    }
+    .st-key-editorial-product-nav .stButton button[kind="primary"]:hover p,
+    .st-key-editorial-product-nav .stButton button[kind="primary"]:hover span {
+        color: var(--ms-action) !important;
+    }
+
+    /* Shared celestial product shell: quieter than the landing hero, but visibly related. */
+    body:not(:has(.st-key-ms2-home)) .stApp,
+    body:not(:has(.st-key-ms2-home)) .stMain {
+        color-scheme: dark;
+        background:
+            radial-gradient(circle at 82% 12%, rgba(116, 44, 25, .20), transparent 38%),
+            radial-gradient(circle at 12% 86%, rgba(11, 55, 88, .22), transparent 42%),
+            #030714 !important;
+    }
+    body:not(:has(.st-key-ms2-home)) .stMain > div {
+        position: relative;
+        z-index: 1;
+        background: transparent !important;
+    }
+    body:not(:has(.st-key-ms2-home)) [data-testid="stMainBlockContainer"] {
+        position: relative;
+        z-index: 2;
+    }
+    .ms-product-celestial-canvas {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        display: block;
+        width: 100%;
+        height: 100%;
+        opacity: .19;
+        filter: saturate(.82);
+        pointer-events: none;
+    }
+    div[data-testid="stLayoutWrapper"]:has(> .st-key-ms-product-celestial-bridge),
+    .st-key-ms-product-celestial-bridge {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        margin: 0 !important;
+        overflow: hidden !important;
+        pointer-events: none !important;
+    }
+    body:not(:has(.st-key-ms2-home)) [data-testid="stMainBlockContainer"]::before {
+        position: absolute;
+        inset: 0 1.1rem;
+        z-index: -1;
+        border: 1px solid rgba(255, 244, 226, .05);
+        border-radius: 30px;
+        background: linear-gradient(180deg, rgba(10, 14, 25, .56), rgba(5, 8, 17, .30));
+        box-shadow: 0 30px 90px rgba(0, 0, 0, .24);
+        backdrop-filter: blur(4px);
+        content: "";
+        pointer-events: none;
+    }
+
+    body:not(:has(.st-key-ms2-home)) .ms2-page-hero {
+        position: relative;
+        margin: 0 0 28px;
+        padding: clamp(28px, 5vw, 58px);
+        overflow: hidden;
+        border: 1px solid var(--ms-line);
+        border-radius: 26px;
+        background:
+            radial-gradient(circle at 82% 18%, rgba(242, 168, 95, .16), transparent 35%),
+            linear-gradient(135deg, rgba(20, 23, 35, .88), rgba(8, 12, 23, .72));
+        box-shadow: var(--ms-shadow-raised);
+    }
+    body:not(:has(.st-key-ms2-home)) .ms2-page-hero::after {
+        position: absolute;
+        top: -44%;
+        right: -8%;
+        width: min(42vw, 420px);
+        aspect-ratio: 1;
+        border: 1px solid rgba(242, 168, 95, .18);
+        border-radius: 50%;
+        box-shadow:
+            0 0 0 38px rgba(242, 168, 95, .025),
+            0 0 0 84px rgba(242, 168, 95, .018);
+        content: "";
+        pointer-events: none;
+    }
+    body:not(:has(.st-key-ms2-home)) .ms2-page-hero .ms2-kicker {
+        margin: 0 0 12px;
+        color: var(--ms-action) !important;
+        font-size: 12px;
+        font-weight: 760;
+        letter-spacing: .16em;
+    }
+    body:not(:has(.st-key-ms2-home)) .ms2-page-hero h1 {
+        position: relative;
+        z-index: 1;
+        margin: 0 0 16px !important;
+        font-size: clamp(3.6rem, 8vw, 6.8rem) !important;
+        line-height: .92 !important;
+    }
+    body:not(:has(.st-key-ms2-home)) .ms2-page-hero > p:last-child {
+        position: relative;
+        z-index: 1;
+        max-width: 42rem;
+        margin: 0;
+        color: var(--ms-muted) !important;
+        font-size: 16px;
+    }
+    body:not(:has(.st-key-ms2-home)):has(.ms2-page-hero)
+    div[data-testid="stHorizontalBlock"]:has(h3) > div[data-testid="stColumn"] {
+        min-height: 190px;
+        padding: 22px 24px;
+        border: 1px solid var(--ms-line);
+        border-radius: var(--ms-radius);
+        background: var(--ms-panel);
+        box-shadow: var(--ms-shadow);
+        backdrop-filter: blur(18px);
+    }
+
+    body:not(:has(.st-key-ms2-home)) div[data-testid="stExpander"],
+    body:not(:has(.st-key-ms2-home)) div[data-testid="stForm"],
+    body:not(:has(.st-key-ms2-home)) [data-testid="stNotification"],
+    body:not(:has(.st-key-ms2-home)) [data-testid="stChatInput"],
+    body:not(:has(.st-key-ms2-home)) [data-testid="stFileUploaderDropzone"] {
+        border-color: var(--ms-line) !important;
+        background: rgba(11, 15, 26, .78) !important;
+        box-shadow: var(--ms-shadow) !important;
+        backdrop-filter: blur(18px);
+    }
+    body:not(:has(.st-key-ms2-home)) input,
+    body:not(:has(.st-key-ms2-home)) textarea,
+    body:not(:has(.st-key-ms2-home)) [data-baseweb="select"] > div,
+    body:not(:has(.st-key-ms2-home)) [data-baseweb="input"] > div {
+        background: rgba(8, 12, 22, .86) !important;
+        color: var(--ms-ink) !important;
+    }
+    body:not(:has(.st-key-ms2-home)) input::placeholder,
+    body:not(:has(.st-key-ms2-home)) textarea::placeholder {
+        color: rgba(255, 253, 249, .48) !important;
+        opacity: 1 !important;
+    }
+    body:not(:has(.st-key-ms2-home)) [role="listbox"],
+    body:not(:has(.st-key-ms2-home)) [data-baseweb="popover"] > div {
+        border-color: var(--ms-line) !important;
+        background: #0C111D !important;
+        color: var(--ms-ink) !important;
+        box-shadow: var(--ms-shadow-raised) !important;
+    }
+    body:not(:has(.st-key-ms2-home)) [role="option"]:hover,
+    body:not(:has(.st-key-ms2-home)) [role="option"][aria-selected="true"] {
+        background: rgba(242, 168, 95, .14) !important;
+    }
+    body:not(:has(.st-key-ms2-home)) div[data-testid="stTabs"] [data-baseweb="tab-list"] {
+        border-bottom-color: var(--ms-line) !important;
+    }
+    body:not(:has(.st-key-ms2-home)) div[data-testid="stTabs"] button[role="tab"] {
+        color: var(--ms-muted) !important;
+    }
+    body:not(:has(.st-key-ms2-home)) div[data-testid="stTabs"] button[role="tab"][aria-selected="true"] {
+        color: var(--ms-action) !important;
     }
 
     /* AI inquiry: quiet, single-column conversation workspace. */
@@ -1616,13 +1780,15 @@ def get_global_css() -> str:
             z-index: 1000;
             margin: 0;
             padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
-            background: rgba(250, 250, 250, .98);
+            background: rgba(5, 8, 17, .92);
             border-top: 1px solid var(--ms-line);
             border-right: 0;
             border-bottom: 0;
             border-left: 0;
             border-radius: 0;
-            box-shadow: 0 -4px 18px rgba(24, 24, 27, .08);
+            box-shadow: 0 -10px 34px rgba(0, 0, 0, .34);
+            backdrop-filter: blur(22px) saturate(118%);
+            -webkit-backdrop-filter: blur(22px) saturate(118%);
             transform: none;
         }
         .st-key-editorial-product-nav [data-testid="stHorizontalBlock"] {
@@ -1646,13 +1812,34 @@ def get_global_css() -> str:
             background: transparent !important;
         }
         .st-key-editorial-product-nav .stButton button[kind="primary"] {
-            background: var(--ms-action) !important;
-            color: var(--ms-on-action) !important;
+            background: var(--ms-accent-soft) !important;
+            border-color: rgba(242, 168, 95, .30) !important;
+            color: var(--ms-action) !important;
         }
         .st-key-editorial-product-nav .stButton button[kind="primary"] p,
         .st-key-editorial-product-nav .stButton button[kind="primary"] span {
-            color: var(--ms-on-action) !important;
+            color: var(--ms-action) !important;
         }
+        body:not(:has(.st-key-ms2-home)) [data-testid="stMainBlockContainer"]::before {
+            inset: 0;
+            border-right: 0;
+            border-left: 0;
+            border-radius: 0;
+        }
+        body:not(:has(.st-key-ms2-home)) .ms2-page-hero {
+            margin-bottom: 18px;
+            padding: 26px 20px;
+            border-radius: 22px;
+        }
+        body:not(:has(.st-key-ms2-home)) .ms2-page-hero h1 {
+            font-size: clamp(3rem, 18vw, 4.7rem) !important;
+        }
+        body:not(:has(.st-key-ms2-home)):has(.ms2-page-hero)
+        div[data-testid="stHorizontalBlock"]:has(h3) > div[data-testid="stColumn"] {
+            min-height: 0;
+            padding: 18px 16px;
+        }
+        .ms-product-celestial-canvas { opacity: .14; }
         .st-key-ms5-profile-card [data-testid="stHorizontalBlock"] {
             display: grid !important;
             grid-template-columns: minmax(0, 1fr) !important;

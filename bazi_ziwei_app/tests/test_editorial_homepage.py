@@ -27,14 +27,33 @@ def test_homepage_renders_one_immersive_hero_in_reading_order():
     assert calls == ["_render_immersive_hero"]
 
 
-def test_homepage_uses_project_owned_background_and_origin_inspired_copy():
+def test_homepage_uses_project_owned_background_and_reference_aligned_copy():
     source = _source("homepage_components.py")
 
-    assert 'assets" / "hero-sky-v1.webp"' in source
+    assert '"hero-celestial-helix-v1.webp"' in source
     assert "useorigin.com" not in source
-    assert "<h1>看见  你的命数。</h1>" in source
+    assert '<p class="ms2-hero-kicker">看见你的</p>' in source
+    assert "<h1>命数</h1>" in source
     assert "从命盘出发，回答此刻真正关心的问题。" in source
     assert "本地排盘 · 隐私优先 · 结论仅供参考" in source
+
+
+def test_homepage_removes_help_identity_and_dashboard_cards():
+    source = _source("homepage_components.py")
+    css = _source("homepage_styles.py")
+
+    for removed in [
+        "HOME_DASHBOARD_CARDS",
+        "ms2-dashboard-grid",
+        "ms2-dashboard-card",
+        "ms2-help",
+        "ms2-profile",
+        "命理探索者",
+    ]:
+        assert removed not in source
+        assert removed not in css
+    assert 'st.container(key="ms2-hero-stage")' in source
+    assert "render_helix_background()" in source
 
 
 def test_homepage_uses_one_shadcn_input_and_one_submit_button():
@@ -62,8 +81,8 @@ def test_homepage_restores_the_start_cta_above_the_question_composer():
         "_render_question_composer()"
     )
     assert ".st-key-ms2-start-action" in css
-    assert "align-items: center !important" in css
-    assert "min-height: 64px" in css
+    assert "width: max-content !important" in css
+    assert "min-height: 48px" in css
 
 
 def test_homepage_exposes_only_the_three_typewriter_questions():
@@ -132,11 +151,11 @@ def test_homepage_glass_visual_contract_is_scoped_and_responsive():
 
     for token in [
         'body:has(.st-key-ms2-home)',
-        'backdrop-filter: blur(24px)',
+        'backdrop-filter: blur(22px)',
         'border-radius: 999px',
         '.st-key-ms2-question-composer',
         'min-height: 100dvh',
-        '@media (max-width: 768px)',
+        '@media (max-width: 860px)',
         'prefers-reduced-motion: reduce',
     ]:
         assert token in css
@@ -145,6 +164,22 @@ def test_homepage_glass_visual_contract_is_scoped_and_responsive():
     assert 'position: absolute !important' in css
     assert '.st-key-ms2-question-composer:focus-within' in css
     assert "Origin" not in css.split('"""', 2)[-1]
+
+
+def test_homepage_focuses_on_one_hero_panel_and_reflows_for_mobile():
+    css = _source("homepage_styles.py")
+
+    assert ".st-key-ms2-hero-stage" in css
+    assert ".st-key-ms2-primary-panel" in css
+    assert ".ms2-helix-canvas" in css
+    assert ".st-key-ms2-hero::before {\n        z-index: 1" in css
+    canvas_css = css.split(".ms2-helix-canvas {", 1)[1].split("}", 1)[0]
+    assert "z-index: 2" in canvas_css
+    assert "mask-image: linear-gradient" in canvas_css
+    assert "grid-template-areas:" not in css
+    phone = css.split("@media (max-width: 860px)", 1)[1]
+    assert "min-height: 100dvh" in phone
+    assert "align-items: flex-start" in phone
 
 
 def test_homepage_background_has_fixed_dimensions_before_paint():
