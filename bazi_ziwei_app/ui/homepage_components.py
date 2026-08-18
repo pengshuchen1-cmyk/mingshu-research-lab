@@ -1,4 +1,4 @@
-"""Cinematic public homepage components."""
+"""Legacy static homepage components retained for compatibility."""
 
 from __future__ import annotations
 
@@ -10,18 +10,17 @@ import streamlit as st
 import streamlit_shadcn_ui as shadcn
 
 from ui.homepage_styles import get_homepage_css
-from ui.homepage_helix_effect import render_helix_background
 from ui.homepage_typing_effect import render_question_typing_effect
 from utils.navigation_state import enter_app
 from utils.session_privacy import PENDING_INQUIRY_KEY as PENDING_QUESTION_KEY
 
 
-HOME_VERSION = "v4.1.0"
-HOME_CACHE_VERSION_LABEL = "v4-animated-celestial-helix"
+HOME_VERSION = "v5.0.0"
+HOME_CACHE_VERSION_LABEL = "v5-static-sky"
 HERO_BACKGROUND = (
     Path(__file__).resolve().parents[1]
     / "assets"
-    / "hero-celestial-helix-v1.webp"
+    / "hero-sky-v1.webp"
 )
 TYPEWRITER_QUESTIONS = (
     "今天我的运势如何？",
@@ -98,10 +97,9 @@ def _render_masthead() -> None:
 
 
 def _render_immersive_hero() -> None:
-    """Render the focused hero over an animated celestial double helix."""
+    """Render the retained static hero when invoked by legacy callers."""
     with st.container(key="ms2-hero"):
         st.image(str(HERO_BACKGROUND), width="stretch")
-        render_helix_background()
         with st.container(key="ms2-hero-content"):
             _render_masthead()
             with st.container(key="ms2-hero-stage"):

@@ -6,7 +6,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class HomepageImmersiveVisualAlignmentTests(unittest.TestCase):
-    def test_homepage_has_animated_celestial_hero_contract(self):
+    def test_legacy_homepage_has_static_hero_contract(self):
         component = (ROOT / "ui" / "homepage_components.py").read_text(encoding="utf-8")
         css = (ROOT / "ui" / "homepage_styles.py").read_text(encoding="utf-8")
         self.assertIn('st.container(key="ms2-hero")', component)
@@ -16,14 +16,15 @@ class HomepageImmersiveVisualAlignmentTests(unittest.TestCase):
         self.assertIn("font-weight: 760", css)
         self.assertIn("border-radius: 999px", css)
         self.assertIn("box-shadow: 0 18px 38px rgba(0, 0, 0, .30)", css)
-        self.assertIn(".ms2-helix-canvas", css)
+        self.assertNotIn(".ms2-helix-canvas", css)
         self.assertNotIn(".st-key-ms2-dashboard-grid", css)
 
     def test_landing_page_does_not_render_or_style_product_navigation(self):
         css = (ROOT / "ui" / "homepage_styles.py").read_text(encoding="utf-8")
         app = (ROOT / "app.py").read_text(encoding="utf-8")
         self.assertNotIn(".st-key-editorial-product-nav", css)
-        self.assertIn("if active_page != LANDING_PAGE_NAME:", app)
+        self.assertNotIn("LANDING_PAGE_NAME", app)
+        self.assertNotIn("render_home", app)
 
     def test_homepage_entry_actions_route_to_today_and_chart(self):
         component = (ROOT / "ui" / "homepage_components.py").read_text(encoding="utf-8")

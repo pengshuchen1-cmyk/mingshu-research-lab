@@ -19,11 +19,9 @@ from ui.bazi_page import render_bazi_page
 from ui.inquiry_page import render_inquiry_page
 from ui.five_element_page import render_five_element_page
 from ui.life_overview_page import render_life_overview_page
-from ui.home import render_home
-from ui.homepage_helix_effect import render_product_background
 from ui.luck_page import render_luck_page
+from ui.my_page import render_my_page
 from ui.profile_form import render_profile_form
-from ui.privacy_center_page import render_privacy_center_page
 from ui.report_page import render_report_page
 from ui.settings_page import render_settings_page
 from ui.sixty_jiazi_page import render_sixty_jiazi_page
@@ -34,9 +32,7 @@ from ui.ziwei_page import render_ziwei_page
 from utils.database import init_db
 from utils.navigation_state import (
     DEFAULT_APP_PAGE,
-    LANDING_PAGE_NAME,
     enter_app,
-    has_entered_app,
 )
 from utils.runtime_mode import is_public_mode
 from utils.release_privacy import assert_public_release_safe
@@ -47,7 +43,7 @@ PUBLIC_PAGE_NAMES = ("今日/年度建议", "个人命盘", "AI问答", "简明�
 PRODUCT_NAV_ITEMS = (
     ("今日", "今日/年度建议"),
     ("命盘", "个人命盘"),
-    ("问答", "AI问答"),
+    ("问AI", "AI问答"),
     ("报告", "简明报告"),
     ("我的", "设置/档案"),
 )
@@ -185,12 +181,11 @@ def render_compliance_footer() -> None:
 def get_pages() -> dict:
     """返回全部可访问页面。"""
     pages = {
-        "首页": render_home,
         "今日/年度建议": render_yearly_page,
         "个人命盘": render_life_overview_page,
         "简明报告": render_report_page,
         "AI问答": render_inquiry_page,
-        "设置/档案": render_privacy_center_page if is_public_mode() else render_archive_page,
+        "设置/档案": render_my_page,
         "验收中心": render_acceptance_page,
         "新建命盘": render_profile_form,
         "八字排盘": render_bazi_page,
@@ -236,52 +231,40 @@ def main() -> None:
     pages = get_pages()
     sidebar_pages = get_sidebar_pages(pages)
 
-    # 首页是独立入口；进入产品后才渲染五项导航与键盘回退侧栏。
+    # 产品直接进入“今日”；侧栏只保留为键盘/辅助技术回退入口。
     nav_target = st.session_state.pop("navigate_to", None)
-    if nav_target in pages and nav_target != LANDING_PAGE_NAME:
-        enter_app(st.session_state)
-    if has_entered_app(st.session_state):
-        if nav_target == LANDING_PAGE_NAME:
-            nav_target = DEFAULT_APP_PAGE
-        if nav_target in sidebar_pages:
-            st.session_state["sidebar_navigation"] = nav_target
-        elif st.session_state.get("sidebar_navigation") not in sidebar_pages:
-            st.session_state["sidebar_navigation"] = DEFAULT_APP_PAGE
+    enter_app(st.session_state)
+    if nav_target in sidebar_pages:
+        st.session_state["sidebar_navigation"] = nav_target
+    elif st.session_state.get("sidebar_navigation") not in sidebar_pages:
+        st.session_state["sidebar_navigation"] = DEFAULT_APP_PAGE
 
-        st.sidebar.markdown(
-            '<div class="sidebar-title">命数研究室</div>'
-            '<div class="sidebar-subtitle">八字 · 紫微 · 命理分析</div>',
-            unsafe_allow_html=True,
-        )
-        previous_sidebar = st.session_state.get("last_sidebar_navigation")
-        selected = st.sidebar.radio(
-            "导航",
-            list(sidebar_pages.keys()),
-            key="sidebar_navigation",
-            label_visibility="collapsed",
-        )
-        sidebar_changed = previous_sidebar is not None and selected != previous_sidebar
-        st.session_state["last_sidebar_navigation"] = selected
-        persisted_page = st.session_state.get("active_product_page")
-        if persisted_page == LANDING_PAGE_NAME:
-            persisted_page = None
-        active_page = _resolve_active_page(
-            nav_target,
-            persisted_page,
-            selected,
-            pages,
-            sidebar_pages,
-            sidebar_changed=sidebar_changed,
-        )
-    else:
-        sidebar_changed = False
-        active_page = LANDING_PAGE_NAME
+    st.sidebar.markdown(
+        '<div class="sidebar-title">命数研究室</div>'
+        '<div class="sidebar-subtitle">八字 · 紫微 · 命理分析</div>',
+        unsafe_allow_html=True,
+    )
+    previous_sidebar = st.session_state.get("last_sidebar_navigation")
+    selected = st.sidebar.radio(
+        "导航",
+        list(sidebar_pages.keys()),
+        key="sidebar_navigation",
+        label_visibility="collapsed",
+    )
+    sidebar_changed = previous_sidebar is not None and selected != previous_sidebar
+    st.session_state["last_sidebar_navigation"] = selected
+    active_page = _resolve_active_page(
+        nav_target,
+        st.session_state.get("active_product_page"),
+        selected,
+        pages,
+        sidebar_pages,
+        sidebar_changed=sidebar_changed,
+    )
     st.session_state["active_product_page"] = active_page
     navigation_changed = nav_target in pages or sidebar_changed
-    if active_page != LANDING_PAGE_NAME:
-        render_product_background()
-        render_product_navigation(active_page)
-        render_main_content_anchor()
+    render_product_navigation(active_page)
+    render_main_content_anchor()
     pages[active_page]()
     render_compliance_footer()
     if navigation_changed:

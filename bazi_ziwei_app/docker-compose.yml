@@ -5,11 +5,11 @@ services:
     build: .
     container_name: mingshu-app
     ports:
-      - "80:8501"
+      - "8051:8501"
     environment:
       - MINGSHU_RUNTIME_MODE=public
       # 如果有 Kimi API Key，取消注释下面这行
-      # - MOONSHOT_API_KEY=sk-你的密钥
-      # - MINGSHU_AI_PROVIDER=kimi
-      # - MINGSHU_AI_MODEL=kimi-k3
+      - MOONSHOT_API_KEY=${MOONSHOT_API_KEY:-}
+      - MINGSHU_AI_PROVIDER=kimi
+      - MINGSHU_AI_MODEL=kimi-k3
     restart: unless-stopped

@@ -10,7 +10,7 @@ class InquiryLuckV106CVisualAlignmentTests(unittest.TestCase):
         expected = {
             "inquiry_page.py": [
                 "ms-inquiry-page",
-                "ms-inquiry-topline",
+                "page_header(",
                 "ms-inquiry-context",
                 "ms-inquiry-thread",
             ],
@@ -57,6 +57,9 @@ class InquiryLuckV106CVisualAlignmentTests(unittest.TestCase):
         ]:
             self.assertNotIn(removed, inquiry)
         self.assertIn("本地规则校验 · 对话最多保留 20 条", inquiry)
+        self.assertIn("empty_state_header(", inquiry)
+        self.assertIn('page_header(\n            "命理助手"', inquiry)
+        self.assertNotIn('st.title("AI问答")', inquiry)
         self.assertIn("render_loaded_profile_hint", inquiry)
         self.assertIn("当前命盘的本地规则摘要", inquiry)
         self.assertIn('key="ms_inquiry_chat_input"', inquiry)

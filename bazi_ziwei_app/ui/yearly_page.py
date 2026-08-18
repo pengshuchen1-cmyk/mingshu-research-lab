@@ -28,6 +28,92 @@ from ui.bazi_components import CACHE_VERSION
 from utils.analysis_session_cache import get_or_build_year_analysis
 
 _ACTIVE_MONTH_KEY = "ms3_active_month_index"
+_TODAY_VIEW_KEY = "ms_today_view"
+_REFLECTION_PERIOD_KEY = "ms_reflection_period"
+
+
+def _daily_score(daily: dict | None) -> int | None:
+    """Return a fixed self-reflection starting point, never an engine score."""
+    return 88 if daily else None
+
+
+def build_reflection_cards(daily: dict | None, yearly: dict, period: str) -> list[dict]:
+    """Reuse local daily guidance as reflection prompts, never as diagnosis."""
+    if period in {"周", "月"}:
+        period_copy = "这一周" if period == "周" else "这个月"
+        return [
+            {"title": "现实进展", "prompt": f"{period_copy}，哪些事情真实发生了变化，哪些还只是想法？"},
+            {"title": "精力分配", "prompt": f"{period_copy}，什么最消耗我，什么确实帮助我恢复？"},
+            {"title": "下一小步", "prompt": f"基于{period_copy}已经发生的事实，我愿意完成哪一个可验证的小行动？"},
+        ]
+    if period == "年":
+        focus = str(yearly.get("focus") or "整理年度重点")
+        theme = str(yearly.get("theme") or "边行动边校准")
+        actions = yearly.get("actions") or []
+        action = str(actions[0]) if actions else "选择一个长期方向"
+        return [
+            {"title": "年度主题", "prompt": f"面对“{theme}”，今年我最想守住的现实重点是什么？"},
+            {"title": "长期方向", "prompt": f"围绕“{focus}”，哪些现实反馈值得持续记录？"},
+            {"title": "年度行动", "prompt": f"怎样把“{action}”拆成可复盘的小步骤？"},
+        ]
+    daily = daily or {}
+    details = daily.get("details") or {}
+    focus = str(daily.get("focus") or "整理当下重点")
+    reminder = str(daily.get("reminder") or "避免过度消耗")
+    relaxation = str(details.get("relaxation") or "给自己留一点安静恢复的时间")
+    return [
+        {"title": "注意力", "prompt": f"今天，什么事情最值得我把注意力放在“{focus}”上？"},
+        {"title": "边界感", "prompt": f"当我发现自己开始“{reminder}”时，可以用什么现实信号提醒自己停一下？"},
+        {"title": "恢复力", "prompt": f"今天，怎样把“{relaxation}”变成一个真正能完成的小行动？"},
+    ]
+
+
+def _render_reflection_view(daily: dict | None, yearly: dict) -> None:
+    st.markdown("## 心理解读")
+    st.caption("日与年复用相应公开建议；周/月仅做现实复盘，不包含周期预测。不是心理诊断，也不是确定预测。")
+    periods = ("日", "周", "月", "年")
+    current = st.session_state.get(_REFLECTION_PERIOD_KEY, "日")
+    columns = st.columns(4)
+    for column, period in zip(columns, periods):
+        if column.button(
+            period,
+            key=f"reflection_period_{period}",
+            type="primary" if current == period else "secondary",
+            use_container_width=True,
+        ):
+            st.session_state[_REFLECTION_PERIOD_KEY] = period
+            st.rerun()
+    current = st.session_state.get(_REFLECTION_PERIOD_KEY, "日")
+    for index, item in enumerate(build_reflection_cards(daily, yearly, current), start=1):
+        st.markdown(
+            '<article class="ms-reflection-card">'
+            f'<span>{index:02d}</span><h3>{escape(item["title"])}</h3>'
+            f'<p>{escape(item["prompt"])}</p>'
+            '</article>',
+            unsafe_allow_html=True,
+        )
+    if st.button("返回今日概览", use_container_width=True):
+        st.session_state[_TODAY_VIEW_KEY] = "overview"
+        st.rerun()
+
+
+def _render_today_score(daily: dict | None) -> None:
+    score = _daily_score(daily)
+    if score is None:
+        return
+    theme = str((daily or {}).get("theme") or "稳定节奏")
+    with st.container(key="ms-today-score-card"):
+        st.markdown(
+            '<div class="ms-today-score-copy">'
+            '<span>今日得分</span>'
+            f'<strong>{score}</strong><small>/ 100</small>'
+            f'<p>{escape(theme)} · 默认自评起点，可按现实感受理解，不是命理评分</p>'
+            '</div>',
+            unsafe_allow_html=True,
+        )
+        if st.button("查看心理解读", type="primary", use_container_width=True):
+            st.session_state[_TODAY_VIEW_KEY] = "reflection"
+            st.rerun()
 
 
 def _toggle_active_month(index: int) -> None:
@@ -558,7 +644,11 @@ def render_yearly_page():
         st.warning("今日内容暂时无法生成；年度建议仍可阅读，请稍后再试。")
 
     yearly_view = build_yearly_guidance_view(advice=yearly)
+    if daily is not None and st.session_state.get(_TODAY_VIEW_KEY, "overview") == "reflection":
+        _render_reflection_view(daily, yearly_view)
+        return
     _render_public_guidance_hero(daily, yearly_view)
+    _render_today_score(daily)
     _render_guidance_details(daily, yearly_view)
     st.divider()
     st.markdown("## 个人年度分析")

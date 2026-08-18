@@ -30,7 +30,7 @@ def test_homepage_renders_one_immersive_hero_in_reading_order():
 def test_homepage_uses_project_owned_background_and_reference_aligned_copy():
     source = _source("homepage_components.py")
 
-    assert '"hero-celestial-helix-v1.webp"' in source
+    assert '"hero-sky-v1.webp"' in source
     assert "useorigin.com" not in source
     assert '<p class="ms2-hero-kicker">看见你的</p>' in source
     assert "<h1>命数</h1>" in source
@@ -53,7 +53,7 @@ def test_homepage_removes_help_identity_and_dashboard_cards():
         assert removed not in source
         assert removed not in css
     assert 'st.container(key="ms2-hero-stage")' in source
-    assert "render_helix_background()" in source
+    assert "render_helix_background" not in source
 
 
 def test_homepage_uses_one_shadcn_input_and_one_submit_button():
@@ -171,11 +171,7 @@ def test_homepage_focuses_on_one_hero_panel_and_reflows_for_mobile():
 
     assert ".st-key-ms2-hero-stage" in css
     assert ".st-key-ms2-primary-panel" in css
-    assert ".ms2-helix-canvas" in css
-    assert ".st-key-ms2-hero::before {\n        z-index: 1" in css
-    canvas_css = css.split(".ms2-helix-canvas {", 1)[1].split("}", 1)[0]
-    assert "z-index: 2" in canvas_css
-    assert "mask-image: linear-gradient" in canvas_css
+    assert ".ms2-helix-canvas" not in css
     assert "grid-template-areas:" not in css
     phone = css.split("@media (max-width: 860px)", 1)[1]
     assert "min-height: 100dvh" in phone

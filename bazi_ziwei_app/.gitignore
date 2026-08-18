@@ -16,3 +16,4 @@ logs/
 !.env.example
 acceptance_runs/
 .superpowers/
+docker-compose.yml

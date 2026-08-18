@@ -49,7 +49,6 @@ class V1LocalFeatureTests(unittest.TestCase):
         pages = list(get_pages().keys())
 
         for page_name in [
-            "首页",
             "验收中心",
             "新建命盘",
             "八字排盘",

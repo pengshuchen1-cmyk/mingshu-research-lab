@@ -12,5 +12,5 @@ def test_ui_uses_current_streamlit_iframe_api_only():
 
     assert "streamlit.components.v1" not in ui_sources
     assert "components.html(" not in ui_sources
-    assert ui_sources.count("st.iframe(") == 6
-    assert "build_helix_background_script" in ui_sources
+    assert ui_sources.count("st.iframe(") == 4
+    assert "build_helix_background_script" not in ui_sources

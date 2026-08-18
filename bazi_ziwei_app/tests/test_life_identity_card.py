@@ -190,5 +190,5 @@ def test_identity_card_replaces_the_old_parallel_tag_path_and_has_mobile_css():
         assert f".ms-identity-pattern-{pattern}" in styles
     assert "@media (max-width: 768px)" in styles
     assert "grid-template-columns: 1fr" in styles
-    assert "ms-product-celestial-canvas" in styles
-    assert "linear-gradient" in styles
+    assert "ms-product-celestial-canvas" not in styles
+    assert "background: var(--ms-panel)" in styles

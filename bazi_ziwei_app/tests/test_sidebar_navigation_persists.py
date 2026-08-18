@@ -42,7 +42,7 @@ class SidebarNavigationPersistsTest(unittest.TestCase):
         self.assertIn('key="sidebar_navigation"', text)
         self.assertIn("st.sidebar.radio", text)
         self.assertLess(
-            text.index("if has_entered_app(st.session_state):"),
+            text.index("enter_app(st.session_state)"),
             text.index("st.sidebar.radio"),
         )
         self.assertIn("def _resolve_active_page", text)

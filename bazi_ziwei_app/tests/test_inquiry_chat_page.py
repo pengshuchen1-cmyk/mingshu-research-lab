@@ -603,4 +603,4 @@ def test_ai_question_page_is_reachable_from_product_navigation():
     import app
 
     assert app.get_pages()["AI问答"].__name__ == "render_inquiry_page"
-    assert ("问答", "AI问答") in app.PRODUCT_NAV_ITEMS
+    assert ("问AI", "AI问答") in app.PRODUCT_NAV_ITEMS

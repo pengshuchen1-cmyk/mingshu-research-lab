@@ -9,10 +9,10 @@ class HomepageV4Tests(unittest.TestCase):
     def test_homepage_modules_and_version_marker_exist(self):
         home_text = (ROOT / "ui" / "home.py").read_text(encoding="utf-8")
         components = (ROOT / "ui" / "homepage_components.py").read_text(encoding="utf-8")
-        self.assertIn('HOME_VERSION = "v4.1.0"', components)
-        self.assertIn("render_helix_background", components)
+        self.assertIn('HOME_VERSION = "v5.0.0"', components)
+        self.assertNotIn("render_helix_background", components)
         self.assertIn("render_homepage_landing", home_text)
-        self.assertTrue((ROOT / "assets" / "hero-celestial-helix-v1.webp").exists())
+        self.assertTrue((ROOT / "assets" / "hero-sky-v1.webp").exists())
 
     def test_homepage_contains_required_immersive_sections(self):
         text = (ROOT / "ui" / "homepage_components.py").read_text(encoding="utf-8")

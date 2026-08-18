@@ -53,12 +53,26 @@ class _FakeStreamlit(types.ModuleType):
 
     def radio(self, label, options, **kwargs):
         self.radio_calls.append((label, tuple(options), "form" in self.context_stack, kwargs))
-        return self.values.get(label, options[kwargs.get("index", 0)])
+        selected = self.values.get(label)
+        if selected is None and kwargs.get("key") in self.session_state:
+            selected = self.session_state[kwargs["key"]]
+        if selected is None:
+            selected = options[kwargs.get("index", 0)]
+        if kwargs.get("key"):
+            self.session_state[kwargs["key"]] = selected
+        return selected
 
     def selectbox(self, label, options, **kwargs):
         options = list(options)
         self.selectbox_calls.append((label, tuple(options), kwargs))
-        return self.values.get(label, options[kwargs.get("index", 0)])
+        selected = self.values.get(label)
+        if selected is None and kwargs.get("key") in self.session_state:
+            selected = self.session_state[kwargs["key"]]
+        if selected not in options:
+            selected = options[kwargs.get("index", 0)]
+        if kwargs.get("key"):
+            self.session_state[kwargs["key"]] = selected
+        return selected
 
     def date_input(self, label, **kwargs):
         self.date_input_calls.append(label)
@@ -83,45 +97,85 @@ def _render(monkeypatch, values):
     import ui.profile_form as profile_form
 
     fake = _FakeStreamlit(values=values)
-    draft = {"birth_date": date(1990, 1, 1)}
+    calendar_label = values.get("历法", values.get("出生日期类型", "公历"))
+    draft = {
+        "birth_date": date(1990, 1, 1),
+        "calendar_label": calendar_label,
+        "lunar_year": values.get("年", 1999),
+        "lunar_month": values.get("月", 7),
+        "lunar_day": values.get("日", 1),
+    }
     fake.session_state[profile_form.PROFILE_DRAFT_KEY] = draft
+    profile_form.open_birth_picker(fake.session_state, draft)
+    def fake_wheel(columns, **_kwargs):
+        fake.wheel_columns = columns
+        return {column["id"]: column["selected"] for column in columns}
+    monkeypatch.setattr(profile_form, "render_birth_wheel", fake_wheel)
     monkeypatch.setitem(sys.modules, "streamlit", fake)
     profile_form._render_unified_profile_form(draft)
     return fake
 
 
-def test_calendar_mode_is_outside_form_and_solar_uses_explicit_date_label(monkeypatch):
-    fake = _render(monkeypatch, {"出生日期类型": "公历"})
+def test_calendar_mode_is_outside_form_and_solar_uses_explicit_five_columns(monkeypatch):
+    fake = _render(monkeypatch, {"历法": "公历"})
 
-    calendar_call = next(call for call in fake.radio_calls if call[0] == "出生日期类型")
+    calendar_call = next(call for call in fake.radio_calls if call[0] == "历法")
     assert calendar_call[2] is False
-    assert calendar_call[3]["key"] == "profile_calendar_label"
-    assert fake.date_input_calls == ["公历出生日期"]
+    assert calendar_call[3]["key"] == "profile_picker_calendar"
+    assert [column["id"] for column in fake.wheel_columns] == ["year", "month", "day", "hour", "minute"]
+    assert {call[0] for call in fake.selectbox_calls}.isdisjoint({"年", "月", "日", "时", "分"})
+    assert fake.date_input_calls == []
 
 
 def test_lunar_mode_uses_separate_fields_and_never_uses_date_picker(monkeypatch):
     fake = _render(
         monkeypatch,
         {
-            "出生日期类型": "农历",
-            "农历年份": 1999,
-            "农历月份": 7,
-            "农历日期": 1,
-            "是否闰月": False,
+            "历法": "农历",
+            "年": 2023,
+            "月": 2,
+            "日": 1,
+            "闰月": False,
         },
     )
 
-    assert {"农历年份", "农历月份", "农历日期"} <= {
-        call[0] for call in fake.selectbox_calls
-    }
-    assert "是否闰月" in fake.checkbox_calls
+    assert [column["label"] for column in fake.wheel_columns] == ["年", "月", "日", "时", "分"]
+    assert {call[0] for call in fake.selectbox_calls}.isdisjoint({"年", "月", "日", "时", "分"})
+    assert "闰月" in fake.checkbox_calls
     assert fake.date_input_calls == []
 
 
-def test_time_precision_offers_exact_traditional_and_unknown_modes(monkeypatch):
-    fake = _render(monkeypatch, {"出生日期类型": "公历"})
+def test_picker_removes_time_precision_choice_and_uses_exact_clock_columns(monkeypatch):
+    fake = _render(monkeypatch, {"历法": "公历"})
 
-    precision_call = next(call for call in fake.radio_calls if call[0] == "出生时间精度")
-    assert precision_call[1] == ("精确时间", "传统时辰", "时辰不详")
-    assert precision_call[2] is True
+    assert all(call[0] != "出生时间精度" for call in fake.radio_calls)
+    assert fake.session_state["profile_picker_precision"] == "精确时间"
+    assert fake.wheel_columns[3]["items"][12]["label"] == "12时"
+    assert fake.wheel_columns[4]["items"][0]["label"] == "00分"
     assert fake.submit_calls == ["校验并预览"]
+
+
+def test_solar_day_options_follow_month_length_and_leap_year():
+    from ui.profile_form import valid_solar_days
+
+    assert valid_solar_days(2024, 2, today=date(2025, 1, 1))[-1] == 29
+    assert valid_solar_days(2023, 2, today=date(2025, 1, 1))[-1] == 28
+    assert valid_solar_days(2024, 4, today=date(2025, 1, 1))[-1] == 30
+
+
+def test_lunar_month_options_follow_library_leap_month_and_day_counts():
+    from lunar_python import LunarYear
+    from ui.profile_form import lunar_month_days
+
+    assert LunarYear.fromYear(2023).getLeapMonth() == 2
+    assert len(lunar_month_days(2023, 2)) == 30
+    assert len(lunar_month_days(2023, 2, is_leap_month=True)) == 29
+    assert LunarYear.fromYear(2024).getLeapMonth() == 0
+    assert lunar_month_days(2024, 2, is_leap_month=True) == []
+
+
+def test_profile_form_source_has_no_native_date_input():
+    from pathlib import Path
+
+    source = (Path(__file__).resolve().parents[1] / "ui" / "profile_form.py").read_text(encoding="utf-8")
+    assert "st.date_input" not in source

@@ -1,4 +1,4 @@
-"""命数研究室 · 深色星空产品视觉基础。"""
+"""命数研究室 · 清爽移动优先产品视觉基础。"""
 
 ELEMENT_COLORS = {
     "木": "#4F8A5B",
@@ -29,35 +29,49 @@ def get_global_css() -> str:
     """返回完整的全局 CSS 字符串，在 app.py 入口注入。"""
     return """
     :root {
-        --ms-surface: #030714;
-        --ms-surface-muted: rgba(16, 20, 31, .82);
-        --ms-panel: rgba(11, 15, 26, .78);
-        --ms-ink: #FFFDF9;
-        --ms-muted: #AEB4C2;
-        --ms-line: rgba(255, 244, 226, .14);
-        --ms-action: #F2A85F;
-        --ms-action-hover: #FFC47D;
-        --ms-on-action: #1A1009;
-        --ms-danger: #FF8A80;
-        --ms-radius: 18px;
+        --cc-primary: #DCEDE5;
+        --cc-primary-foreground: #174E3C;
+        --cc-background: #f5f5f7;
+        --cc-content-background: #f2f4f3;
+        --cc-header-green: #e2f1e9;
+        --cc-header-green-soft: #f0f7f3;
+        --cc-card: #FFFFFF;
+        --cc-foreground: #111111;
+        --cc-muted-foreground: #71717a;
+        --cc-border: rgba(0, 0, 0, .08);
+        --cc-radius-card: 30px;
+        --cc-font-sm: 13px;
+        --cc-font-base: 17px;
+        --cc-font-lg: 24px;
+        --ms-surface: #F5F5F7;
+        --ms-surface-muted: #ECECEF;
+        --ms-panel: #FFFFFF;
+        --ms-ink: #111111;
+        --ms-muted: #71717A;
+        --ms-line: rgba(0, 0, 0, .08);
+        --ms-action: #52525B;
+        --ms-action-hover: #3F3F46;
+        --ms-on-action: #FFFFFF;
+        --ms-danger: #B42318;
+        --ms-radius: 30px;
         --ms-radius-small: 8px;
         --ms-bg: var(--ms-surface);
         --ms-bg-2: var(--ms-surface-muted);
         --ms-surface-2: var(--ms-surface-muted);
-        --ms-surface-soft: rgba(242, 168, 95, .14);
+        --ms-surface-soft: #E8F2ED;
         --ms-border: var(--ms-line);
-        --ms-border-strong: rgba(255, 244, 226, .28);
+        --ms-border-strong: rgba(0, 0, 0, .16);
         --ms-text: var(--ms-ink);
         --ms-text-strong: var(--ms-ink);
         --ms-readable-muted: var(--ms-muted);
         --ms-muted-2: var(--ms-muted);
         --ms-accent: var(--ms-action);
-        --ms-accent-soft: rgba(242, 168, 95, .14);
-        --ms-success: #79C99E;
-        --ms-info: #84BDF5;
+        --ms-accent-soft: #E8F2ED;
+        --ms-success: #168B68;
+        --ms-info: #3478A4;
         --ms-card-radius: var(--ms-radius);
-        --ms-shadow: 0 16px 42px rgba(0, 0, 0, .22);
-        --ms-shadow-raised: 0 24px 64px rgba(0, 0, 0, .34);
+        --ms-shadow: 0 1px 2px rgba(0,0,0,.04), 0 10px 30px rgba(0,0,0,.06);
+        --ms-shadow-raised: 0 2px 4px rgba(0,0,0,.05), 0 18px 46px rgba(0,0,0,.10);
     }
 
     #root, .stApp, .stMain > div {
@@ -117,7 +131,7 @@ def get_global_css() -> str:
         max-width: 1280px !important;
         padding-top: 20px !important;
         padding-right: 2rem !important;
-        padding-bottom: 4rem !important;
+        padding-bottom: calc(7.5rem + env(safe-area-inset-bottom)) !important;
         padding-left: 2rem !important;
     }
     body:not(:has(.st-key-ms2-home)) [data-testid="stMainBlockContainer"] h1 {
@@ -223,21 +237,26 @@ def get_global_css() -> str:
         display: none !important;
     }
     .st-key-editorial-product-nav {
-        position: relative !important;
-        z-index: 10;
+        position: fixed !important;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 1000;
         width: 100%;
-        margin: 0 0 38px;
-        padding: 8px;
-        background: rgba(8, 11, 20, .72);
-        border: 1px solid var(--ms-line);
-        border-radius: 22px;
-        box-shadow: 0 18px 48px rgba(0, 0, 0, .24);
-        backdrop-filter: blur(22px) saturate(118%);
-        -webkit-backdrop-filter: blur(22px) saturate(118%);
+        margin: 0;
+        padding: 8px max(12px, calc((100vw - 720px) / 2)) calc(8px + env(safe-area-inset-bottom));
+        background: rgba(255, 255, 255, .94);
+        border-top: 1px solid var(--ms-line);
+        border-radius: 0;
+        box-shadow: 0 -8px 26px rgba(26, 72, 57, .10);
+        backdrop-filter: blur(18px) saturate(112%);
+        -webkit-backdrop-filter: blur(18px) saturate(112%);
         transform: none;
     }
     .st-key-editorial-product-nav [data-testid="stHorizontalBlock"] {
-        gap: 6px !important;
+        display: grid !important;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 4px !important;
     }
     .st-key-editorial-product-nav .stButton button {
         min-height: 44px;
@@ -245,19 +264,29 @@ def get_global_css() -> str:
         border-radius: 14px !important;
         background: transparent !important;
         color: var(--ms-muted) !important;
-        font-size: 14px;
+        font-size: 13px;
         transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease;
     }
     .st-key-editorial-product-nav .stButton button:hover {
-        background: rgba(255, 255, 255, .06) !important;
+        background: var(--ms-surface-muted) !important;
         color: var(--ms-ink) !important;
     }
     .st-key-editorial-product-nav .stButton button[kind="primary"] {
         background: var(--ms-accent-soft) !important;
-        border: 1px solid rgba(242, 168, 95, .34) !important;
+        border: 1px solid rgba(22, 139, 104, .24) !important;
         color: var(--ms-action) !important;
-        box-shadow: inset 0 0 22px rgba(242, 168, 95, .06) !important;
+        box-shadow: none !important;
     }
+    .st-key-editorial_nav_inquiry .stButton button {
+        min-height: 54px;
+        margin-top: -10px;
+        border-radius: 18px !important;
+        background: var(--ms-action) !important;
+        color: var(--ms-on-action) !important;
+        box-shadow: 0 8px 20px rgba(22, 139, 104, .22) !important;
+    }
+    .st-key-editorial_nav_inquiry .stButton button p,
+    .st-key-editorial_nav_inquiry .stButton button span { color: var(--ms-on-action) !important; }
     .stButton button {
         min-height: 44px;
         border-radius: var(--ms-radius) !important;
@@ -286,8 +315,8 @@ def get_global_css() -> str:
         border-color: var(--ms-action-hover) !important;
     }
     .st-key-editorial-product-nav .stButton button[kind="primary"]:hover {
-        background: rgba(242, 168, 95, .20) !important;
-        border-color: rgba(242, 168, 95, .42) !important;
+        background: var(--ms-accent-soft) !important;
+        border-color: rgba(22, 139, 104, .34) !important;
         color: var(--ms-action) !important;
     }
     .st-key-editorial-product-nav .stButton button[kind="primary"]:hover p,
@@ -295,14 +324,11 @@ def get_global_css() -> str:
         color: var(--ms-action) !important;
     }
 
-    /* Shared celestial product shell: quieter than the landing hero, but visibly related. */
+    /* Quiet mobile-first product shell. */
     body:not(:has(.st-key-ms2-home)) .stApp,
     body:not(:has(.st-key-ms2-home)) .stMain {
-        color-scheme: dark;
-        background:
-            radial-gradient(circle at 82% 12%, rgba(116, 44, 25, .20), transparent 38%),
-            radial-gradient(circle at 12% 86%, rgba(11, 55, 88, .22), transparent 42%),
-            #030714 !important;
+        color-scheme: light;
+        background: var(--ms-surface) !important;
     }
     body:not(:has(.st-key-ms2-home)) .stMain > div {
         position: relative;
@@ -313,39 +339,6 @@ def get_global_css() -> str:
         position: relative;
         z-index: 2;
     }
-    .ms-product-celestial-canvas {
-        position: fixed;
-        inset: 0;
-        z-index: 0;
-        display: block;
-        width: 100%;
-        height: 100%;
-        opacity: .19;
-        filter: saturate(.82);
-        pointer-events: none;
-    }
-    div[data-testid="stLayoutWrapper"]:has(> .st-key-ms-product-celestial-bridge),
-    .st-key-ms-product-celestial-bridge {
-        position: absolute !important;
-        width: 1px !important;
-        height: 1px !important;
-        margin: 0 !important;
-        overflow: hidden !important;
-        pointer-events: none !important;
-    }
-    body:not(:has(.st-key-ms2-home)) [data-testid="stMainBlockContainer"]::before {
-        position: absolute;
-        inset: 0 1.1rem;
-        z-index: -1;
-        border: 1px solid rgba(255, 244, 226, .05);
-        border-radius: 30px;
-        background: linear-gradient(180deg, rgba(10, 14, 25, .56), rgba(5, 8, 17, .30));
-        box-shadow: 0 30px 90px rgba(0, 0, 0, .24);
-        backdrop-filter: blur(4px);
-        content: "";
-        pointer-events: none;
-    }
-
     body:not(:has(.st-key-ms2-home)) .ms2-page-hero {
         position: relative;
         margin: 0 0 28px;
@@ -353,24 +346,11 @@ def get_global_css() -> str:
         overflow: hidden;
         border: 1px solid var(--ms-line);
         border-radius: 26px;
-        background:
-            radial-gradient(circle at 82% 18%, rgba(242, 168, 95, .16), transparent 35%),
-            linear-gradient(135deg, rgba(20, 23, 35, .88), rgba(8, 12, 23, .72));
-        box-shadow: var(--ms-shadow-raised);
+        background: var(--ms-panel);
+        box-shadow: var(--ms-shadow);
     }
     body:not(:has(.st-key-ms2-home)) .ms2-page-hero::after {
-        position: absolute;
-        top: -44%;
-        right: -8%;
-        width: min(42vw, 420px);
-        aspect-ratio: 1;
-        border: 1px solid rgba(242, 168, 95, .18);
-        border-radius: 50%;
-        box-shadow:
-            0 0 0 38px rgba(242, 168, 95, .025),
-            0 0 0 84px rgba(242, 168, 95, .018);
-        content: "";
-        pointer-events: none;
+        display: none;
     }
     body:not(:has(.st-key-ms2-home)) .ms2-page-hero .ms2-kicker {
         margin: 0 0 12px;
@@ -411,7 +391,7 @@ def get_global_css() -> str:
     body:not(:has(.st-key-ms2-home)) [data-testid="stChatInput"],
     body:not(:has(.st-key-ms2-home)) [data-testid="stFileUploaderDropzone"] {
         border-color: var(--ms-line) !important;
-        background: rgba(11, 15, 26, .78) !important;
+        background: var(--ms-panel) !important;
         box-shadow: var(--ms-shadow) !important;
         backdrop-filter: blur(18px);
     }
@@ -419,24 +399,24 @@ def get_global_css() -> str:
     body:not(:has(.st-key-ms2-home)) textarea,
     body:not(:has(.st-key-ms2-home)) [data-baseweb="select"] > div,
     body:not(:has(.st-key-ms2-home)) [data-baseweb="input"] > div {
-        background: rgba(8, 12, 22, .86) !important;
+        background: var(--ms-panel) !important;
         color: var(--ms-ink) !important;
     }
     body:not(:has(.st-key-ms2-home)) input::placeholder,
     body:not(:has(.st-key-ms2-home)) textarea::placeholder {
-        color: rgba(255, 253, 249, .48) !important;
+        color: var(--ms-muted) !important;
         opacity: 1 !important;
     }
     body:not(:has(.st-key-ms2-home)) [role="listbox"],
     body:not(:has(.st-key-ms2-home)) [data-baseweb="popover"] > div {
         border-color: var(--ms-line) !important;
-        background: #0C111D !important;
+        background: var(--ms-panel) !important;
         color: var(--ms-ink) !important;
         box-shadow: var(--ms-shadow-raised) !important;
     }
     body:not(:has(.st-key-ms2-home)) [role="option"]:hover,
     body:not(:has(.st-key-ms2-home)) [role="option"][aria-selected="true"] {
-        background: rgba(242, 168, 95, .14) !important;
+        background: var(--ms-accent-soft) !important;
     }
     body:not(:has(.st-key-ms2-home)) div[data-testid="stTabs"] [data-baseweb="tab-list"] {
         border-bottom-color: var(--ms-line) !important;
@@ -1356,6 +1336,54 @@ def get_global_css() -> str:
         border: 0 !important;
         box-shadow: none !important;
     }
+    .st-key-ms5-profile-card {
+        width: min(100%, 720px);
+        margin-inline: auto;
+    }
+    .st-key-ms5-birth-picker {
+        width: min(100%, 720px);
+        margin: 12px auto 18px;
+        padding: 14px;
+        background: var(--ms-surface) !important;
+        border: 1px solid var(--ms-line) !important;
+        border-radius: 22px !important;
+        box-shadow: 0 18px 42px rgba(20, 47, 39, .10) !important;
+    }
+    .ms5-picker-backdrop { display: none; }
+    .st-key-ms5-birth-picker .stButton button { min-height: 44px; }
+    .st-key-ms5-birth-picker .stButton button[kind="secondary"] {
+        background: transparent !important;
+        border-color: transparent !important;
+        color: var(--ms-muted) !important;
+    }
+    .ms-my-add-bar {
+        display: flex;
+        align-items: center;
+        min-height: 52px;
+        margin-bottom: 8px;
+        padding: 0 4px;
+        color: var(--ms-ink);
+        font-size: 20px;
+    }
+    body:has(.ms-my-add-bar) [data-testid="stMainBlockContainer"] {
+        width: min(100%, 800px) !important;
+        max-width: 800px !important;
+        margin-inline: auto !important;
+    }
+    .ms5-picker-head {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        min-height: 44px;
+        color: var(--ms-muted);
+    }
+    .ms5-picker-head strong { color: var(--ms-ink); text-align: center; }
+    .ms5-picker-head span:last-child { color: var(--ms-action); text-align: right; font-weight: 700; }
+    .st-key-ms5-birth-picker div[data-baseweb="select"] > div {
+        min-height: 44px;
+        background: var(--ms-accent-soft) !important;
+        border-color: rgba(22, 139, 104, .24) !important;
+    }
     .st-key-ms5-profile-card [data-testid="stCheckbox"] label {
         min-height: 44px;
         align-items: center;
@@ -1445,7 +1473,7 @@ def get_global_css() -> str:
         box-shadow: var(--ms-shadow) !important;
     }
     [class*="st-key-ms-ui-card-muted-"] { background: var(--ms-surface-muted) !important; }
-    [class*="st-key-ms-ui-card-accent-"] { border-color: rgba(190, 24, 93, .32) !important; }
+    [class*="st-key-ms-ui-card-accent-"] { border-color: var(--ms-line) !important; }
     [class*="st-key-ms-ui-card-danger-"] { border-color: rgba(185, 28, 28, .34) !important; }
     [class*="st-key-ms-ui-card-default-sm-"],
     [class*="st-key-ms-ui-card-muted-sm-"] { padding: 14px 16px; }
@@ -1506,7 +1534,7 @@ def get_global_css() -> str:
         line-height: 1.3;
     }
     .ms-ui-badge-muted { background: var(--ms-surface-muted); color: var(--ms-muted); }
-    .ms-ui-badge-accent { background: var(--ms-accent-soft); border-color: rgba(190, 24, 93, .22); color: var(--ms-action); }
+    .ms-ui-badge-accent { background: var(--ms-surface-muted); border-color: var(--ms-line); color: var(--ms-ink); }
     .ms-ui-badge-danger { background: #FEF2F2; border-color: #FECACA; color: var(--ms-danger); }
     .ms-ui-callout {
         display: grid;
@@ -1523,7 +1551,7 @@ def get_global_css() -> str:
     .ms-ui-callout-copy p { margin: 4px 0 0 !important; color: var(--ms-muted) !important; font-size: 14px !important; line-height: 1.6 !important; }
     .ms-ui-callout-muted { background: var(--ms-surface-muted); }
     .ms-ui-callout-muted .ms-ui-callout-mark { background: var(--ms-muted); }
-    .ms-ui-callout-accent { border-color: rgba(190, 24, 93, .25); }
+    .ms-ui-callout-accent { border-color: var(--ms-line); }
     .ms-ui-callout-danger { border-color: #FECACA; background: #FEF2F2; }
     .ms-ui-callout-danger .ms-ui-callout-mark { background: var(--ms-danger); }
     .ms-ui-metric {
@@ -1710,6 +1738,10 @@ def get_global_css() -> str:
         .ms4-dimension-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
     @media (max-width: 640px) {
+        body:has(.ms-my-add-bar) [data-testid="stMainBlockContainer"] {
+            width: 100% !important;
+            max-width: none !important;
+        }
         [data-testid="stMainBlockContainer"] {
             padding-top: 1.25rem !important;
             padding-left: 1rem !important;
@@ -1780,13 +1812,13 @@ def get_global_css() -> str:
             z-index: 1000;
             margin: 0;
             padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
-            background: rgba(5, 8, 17, .92);
+            background: rgba(255, 255, 255, .94);
             border-top: 1px solid var(--ms-line);
             border-right: 0;
             border-bottom: 0;
             border-left: 0;
             border-radius: 0;
-            box-shadow: 0 -10px 34px rgba(0, 0, 0, .34);
+            box-shadow: 0 -8px 26px rgba(26, 72, 57, .10);
             backdrop-filter: blur(22px) saturate(118%);
             -webkit-backdrop-filter: blur(22px) saturate(118%);
             transform: none;
@@ -1813,7 +1845,7 @@ def get_global_css() -> str:
         }
         .st-key-editorial-product-nav .stButton button[kind="primary"] {
             background: var(--ms-accent-soft) !important;
-            border-color: rgba(242, 168, 95, .30) !important;
+            border-color: rgba(22, 139, 104, .26) !important;
             color: var(--ms-action) !important;
         }
         .st-key-editorial-product-nav .stButton button[kind="primary"] p,
@@ -1839,7 +1871,6 @@ def get_global_css() -> str:
             min-height: 0;
             padding: 18px 16px;
         }
-        .ms-product-celestial-canvas { opacity: .14; }
         .st-key-ms5-profile-card [data-testid="stHorizontalBlock"] {
             display: grid !important;
             grid-template-columns: minmax(0, 1fr) !important;
@@ -1847,6 +1878,69 @@ def get_global_css() -> str:
         }
         .st-key-ms5-profile-card [data-testid="stHorizontalBlock"] > div {
             width: 100% !important;
+        }
+        .st-key-ms5-birth-picker [data-testid="stHorizontalBlock"]:has(.stSelectbox) {
+            display: grid !important;
+            grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+            gap: 4px !important;
+            overflow: hidden !important;
+        }
+        .st-key-ms5-birth-picker [data-testid="stHorizontalBlock"]:has(.stSelectbox) > div {
+            width: 100% !important;
+            min-width: 0 !important;
+        }
+        .st-key-ms5-birth-picker .stSelectbox label { font-size: 12px !important; }
+        .st-key-ms5-birth-picker div[data-baseweb="select"] > div {
+            min-width: 0 !important;
+            padding-inline: 4px !important;
+        }
+        .st-key-ms5-birth-picker .stSelectbox [role="combobox"] {
+            width: 100% !important;
+            min-width: 0 !important;
+            padding: 0 !important;
+            font-size: 11px !important;
+            text-align: center !important;
+        }
+        .st-key-ms5-birth-picker .stSelectbox [role="combobox"] > div {
+            width: 100% !important;
+            min-width: 0 !important;
+            overflow: visible !important;
+            text-align: center !important;
+        }
+        .st-key-ms5-birth-picker .stSelectbox [role="combobox"] svg,
+        .st-key-ms5-birth-picker .stSelectbox [data-baseweb="select"] svg {
+            display: none !important;
+        }
+        .st-key-ms5-birth-picker .stSelectbox button[aria-label="Open"] {
+            display: none !important;
+            width: 0 !important;
+            min-width: 0 !important;
+            padding: 0 !important;
+        }
+        .st-key-ms5-birth-picker {
+            position: fixed;
+            z-index: 1002;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            max-height: min(78dvh, 620px);
+            margin: 0;
+            padding: 14px 12px calc(18px + env(safe-area-inset-bottom));
+            overflow-y: auto;
+            border-radius: 24px 24px 0 0 !important;
+        }
+        .st-key-ms5-birth-picker .ms5-picker-backdrop {
+            position: fixed;
+            z-index: -1;
+            inset: 0;
+            display: block;
+            background: rgba(11, 25, 21, .42);
+        }
+        .st-key-ms5-birth-picker [data-testid="stHorizontalBlock"]:has(.stButton) {
+            display: grid !important;
+            grid-template-columns: minmax(72px, 1fr) minmax(150px, 2fr) minmax(72px, 1fr) !important;
+            gap: 6px !important;
         }
         .st-key-ms-term-dictionary [data-testid="stHorizontalBlock"] {
             display: grid !important;
@@ -1906,6 +2000,629 @@ def get_global_css() -> str:
         .ms4-section-head { align-items: flex-start; flex-direction: column; gap: 6px; }
         .ms4-pillar-helper { display: none; }
         .ms4-element-row { grid-template-columns: 60px minmax(0, 1fr) 64px; gap: 8px; }
+    }
+
+    /* Final mobile-app shell overrides: fixed five-item navigation on every viewport. */
+    .st-key-editorial-product-nav {
+        background: rgba(255, 255, 255, .94) !important;
+        border-color: var(--ms-line) !important;
+    }
+    .st-key-editorial-product-nav [data-testid="stHorizontalBlock"] > div {
+        width: auto !important;
+        min-width: 0 !important;
+    }
+    .st-key-editorial-product-nav .stButton button[kind="primary"] {
+        border-color: rgba(22, 139, 104, .26) !important;
+        background: var(--ms-accent-soft) !important;
+        color: var(--ms-action) !important;
+    }
+    .st-key-editorial_nav_inquiry .stButton button,
+    .st-key-editorial_nav_inquiry .stButton button[kind="primary"] {
+        border-color: var(--ms-action) !important;
+        background: var(--ms-action) !important;
+        color: var(--ms-on-action) !important;
+    }
+    .st-key-editorial_nav_inquiry .stButton button p,
+    .st-key-editorial_nav_inquiry .stButton button span { color: var(--ms-on-action) !important; }
+    .st-key-editorial-product-nav .st-key-editorial_nav_inquiry
+    .stButton button[kind="secondary"] {
+        border-color: var(--ms-action) !important;
+        background: var(--ms-action) !important;
+        color: var(--ms-on-action) !important;
+    }
+    .st-key-editorial-product-nav .st-key-editorial_nav_inquiry
+    .stButton button[kind="secondary"] p,
+    .st-key-editorial-product-nav .st-key-editorial_nav_inquiry
+    .stButton button[kind="secondary"] span { color: var(--ms-on-action) !important; }
+    body:has(.st-key-ms-inquiry-page) [data-testid="stBottom"] {
+        bottom: calc(78px + env(safe-area-inset-bottom)) !important;
+    }
+
+    .st-key-ms-today-score-card {
+        margin: 20px 0 28px;
+        padding: clamp(20px, 4vw, 30px);
+        border: 1px solid rgba(22, 139, 104, .22);
+        border-radius: 26px;
+        background: #E3F4EC;
+        box-shadow: var(--ms-shadow);
+    }
+    .st-key-ms-today-score-card > div[data-testid="stVerticalBlock"] { gap: 14px !important; }
+    .ms-today-score-copy span { display: block; color: #376B5A; font-size: 14px; font-weight: 700; }
+    .ms-today-score-copy strong { color: #0B6C4D; font-size: clamp(3.8rem, 14vw, 6rem); line-height: 1; }
+    .ms-today-score-copy small { color: #376B5A; font-size: 16px; font-weight: 700; }
+    .ms-today-score-copy p { margin: 10px 0 0; color: #376B5A !important; }
+    .ms-reflection-card {
+        margin: 14px 0;
+        padding: 20px;
+        border: 1px solid var(--ms-line);
+        border-radius: 22px;
+        background: var(--ms-panel);
+        box-shadow: var(--ms-shadow);
+    }
+    .ms-reflection-card > span { color: var(--ms-action); font-size: 12px; font-weight: 800; letter-spacing: .12em; }
+    .ms-reflection-card h3 { margin: 8px 0 6px; font-size: 20px; }
+    .ms-reflection-card p { margin: 0; color: var(--ms-muted) !important; }
+
+    .ms-my-summary,
+    .ms-my-facts {
+        margin: 16px 0;
+        padding: clamp(20px, 4vw, 28px);
+        border: 1px solid var(--ms-line);
+        border-radius: 24px;
+        background: var(--ms-panel);
+        box-shadow: var(--ms-shadow);
+    }
+    .ms-my-summary { background: #E3F4EC; }
+    .ms-my-eyebrow { margin: 0; color: #376B5A !important; font-size: 13px; font-weight: 750; }
+    .ms-my-summary h2 { margin: 6px 0 10px; color: #0B6C4D !important; }
+    .ms-my-summary > p:last-child { margin-bottom: 0; color: #376B5A !important; }
+    .ms-my-facts { display: grid; gap: 0; }
+    .ms-my-facts > div { display: grid; gap: 5px; padding: 14px 0; border-bottom: 1px solid var(--ms-line); }
+    .ms-my-facts > div:last-child { border-bottom: 0; }
+    .ms-my-facts span { color: var(--ms-muted); font-size: 13px; }
+    .ms-my-facts strong { color: var(--ms-ink); font-size: 16px; }
+
+    /* ChunUI Web SSOT — authoritative final component layer. */
+    html, body, .stApp { background: var(--cc-content-background) !important; color: var(--cc-foreground) !important; }
+    body:not(:has(.st-key-ms2-home)) .stApp,
+    body:not(:has(.st-key-ms2-home)) [data-testid="stAppViewContainer"],
+    body:not(:has(.st-key-ms2-home)) [data-testid="stMain"],
+    body:not(:has(.st-key-ms2-home)) .stMain {
+        background: var(--cc-content-background) !important;
+    }
+    [data-testid="stMainBlockContainer"] {
+        width: min(100%, 920px) !important;
+        max-width: 920px !important;
+        margin-inline: auto !important;
+        padding: 72px 20px calc(112px + env(safe-area-inset-bottom)) !important;
+    }
+    body:has(.st-key-ms-inquiry-page) [data-testid="stMainBlockContainer"] {
+        width: min(100%, 920px) !important;
+        max-width: 920px !important;
+    }
+    body:not(:has(.st-key-ms2-home)) [data-testid="stMainBlockContainer"] h1,
+    body:not(:has(.st-key-ms2-home)) .ms2-page-hero h1,
+    .ms-ui-page-header h1,
+    .ms-ui-empty-state-copy h2 {
+        font-size: var(--cc-font-lg) !important;
+        line-height: 1.2 !important;
+        letter-spacing: -.02em !important;
+    }
+    body:not(:has(.st-key-ms2-home)) [data-testid="stMainBlockContainer"] h2,
+    body:not(:has(.st-key-ms2-home)) [data-testid="stMainBlockContainer"] h3,
+    .ms-reflection-card h3 { font-size: var(--cc-font-base) !important; line-height: 1.35 !important; }
+    body:not(:has(.st-key-ms2-home)) [data-testid="stMainBlockContainer"] p,
+    body:not(:has(.st-key-ms2-home)) [data-testid="stMainBlockContainer"] li,
+    body:not(:has(.st-key-ms2-home)) [data-testid="stMainBlockContainer"] input,
+    body:not(:has(.st-key-ms2-home)) [data-testid="stMainBlockContainer"] textarea {
+        font-size: var(--cc-font-base) !important;
+        line-height: 1.55 !important;
+    }
+    [data-testid="stCaptionContainer"], .ms-ui-eyebrow, .ms-ui-page-description,
+    .ms-ui-section-description, .ms2-kicker, .ms-my-eyebrow, .ms-my-facts span {
+        font-size: var(--cc-font-sm) !important;
+        color: var(--cc-muted-foreground) !important;
+    }
+    .ms-ui-page-header,
+    body:not(:has(.st-key-ms2-home)) .ms2-page-hero {
+        position: relative;
+        margin: -52px -20px 24px !important;
+        padding: 52px 20px 22px !important;
+        border: 0 !important;
+        border-bottom: .5px solid rgba(23, 78, 60, .08) !important;
+        border-radius: 0 !important;
+        background:
+            radial-gradient(circle at 88% 10%, rgba(100, 165, 138, .16) 0, rgba(100, 165, 138, 0) 30%),
+            radial-gradient(circle at 58% 108%, rgba(190, 224, 208, .28) 0, rgba(190, 224, 208, 0) 36%),
+            linear-gradient(135deg, var(--cc-header-green) 0%, var(--cc-header-green-soft) 58%, #eaf4ef 100%) !important;
+        box-shadow: none !important;
+    }
+    .ms-ui-page-header .ms-ui-eyebrow,
+    body:not(:has(.st-key-ms2-home)) .ms2-page-hero .ms2-kicker {
+        color: #376b5a !important;
+    }
+    .ms-ui-page-header .ms-ui-page-description,
+    body:not(:has(.st-key-ms2-home)) .ms2-page-hero > p:last-child {
+        color: #51665d !important;
+    }
+    .ms-ui-page-header {
+        width: calc(100% + 40px) !important;
+        max-width: none !important;
+        margin-inline: -20px !important;
+    }
+    div[data-testid="stVerticalBlockBorderWrapper"],
+    .ms-reflection-card, .ms-my-summary, .ms-my-facts, .mingshu-panel,
+    .ms-report-panel, .ms4-chart-section, .ms3-year-cover, .ms3-month-card,
+    .ms-life-identity-card, .ms-life-insight-card, .ms-ui-metric,
+    .ms-ui-empty-state-copy {
+        border: .5px solid var(--cc-border) !important;
+        border-radius: var(--cc-radius-card) !important;
+        background: var(--cc-card) !important;
+        box-shadow: var(--ms-shadow) !important;
+    }
+    .ms-my-summary h2, .ms-my-summary p, .ms-today-score-copy strong,
+    .ms-today-score-copy span, .ms-today-score-copy small, .ms-today-score-copy p {
+        color: var(--cc-foreground) !important;
+    }
+    body:has(.st-key-ms5-profile-card) .st-key-ms5-profile-card,
+    body:has(.st-key-ms5-profile-card) .st-key-ms5-birth-picker {
+        width: 100% !important;
+        max-width: none !important;
+    }
+    .st-key-ms5-profile-card,
+    .st-key-ms5-profile-card > div,
+    .st-key-ms5-profile-card div[data-testid="stVerticalBlockBorderWrapper"],
+    .st-key-ms5-profile-card div[data-testid="stForm"] {
+        border: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+    .st-key-ms5-profile-card { margin-inline: 0 !important; padding: 0 !important; }
+    .st-key-ms5-profile-card div[data-testid="stForm"] { width: 100% !important; padding: 0 !important; }
+    body:has(.st-key-ms5-profile-card) .st-key-ms5-profile-card div[data-testid="stForm"] {
+        border: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+    body:has(.st-key-ms5-profile-card) .st-key-ms5-profile-card,
+    body:has(.st-key-ms5-birth-picker) .st-key-ms5-birth-picker,
+    body:has(.st-key-ms5-birth-picker) .st-key-ms5-birth-picker > div,
+    body:has(.st-key-ms5-birth-picker) .st-key-ms5-birth-picker div[data-testid="stVerticalBlockBorderWrapper"] {
+        border-color: transparent !important;
+        box-shadow: none !important;
+    }
+    body:has(.st-key-ms5-birth-picker) .st-key-ms5-birth-picker {
+        background: #fff !important;
+    }
+    body:has(.st-key-ms5-birth-picker) .st-key-ms5-birth-picker .stButton button {
+        min-height: 44px !important;
+        border: 0 !important;
+        background: transparent !important;
+        color: var(--cc-muted-foreground) !important;
+        box-shadow: none !important;
+    }
+    body:has(.st-key-ms5-birth-picker) .st-key-ms5-birth-picker .stButton button :is(p, span) {
+        color: inherit !important;
+    }
+    body:has(.st-key-ms5-birth-picker) .st-key-ms5-birth-picker
+    button[data-testid="stBaseButton-primary"] {
+        border: 0 !important;
+        background: transparent !important;
+        color: #174E3C !important;
+        box-shadow: none !important;
+    }
+    body:has(.st-key-ms5-birth-picker) .st-key-ms5-birth-picker
+    button[data-testid="stBaseButton-primary"] :is(p, span) {
+        color: #174E3C !important;
+    }
+    .ms5-preview-summary {
+        margin: 8px 0 16px;
+        padding: 18px 20px;
+        border: .5px solid var(--cc-border);
+        border-radius: 24px;
+        background: var(--cc-card);
+        box-shadow: 0 5px 18px rgba(0,0,0,.045);
+    }
+    .ms5-preview-summary h3 { margin: 0 0 8px !important; }
+    .ms5-preview-row {
+        display: grid;
+        grid-template-columns: minmax(88px, .32fr) minmax(0, 1fr);
+        gap: 14px;
+        align-items: start;
+        min-height: 48px;
+        padding: 12px 0;
+        border-bottom: .5px solid var(--cc-border);
+    }
+    .ms5-preview-row:last-child { border-bottom: 0; }
+    .ms5-preview-row span { color: var(--cc-muted-foreground); font-size: var(--cc-font-sm); }
+    .ms5-preview-row strong { color: var(--cc-foreground); font-size: var(--cc-font-base); overflow-wrap: anywhere; }
+    .st-key-ms-today-score-card {
+        border: .5px solid var(--cc-border) !important;
+        border-radius: var(--cc-radius-card) !important;
+        background: var(--cc-card) !important;
+        box-shadow: var(--ms-shadow) !important;
+    }
+    .ms-today-score-copy strong { font-size: var(--cc-font-lg) !important; }
+    .ms-today-score-copy span,
+    .ms-today-score-copy small,
+    .ms-today-score-copy p,
+    .ms-reflection-card > span {
+        font-size: var(--cc-font-sm) !important;
+    }
+    .ms-my-facts strong { font-size: var(--cc-font-base) !important; }
+    body:not(:has(.st-key-ms2-home)):has(.ms2-page-hero)
+    div[data-testid="stHorizontalBlock"]:has(h3) > div[data-testid="stColumn"],
+    body:not(:has(.st-key-ms2-home)) div[data-testid="stExpander"],
+    body:not(:has(.st-key-ms2-home)) div[data-testid="stForm"],
+    body:not(:has(.st-key-ms2-home)) [data-testid="stNotification"],
+    body:not(:has(.st-key-ms2-home)) [data-testid="stChatInput"],
+    body:not(:has(.st-key-ms2-home)) [data-testid="stFileUploaderDropzone"] {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+    .stButton button, .stDownloadButton button {
+        min-height: 48px !important;
+        border: .5px solid var(--cc-border) !important;
+        border-radius: 999px !important;
+        background: linear-gradient(180deg, #fff, #fafafa) !important;
+        color: var(--cc-foreground) !important;
+        box-shadow: inset 0 1px rgba(255,255,255,.9), 0 4px 12px rgba(0,0,0,.07) !important;
+        font-size: var(--cc-font-base) !important;
+        transition: background-color 180ms ease, color 180ms ease, box-shadow 180ms ease, transform 180ms ease !important;
+    }
+    .stApp .stButton button[kind="primary"],
+    .stApp [data-testid="stFormSubmitButton"] button[kind="primary"],
+    .stApp [data-testid="stFormSubmitButton"] button[kind="primaryFormSubmit"],
+    .stApp button[data-testid="stBaseButton-primaryFormSubmit"],
+    .stApp .stDownloadButton button[kind="primary"] {
+        min-height: 58px !important;
+        border-color: var(--cc-primary) !important;
+        background: var(--cc-primary) !important;
+        color: var(--cc-primary-foreground) !important;
+        box-shadow: inset 0 1px rgba(255,255,255,.6), 0 6px 16px rgba(23,78,60,.10) !important;
+    }
+    .stApp .stButton button[kind="primary"] p,
+    .stApp .stButton button[kind="primary"] span,
+    .stApp [data-testid="stFormSubmitButton"] button[kind="primary"] p,
+    .stApp [data-testid="stFormSubmitButton"] button[kind="primary"] span,
+    .stApp [data-testid="stFormSubmitButton"] button[kind="primaryFormSubmit"] p,
+    .stApp [data-testid="stFormSubmitButton"] button[kind="primaryFormSubmit"] span,
+    .stApp button[data-testid="stBaseButton-primaryFormSubmit"] p,
+    .stApp button[data-testid="stBaseButton-primaryFormSubmit"] span,
+    .stApp .stDownloadButton button[kind="primary"] p,
+    .stApp .stDownloadButton button[kind="primary"] span {
+        color: var(--cc-primary-foreground) !important;
+    }
+    .stButton button:active, .stDownloadButton button:active { transform: scale(.97) !important; }
+    .stTextInput div[data-baseweb="input"],
+    .stTextArea div[data-baseweb="base-input"],
+    .stTextArea div[data-baseweb="textarea"],
+    .stApp [data-testid="stTextInputRootElement"],
+    .stApp [data-testid="stTextAreaRootElement"],
+    .stSelectbox div[role="group"],
+    .stSelectbox div[data-baseweb="select"] > div {
+        min-height: 48px !important;
+        border: .5px solid var(--cc-border) !important;
+        border-radius: 18px !important;
+        background: var(--cc-card) !important;
+        outline: 0 !important;
+        box-shadow: none !important;
+    }
+    .stTextInput input,
+    .stTextArea textarea,
+    .stApp [data-testid="stTextInputRootElement"] input,
+    .stApp [data-testid="stTextAreaRootElement"] textarea,
+    .stSelectbox input[role="combobox"],
+    .stSelectbox [role="combobox"] {
+        border: 0 !important;
+        outline: 0 !important;
+        box-shadow: none !important;
+        background: transparent !important;
+    }
+    .stApp .stTextInput input:not([role="combobox"]):focus-visible,
+    .stApp .stTextArea textarea:focus-visible,
+    .stApp [data-testid="stTextInputRootElement"] input:focus-visible,
+    .stApp [data-testid="stTextAreaRootElement"] textarea:focus-visible {
+        outline: 0 !important;
+        box-shadow: none !important;
+    }
+    .stTextInput div[data-baseweb="input"]:focus-within,
+    .stTextArea div[data-baseweb="base-input"]:focus-within,
+    .stTextArea div[data-baseweb="textarea"]:focus-within,
+    .stApp [data-testid="stTextInputRootElement"]:focus-within,
+    .stApp [data-testid="stTextAreaRootElement"]:focus-within,
+    .stSelectbox div[role="group"]:focus-within,
+    .stSelectbox div[data-baseweb="select"] > div:focus-within {
+        border: 1px solid rgba(0,0,0,.36) !important;
+        outline: 0 !important;
+        outline-offset: 0 !important;
+        box-shadow: none !important;
+    }
+    div:has(> [role="listbox"]) [role="option"],
+    [role="listbox"] [role="option"] {
+        color: var(--cc-foreground) !important;
+        background: var(--cc-card) !important;
+    }
+    div:has(> [role="listbox"]) [role="option"]:hover,
+    [role="listbox"] [role="option"]:hover,
+    [role="listbox"] [role="option"][aria-selected="true"] {
+        color: var(--cc-foreground) !important;
+        background: #EEEEF0 !important;
+    }
+    body:not(:has(.st-key-ms2-home)) [role="listbox"] [role="option"]:hover,
+    body:not(:has(.st-key-ms2-home)) [role="listbox"] [role="option"][aria-selected="true"] {
+        color: var(--cc-foreground) !important;
+        background: #EEEEF0 !important;
+    }
+    body:not(:has(.st-key-ms2-home)) [role="listbox"] [role="option"]:hover > *,
+    body:not(:has(.st-key-ms2-home)) [role="listbox"] [role="option"][aria-selected="true"] > * {
+        color: inherit !important;
+        background: transparent !important;
+    }
+    div[data-testid="stExpander"] {
+        overflow: hidden;
+        border: .5px solid var(--cc-border) !important;
+        border-radius: var(--cc-radius-card) !important;
+        background: var(--cc-card) !important;
+        box-shadow: var(--ms-shadow) !important;
+    }
+    div[data-testid="stExpander"] summary { min-height: 54px !important; font-size: var(--cc-font-base) !important; }
+    [role="tablist"], div[role="radiogroup"] { gap: 6px !important; }
+    [role="tab"], div[role="radiogroup"] label { min-height: 38px !important; border-radius: 999px !important; }
+    [role="tab"][aria-selected="true"], div[role="radiogroup"] label:has(input:checked) {
+        background: #E9E9EC !important;
+        color: var(--cc-foreground) !important;
+    }
+    .ms-my-facts > div { min-height: 54px; align-content: center; border-color: var(--cc-border) !important; }
+    .ms-ui-empty-state-copy,
+    .cc-empty-state,
+    .st-key-ms-life-empty,
+    .st-key-ms-report-empty,
+    .st-key-ms-life-empty div[data-testid="stVerticalBlockBorderWrapper"],
+    .st-key-ms-report-empty div[data-testid="stVerticalBlockBorderWrapper"] {
+        border: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+    .st-key-ms-life-empty,
+    .st-key-ms-report-empty { padding: 20px 0 !important; }
+    .ms-ui-empty-state-mark { display: none !important; }
+    .ms5-step.active {
+        border-color: var(--cc-border) !important;
+        background: #E9E9EC !important;
+        color: var(--cc-foreground) !important;
+    }
+    .st-key-editorial-product-nav {
+        right: 50% !important;
+        bottom: max(12px, env(safe-area-inset-bottom)) !important;
+        left: auto !important;
+        width: min(calc(100% - 24px), 620px) !important;
+        padding: 7px !important;
+        transform: translateX(50%) !important;
+        border: .5px solid var(--cc-border) !important;
+        border-radius: 30px !important;
+        background: rgba(255,255,255,.94) !important;
+        box-shadow: 0 10px 34px rgba(0,0,0,.14) !important;
+        backdrop-filter: blur(12px) saturate(110%) !important;
+    }
+    .st-key-editorial-product-nav .stButton button {
+        min-height: 54px !important;
+        border: 0 !important;
+        border-radius: 23px !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        color: var(--cc-muted-foreground) !important;
+        font-size: var(--cc-font-sm) !important;
+    }
+    .st-key-editorial-product-nav .stButton button::before {
+        display: block;
+        content: "";
+        width: 16px;
+        height: 16px;
+        margin: 0 auto 1px;
+        border: 1.5px solid currentColor;
+        border-radius: 50%;
+        box-sizing: border-box;
+    }
+    .st-key-editorial_nav_today .stButton button::before { border-radius: 50%; box-shadow: inset 0 0 0 4px currentColor; }
+    .st-key-editorial_nav_chart .stButton button::before { width: 13px; height: 13px; margin-block: 2px; border-radius: 3px; transform: rotate(45deg); }
+    .st-key-editorial_nav_inquiry .stButton button::before { border-radius: 50%; box-shadow: inset 0 0 0 3px currentColor; }
+    .st-key-editorial_nav_report .stButton button::before { border-radius: 3px; box-shadow: inset 0 -5px 0 -4px currentColor, inset 0 5px 0 -4px currentColor; }
+    .st-key-editorial_nav_account .stButton button::before { width: 15px; height: 15px; border-radius: 50% 50% 42% 42%; box-shadow: inset 0 -5px 0 -3px currentColor; }
+    .st-key-editorial-product-nav .stButton button[kind="primary"] {
+        min-height: 54px !important;
+        border: 0 !important;
+        background: #E9E9EC !important;
+        color: var(--cc-foreground) !important;
+    }
+    .st-key-editorial-product-nav .st-key-editorial_nav_today .stButton button[kind="primary"],
+    .st-key-editorial-product-nav .st-key-editorial_nav_chart .stButton button[kind="primary"],
+    .st-key-editorial-product-nav .st-key-editorial_nav_report .stButton button[kind="primary"],
+    .st-key-editorial-product-nav .st-key-editorial_nav_account .stButton button[kind="primary"] {
+        border: 0 !important;
+        background: #E9E9EC !important;
+        color: var(--cc-foreground) !important;
+        box-shadow: none !important;
+    }
+    .st-key-editorial-product-nav .st-key-editorial_nav_today .stButton button[kind="primary"] :is(p, span),
+    .st-key-editorial-product-nav .st-key-editorial_nav_chart .stButton button[kind="primary"] :is(p, span),
+    .st-key-editorial-product-nav .st-key-editorial_nav_report .stButton button[kind="primary"] :is(p, span),
+    .st-key-editorial-product-nav .st-key-editorial_nav_account .stButton button[kind="primary"] :is(p, span) {
+        color: var(--cc-foreground) !important;
+    }
+    .st-key-editorial_nav_inquiry .stButton button,
+    .st-key-editorial-product-nav .st-key-editorial_nav_inquiry .stButton button[kind="secondary"],
+    .st-key-editorial-product-nav .st-key-editorial_nav_inquiry .stButton button[kind="primary"] {
+        min-height: 58px !important;
+        margin-top: -10px !important;
+        border-radius: 29px !important;
+        background: var(--cc-primary) !important;
+        color: var(--cc-primary-foreground) !important;
+        box-shadow: 0 8px 18px rgba(23,78,60,.12) !important;
+    }
+    .st-key-editorial-product-nav .st-key-editorial_nav_inquiry .stButton button p,
+    .st-key-editorial-product-nav .st-key-editorial_nav_inquiry .stButton button span,
+    .st-key-editorial-product-nav .st-key-editorial_nav_inquiry .stButton button[kind="primary"] p,
+    .st-key-editorial-product-nav .st-key-editorial_nav_inquiry .stButton button[kind="primary"] span,
+    .st-key-editorial-product-nav .st-key-editorial_nav_inquiry .stButton button[kind="secondary"] p,
+    .st-key-editorial-product-nav .st-key-editorial_nav_inquiry .stButton button[kind="secondary"] span {
+        color: var(--cc-primary-foreground) !important;
+    }
+    input[type="radio"], input[type="checkbox"] { accent-color: #52525B !important; }
+    label[data-baseweb="radio"]:has(input:checked) > div:first-child,
+    [role="radio"][aria-checked="true"] > div:first-child,
+    [data-testid="stCheckbox"] label:has(input:checked) > span:first-child,
+    [data-testid="stCheckbox"] label:has(input:checked) > div:first-child {
+        border-color: #52525B !important;
+        background-color: #52525B !important;
+    }
+    [role="radio"][aria-checked="true"] svg,
+    label[data-baseweb="radio"]:has(input:checked) svg {
+        color: #52525B !important;
+        fill: #52525B !important;
+    }
+    label[data-testid="stRadioOption"][data-selected="true"] > div > div > div {
+        border-color: #52525B !important;
+        background-color: #52525B !important;
+    }
+    [data-testid="stCheckbox"] label:has(input:checked) svg {
+        color: #FFFFFF !important;
+        fill: #FFFFFF !important;
+    }
+    .st-key-editorial-product-nav .st-key-editorial_nav_inquiry
+    button[data-testid="stBaseButton-primary"] div[data-testid="stMarkdownContainer"] p,
+    .st-key-editorial-product-nav .st-key-editorial_nav_inquiry
+    button[data-testid="stBaseButton-primary"] div[data-testid="stMarkdownContainer"] span,
+    .st-key-editorial-product-nav .st-key-editorial_nav_inquiry
+    button[data-testid="stBaseButton-secondary"] div[data-testid="stMarkdownContainer"] p,
+    .st-key-editorial-product-nav .st-key-editorial_nav_inquiry
+    button[data-testid="stBaseButton-secondary"] div[data-testid="stMarkdownContainer"] span {
+        color: var(--cc-primary-foreground) !important;
+    }
+    body:has(.st-key-ms-inquiry-page) [data-testid="stBottom"] {
+        position: fixed !important;
+        right: auto !important;
+        bottom: calc(92px + env(safe-area-inset-bottom)) !important;
+        left: 50vw !important;
+        width: min(calc(100vw - 32px), 880px) !important;
+        height: auto !important;
+        min-height: 0 !important;
+        transform: translateX(-50%) !important;
+        border: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+    body:has(.st-key-ms-inquiry-page) [data-testid="stBottomBlockContainer"] {
+        width: 100% !important;
+        min-height: 0 !important;
+        padding: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+    body:has(.st-key-ms-inquiry-page) [data-testid="stChatInput"] {
+        border: .5px solid var(--cc-border) !important;
+        border-radius: 24px !important;
+        background: rgba(255,255,255,.97) !important;
+        box-shadow: 0 8px 24px rgba(0,0,0,.09) !important;
+    }
+
+    /* Profile forms stay flat: the checked dot carries state without a pill. */
+    body:has(.st-key-ms5-profile-card) div[role="radiogroup"] label,
+    body:has(.st-key-ms5-profile-card) div[role="radiogroup"] label:has(input:checked),
+    body:has(.st-key-ms5-profile-card) label[data-testid="stRadioOption"][data-selected="true"] {
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        filter: none !important;
+    }
+    body:has(.st-key-ms5-profile-card)
+    label[data-testid="stRadioOption"][data-selected="true"] div[data-testid="stMarkdownContainer"],
+    body:has(.st-key-ms5-profile-card)
+    label[data-testid="stRadioOption"][data-selected="true"] div[data-testid="stMarkdownContainer"] p {
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+    body:has(.st-key-ms5-profile-card) .st-key-ms5-profile-card .stButton button,
+    body:has(.st-key-ms5-profile-card) .st-key-ms5-profile-card [data-testid="stFormSubmitButton"] button,
+    body:has(.st-key-ms5-profile-card) .st-key-ms5-profile-card [data-testid="stTextInputRootElement"],
+    body:has(.st-key-ms5-profile-card) .st-key-ms5-profile-card div[data-baseweb="input"],
+    body:has(.st-key-ms5-profile-card) .st-key-ms5-profile-card div[data-baseweb="select"] > div {
+        box-shadow: none !important;
+        filter: none !important;
+    }
+    .st-key-ms5-picker-toolbar [data-testid="stHorizontalBlock"] {
+        display: grid !important;
+        grid-template-columns: minmax(44px, 1fr) auto minmax(44px, 1fr) !important;
+        align-items: center !important;
+        gap: 8px !important;
+    }
+    .st-key-ms5-picker-toolbar [data-testid="stHorizontalBlock"] > [data-testid="stColumn"] {
+        width: auto !important;
+        min-width: 0 !important;
+    }
+    .st-key-ms5-picker-toolbar [data-testid="stHorizontalBlock"] > [data-testid="stColumn"]:first-child {
+        justify-self: start !important;
+    }
+    .st-key-ms5-picker-toolbar [data-testid="stHorizontalBlock"] > [data-testid="stColumn"]:nth-child(2) {
+        justify-self: center !important;
+    }
+    .st-key-ms5-picker-toolbar [data-testid="stHorizontalBlock"] > [data-testid="stColumn"]:last-child {
+        justify-self: end !important;
+    }
+    .st-key-ms5-picker-toolbar div[role="radiogroup"] {
+        justify-content: center !important;
+        flex-wrap: nowrap !important;
+        white-space: nowrap !important;
+    }
+    .st-key-ms5-picker-toolbar .stButton,
+    .st-key-ms5-picker-toolbar .stButton button {
+        width: auto !important;
+    }
+    .st-key-ms5-picker-toolbar .stButton button {
+        min-width: 44px !important;
+        padding-inline: 0 !important;
+    }
+    .st-key-ms5-picker-toolbar [data-testid="stColumn"]:first-child .stButton button,
+    .st-key-ms5-picker-toolbar [data-testid="stColumn"]:first-child .stButton button :is(p, span) {
+        color: var(--cc-muted-foreground) !important;
+    }
+    .st-key-ms5-picker-toolbar [data-testid="stColumn"]:last-child .stButton button,
+    .st-key-ms5-picker-toolbar [data-testid="stColumn"]:last-child .stButton button :is(p, span) {
+        color: #174E3C !important;
+    }
+    .ms5-picker-hint {
+        margin: 2px 0 10px !important;
+        color: var(--cc-muted-foreground) !important;
+        font-size: var(--cc-font-sm) !important;
+        line-height: 1.5 !important;
+        text-align: center !important;
+    }
+    @media (max-width: 640px) {
+        [data-testid="stMainBlockContainer"],
+        body:has(.ms-my-add-bar) [data-testid="stMainBlockContainer"] {
+            width: 100% !important;
+            max-width: none !important;
+            padding: 60px 16px calc(108px + env(safe-area-inset-bottom)) !important;
+        }
+        .ms-ui-page-header, body:not(:has(.st-key-ms2-home)) .ms2-page-hero {
+            margin-inline: -16px !important;
+            padding-inline: 16px !important;
+        }
+        .ms-ui-page-header {
+            width: calc(100% + 32px) !important;
+            max-width: none !important;
+        }
+        .st-key-editorial-product-nav { width: calc(100% - 16px) !important; bottom: max(8px, env(safe-area-inset-bottom)) !important; }
+        .ms5-preview-row { grid-template-columns: 1fr; gap: 4px; }
+        body:has(.st-key-ms-inquiry-page) [data-testid="stBottom"] {
+            width: calc(100vw - 16px) !important;
+            bottom: calc(88px + env(safe-area-inset-bottom)) !important;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
     }
     """
 

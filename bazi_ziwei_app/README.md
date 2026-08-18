@@ -95,6 +95,20 @@ bash run_mac.sh
 
 [http://127.0.0.1:8501](http://127.0.0.1:8501)
 
+## FastAPI 前端接口（Phase 1）
+
+现有 Streamlit 入口保持不变，同时新增了供独立前端使用的 FastAPI 薄接口层。启动本机 API：
+
+```bash
+MINGSHU_RUNTIME_MODE=local \
+MINGSHU_SESSION_COOKIE_SECURE=false \
+MINGSHU_CORS_ORIGINS=http://localhost:3000 \
+.venv/bin/python -m uvicorn backend.main:app \
+  --host 127.0.0.1 --port 8000 --reload --no-access-log
+```
+
+当前提供健康检查、命盘预览、一次性确认和会话内 canonical `ChartFacts` 查询。完整契约、前端 `fetch` 示例、隐私边界和单进程限制见 [`backend/README.md`](backend/README.md)。
+
 ## 中国大陆服务器部署
 
 公网部署推荐使用中国大陆轻量云服务器、Docker Compose 和 Caddy。部署前需完成 ICP 备案，公网运行时必须设置 `MINGSHU_RUNTIME_MODE=public`。完整的服务器准备、环境变量、启动和验收步骤见 [`DEPLOYMENT.md`](DEPLOYMENT.md)。

@@ -64,7 +64,7 @@ def page_header(
         else ""
     )
     _html(
-        '<header class="ms-ui-page-header">'
+        '<header class="ms-ui-page-header cc-floating-page-header">'
         f"{eyebrow_html}<h1>{escape(str(title))}</h1>{description_html}</header>"
     )
 
@@ -87,7 +87,7 @@ def section_header(
         else ""
     )
     _html(
-        '<div class="ms-ui-section-header">'
+        '<div class="ms-ui-section-header cc-section-header">'
         f"{eyebrow_html}<h2>{escape(str(title))}</h2>{description_html}</div>"
     )
 
@@ -101,7 +101,7 @@ def callout(
     """Render a concise alert/callout without introducing another component runtime."""
     role = "alert" if variant == "danger" else "status"
     _html(
-        f'<aside class="ms-ui-callout ms-ui-callout-{variant}" role="{role}">'
+        f'<aside class="ms-ui-callout cc-apple-card ms-ui-callout-{variant}" role="{role}">'
         '<span class="ms-ui-callout-mark" aria-hidden="true"></span>'
         '<div class="ms-ui-callout-copy">'
         f"<strong>{escape(str(title))}</strong>"
@@ -120,7 +120,7 @@ def metric_card(
         f'<p>{escape(str(description))}</p>' if description is not None else ""
     )
     _html(
-        '<article class="ms-ui-metric">'
+        '<article class="ms-ui-metric cc-apple-card">'
         f'<span>{escape(str(label))}</span><strong>{escape(str(value))}</strong>'
         f"{description_html}</article>"
     )
@@ -129,7 +129,7 @@ def metric_card(
 def empty_state_header(title: object, description: object) -> None:
     """Render compact empty-state copy while leaving actions to native buttons."""
     _html(
-        '<div class="ms-ui-empty-state-copy">'
+        '<div class="ms-ui-empty-state-copy cc-empty-state">'
         '<span class="ms-ui-empty-state-mark" aria-hidden="true"></span>'
         f"<h2>{escape(str(title))}</h2>"
         f"<p>{escape(str(description))}</p></div>"

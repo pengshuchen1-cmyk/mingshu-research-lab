@@ -31,7 +31,7 @@ class VisualHomeAndReportCardsTests(unittest.TestCase):
         self.assertIn(".st-key-editorial-product-nav", global_text)
         self.assertIn(".st-key-ms2-question-composer", text)
         self.assertIn("backdrop-filter: blur(22px)", text)
-        self.assertIn(".ms2-helix-canvas", text)
+        self.assertNotIn(".ms2-helix-canvas", text)
         self.assertNotIn(".st-key-ms2-dashboard-grid", text)
         self.assertIn("prefers-reduced-motion: reduce", text)
         self.assertNotIn(".ms2-value-strip", text)

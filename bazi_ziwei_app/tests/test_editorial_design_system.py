@@ -7,10 +7,16 @@ ROOT = Path(__file__).resolve().parents[1]
 def test_editorial_tokens_and_accessibility_rules_exist():
     css = (ROOT / "ui" / "styles.py").read_text(encoding="utf-8")
     for token in [
-        "--ms-surface: #030714",
-        "--ms-panel: rgba(11, 15, 26, .78)",
-        "--ms-ink: #FFFDF9",
-        "--ms-action: #F2A85F",
+        "--cc-primary: #DCEDE5",
+        "--cc-primary-foreground: #174E3C",
+        "--cc-background: #f5f5f7",
+        "--cc-card: #FFFFFF",
+        "--cc-foreground: #111111",
+        "--cc-muted-foreground: #71717a",
+        "--cc-border: rgba(0, 0, 0, .08)",
+        "--cc-font-sm: 13px",
+        "--cc-font-base: 17px",
+        "--cc-font-lg: 24px",
         "'Noto Serif SC'",
         "'Noto Sans SC'",
         "min-height: 44px",
@@ -19,9 +25,21 @@ def test_editorial_tokens_and_accessibility_rules_exist():
         "@media (max-width: 640px)",
     ]:
         assert token in css
-    assert "ms-product-celestial-canvas" in css
-    assert "linear-gradient" in css
-    assert "border-radius: var(--ms-radius) !important" in css
+    assert "ms-product-celestial-canvas" not in css
+    assert "color-scheme: light" in css
+    assert "border-radius: var(--cc-radius-card) !important" in css
+
+
+def test_chunui_ssot_rejects_generated_dark_cinematic_direction():
+    master = (ROOT / "design-system" / "chunui" / "MASTER.md").read_text(encoding="utf-8")
+
+    assert "本项目 ChunUI 视觉实现的唯一规范" in master
+    assert "#dcede5" in master
+    assert "#174e3c" in master
+    assert "#ff0a78" not in master.lower()
+    assert "13 / 17 / 24px" in master
+    assert "持续动画" in master
+    assert "dark mode, cinematic" not in master
 
 
 def test_hidden_sidebar_fallback_expands_and_indicates_focus():

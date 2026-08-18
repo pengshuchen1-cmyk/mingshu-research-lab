@@ -32,6 +32,7 @@ from core.ai_session import (
     validate_question,
 )
 from ui.bazi_components import render_loaded_profile_hint, render_rule_summary
+from ui.primitives import empty_state_header, page_header
 from utils.logger import log_ai_event
 from utils.session_privacy import PENDING_INQUIRY_KEY, touch_private_session
 
@@ -416,8 +417,10 @@ def render_inquiry_page() -> None:
     """Render the customer-facing Bazi AI chat."""
     chart = st.session_state.get("current_chart")
     if not chart:
-        st.title("AI问答")
-        st.info("请先新建或选择一个命盘，AI 问答才能读取本地四柱规则结论。")
+        empty_state_header(
+            "AI 问答需要个人命盘",
+            "请先新建或选择一个命盘，AI 才能读取本地四柱规则结论。",
+        )
         if st.button("新建命盘", type="primary"):
             st.session_state["navigate_to"] = "新建命盘"
             st.rerun()
@@ -432,14 +435,10 @@ def render_inquiry_page() -> None:
         log_ai_event(event_code="AI_QA_CLEARED", reason_code="profile_switch")
 
     with st.container(key="ms-inquiry-page"):
-        st.markdown(
-            """
-            <div class="ms-inquiry-topline">
-              <span class="ms-inquiry-title">命理助手</span>
-              <span class="ms-inquiry-meta">本地规则校验 · 对话最多保留 20 条</span>
-            </div>
-            """,
-            unsafe_allow_html=True,
+        page_header(
+            "命理助手",
+            "本地规则校验 · 对话最多保留 20 条",
+            eyebrow="AI CHAT",
         )
 
         with st.container(key="ms-inquiry-context"):

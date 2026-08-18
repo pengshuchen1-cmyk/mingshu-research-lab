@@ -1,4 +1,4 @@
-"""Focused celestial homepage visual system."""
+"""Legacy static homepage visual system."""
 
 
 def get_homepage_css() -> str:
@@ -52,9 +52,7 @@ def get_homepage_css() -> str:
         box-sizing: border-box;
     }
     .st-key-ms2-home div[data-testid="stLayoutWrapper"]:has(> .st-key-ms2-typing-placeholder-bridge),
-    .st-key-ms2-home div[data-testid="stLayoutWrapper"]:has(> .st-key-ms2-helix-bridge),
-    .st-key-ms2-typing-placeholder-bridge,
-    .st-key-ms2-helix-bridge {
+    .st-key-ms2-typing-placeholder-bridge {
         position: absolute !important;
         width: 1px !important;
         height: 1px !important;
@@ -126,18 +124,6 @@ def get_homepage_css() -> str:
         object-position: center center;
         filter: saturate(.62) contrast(1.08) brightness(.42) blur(.5px);
     }
-    .ms2-helix-canvas {
-        position: absolute;
-        inset: 0;
-        z-index: 2;
-        display: block;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-        -webkit-mask-image: linear-gradient(90deg, rgba(0, 0, 0, .24) 0%, rgba(0, 0, 0, .68) 34%, #000 52%);
-        mask-image: linear-gradient(90deg, rgba(0, 0, 0, .24) 0%, rgba(0, 0, 0, .68) 34%, #000 52%);
-    }
-
     .st-key-ms2-hero > div[data-testid="stLayoutWrapper"]:has(.st-key-ms2-hero-content) {
         position: absolute !important;
         inset: 0;
