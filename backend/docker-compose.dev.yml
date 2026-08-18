@@ -1,0 +1,13 @@
+# Optional development override for a disposable, fully local stack. The
+# normal workstation workflow uses cloud MySQL/Redis via SSH tunnels instead.
+services:
+  migrate:
+    volumes:
+      - ./:/app:ro
+
+  api:
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--reload-dir", "/app"]
+    volumes:
+      - ./:/app:ro
+    environment:
+      PYTHONDONTWRITEBYTECODE: "1"
