@@ -1,0 +1,11 @@
+fastapi>=0.115,<1
+uvicorn[standard]>=0.30
+sqlalchemy[asyncio]>=2.0
+asyncmy>=0.2.9
+PyMySQL>=1.1
+aiosqlite>=0.20
+alembic>=1.13
+redis>=5.0
+pydantic-settings>=2.5
+PyJWT>=2.9
+phonenumbers>=8.13

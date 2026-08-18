@@ -1,0 +1,50 @@
+# Run only the API and migration job on the workstation. MySQL and Redis stay
+# on the cloud host and are reached through SSH tunnels on the host machine.
+name: mingshu-backend-remote-dev
+
+services:
+  migrate:
+    build:
+      context: .
+    image: mingshu-backend:dev
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL in .env}
+      REDIS_URL: ${REDIS_URL:?set REDIS_URL in .env}
+    command: ["alembic", "upgrade", "head"]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  api:
+    build:
+      context: .
+    image: mingshu-backend:dev
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL in .env}
+      REDIS_URL: ${REDIS_URL:?set REDIS_URL in .env}
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env}
+      JWT_ISSUER: ${JWT_ISSUER:-mingshu-api}
+      ACCESS_TOKEN_MINUTES: ${ACCESS_TOKEN_MINUTES:-30}
+      REFRESH_TOKEN_DAYS: ${REFRESH_TOKEN_DAYS:-30}
+      REGISTRATION_BONUS_POINTS: ${REGISTRATION_BONUS_POINTS:-20}
+      OTP_TTL_SECONDS: ${OTP_TTL_SECONDS:-300}
+      OTP_RESEND_SECONDS: ${OTP_RESEND_SECONDS:-60}
+      OTP_DAILY_LIMIT: ${OTP_DAILY_LIMIT:-10}
+      OTP_MAX_ATTEMPTS: ${OTP_MAX_ATTEMPTS:-5}
+      CORS_ORIGINS: '${CORS_ORIGINS:-[]}'
+      WECHAT_APP_ID: ${WECHAT_APP_ID:-}
+      WECHAT_APP_SECRET: ${WECHAT_APP_SECRET:-}
+      ALIPAY_APP_ID: ${ALIPAY_APP_ID:-}
+      ALIPAY_PRIVATE_KEY: ${ALIPAY_PRIVATE_KEY:-}
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--reload-dir", "/app"]
+    ports:
+      - "127.0.0.1:${API_PORT:-8000}:8000"
+    volumes:
+      - ./:/app:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    init: true
