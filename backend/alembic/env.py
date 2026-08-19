@@ -3,6 +3,7 @@ from sqlalchemy.engine import make_url
 
 from alembic import context
 from app.config import settings
+from app.errors import SystemErrorMessages
 from app.models import Base
 
 config = context.config
@@ -28,7 +29,7 @@ def get_sqlalchemy_url() -> str:
     """Return Alembic's configured database URL or fail with a clear error."""
     sqlalchemy_url = config.get_main_option("sqlalchemy.url")
     if not sqlalchemy_url:
-        raise RuntimeError("Alembic sqlalchemy.url is not configured")
+        raise RuntimeError(SystemErrorMessages.ALEMBIC_URL_NOT_CONFIGURED)
     return sqlalchemy_url
 
 

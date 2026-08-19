@@ -3,12 +3,13 @@ from typing import Annotated
 
 import jwt
 import phonenumbers
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Query
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 
 from .config import settings
 from .database import DBSession
+from .errors import APIError, Errors
 from .models import FeatureRule, PaymentOrder, PointLedger, PointPackage, User
 from .schemas import *
 from .security import AdminUser, CurrentUser, token_for
@@ -24,10 +25,10 @@ def normalize(phone):
     try:
         parsed = phonenumbers.parse(phone, "CN")
         if not phonenumbers.is_valid_number(parsed):
-            raise ValueError("invalid phone")
+            raise ValueError(Errors.INVALID_PHONE.code)
         return phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.E164)
     except (phonenumbers.NumberParseException, ValueError):
-        raise HTTPException(422, "Invalid phone number")
+        raise APIError(Errors.INVALID_PHONE)
 
 
 @auth.post("/otp")
@@ -43,7 +44,7 @@ async def login(body: VerifyIn, db: DBSession):
     """校验短信验证码，自动注册新用户，并签发访问令牌和刷新令牌。"""
     try:
         user, new = await verify_otp(db, normalize(body.phone), body.code)
-    except HTTPException:
+    except APIError:
         # Failed-attempt counter/lockout is deliberate security state.
         await db.commit()
         raise
@@ -67,12 +68,12 @@ async def refresh(body: RefreshIn, db: DBSession):
             issuer=settings.jwt_issuer,
         )
     except jwt.PyJWTError:
-        raise HTTPException(401, "Invalid refresh token")
+        raise APIError(Errors.INVALID_REFRESH_TOKEN)
     if p.get("typ") != "refresh":
-        raise HTTPException(401, "Refresh token required")
+        raise APIError(Errors.REFRESH_TOKEN_REQUIRED)
     user = await db.get(User, p["sub"])
     if not user or not user.is_active:
-        raise HTTPException(401, "User unavailable")
+        raise APIError(Errors.USER_UNAVAILABLE)
     return {"access_token": token_for(user), "token_type": "bearer"}
 
 
@@ -80,7 +81,7 @@ async def refresh(body: RefreshIn, db: DBSession):
 async def wechat_qr():
     """预留微信公众号扫码登录入口；未配置微信适配器时返回 501。"""
     if not settings.wechat_app_id:
-        raise HTTPException(501, "WeChat QR login is not configured")
+        raise APIError(Errors.WECHAT_QR_NOT_CONFIGURED)
     return {
         "message": "Implement official-account QR scene creation and callback signature verification here"
     }
@@ -134,7 +135,7 @@ async def create_package(
         await db.commit()
     except IntegrityError:
         await db.rollback()
-        raise HTTPException(409, "Package name already exists") from None
+        raise APIError(Errors.PACKAGE_NAME_ALREADY_EXISTS) from None
     return x
 
 
@@ -181,7 +182,7 @@ async def set_user_active(
     """管理员启用或停用指定用户；被停用用户不能继续访问受保护接口。"""
     target = await db.get(User, user_id)
     if not target:
-        raise HTTPException(404, "User not found")  
+        raise APIError(Errors.USER_NOT_FOUND)
     target.is_active = body.is_active
     await db.commit()
     return {"id": target.id, "is_active": target.is_active}
@@ -198,7 +199,7 @@ async def stats(
 ):
     """管理员按支付渠道、套餐和支付时间范围汇总已支付订单。"""
     if start_at and end_at and start_at > end_at:
-        raise HTTPException(422, "start_at must be before end_at")
+        raise APIError(Errors.INVALID_STATISTICS_TIME_RANGE)
     q = (
         select(
             PaymentOrder.provider, func.count(), func.coalesce(func.sum(PaymentOrder.amount_fen), 0)
@@ -234,7 +235,7 @@ async def order(body: OrderIn, user: CurrentUser, db: DBSession):
     """登录用户创建微信或支付宝待支付订单；预支付参数适配器尚未接入。"""
     package = await db.get(PointPackage, body.package_id)
     if not package or not package.active:
-        raise HTTPException(404, "Package unavailable")
+        raise APIError(Errors.PACKAGE_UNAVAILABLE)
     x = PaymentOrder(
         user_id=user.id, package_id=package.id, provider=body.provider, amount_fen=package.price_fen
     )
@@ -248,7 +249,7 @@ async def order(body: OrderIn, user: CurrentUser, db: DBSession):
 async def webhook(provider: str, body: WebhookIn, db: DBSession):
     """预留微信和支付宝异步回调入口；验签适配器未配置时安全返回 501。"""
     if provider not in {"wechat", "alipay"}:
-        raise HTTPException(404, "Unknown payment provider")
+        raise APIError(Errors.UNKNOWN_PAYMENT_PROVIDER)
     # Safe by default: the raw platform callback/signature verifier is not implemented.
     # Do not write event/order state until the verifier has authenticated the callback.
-    raise HTTPException(501, "Payment provider signature verification is not configured")
+    raise APIError(Errors.PAYMENT_SIGNATURE_NOT_CONFIGURED)

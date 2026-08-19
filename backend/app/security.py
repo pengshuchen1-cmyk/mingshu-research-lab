@@ -2,12 +2,13 @@ from datetime import UTC, datetime, timedelta
 from typing import Annotated
 
 import jwt
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import select
 
 from .config import settings
 from .database import DBSession
+from .errors import APIError, Errors
 from .models import User
 
 bearer = HTTPBearer()
@@ -38,12 +39,12 @@ async def current_user(
             c.credentials, settings.jwt_secret, algorithms=["HS256"], issuer=settings.jwt_issuer
         )
     except jwt.PyJWTError:
-        raise HTTPException(401, "Invalid or expired token")
+        raise APIError(Errors.INVALID_OR_EXPIRED_TOKEN)
     if payload.get("typ") != "access":
-        raise HTTPException(401, "Access token required")
+        raise APIError(Errors.ACCESS_TOKEN_REQUIRED)
     user = (await db.execute(select(User).where(User.id == payload["sub"]))).scalar_one_or_none()
     if not user or not user.is_active:
-        raise HTTPException(401, "User unavailable")
+        raise APIError(Errors.USER_UNAVAILABLE)
     return user
 
 
@@ -52,7 +53,7 @@ CurrentUser = Annotated[User, Depends(current_user)]
 
 async def admin_user(user: CurrentUser) -> User:
     if user.role != "admin":
-        raise HTTPException(status.HTTP_403_FORBIDDEN, "Administrator role required")
+        raise APIError(Errors.ADMINISTRATOR_REQUIRED)
     return user
 
 
