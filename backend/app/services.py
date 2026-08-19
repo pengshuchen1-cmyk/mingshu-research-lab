@@ -3,12 +3,12 @@ import secrets
 from datetime import UTC, datetime, timedelta
 from typing import Protocol
 
-from fastapi import HTTPException
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .config import settings
+from .errors import APIError, Errors
 from .models import FeatureRule, OTPChallenge, PointBalance, PointLedger, User
 
 
@@ -37,7 +37,7 @@ def digest(value: str):
 
 async def issue_otp(db: AsyncSession, phone: str):
     if sms_provider is None:
-        raise HTTPException(503, "SMS provider is not configured")
+        raise APIError(Errors.SMS_PROVIDER_NOT_CONFIGURED)
     now = datetime.now(UTC)
     # Check the daily limit and resend interval before issuing a new OTP.
     recent = (
@@ -51,7 +51,7 @@ async def issue_otp(db: AsyncSession, phone: str):
         )
     ).scalar_one()
     if recent >= settings.otp_daily_limit:
-        raise HTTPException(429, "Daily OTP limit reached")
+        raise APIError(Errors.OTP_DAILY_LIMIT_REACHED)
     # Check the resend interval before issuing a new OTP.
     last = (
         (
@@ -67,7 +67,7 @@ async def issue_otp(db: AsyncSession, phone: str):
     if last and last.created_at.replace(tzinfo=UTC) > now - timedelta(
         seconds=settings.otp_resend_seconds
     ):
-        raise HTTPException(429, "Please wait before requesting another OTP")
+        raise APIError(Errors.OTP_RESEND_TOO_SOON)
     # Generate a new OTP and store its hash in the database.
     code = f"{secrets.randbelow(1_000_000):06d}"
     db.add(
@@ -101,15 +101,15 @@ async def verify_otp(
     )
     # Check the OTPChallenge row for validity, expiration, and attempt limits.
     if row and row.attempts >= settings.otp_max_attempts:
-        raise HTTPException(429, "OTP attempt limit reached")
+        raise APIError(Errors.OTP_ATTEMPT_LIMIT_REACHED)
     if not row or row.consumed_at or row.expires_at.replace(tzinfo=UTC) < now:
-        raise HTTPException(400, "Invalid or expired OTP")
+        raise APIError(Errors.OTP_INVALID_OR_EXPIRED)
     # Verify the provided code against the stored hash using a constant-time comparison to prevent timing attacks.
     if not secrets.compare_digest(row.code_hash, digest(code)):
         row.attempts += 1
         if row.attempts >= settings.otp_max_attempts:
             row.consumed_at = now
-        raise HTTPException(400, "Invalid or expired OTP")
+        raise APIError(Errors.OTP_INVALID_OR_EXPIRED)
     # Mark the OTPChallenge as consumed to prevent reuse and return the associated user, creating a new user if necessary.
     row.consumed_at = now
     user = (await db.execute(select(User).where(User.phone == phone))).scalar_one_or_none()
@@ -161,10 +161,10 @@ async def credit(db, user_id, delta, event, key, reference=None, metadata=None):
     existing = (await db.execute(select(PointLedger).where(PointLedger.user_id == user_id, PointLedger.idempotency_key == key))).scalar_one_or_none()
     if existing:
         if existing.delta != delta or existing.event_type != event or existing.reference_id != reference:
-            raise HTTPException(409, "Idempotency key was reused for a different operation")
+            raise APIError(Errors.IDEMPOTENCY_KEY_CONFLICT)
         return existing
     if current + delta < 0:
-        raise HTTPException(409, "Insufficient points")
+        raise APIError(Errors.INSUFFICIENT_POINTS)
     item = PointLedger(
         user_id=user_id,
         delta=delta,
@@ -189,5 +189,5 @@ async def consume(db, user_id, feature, key):
         )
     ).scalar_one_or_none()
     if not rule:
-        raise HTTPException(404, "Feature rule not found")
+        raise APIError(Errors.FEATURE_RULE_NOT_FOUND)
     return await credit(db, user_id, -rule.points_cost, "consume", key, feature)
