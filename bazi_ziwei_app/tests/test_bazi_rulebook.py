@@ -28,13 +28,15 @@ REQUIRED_SECTIONS = {
 
 
 def _write_pack(root: Path, rules: list[dict[str, object]]) -> None:
+    from core.bazi_rulebook import rule_file_digest
+
     payload = {"rules": rules}
     rule_path = root / "foundations.json"
     rule_path.write_text(
         json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
-    digest = hashlib.sha256(rule_path.read_bytes()).hexdigest()
+    digest = rule_file_digest(rule_path.read_bytes())
     manifest = {
         "version": "2.0.0",
         "files": [{"path": "foundations.json", "sha256": digest}],
@@ -103,3 +105,21 @@ def test_rulebook_rejects_digest_mismatch(tmp_path: Path):
 
     with pytest.raises(RuleBookError, match="digest mismatch"):
         load_rulebook(tmp_path)
+
+
+def test_rulebook_accepts_crlf_copy_of_lf_manifest_content(tmp_path: Path):
+    from core.bazi_rulebook import load_rulebook
+
+    _write_pack(tmp_path, _minimal_rules())
+    rule_path = tmp_path / "foundations.json"
+    lf_bytes = rule_path.read_bytes().replace(b"\r\n", b"\n")
+    rule_path.write_bytes(lf_bytes.replace(b"\n", b"\r\n"))
+
+    manifest_path = tmp_path / "manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["files"][0]["sha256"] = hashlib.sha256(lf_bytes).hexdigest()
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    book = load_rulebook(tmp_path)
+
+    assert set(book.sections) == REQUIRED_SECTIONS
