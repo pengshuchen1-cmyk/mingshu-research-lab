@@ -25,12 +25,20 @@ def test_env_file_is_backend_absolute_path():
     assert ENV_FILE.name == ".env"
 
 
-def test_invalid_redis_url_fails_during_configuration():
-    with pytest.raises(ValidationError, match="REDIS_URL"):
+@pytest.mark.parametrize(
+    ("redis_url", "expected"),
+    [
+        ("redis://127.0.0.1:not-a-port/0", "invalid port"),
+        ("redis://127.0.0.1:6379/not-a-database-number", "invalid database number"),
+        ("redis://127.0.0.1:6379/-1", "must not be negative"),
+    ],
+)
+def test_invalid_redis_url_fails_during_configuration(redis_url, expected):
+    with pytest.raises(ValidationError, match=expected):
         Settings(
             _env_file=None,
             database_url="sqlite+aiosqlite:///:memory:",
-            redis_url="redis://127.0.0.1/not-a-database-number",
+            redis_url=redis_url,
         )
 
 

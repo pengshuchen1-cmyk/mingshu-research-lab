@@ -5,6 +5,7 @@ import jwt
 import phonenumbers
 from fastapi import APIRouter, HTTPException, Query
 from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
 
 from .config import settings
 from .database import DBSession
@@ -129,7 +130,11 @@ async def create_package(
     """管理员创建点数套餐，配置价格、点数、套餐类型和启用状态。"""
     x = PointPackage(**body.model_dump())
     db.add(x)
-    await db.commit()
+    try:
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(409, "Package name already exists") from None
     return x
 
 
@@ -176,7 +181,7 @@ async def set_user_active(
     """管理员启用或停用指定用户；被停用用户不能继续访问受保护接口。"""
     target = await db.get(User, user_id)
     if not target:
-        raise HTTPException(404, "User not found")
+        raise HTTPException(404, "User not found")  
     target.is_active = body.is_active
     await db.commit()
     return {"id": target.id, "is_active": target.is_active}

@@ -10,7 +10,6 @@ import os
 import secrets
 from pathlib import Path
 
-
 # By default the files are created in the current deployment directory. Set
 # MINGSHU_DEPLOY_DIR when the script is invoked from somewhere else.
 TARGET_DIR = Path(os.environ.get("MINGSHU_DEPLOY_DIR", ".")).expanduser().resolve()

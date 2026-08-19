@@ -144,6 +144,23 @@ def test_api_auth_points_admin_and_openapi(tmp_path):
 
             admin_token = asyncio.run(make_admin(phone))
             admin_headers = {"Authorization": f"Bearer {admin_token}"}
+            package = {
+                "name": "API smoke package",
+                "kind": "one_time",
+                "points": 100,
+                "price_fen": 990,
+                "active": True,
+            }
+            created_package = client.post(
+                "/api/v1/admin/packages", json=package, headers=admin_headers
+            )
+            assert created_package.status_code == 200
+            duplicate_package = client.post(
+                "/api/v1/admin/packages", json=package, headers=admin_headers
+            )
+            assert duplicate_package.status_code == 409
+            assert duplicate_package.json() == {"detail": "Package name already exists"}
+
             assert client.put(
                 "/api/v1/admin/feature-rules/report",
                 json={"points_cost": 3, "active": True},
