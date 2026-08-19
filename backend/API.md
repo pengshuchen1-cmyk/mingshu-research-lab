@@ -48,6 +48,11 @@ Authorization: Bearer <access_token>
 }
 ```
 
+业务错误的内部编码、HTTP 状态码和提示信息统一定义在
+`app/errors.py` 的 `Errors` 中，路由、认证依赖和服务代码不再自行维护错误文案。
+当前响应格式保持兼容，仍返回字符串形式的 `detail`；`ErrorDefinition.code` 是供后端
+定位和后续扩展使用的稳定内部编码，暂不作为接口字段返回。
+
 参数校验错误通常返回 `422`，格式类似：
 
 ```json
