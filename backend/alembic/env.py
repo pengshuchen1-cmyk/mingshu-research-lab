@@ -1,7 +1,7 @@
-from alembic import context
 from sqlalchemy import create_engine
 from sqlalchemy.engine import make_url
 
+from alembic import context
 from app.config import settings
 from app.models import Base
 
@@ -24,9 +24,17 @@ config.set_main_option(
 target_metadata = Base.metadata
 
 
+def get_sqlalchemy_url() -> str:
+    """Return Alembic's configured database URL or fail with a clear error."""
+    sqlalchemy_url = config.get_main_option("sqlalchemy.url")
+    if not sqlalchemy_url:
+        raise RuntimeError("Alembic sqlalchemy.url is not configured")
+    return sqlalchemy_url
+
+
 def run_migrations_offline():
     context.configure(
-        url=config.get_main_option("sqlalchemy.url"),
+        url=get_sqlalchemy_url(),
         target_metadata=target_metadata,
         literal_binds=True,
     )
@@ -35,7 +43,7 @@ def run_migrations_offline():
 
 
 def run_migrations_online():
-    engine = create_engine(config.get_main_option("sqlalchemy.url"), pool_pre_ping=True)
+    engine = create_engine(get_sqlalchemy_url(), pool_pre_ping=True)
     with engine.connect() as connection:
         context.configure(connection=connection, target_metadata=target_metadata)
         with context.begin_transaction():

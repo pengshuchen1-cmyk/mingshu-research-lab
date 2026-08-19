@@ -86,6 +86,7 @@ async def verify_otp(
     db: AsyncSession, phone: str, code: str
 ) -> tuple[User, bool]:
     now = datetime.now(UTC)
+    # Lock the most recent OTPChallenge row for this phone to prevent concurrent verification attempts.
     row = (
         (
             await db.execute(
@@ -98,20 +99,26 @@ async def verify_otp(
         .scalars()
         .first()
     )
+    # Check the OTPChallenge row for validity, expiration, and attempt limits.
     if row and row.attempts >= settings.otp_max_attempts:
         raise HTTPException(429, "OTP attempt limit reached")
     if not row or row.consumed_at or row.expires_at.replace(tzinfo=UTC) < now:
         raise HTTPException(400, "Invalid or expired OTP")
+    # Verify the provided code against the stored hash using a constant-time comparison to prevent timing attacks.
     if not secrets.compare_digest(row.code_hash, digest(code)):
         row.attempts += 1
         if row.attempts >= settings.otp_max_attempts:
             row.consumed_at = now
         raise HTTPException(400, "Invalid or expired OTP")
+    # Mark the OTPChallenge as consumed to prevent reuse and return the associated user, creating a new user if necessary.
     row.consumed_at = now
     user = (await db.execute(select(User).where(User.phone == phone))).scalar_one_or_none()
     new = user is None
     if user is None:
         candidate = User(phone=phone)
+        # Attempt to create a new user and grant the registration bonus in a nested transaction. 
+        # If a concurrent transaction has already created a user with this phone, catch the IntegrityError and retrieve the existing user instead, 
+        # ensuring that the registration bonus is only granted once per phone number.
         try:
             async with db.begin_nested():
                 db.add(candidate)
@@ -136,6 +143,8 @@ async def balance(db, user_id):
     return value or 0
 
 
+# Credit and consume functions are designed to be used within a transaction, 
+# and they will acquire a row-level lock on the user's PointBalance to prevent concurrent modifications.
 async def credit(db, user_id, delta, event, key, reference=None, metadata=None):
     wallet = (await db.execute(select(PointBalance).where(PointBalance.user_id == user_id).with_for_update())).scalar_one_or_none()
     if not wallet:

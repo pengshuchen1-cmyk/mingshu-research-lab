@@ -452,6 +452,14 @@ POST /api/v1/admin/packages
 }
 ```
 
+套餐名称重复时返回 `409 Conflict`：
+
+```json
+{
+  "detail": "Package name already exists"
+}
+```
+
 ### 6.2 查询全部套餐
 
 ```http
