@@ -39,6 +39,11 @@ class RuleBookError(ValueError):
     """Raised when the local rule pack is incomplete or has been altered."""
 
 
+def rule_file_digest(raw: bytes) -> str:
+    """Hash rule bytes after normalizing platform-only CRLF line endings."""
+    return hashlib.sha256(raw.replace(b"\r\n", b"\n")).hexdigest()
+
+
 @dataclass(frozen=True)
 class Rule:
     id: str
@@ -130,7 +135,7 @@ def load_rulebook(rule_dir: Path | None = None) -> RuleBook:
             raw = path.read_bytes()
         except OSError as exc:
             raise RuleBookError(f"cannot load rule file: {relative_path}") from exc
-        actual_digest = hashlib.sha256(raw).hexdigest()
+        actual_digest = rule_file_digest(raw)
         if actual_digest != expected_digest:
             raise RuleBookError(f"digest mismatch: {relative_path}")
         payload = _read_json(path)
