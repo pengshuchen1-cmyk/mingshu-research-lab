@@ -6,7 +6,6 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from redis.asyncio.connection import parse_url as parse_redis_url
 from sqlalchemy.engine import make_url
 
-
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 ENV_FILE = BACKEND_DIR / ".env"
 
@@ -17,7 +16,7 @@ class Settings(BaseSettings):
     database_url: str
     jwt_secret: str = "development-secret-change-me-please"
     jwt_issuer: str = "mingshu-api"
-    access_token_minutes: int = 30
+    access_token_minutes: int = 60
     refresh_token_days: int = 30
     registration_bonus_points: int = 20
     otp_ttl_seconds: int = 300
@@ -45,16 +44,30 @@ class Settings(BaseSettings):
         parsed = urlparse(value)
         if parsed.scheme not in {"redis", "rediss"} or not parsed.hostname:
             raise ValueError("REDIS_URL must be a redis:// or rediss:// URL with a host")
+
         try:
-            parsed.port
-            if parsed.path not in {"", "/"} and int(parsed.path.removeprefix("/")) < 0:
-                raise ValueError
+            port = parsed.port
         except ValueError as error:
-            raise ValueError("REDIS_URL contains an invalid port or database number") from error
+            raise ValueError("REDIS_URL contains an invalid port") from error
+
+        if port is not None and not 1 <= port <= 65535:
+            raise ValueError("REDIS_URL port must be between 1 and 65535")
+
+        database_text = parsed.path.removeprefix("/")
+        try:
+            database_number = int(database_text) if database_text else 0
+        except ValueError as error:
+            raise ValueError("REDIS_URL contains an invalid database number") from error
+
+        if database_number < 0:
+            raise ValueError("REDIS_URL database number must not be negative")
+
         # Redis' own parser also validates the port, database number and typed
         # query parameters now, instead of failing inside a request dependency.
         parse_redis_url(value)
         return value
 
 
-settings = Settings()
+# BaseSettings supplies required values from process environment variables or
+# backend/.env at runtime; Pylance cannot infer those dynamic settings sources.
+settings = Settings()  # pyright: ignore[reportCallIssue]

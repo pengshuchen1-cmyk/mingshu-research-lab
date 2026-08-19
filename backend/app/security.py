@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Annotated
 
 import jwt
@@ -22,7 +22,7 @@ def token_for(user: User, typ="access"):
             "role": user.role,
             "typ": typ,
             "iss": settings.jwt_issuer,
-            "exp": datetime.now(timezone.utc) + timedelta(minutes=ttl),
+            "exp": datetime.now(UTC) + timedelta(minutes=ttl),
         },
         settings.jwt_secret,
         algorithm="HS256",
