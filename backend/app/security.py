@@ -21,6 +21,7 @@ def token_for(user: User, typ="access"):
         {
             "sub": user.id,
             "role": user.role,
+            "ver": user.auth_version,
             "typ": typ,
             "iss": settings.jwt_issuer,
             "exp": datetime.now(UTC) + timedelta(minutes=ttl),
@@ -42,9 +43,14 @@ async def current_user(
         raise APIError(Errors.INVALID_OR_EXPIRED_TOKEN)
     if payload.get("typ") != "access":
         raise APIError(Errors.ACCESS_TOKEN_REQUIRED)
-    user = (await db.execute(select(User).where(User.id == payload["sub"]))).scalar_one_or_none()
+    subject = payload.get("sub")
+    if not isinstance(subject, str):
+        raise APIError(Errors.INVALID_OR_EXPIRED_TOKEN)
+    user = (await db.execute(select(User).where(User.id == subject))).scalar_one_or_none()
     if not user or not user.is_active:
         raise APIError(Errors.USER_UNAVAILABLE)
+    if payload.get("ver", 0) != user.auth_version:
+        raise APIError(Errors.INVALID_OR_EXPIRED_TOKEN)
     return user
 
 

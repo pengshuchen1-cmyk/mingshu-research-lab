@@ -1,0 +1,31 @@
+{
+  "version": "2.0.0",
+  "files": [
+    {
+      "path": "foundations.json",
+      "sha256": "fe830f4925908fe7567412bc74eceb81a80bccfd3824be1948105577c40e752f"
+    },
+    {
+      "path": "classical_rules.json",
+      "sha256": "5889c4d3677df902e31b1cee6bcacf6db7604c161eee6ca6f360a341ed397b31"
+    },
+    {
+      "path": "extended_domains.json",
+      "sha256": "015ee2dc49d4589ee7f93e74e29c26bd2fa00cde00916da172b1bf1bad8cd91b"
+    }
+  ],
+  "citation_keys": [
+    "bazi-skill:calendar-boundary",
+    "bazi-skill:dayun",
+    "bazi-skill:pillar-formula",
+    "bazi-skill:relationship",
+    "bazi-skill:safety",
+    "bazi-skill:time-boundary",
+    "di_tian_sui_chan_wei",
+    "ming_li_tan_yuan",
+    "san_ming_tong_hui",
+    "shen_feng_tong_kao",
+    "yuan_hai_zi_ping",
+    "zi_ping_zhen_quan"
+  ]
+}

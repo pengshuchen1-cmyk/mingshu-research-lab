@@ -1,0 +1,109 @@
+{
+  "rules": [
+    {
+      "id": "STRENGTH-SEASON",
+      "section": "strength",
+      "statement": "日主强弱先察月令得令，再综合通根、同类助力与泄耗克制，不以单一五行数量定论。",
+      "citations": ["di_tian_sui_chan_wei", "zi_ping_zhen_quan"],
+      "priority": 100
+    },
+    {
+      "id": "STRENGTH-ROOT",
+      "section": "strength",
+      "statement": "日主在四支本气、中气、余气有同类根时分别记录得地证据。",
+      "citations": ["di_tian_sui_chan_wei"],
+      "priority": 90
+    },
+    {
+      "id": "STRENGTH-SUPPORT-DRAIN",
+      "section": "strength",
+      "statement": "印比计入生扶，食伤财官计入泄耗克，并根据位置、透藏和月令有效性分层。",
+      "citations": ["di_tian_sui_chan_wei", "ming_li_tan_yuan"],
+      "priority": 90
+    },
+    {
+      "id": "STRENGTH-UNCERTAINTY",
+      "section": "strength",
+      "statement": "证据接近或时柱不详时保留强弱不确定性，不强行归入极端等级。",
+      "citations": ["bazi-skill:safety"],
+      "priority": 100
+    },
+    {
+      "id": "PATTERN-MONTH-QI",
+      "section": "pattern",
+      "statement": "普通格局以月令本气为主，结合月令藏干是否透出以及全局成败条件判断。",
+      "citations": ["zi_ping_zhen_quan"],
+      "priority": 100
+    },
+    {
+      "id": "PATTERN-SUCCESS-FAILURE",
+      "section": "pattern",
+      "statement": "格局须同时列出成立证据、受损因素和救应条件。",
+      "citations": ["zi_ping_zhen_quan", "shen_feng_tong_kao"],
+      "priority": 90
+    },
+    {
+      "id": "PATTERN-SPECIAL-STRICT",
+      "section": "pattern",
+      "statement": "从格、化气等特殊格局从严判断，存在有力反向根气或帮扶时应优先按普通格局分析。",
+      "citations": ["di_tian_sui_chan_wei", "shen_feng_tong_kao"],
+      "priority": 100
+    },
+    {
+      "id": "WEALTH-STAR-VISIBILITY",
+      "section": "wealth",
+      "statement": "财星的透干、藏根、得令与受制分别记录，不因命局见财就直接推断现实财富。",
+      "citations": ["yuan_hai_zi_ping", "zi_ping_zhen_quan"],
+      "priority": 100
+    },
+    {
+      "id": "WEALTH-CAPACITY",
+      "section": "wealth",
+      "statement": "财运承载需结合日主强弱、印比支持与食伤生财路径判断。",
+      "citations": ["di_tian_sui_chan_wei", "zi_ping_zhen_quan"],
+      "priority": 100
+    },
+    {
+      "id": "WEALTH-REVENUE-RETENTION",
+      "section": "wealth",
+      "statement": "赚钱机会与留财能力分开判断，前者看生财通道，后者看比劫、财根、冲合和风险约束。",
+      "citations": ["yuan_hai_zi_ping", "shen_feng_tong_kao"],
+      "priority": 100
+    },
+    {
+      "id": "WEALTH-RISK-ADVICE",
+      "section": "wealth",
+      "statement": "涉及借贷、抵押和高杠杆时只提供风险条件，不给出结果保证或替代财务决策。",
+      "citations": ["bazi-skill:safety"],
+      "priority": 100
+    },
+    {
+      "id": "REL-SPOUSE-STAR",
+      "section": "relationship",
+      "statement": "传统配偶星只作为关系结构证据之一，须与日支、合冲刑害及大运流年共同判断。",
+      "citations": ["yuan_hai_zi_ping", "shen_feng_tong_kao"],
+      "priority": 100
+    },
+    {
+      "id": "REL-PALACE-STABILITY",
+      "section": "relationship",
+      "statement": "日支夫妻宫的静稳、合冲刑害用于观察关系稳定条件，不单独断婚姻结果。",
+      "citations": ["yuan_hai_zi_ping", "ming_li_tan_yuan"],
+      "priority": 100
+    },
+    {
+      "id": "REL-STAGES",
+      "section": "relationship",
+      "statement": "桃花吸引、对象出现、关系建立与婚姻稳定是不同阶段，必须分别给出证据。",
+      "citations": ["bazi-skill:relationship", "shen_feng_tong_kao"],
+      "priority": 100
+    },
+    {
+      "id": "REL-STATUS-UNKNOWN",
+      "section": "relationship",
+      "statement": "出生盘不能确认当事人此刻是否已婚；只能分析关系倾向与时机。",
+      "citations": ["bazi-skill:safety"],
+      "priority": 100
+    }
+  ]
+}

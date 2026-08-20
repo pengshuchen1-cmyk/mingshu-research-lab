@@ -25,6 +25,25 @@ def test_env_file_is_backend_absolute_path():
     assert ENV_FILE.name == ".env"
 
 
+def test_profile_edit_cooldown_is_configurable():
+    configured = Settings(
+        _env_file=None,
+        database_url="sqlite+aiosqlite:///:memory:",
+        redis_url="redis://127.0.0.1:6379/0",
+        profile_edit_cooldown_days=7,
+    )
+
+    assert configured.profile_edit_cooldown_days == 7
+
+    with pytest.raises(ValidationError, match="greater than or equal to 0"):
+        Settings(
+            _env_file=None,
+            database_url="sqlite+aiosqlite:///:memory:",
+            redis_url="redis://127.0.0.1:6379/0",
+            profile_edit_cooldown_days=-1,
+        )
+
+
 @pytest.mark.parametrize(
     ("redis_url", "expected"),
     [

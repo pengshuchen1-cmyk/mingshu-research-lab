@@ -1,9 +1,12 @@
 import uuid
-from datetime import datetime
+from datetime import date, datetime
+from typing import Literal
 
 from sqlalchemy import (
     JSON,
     Boolean,
+    CheckConstraint,
+    Date,
     DateTime,
     ForeignKey,
     Integer,
@@ -28,7 +31,76 @@ class User(Base):
     phone: Mapped[str | None] = mapped_column(String(32), unique=True, index=True)
     role: Mapped[str] = mapped_column(String(16), default="user", index=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    password_hash: Mapped[str | None] = mapped_column(String(255))
+    auth_version: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    password_failed_attempts: Mapped[int] = mapped_column(
+        Integer, default=0, server_default="0"
+    )
+    password_locked_until: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True)
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    @property
+    def has_password(self) -> bool:
+        return self.password_hash is not None
+
+
+class BirthProfile(Base):
+    """User-owned birth information used as the sole input to chart generation."""
+
+    __tablename__ = "birth_profiles"
+    __table_args__ = (
+        CheckConstraint("gender IN ('男', '女')", name="ck_birth_profiles_gender"),
+        CheckConstraint(
+            "calendar_type IN ('solar', 'lunar')",
+            name="ck_birth_profiles_calendar_type",
+        ),
+        CheckConstraint(
+            "(birth_hour IS NULL AND birth_minute IS NULL) OR "
+            "(birth_hour BETWEEN 0 AND 23 AND birth_minute BETWEEN 0 AND 59)",
+            name="ck_birth_profiles_time_pair",
+        ),
+    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
+    user_id: Mapped[str] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    name: Mapped[str] = mapped_column(String(100))
+    gender: Mapped[Literal["男", "女"]] = mapped_column(String(8))
+    calendar_type: Mapped[Literal["solar", "lunar"]] = mapped_column(String(8))
+    # Source-calendar text, rather than SQL DATE: a valid lunar date such as
+    # lunar February 30 is not necessarily a valid Gregorian date object.
+    birth_date: Mapped[str] = mapped_column(String(10))
+    solar_birth_date: Mapped[date] = mapped_column(Date)
+    birth_hour: Mapped[int | None] = mapped_column(Integer)
+    birth_minute: Mapped[int | None] = mapped_column(Integer)
+    birth_place: Mapped[str] = mapped_column(String(200), default="")
+    is_leap_month: Mapped[bool] = mapped_column(Boolean, default=False)
+    time_label: Mapped[str] = mapped_column(String(40), default="精确时间")
+    edit_count: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    last_edited_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+
+class BaziChart(Base):
+    """Latest deterministic chart snapshot for one birth profile."""
+
+    __tablename__ = "bazi_charts"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
+    profile_id: Mapped[str] = mapped_column(
+        ForeignKey("birth_profiles.id", ondelete="CASCADE"), unique=True
+    )
+    input_fingerprint: Mapped[str] = mapped_column(String(64))
+    chart_fingerprint: Mapped[str] = mapped_column(String(64), index=True)
+    engine_version: Mapped[str] = mapped_column(String(32))
+    chart_json: Mapped[dict] = mapped_column(JSON)
+    generated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
 
 
 class OTPChallenge(Base):
