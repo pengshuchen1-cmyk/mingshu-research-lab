@@ -72,6 +72,26 @@ class Errors:
         status.HTTP_400_BAD_REQUEST,
         "Invalid or expired OTP",
     )
+    INVALID_PASSWORD_CREDENTIALS = ErrorDefinition(
+        "AUTH_INVALID_PASSWORD_CREDENTIALS",
+        status.HTTP_401_UNAUTHORIZED,
+        "Invalid phone number or password",
+    )
+    CURRENT_PASSWORD_REQUIRED = ErrorDefinition(
+        "AUTH_CURRENT_PASSWORD_REQUIRED",
+        status.HTTP_400_BAD_REQUEST,
+        "Current password is required",
+    )
+    PASSWORD_UNCHANGED = ErrorDefinition(
+        "AUTH_PASSWORD_UNCHANGED",
+        status.HTTP_409_CONFLICT,
+        "New password must be different from the current password",
+    )
+    PASSWORD_LOGIN_LOCKED = ErrorDefinition(
+        "AUTH_PASSWORD_LOGIN_LOCKED",
+        status.HTTP_429_TOO_MANY_REQUESTS,
+        "Password login is temporarily locked; reset the password or try again later",
+    )
     WECHAT_QR_NOT_CONFIGURED = ErrorDefinition(
         "AUTH_WECHAT_QR_NOT_CONFIGURED",
         status.HTTP_501_NOT_IMPLEMENTED,
@@ -103,6 +123,28 @@ class Errors:
     )
     FEATURE_RULE_NOT_FOUND = ErrorDefinition(
         "POINTS_FEATURE_RULE_NOT_FOUND", status.HTTP_404_NOT_FOUND, "Feature rule not found"
+    )
+
+    BIRTH_PROFILE_NOT_FOUND = ErrorDefinition(
+        "CHART_BIRTH_PROFILE_NOT_FOUND", status.HTTP_404_NOT_FOUND, "Birth profile not found"
+    )
+    BIRTH_PROFILE_EDIT_COOLDOWN = ErrorDefinition(
+        "CHART_BIRTH_PROFILE_EDIT_COOLDOWN",
+        status.HTTP_429_TOO_MANY_REQUESTS,
+        "Birth profile cannot be edited again during the configured cooldown period",
+    )
+    BIRTH_PROFILE_INVALID = ErrorDefinition(
+        "CHART_BIRTH_PROFILE_INVALID",
+        status.HTTP_422_UNPROCESSABLE_CONTENT,
+        "Birth information could not be converted into a chart",
+    )
+    CHART_CONFIRMATION_MISMATCH = ErrorDefinition(
+        "CHART_CONFIRMATION_MISMATCH",
+        status.HTTP_409_CONFLICT,
+        "Chart result changed; preview and confirm the birth information again",
+    )
+    CHART_NOT_FOUND = ErrorDefinition(
+        "CHART_NOT_FOUND", status.HTTP_404_NOT_FOUND, "Chart has not been generated"
     )
 
     UNKNOWN_PAYMENT_PROVIDER = ErrorDefinition(

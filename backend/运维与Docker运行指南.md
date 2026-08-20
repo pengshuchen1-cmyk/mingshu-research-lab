@@ -34,7 +34,7 @@ docker compose up -d --build
 docker compose ps
 ```
 
-Compose 会自动读取与 `docker-compose.yml` 同目录的 `.env`，将其中的 `MYSQL_*`、`REDIS_*` 等值替换到 `${变量名}`，并通过 `env_file: .env` 把应用配置传入 API 和迁移容器。`.env.example` 的密码只适用于一次性本地开发。
+Compose 会自动读取与 `docker-compose.yml` 同目录的 `.env`，将其中的 `MYSQL_*`、`REDIS_*` 等值替换到 `${变量名}`。API 和迁移容器只通过 `environment` 白名单取得各自需要的配置，不会得到 MySQL root 密码。`.env.example` 的密码只适用于一次性本地开发。
 
 启动顺序为 MySQL/Redis 健康检查、`alembic upgrade head`、API。验证：
 
@@ -64,7 +64,7 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 
 ## 3. 通用服务器 Docker 部署
 
-以下示例使用 `/opt/mingshu-backend`，也可以选择其他目录并同步修改命令。SSH 用户必须有 Docker 权限。
+后端已经包含独立的确定性排盘核心和规则，不依赖旧 Streamlit 应用。以下示例使用 `/opt/mingshu-backend`，也可以选择其他目录并同步修改命令。SSH 用户必须有 Docker 权限。
 
 在服务器准备目录：
 
@@ -79,6 +79,8 @@ sudo chown -R "$(id -un):$(id -gn)" /opt/mingshu-backend
 scp -r backend/app backend/alembic backend/scripts <SSH_USER>@<SERVER_HOST>:/opt/mingshu-backend/
 scp backend/alembic.ini backend/Dockerfile backend/requirements-prod.txt backend/docker-compose.yml backend/.dockerignore backend/.env.production.example <SSH_USER>@<SERVER_HOST>:/opt/mingshu-backend/
 ```
+
+上传后至少应存在 `/opt/mingshu-backend/Dockerfile` 和 `/opt/mingshu-backend/app/bazi/rules`。也可以只发布独立的 `backend` 目录或后端镜像。
 
 服务器首次配置有两种方式，任选其一。
 

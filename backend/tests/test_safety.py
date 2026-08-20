@@ -1,5 +1,6 @@
-from fastapi.testclient import TestClient
 import asyncio
+
+from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from app.database import get_db
@@ -32,14 +33,18 @@ def test_otp_lockout_is_committed_after_bad_requests(tmp_path):
     app.dependency_overrides[get_db] = override_db
     try:
         with TestClient(app) as client:
-            issued = client.post("/api/v1/auth/otp", json={"phone": "13800138000"})
+            issued = client.post(
+                "/api/v1/auth/otp/login/code", json={"phone": "13800138000"}
+            )
             assert issued.status_code == 200
             for _ in range(5):
                 assert client.post(
-                    "/api/v1/auth/verify", json={"phone": "13800138000", "code": "000000"}
+                    "/api/v1/auth/otp/login",
+                    json={"phone": "13800138000", "code": "000000"},
                 ).status_code == 400
             assert client.post(
-                "/api/v1/auth/verify", json={"phone": "13800138000", "code": "000000"}
+                "/api/v1/auth/otp/login",
+                json={"phone": "13800138000", "code": "000000"},
             ).status_code == 429
     finally:
         app.dependency_overrides.clear()

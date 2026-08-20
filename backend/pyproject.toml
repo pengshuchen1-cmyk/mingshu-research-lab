@@ -3,18 +3,21 @@ name = "mingshu-backend"
 version = "0.1.0"
 requires-python = ">=3.11"
 dependencies = [
-  "fastapi>=0.115,<1", "uvicorn[standard]>=0.30", "sqlalchemy[asyncio]>=2.0", "asyncmy>=0.2.9", "PyMySQL>=1.1", "aiosqlite>=0.20", "alembic>=1.13", "redis>=5.0", "pydantic-settings>=2.5", "PyJWT>=2.9", "phonenumbers>=8.13"
+  "fastapi>=0.115,<1", "uvicorn[standard]>=0.30", "sqlalchemy[asyncio]>=2.0", "asyncmy>=0.2.9", "PyMySQL>=1.1", "aiosqlite>=0.20", "alembic>=1.13", "redis>=5.0", "pydantic-settings>=2.5", "PyJWT>=2.9", "phonenumbers>=8.13", "lunar_python==1.4.8"
 ]
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "pytest-asyncio>=0.24", "httpx>=0.27", "ruff>=0.6"]
 
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=68", "wheel>=0.42"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 include = ["app*"]
+
+[tool.setuptools.package-data]
+"app.bazi" = ["rules/*.json", "rules/bazi_skill/*.json"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

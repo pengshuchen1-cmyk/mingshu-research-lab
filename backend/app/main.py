@@ -5,11 +5,11 @@ from sqlalchemy import text
 from sqlalchemy.engine import make_url
 from sqlalchemy.exc import SQLAlchemyError
 
+from .api.v1 import router as api_v1_router
 from .cache import RedisClient
 from .config import settings
 from .database import DBSession
 from .errors import APIError, Errors, SystemErrorMessages
-from .routers import admin, auth, me, pay
 
 app = FastAPI(
     title="Mingshu Backend API", version="0.1.0", openapi_url="/openapi.json", docs_url="/docs"
@@ -21,10 +21,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.include_router(auth)
-app.include_router(me)
-app.include_router(admin)
-app.include_router(pay)
+app.include_router(api_v1_router)
 
 
 @app.on_event("startup")
