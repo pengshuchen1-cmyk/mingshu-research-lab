@@ -48,6 +48,7 @@ services:
   migrate:
     build:
       context: .
+      dockerfile: Dockerfile
       args:
         PIP_INDEX_URL: ${PIP_INDEX_URL:-https://pypi.org/simple}
     image: mingshu-backend:${IMAGE_TAG:-local}
@@ -66,6 +67,7 @@ services:
   api:
     build:
       context: .
+      dockerfile: Dockerfile
       args:
         PIP_INDEX_URL: ${PIP_INDEX_URL:-https://pypi.org/simple}
     image: mingshu-backend:${IMAGE_TAG:-local}
@@ -84,6 +86,9 @@ services:
       OTP_RESEND_SECONDS: ${OTP_RESEND_SECONDS:-60}
       OTP_DAILY_LIMIT: ${OTP_DAILY_LIMIT:-10}
       OTP_MAX_ATTEMPTS: ${OTP_MAX_ATTEMPTS:-5}
+      PASSWORD_MAX_ATTEMPTS: ${PASSWORD_MAX_ATTEMPTS:-5}
+      PASSWORD_LOCK_MINUTES: ${PASSWORD_LOCK_MINUTES:-15}
+      PROFILE_EDIT_COOLDOWN_DAYS: ${PROFILE_EDIT_COOLDOWN_DAYS:-30}
       CORS_ORIGINS: '${CORS_ORIGINS:-[]}'
       WECHAT_APP_ID: ${WECHAT_APP_ID:-}
       WECHAT_APP_SECRET: ${WECHAT_APP_SECRET:-}

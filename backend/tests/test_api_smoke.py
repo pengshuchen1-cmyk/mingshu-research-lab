@@ -129,13 +129,14 @@ def test_api_auth_points_admin_and_openapi(tmp_path):
             assert ready.json() == {"status": "ready"}
             openapi = client.get("/openapi.json")
             assert openapi.status_code == 200
-            assert "/api/v1/auth/otp" in openapi.json()["paths"]
+            assert "/api/v1/auth/otp/login/code" in openapi.json()["paths"]
 
             phone = "+8613800138000"
-            otp = client.post("/api/v1/auth/otp", json={"phone": phone})
+            otp = client.post("/api/v1/auth/otp/login/code", json={"phone": phone})
             assert otp.status_code == 200
             login = client.post(
-                "/api/v1/auth/verify", json={"phone": phone, "code": otp.json()["development_code"]}
+                "/api/v1/auth/otp/login",
+                json={"phone": phone, "code": otp.json()["development_code"]},
             )
             assert login.status_code == 200
             assert login.json()["new_user"] is True

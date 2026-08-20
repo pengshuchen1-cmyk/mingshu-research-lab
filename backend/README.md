@@ -1,6 +1,8 @@
 # Mingshu 独立后端
 
-基于 FastAPI、SQLAlchemy 2 异步 ORM、MySQL 8.4、Alembic、Redis 和 JWT。应用使用 `asyncmy`，数据库迁移使用同步 `PyMySQL`。SQLite 只用于隔离测试，正常运行必须配置 MySQL 和 Redis。
+基于 FastAPI、SQLAlchemy 2 异步 ORM、MySQL 8.4、Alembic、Redis 和 JWT。认证同时支持短信验证码注册/登录和手机号密码登录，并提供设置密码、修改密码与短信找回密码接口。应用使用 `asyncmy`，数据库迁移使用同步 `PyMySQL`。SQLite 只用于隔离测试，正常运行必须配置 MySQL 和 Redis。命盘接口使用后端自有的 `app/bazi` 确定性排盘包，不依赖旧 Streamlit 应用。
+
+版本化业务接口统一放在 `app/api/v1`：`auth.py` 负责认证，`users.py` 负责当前用户与点数，`admin.py` 负责管理端，`payments.py` 负责支付，`chart_profiles.py` 负责命理档案与命盘，`router.py` 统一聚合后交给 `app/main.py` 挂载。无版本号的 `/healthz`、`/readyz` 是基础设施探针，保留在应用入口。
 
 ## Docker 一键启动（推荐）
 
@@ -32,6 +34,8 @@ Swagger       http://127.0.0.1:8000/docs
 数据库/Redis  http://127.0.0.1:8000/readyz
 OpenAPI       http://127.0.0.1:8000/openapi.json
 ```
+
+Dockerfile 的构建上下文就是 `backend` 目录，命盘核心与规则已经包含在后端的 `app/bazi` 中。后端目录可以独立复制、构建和部署，不需要保留 `bazi_ziwei_app`。
 
 查看日志和停止（默认保留数据库卷）：
 
@@ -70,6 +74,14 @@ Linux/macOS 激活环境使用 `source .venv/bin/activate`，其余命令相同�
 - [运维与Docker运行指南.md](运维与Docker运行指南.md)：生产部署、SSH 隧道和备份。
 
 真实 `.env`、`.env.*`、导出的 `openapi.json`、本地数据库和虚拟环境均被 Git 忽略；`*.example` 配置模板会被保留。提交前建议执行 `git status --ignored -- backend` 再次确认。
+
+## 命理档案与命盘
+
+登录用户可以保存多个命理档案。调用顺序为 `POST /api/v1/chart-profiles/preview` 预览并取得双指纹，再调用 `POST /api/v1/chart-profiles` 确认保存。新建后允许立即进行第一次修改；之后个人信息默认每 30 天可修改一次，由 `PROFILE_EDIT_COOLDOWN_DAYS` 配置。修改成功时命盘快照会在同一事务中重建。完整字段和示例见 [API.md](API.md#7-命理档案与命盘接口)。
+
+## 登录方式
+
+短信验证码仍是注册入口：先调用 `POST /api/v1/auth/otp/login/code` 获取登录验证码，首次调用 `POST /api/v1/auth/otp/login` 会自动创建用户。登录后可调用 `PUT /api/v1/auth/password` 设置密码，之后可使用 `POST /api/v1/auth/password/login` 登录；忘记密码时通过密码重置专用短信验证码找回。密码变更后旧 JWT 会失效，客户端需要保存接口返回的新令牌。完整参数见 [API.md](API.md#3-认证接口)。
 
 ## 上线前限制
 

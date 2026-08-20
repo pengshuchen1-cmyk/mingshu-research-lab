@@ -1,7 +1,7 @@
 from pathlib import Path
 from urllib.parse import urlparse
 
-from pydantic import field_validator
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from redis.asyncio.connection import parse_url as parse_redis_url
 from sqlalchemy.engine import make_url
@@ -18,13 +18,16 @@ class Settings(BaseSettings):
     database_url: str
     jwt_secret: str = "development-secret-change-me-please"
     jwt_issuer: str = "mingshu-api"
-    access_token_minutes: int = 60
+    access_token_minutes: int = 30
     refresh_token_days: int = 30
     registration_bonus_points: int = 20
     otp_ttl_seconds: int = 300
     otp_resend_seconds: int = 60
     otp_daily_limit: int = 10
     otp_max_attempts: int = 5
+    password_max_attempts: int = Field(default=5, ge=1, le=20)
+    password_lock_minutes: int = Field(default=15, ge=1, le=1440)
+    profile_edit_cooldown_days: int = Field(default=30, ge=0)
     cors_origins: list[str] = []
     redis_url: str
     wechat_app_id: str = ""

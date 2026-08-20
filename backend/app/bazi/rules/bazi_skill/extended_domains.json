@@ -1,0 +1,20 @@
+{
+  "rules": [
+    {"id":"CAREER-STRUCTURE","section":"career","statement":"事业判断结合日主强弱、格局主线、官杀、印星与食伤的配合，不以单一十神直接指定职业。","citations":["zi_ping_zhen_quan","di_tian_sui_chan_wei"],"priority":100},
+    {"id":"CAREER-ROLE-FIT","section":"career","statement":"组织岗位、专业输出、经营变现和资源平台是不同职业路径，须依据命局中官印、食伤和财星的有效关系分别判断。","citations":["zi_ping_zhen_quan","ming_li_tan_yuan"],"priority":90},
+    {"id":"FAMILY-STRUCTURE","section":"family","statement":"原生家庭观察年柱、月柱及相关十神和合冲刑害，只分析互动结构与边界，不断言现实家庭事件。","citations":["yuan_hai_zi_ping","bazi-skill:safety"],"priority":100},
+    {"id":"FAMILY-BOUNDARY","section":"family","statement":"家庭责任与个人发展发生冲突时，应分别列出支持条件、压力来源和现实沟通建议。","citations":["bazi-skill:safety"],"priority":90},
+    {"id":"HEALTH-NONDIAGNOSTIC","section":"health_advisory","statement":"五行偏枯只用于作息、压力和生活节律提示，不对应具体疾病，不替代医疗判断。","citations":["bazi-skill:safety"],"priority":100},
+    {"id":"HEALTH-BALANCE","section":"health_advisory","statement":"健康提示结合季节、五行生克和当前运势观察精力消耗条件，表达为生活管理建议。","citations":["di_tian_sui_chan_wei","bazi-skill:safety"],"priority":90},
+    {"id":"CHILDREN-STRUCTURE","section":"children","statement":"子女主题结合食伤、时柱及其受生受制关系观察互动与养育条件，不单凭一项事实判断。","citations":["yuan_hai_zi_ping","ming_li_tan_yuan"],"priority":100},
+    {"id":"CHILDREN-STATUS-UNKNOWN","section":"children","statement":"命盘不能证明现实生育状态、子女数量或具体结果，只能讨论传统结构倾向。","citations":["bazi-skill:safety"],"priority":100},
+    {"id":"EDU-LEARNING-STYLE","section":"education","statement":"学习与考试结合印星的吸收、食伤的表达及日主承载能力判断，不以单一星神保证成绩。","citations":["zi_ping_zhen_quan","ming_li_tan_yuan"],"priority":100},
+    {"id":"EDU-TIMING","section":"education","statement":"考试年份只分析学习投入、表达发挥和压力条件，不保证录取或证书结果。","citations":["bazi-skill:safety"],"priority":100},
+    {"id":"MOVE-ACTIVATION","section":"relocation","statement":"迁移观察原局与大运流年的冲合变化及事业资源条件，变动信号不等同于必然搬迁。","citations":["yuan_hai_zi_ping","shen_feng_tong_kao"],"priority":100},
+    {"id":"MOVE-REALITY","section":"relocation","statement":"外地发展建议同时核对工作、现金流、家庭责任和现实落脚条件。","citations":["bazi-skill:safety"],"priority":90},
+    {"id":"PROPERTY-CAPACITY","section":"property","statement":"置业观察财富承载、现金流、家庭责任和相关流年引动，不因见财或见土就断定买房。","citations":["zi_ping_zhen_quan","bazi-skill:safety"],"priority":100},
+    {"id":"PROPERTY-RISK","section":"property","statement":"涉及房贷、抵押和杠杆时只说明承受条件和风险边界，不替代财务决策。","citations":["bazi-skill:safety"],"priority":100},
+    {"id":"BENEFACTOR-SUPPORT","section":"benefactor","statement":"贵人主题观察印星、官星、合局和平台资源的支持条件，不把神煞名称直接等同现实帮助。","citations":["zi_ping_zhen_quan","ming_li_tan_yuan"],"priority":100},
+    {"id":"BENEFACTOR-CONDITION","section":"benefactor","statement":"贵人机会需结合当事人的专业能力、信用和合作边界才能转化为现实支持。","citations":["bazi-skill:safety"],"priority":90}
+  ]
+}

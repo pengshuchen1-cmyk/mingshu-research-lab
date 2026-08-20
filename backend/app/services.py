@@ -3,6 +3,7 @@ import secrets
 from datetime import UTC, datetime, timedelta
 from typing import Protocol
 
+from fastapi.concurrency import run_in_threadpool
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,6 +11,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from .config import settings
 from .errors import APIError, Errors
 from .models import FeatureRule, OTPChallenge, PointBalance, PointLedger, User
+from .passwords import (
+    DUMMY_PASSWORD_HASH,
+    hash_password,
+    password_needs_rehash,
+    verify_password,
+)
+
+OTP_LOGIN = "login"
+OTP_PASSWORD_RESET = "password_reset"
 
 
 class SMSProvider(Protocol):
@@ -35,7 +45,7 @@ def digest(value: str):
     return hashlib.sha256(value.encode()).hexdigest()
 
 
-async def issue_otp(db: AsyncSession, phone: str):
+async def issue_otp(db: AsyncSession, phone: str, purpose: str = OTP_LOGIN):
     if sms_provider is None:
         raise APIError(Errors.SMS_PROVIDER_NOT_CONFIGURED)
     now = datetime.now(UTC)
@@ -74,6 +84,7 @@ async def issue_otp(db: AsyncSession, phone: str):
         OTPChallenge(
             phone=phone,
             code_hash=digest(code),
+            purpose=purpose,
             expires_at=now + timedelta(seconds=settings.otp_ttl_seconds),
         )
     )
@@ -83,7 +94,12 @@ async def issue_otp(db: AsyncSession, phone: str):
 
 
 async def verify_otp(
-    db: AsyncSession, phone: str, code: str
+    db: AsyncSession,
+    phone: str,
+    code: str,
+    purpose: str = OTP_LOGIN,
+    *,
+    create_user: bool = True,
 ) -> tuple[User, bool]:
     now = datetime.now(UTC)
     # Lock the most recent OTPChallenge row for this phone to prevent concurrent verification attempts.
@@ -91,7 +107,10 @@ async def verify_otp(
         (
             await db.execute(
                 select(OTPChallenge)
-                .where(OTPChallenge.phone == phone)
+                .where(
+                    OTPChallenge.phone == phone,
+                    OTPChallenge.purpose == purpose,
+                )
                 .order_by(OTPChallenge.created_at.desc())
                 .with_for_update()
             )
@@ -115,6 +134,8 @@ async def verify_otp(
     user = (await db.execute(select(User).where(User.phone == phone))).scalar_one_or_none()
     new = user is None
     if user is None:
+        if not create_user:
+            raise APIError(Errors.USER_UNAVAILABLE)
         candidate = User(phone=phone)
         # Attempt to create a new user and grant the registration bonus in a nested transaction. 
         # If a concurrent transaction has already created a user with this phone, catch the IntegrityError and retrieve the existing user instead, 
@@ -136,6 +157,92 @@ async def verify_otp(
             new = False
     assert user is not None
     return user, new
+
+
+def _as_utc(value: datetime) -> datetime:
+    return value.replace(tzinfo=UTC) if value.tzinfo is None else value.astimezone(UTC)
+
+
+async def authenticate_password(
+    db: AsyncSession, phone: str, password: str
+) -> User:
+    now = datetime.now(UTC)
+    user = (
+        await db.execute(
+            select(User).where(User.phone == phone).with_for_update()
+        )
+    ).scalar_one_or_none()
+    if user and user.password_locked_until:
+        if _as_utc(user.password_locked_until) > now:
+            raise APIError(Errors.PASSWORD_LOGIN_LOCKED)
+        user.password_locked_until = None
+        user.password_failed_attempts = 0
+
+    encoded = user.password_hash if user and user.password_hash else DUMMY_PASSWORD_HASH
+    valid = await run_in_threadpool(verify_password, password, encoded)
+    if not user or not user.is_active or not user.password_hash or not valid:
+        if user and user.is_active and user.password_hash:
+            user.password_failed_attempts += 1
+            if user.password_failed_attempts >= settings.password_max_attempts:
+                user.password_locked_until = now + timedelta(
+                    minutes=settings.password_lock_minutes
+                )
+                raise APIError(Errors.PASSWORD_LOGIN_LOCKED)
+        raise APIError(Errors.INVALID_PASSWORD_CREDENTIALS)
+
+    user.password_failed_attempts = 0
+    user.password_locked_until = None
+    if password_needs_rehash(user.password_hash):
+        user.password_hash = await run_in_threadpool(hash_password, password)
+    return user
+
+
+async def change_user_password(
+    db: AsyncSession,
+    user_id: str,
+    new_password: str,
+    current_password: str | None = None,
+    *,
+    verify_existing_password: bool,
+) -> User:
+    user = (
+        await db.execute(
+            select(User)
+            .where(User.id == user_id)
+            .with_for_update()
+            .execution_options(populate_existing=True)
+        )
+    ).scalar_one()
+    if verify_existing_password and user.password_hash:
+        if current_password is None:
+            raise APIError(Errors.CURRENT_PASSWORD_REQUIRED)
+        now = datetime.now(UTC)
+        if user.password_locked_until:
+            if _as_utc(user.password_locked_until) > now:
+                raise APIError(Errors.PASSWORD_LOGIN_LOCKED)
+            user.password_locked_until = None
+            user.password_failed_attempts = 0
+        current_valid = await run_in_threadpool(
+            verify_password, current_password, user.password_hash
+        )
+        if not current_valid:
+            user.password_failed_attempts += 1
+            if user.password_failed_attempts >= settings.password_max_attempts:
+                user.password_locked_until = now + timedelta(
+                    minutes=settings.password_lock_minutes
+                )
+                raise APIError(Errors.PASSWORD_LOGIN_LOCKED)
+            raise APIError(Errors.INVALID_PASSWORD_CREDENTIALS)
+        user.password_failed_attempts = 0
+        user.password_locked_until = None
+        if await run_in_threadpool(verify_password, new_password, user.password_hash):
+            raise APIError(Errors.PASSWORD_UNCHANGED)
+
+    user.password_hash = await run_in_threadpool(hash_password, new_password)
+    user.password_failed_attempts = 0
+    user.password_locked_until = None
+    user.auth_version += 1
+    return user
 
 
 async def balance(db, user_id):
