@@ -1,8 +1,8 @@
-from datetime import datetime, timedelta, timezone
 import pytest
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
-from app.models import Base, User, FeatureRule
-from app.services import credit, consume
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+
+from app.models import Base, FeatureRule, User
+from app.services import consume, credit
 
 
 @pytest.fixture

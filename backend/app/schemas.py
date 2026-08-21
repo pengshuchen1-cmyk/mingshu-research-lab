@@ -16,6 +16,10 @@ class PhonePasswordIn(PhoneIn):
     password: str = Field(min_length=8, max_length=128, repr=False)
 
 
+class PasswordRegisterIn(PhonePasswordIn):
+    pass
+
+
 class PasswordChangeIn(BaseModel):
     current_password: str | None = Field(
         default=None, min_length=8, max_length=128, repr=False
