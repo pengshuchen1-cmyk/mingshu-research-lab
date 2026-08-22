@@ -151,6 +151,11 @@ class Errors:
     CHART_NOT_FOUND = ErrorDefinition(
         "CHART_NOT_FOUND", status.HTTP_404_NOT_FOUND, "Chart has not been generated"
     )
+    PERSONAL_FORTUNE_UNAVAILABLE = ErrorDefinition(
+        "FORTUNE_PERSONAL_UNAVAILABLE",
+        status.HTTP_422_UNPROCESSABLE_CONTENT,
+        "Personal fortune could not be generated from this chart",
+    )
 
     UNKNOWN_PAYMENT_PROVIDER = ErrorDefinition(
         "PAYMENT_PROVIDER_UNKNOWN", status.HTTP_404_NOT_FOUND, "Unknown payment provider"

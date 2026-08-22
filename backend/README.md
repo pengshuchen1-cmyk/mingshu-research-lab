@@ -2,7 +2,7 @@
 
 基于 FastAPI、SQLAlchemy 2 异步 ORM、MySQL 8.4、Alembic、Redis 和 JWT。认证支持手机号密码直接注册/登录，也保留短信验证码注册/登录，并提供设置密码、修改密码与短信找回密码接口。应用使用 `asyncmy`，数据库迁移使用同步 `PyMySQL`。SQLite 只用于隔离测试，正常运行必须配置 MySQL 和 Redis。命盘接口使用后端自有的 `app/bazi` 确定性排盘包，不依赖旧 Streamlit 应用。
 
-版本化业务接口统一放在 `app/api/v1`：`auth.py` 负责认证，`users.py` 负责当前用户与点数，`admin.py` 负责管理端，`payments.py` 负责支付，`chart_profiles.py` 负责命理档案与命盘，`router.py` 统一聚合后交给 `app/main.py` 挂载。无版本号的 `/healthz`、`/readyz` 是基础设施探针，保留在应用入口。
+版本化业务接口统一放在 `app/api/v1`：`auth.py` 负责认证，`users.py` 负责当前用户与点数，`admin.py` 负责管理端，`payments.py` 负责支付，`chart_profiles.py` 负责命理档案与命盘，`fortunes.py` 负责个人年度与流月运势，`guidance.py` 负责公共今日指引，`router.py` 统一聚合后交给 `app/main.py` 挂载。无版本号的 `/healthz`、`/readyz` 是基础设施探针，保留在应用入口。
 
 ## Docker 一键启动（推荐）
 
@@ -78,6 +78,14 @@ Linux/macOS 激活环境使用 `source .venv/bin/activate`，其余命令相同�
 ## 命理档案与命盘
 
 登录用户可以保存多个命理档案。调用顺序为 `POST /api/v1/chart-profiles/preview` 预览并取得双指纹，再调用 `POST /api/v1/chart-profiles` 确认保存。新建后允许立即进行第一次修改；之后个人信息默认每 30 天可修改一次，由 `PROFILE_EDIT_COOLDOWN_DAYS` 配置。修改成功时命盘快照会在同一事务中重建。完整字段和示例见 [API.md](API.md#7-命理档案与命盘接口)。
+
+## 今日指引
+
+`GET /api/v1/guidance/today` 返回旧应用“今日”页面的公共日建议和年度节奏，无需登录，也不会读取姓名、出生资料、档案或命盘。省略参数时按 `Asia/Shanghai` 的当天计算，也可使用 `target_date`、`target_year` 查询指定日期和年度。完整响应字段见 [API.md](API.md#8-今日指引接口)。
+
+## 个人运势
+
+登录用户可调用 `GET /api/v1/chart-profiles/{profile_id}/fortune?target_year=2026`，从自己已保存的命盘快照生成年度总览、专项分析、目标年份大运背景和 12 个月流月事件。旧版年度、流月、叙事和完整事件规则已迁入后端自有 `app/fortune`，并由多档案、多年份合同测试保护；运行时不依赖旧 `bazi_ziwei_app`。结果实时派生，不另建运势数据表。完整参数、响应字段和 ApiPost 测试步骤见 [API.md](API.md#9-个人运势接口)。
 
 ## 登录方式
 

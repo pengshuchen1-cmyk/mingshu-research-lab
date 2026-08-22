@@ -1,5 +1,5 @@
 from datetime import UTC, date, datetime
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -21,9 +21,7 @@ class PasswordRegisterIn(PhonePasswordIn):
 
 
 class PasswordChangeIn(BaseModel):
-    current_password: str | None = Field(
-        default=None, min_length=8, max_length=128, repr=False
-    )
+    current_password: str | None = Field(default=None, min_length=8, max_length=128, repr=False)
     new_password: str = Field(min_length=8, max_length=128, repr=False)
 
 
@@ -181,3 +179,174 @@ class BaziChartOut(BaseModel):
 class BirthProfileDetailOut(BaseModel):
     profile: BirthProfileOut
     chart: BaziChartOut
+
+
+class DailyGuidanceDetailsOut(BaseModel):
+    colors: list[str]
+    relaxation: str
+    actions: list[str]
+
+
+class DailyGuidanceOut(BaseModel):
+    kind: Literal["daily_guidance"]
+    is_personal: Literal[False]
+    date: date
+    day_pillar: str
+    title: str
+    element_theme: Literal["木", "火", "土", "金", "水"]
+    wearing_colors: list[str]
+    wearing_advice: str
+    cautions: list[str]
+    primary_action: str
+    theme: str
+    focus: str
+    action: str
+    reminder: str
+    details: DailyGuidanceDetailsOut
+    basis: str
+    boundary_note: str
+
+
+class YearlyGuidanceOut(BaseModel):
+    kind: Literal["yearly_guidance"]
+    is_personal: Literal[False]
+    year: int
+    title: str
+    theme: str
+    focus: str
+    actions: list[str]
+    basis: str
+    boundary_note: str
+
+
+class TodayGuidanceOut(BaseModel):
+    timezone: Literal["Asia/Shanghai"]
+    daily_guidance: DailyGuidanceOut | None
+    yearly_guidance: YearlyGuidanceOut
+
+
+class FortuneBranchRelationOut(BaseModel):
+    type: str
+    label: str
+    target: str
+    native_zhi: str
+    year_zhi: str
+    text: str
+
+
+class FortuneEventOut(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    event_type: str
+    label: str
+    category: str
+    score: float = Field(ge=0, le=100)
+    probability_level: str | None = None
+    trigger_count: int | None = None
+    evidence: list[Any] = Field(default_factory=list)
+    display_trigger_factors: list[str] = Field(
+        default_factory=list,
+        description="根据事件证据翻译、去重后得到的用户可读触发因素，最多三项",
+    )
+    reason: str | None = None
+    advice: str
+
+
+class PersonalMonthlyFortuneOut(BaseModel):
+    month: int = Field(ge=1, le=12)
+    month_name: str
+    pillar: str
+    gan: str
+    zhi: str
+    gan_element: str
+    zhi_element: str
+    ten_god: str
+    relation_to_favorable: str
+    branch_relations: list[FortuneBranchRelationOut]
+    theme: str
+    event_tags: list[str]
+    event_tendency: str
+    likely_events: list[str]
+    career_text: str
+    wealth_text: str
+    relationship_text: str
+    health_text: str
+    risk_text: str
+    advice_text: str
+    suitable_actions: list[str]
+    actions_to_avoid: list[str]
+    basis: str
+    source_ids: list[str]
+    source_titles: list[str]
+    top_events: list[FortuneEventOut]
+
+
+class PersonalYearlyFortuneOut(BaseModel):
+    year: int
+    pillar: str
+    gan: str
+    zhi: str
+    gan_element: str
+    zhi_element: str
+    ten_god: str
+    branch_ten_god: str
+    branch_relations: list[FortuneBranchRelationOut]
+    relation_to_favorable: str
+    overall_level: str
+    keywords: list[str]
+    annual_keywords: list[str]
+    overall_text: str
+    career_text: str
+    wealth_text: str
+    relationship_text: str
+    health_text: str
+    risk_text: str
+    advice_text: str
+    brief_text: str
+    suitable_actions: list[str]
+    actions_to_avoid: list[str]
+    high_attention_months: list[str]
+    opportunity_months: list[str]
+    career_good_months: list[str]
+    career_bad_months: list[str]
+    wealth_good_months: list[str]
+    wealth_bad_months: list[str]
+    relationship_good_months: list[str]
+    relationship_bad_months: list[str]
+    peach_months: list[str]
+    health_concerns: list[str]
+
+
+class FortunePeriodOut(BaseModel):
+    index: int
+    pillar: str
+    gan: str
+    zhi: str
+    start_age: int
+    end_age: int
+    start_year: int
+    end_year: int
+    start_date: str
+    end_date: str
+
+
+class FortuneLuckContextOut(BaseModel):
+    available: bool
+    direction: Literal["forward", "reverse"] | None
+    direction_label: str | None
+    start_text: str
+    current_period: FortunePeriodOut | None
+
+
+class PersonalFortuneOut(BaseModel):
+    kind: Literal["personal_fortune"]
+    is_personal: Literal[True]
+    profile_id: str
+    chart_fingerprint: str
+    target_year: int
+    fortune_engine_version: str
+    generated_at: datetime
+    luck_context: FortuneLuckContextOut
+    yearly: PersonalYearlyFortuneOut
+    monthly: list[PersonalMonthlyFortuneOut]
+    boundary_note: str

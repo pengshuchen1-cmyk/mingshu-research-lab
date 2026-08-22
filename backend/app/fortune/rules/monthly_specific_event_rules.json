@@ -1,0 +1,3831 @@
+[
+  {
+    "event_type": "client_payment",
+    "specific_label": "客户回款",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "客户回款由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：客户尾款确认、账期推进、订单结算。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕客户回款提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "财星、食伤与喜用五行共同引动时，收入、回款和资源变现类事项更容易浮现。"
+  },
+  {
+    "event_type": "project_income",
+    "specific_label": "项目收益",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "项目收益由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：项目结算、阶段奖金、服务费入账。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕项目收益提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "财星、食伤与喜用五行共同引动时，收入、回款和资源变现类事项更容易浮现。"
+  },
+  {
+    "event_type": "sales_conversion",
+    "specific_label": "客户成交",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "客户成交由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：报价成交、新客户下单、销售转化。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕客户成交提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "财星、食伤与喜用五行共同引动时，收入、回款和资源变现类事项更容易浮现。"
+  },
+  {
+    "event_type": "salary_bonus",
+    "specific_label": "工资奖金",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "工资奖金由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：绩效奖金、工资调整、补贴到账。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕工资奖金提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "财星、食伤与喜用五行共同引动时，收入、回款和资源变现类事项更容易浮现。"
+  },
+  {
+    "event_type": "side_income",
+    "specific_label": "副业收入",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "副业收入由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：副业订单、兼职收益、小项目收入。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕副业收入提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "财星、食伤与喜用五行共同引动时，收入、回款和资源变现类事项更容易浮现。"
+  },
+  {
+    "event_type": "resource_monetization",
+    "specific_label": "资源变现",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "资源变现由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：资源介绍费、渠道收益、存量资源盘活。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕资源变现提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "财星、食伤与喜用五行共同引动时，收入、回款和资源变现类事项更容易浮现。"
+  },
+  {
+    "event_type": "commission_income",
+    "specific_label": "佣金提成",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "佣金提成由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：提成确认、代理佣金、分销收益。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕佣金提成提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "财星、食伤与喜用五行共同引动时，收入、回款和资源变现类事项更容易浮现。"
+  },
+  {
+    "event_type": "delayed_payment_arrival",
+    "specific_label": "延迟款项到账",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "延迟款项到账由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：拖延款到账、旧账推进、尾款补齐。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕延迟款项到账提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "财星、食伤与喜用五行共同引动时，收入、回款和资源变现类事项更容易浮现。"
+  },
+  {
+    "event_type": "refund_rebate",
+    "specific_label": "退款返利",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "退款返利由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：退款到账、返点返利、优惠补回。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕退款返利提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "财星、食伤与喜用五行共同引动时，收入、回款和资源变现类事项更容易浮现。"
+  },
+  {
+    "event_type": "asset_appreciation_signal",
+    "specific_label": "资产增值信号",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "资产增值信号由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：资产报价变动、房车估值关注、持有资产议价。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕资产增值信号提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "财星、食伤与喜用五行共同引动时，收入、回款和资源变现类事项更容易浮现。"
+  },
+  {
+    "event_type": "business_cash_in",
+    "specific_label": "经营现金流进入",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "经营现金流进入由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：门店流水、经营回款、批量收款。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕经营现金流进入提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "财星、食伤与喜用五行共同引动时，收入、回款和资源变现类事项更容易浮现。"
+  },
+  {
+    "event_type": "unexpected_income",
+    "specific_label": "临时收入",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "临时收入由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：临时红包、意外订单、短期收益。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕临时收入提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "财星、食伤与喜用五行共同引动时，收入、回款和资源变现类事项更容易浮现。"
+  },
+  {
+    "event_type": "wealth_inflow",
+    "specific_label": "进账机会",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "进账机会由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：回款进账、收入确认、收益落袋。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕进账机会提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "财星、食伤与喜用五行共同引动时，收入、回款和资源变现类事项更容易浮现。"
+  },
+  {
+    "event_type": "business_surprise",
+    "specific_label": "项目财务转机",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "项目财务转机由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：报价转机、财务节点推进、项目突然有反馈。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕项目财务转机提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "财星、食伤与喜用五行共同引动时，收入、回款和资源变现类事项更容易浮现。"
+  },
+  {
+    "event_type": "wealth_outflow",
+    "specific_label": "支出增加",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "支出增加由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：预算超支、计划外花费、支出项目增多。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕支出增加提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "比劫、财星、忌神或冲动叠加时，现实中更容易表现为分账、人情和计划外支出。"
+  },
+  {
+    "event_type": "cashflow_pressure",
+    "specific_label": "现金流压力",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "现金流压力由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：周转安排、账期压力、收支时间错位。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕现金流压力提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "比劫、财星、忌神或冲动叠加时，现实中更容易表现为分账、人情和计划外支出。"
+  },
+  {
+    "event_type": "cooperation_money",
+    "specific_label": "合伙分账",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "合伙分账由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：分账谈判、合作分润、账目核对。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕合伙分账提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "比劫、财星、忌神或冲动叠加时，现实中更容易表现为分账、人情和计划外支出。"
+  },
+  {
+    "event_type": "debt_borrowing",
+    "specific_label": "借贷往来",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "借贷往来由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：借款沟通、还款安排、垫付往来。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕借贷往来提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "比劫、财星、忌神或冲动叠加时，现实中更容易表现为分账、人情和计划外支出。"
+  },
+  {
+    "event_type": "debt_loss",
+    "specific_label": "坏账拖欠",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "坏账拖欠由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：欠款拖延、借出难收、担保压力。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕坏账拖欠提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "比劫、财星、忌神或冲动叠加时，现实中更容易表现为分账、人情和计划外支出。"
+  },
+  {
+    "event_type": "human_cost",
+    "specific_label": "人情破耗",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "人情破耗由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：人情开销、请客送礼、替人处理费用。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕人情破耗提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "比劫、财星、忌神或冲动叠加时，现实中更容易表现为分账、人情和计划外支出。"
+  },
+  {
+    "event_type": "social_spending",
+    "specific_label": "应酬消费",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "应酬消费由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：饭局酒局花费、活动消费、社交场合支出。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕应酬消费提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "比劫、财星、忌神或冲动叠加时，现实中更容易表现为分账、人情和计划外支出。"
+  },
+  {
+    "event_type": "investment_risk",
+    "specific_label": "投资谨慎",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "投资谨慎由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：高风险项目、跟风投资、短线波动。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕投资谨慎提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "比劫、财星、忌神或冲动叠加时，现实中更容易表现为分账、人情和计划外支出。"
+  },
+  {
+    "event_type": "equipment_purchase",
+    "specific_label": "设备采购",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "设备采购由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：办公设备、生产工具、电子设备。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕设备采购提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "比劫、财星、忌神或冲动叠加时，现实中更容易表现为分账、人情和计划外支出。"
+  },
+  {
+    "event_type": "repair_expense",
+    "specific_label": "维修支出",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "维修支出由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：设备维修、车辆维修、房屋维修。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕维修支出提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "比劫、财星、忌神或冲动叠加时，现实中更容易表现为分账、人情和计划外支出。"
+  },
+  {
+    "event_type": "family_expense",
+    "specific_label": "家庭支出",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "家庭支出由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：家用支出、长辈花费、家庭采购。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕家庭支出提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "比劫、财星、忌神或冲动叠加时，现实中更容易表现为分账、人情和计划外支出。"
+  },
+  {
+    "event_type": "medical_expense_signal",
+    "specific_label": "体检调养支出",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "体检调养支出由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：体检费用、调理花费、药品检查。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕体检调养支出提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "比劫、财星、忌神或冲动叠加时，现实中更容易表现为分账、人情和计划外支出。"
+  },
+  {
+    "event_type": "penalty_fee",
+    "specific_label": "罚款滞纳费用",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "罚款滞纳费用由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：罚单、滞纳金、补缴费用。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕罚款滞纳费用提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "比劫、财星、忌神或冲动叠加时，现实中更容易表现为分账、人情和计划外支出。"
+  },
+  {
+    "event_type": "subscription_fee",
+    "specific_label": "服务续费",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "服务续费由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：软件续费、会员续费、服务年费。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕服务续费提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "比劫、财星、忌神或冲动叠加时，现实中更容易表现为分账、人情和计划外支出。"
+  },
+  {
+    "event_type": "project_progress",
+    "specific_label": "项目推进",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "项目推进由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：项目节点推进、任务落地、方案执行。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕项目推进提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "官杀主规则责任，食伤主表达交付，月支主工作环境，叠加后容易落到职场事件。"
+  },
+  {
+    "event_type": "project_breakthrough",
+    "specific_label": "项目突破",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "项目突破由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：卡点突破、关键反馈、进度明显推进。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕项目突破提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "官杀主规则责任，食伤主表达交付，月支主工作环境，叠加后容易落到职场事件。"
+  },
+  {
+    "event_type": "project_delay",
+    "specific_label": "项目延期",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "项目延期由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：进度拖延、等待审批、资源未到位。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕项目延期提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "官杀主规则责任，食伤主表达交付，月支主工作环境，叠加后容易落到职场事件。"
+  },
+  {
+    "event_type": "work_block",
+    "specific_label": "工作卡点",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "工作卡点由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：流程堵点、任务反复、协作不顺。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕工作卡点提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "官杀主规则责任，食伤主表达交付，月支主工作环境，叠加后容易落到职场事件。"
+  },
+  {
+    "event_type": "career_change",
+    "specific_label": "岗位变化",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "岗位变化由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：职责调整、岗位变化、工作方向切换。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕岗位变化提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "官杀主规则责任，食伤主表达交付，月支主工作环境，叠加后容易落到职场事件。"
+  },
+  {
+    "event_type": "boss_pressure",
+    "specific_label": "上级压力",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "上级压力由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：上级催促、目标加码、检查考核。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕上级压力提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "官杀主规则责任，食伤主表达交付，月支主工作环境，叠加后容易落到职场事件。"
+  },
+  {
+    "event_type": "performance_review",
+    "specific_label": "考核评估",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "考核评估由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：绩效沟通、结果复盘、指标检查。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕考核评估提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "官杀主规则责任，食伤主表达交付，月支主工作环境，叠加后容易落到职场事件。"
+  },
+  {
+    "event_type": "promotion_signal",
+    "specific_label": "升职机会",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "升职机会由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：职位机会、承担更大职责、被看见。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕升职机会提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "官杀主规则责任，食伤主表达交付，月支主工作环境，叠加后容易落到职场事件。"
+  },
+  {
+    "event_type": "responsibility_increase",
+    "specific_label": "责任增加",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "责任增加由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：任务变多、带人带项目、关键责任落身。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕责任增加提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "官杀主规则责任，食伤主表达交付，月支主工作环境，叠加后容易落到职场事件。"
+  },
+  {
+    "event_type": "team_conflict",
+    "specific_label": "团队摩擦",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "团队摩擦由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：同事分歧、团队协作卡顿、责任划分。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕团队摩擦提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "官杀主规则责任，食伤主表达交付，月支主工作环境，叠加后容易落到职场事件。"
+  },
+  {
+    "event_type": "colleague_support",
+    "specific_label": "同事协助",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "同事协助由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：同事搭手、内部协同、团队补位。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕同事协助提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "官杀主规则责任，食伤主表达交付，月支主工作环境，叠加后容易落到职场事件。"
+  },
+  {
+    "event_type": "public_expression",
+    "specific_label": "汇报展示",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "汇报展示由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：汇报演示、公开表达、作品呈现。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕汇报展示提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "官杀主规则责任，食伤主表达交付，月支主工作环境，叠加后容易落到职场事件。"
+  },
+  {
+    "event_type": "skill_output",
+    "specific_label": "技能输出",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "技能输出由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：专业交付、技术成果、经验输出。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕技能输出提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "官杀主规则责任，食伤主表达交付，月支主工作环境，叠加后容易落到职场事件。"
+  },
+  {
+    "event_type": "workplace_reputation",
+    "specific_label": "职场评价",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "职场评价由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：口碑评价、上级印象、同事反馈。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕职场评价提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "官杀主规则责任，食伤主表达交付，月支主工作环境，叠加后容易落到职场事件。"
+  },
+  {
+    "event_type": "resignation_thought",
+    "specific_label": "离职转向念头",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "离职转向念头由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：想换方向、职业转向、重新评估岗位。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕离职转向念头提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "官杀主规则责任，食伤主表达交付，月支主工作环境，叠加后容易落到职场事件。"
+  },
+  {
+    "event_type": "store_operation",
+    "specific_label": "门店经营",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "门店经营由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：门店流水、客流变化、店面管理。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕门店经营提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "财星代表经营流转，食伤代表产品和表达，喜用参与时更适合转为经营动作。"
+  },
+  {
+    "event_type": "customer_growth",
+    "specific_label": "客户增长",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "客户增长由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：新客户增加、复购提升、渠道拓展。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕客户增长提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "财星代表经营流转，食伤代表产品和表达，喜用参与时更适合转为经营动作。"
+  },
+  {
+    "event_type": "customer_complaint",
+    "specific_label": "客户投诉",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "客户投诉由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：售后沟通、投诉处理、客户不满。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕客户投诉提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "财星代表经营流转，食伤代表产品和表达，喜用参与时更适合转为经营动作。"
+  },
+  {
+    "event_type": "supplier_issue",
+    "specific_label": "供应商问题",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "供应商问题由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：供货延迟、质量沟通、供应商议价。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕供应商问题提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "财星代表经营流转，食伤代表产品和表达，喜用参与时更适合转为经营动作。"
+  },
+  {
+    "event_type": "inventory_pressure",
+    "specific_label": "库存压力",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "库存压力由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：库存积压、补货节奏、周转压力。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕库存压力提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "财星代表经营流转，食伤代表产品和表达，喜用参与时更适合转为经营动作。"
+  },
+  {
+    "event_type": "pricing_adjustment",
+    "specific_label": "价格调整",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "价格调整由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：重新报价、套餐调整、利润测算。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕价格调整提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "财星代表经营流转，食伤代表产品和表达，喜用参与时更适合转为经营动作。"
+  },
+  {
+    "event_type": "marketing_exposure",
+    "specific_label": "宣传曝光",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "宣传曝光由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：活动推广、品牌露出、广告投放。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕宣传曝光提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "财星代表经营流转，食伤代表产品和表达，喜用参与时更适合转为经营动作。"
+  },
+  {
+    "event_type": "content_traffic",
+    "specific_label": "内容流量",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "内容流量由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：作品播放、内容反馈、账号曝光。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕内容流量提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "财星代表经营流转，食伤代表产品和表达，喜用参与时更适合转为经营动作。"
+  },
+  {
+    "event_type": "account_growth",
+    "specific_label": "账号涨粉",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "账号涨粉由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：粉丝增长、互动增加、社媒反馈。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕账号涨粉提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "财星代表经营流转，食伤代表产品和表达，喜用参与时更适合转为经营动作。"
+  },
+  {
+    "event_type": "business_partnership",
+    "specific_label": "商业合作",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "商业合作由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：合作洽谈、资源互换、联名项目。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕商业合作提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "财星代表经营流转，食伤代表产品和表达，喜用参与时更适合转为经营动作。"
+  },
+  {
+    "event_type": "business_negotiation",
+    "specific_label": "商务谈判",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "商务谈判由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：报价谈判、合同谈判、合作条件。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕商务谈判提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "财星代表经营流转，食伤代表产品和表达，喜用参与时更适合转为经营动作。"
+  },
+  {
+    "event_type": "operation_cost",
+    "specific_label": "经营成本上升",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "经营成本上升由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：租金人工、材料上涨、运营费用。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕经营成本上升提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "财星代表经营流转，食伤代表产品和表达，喜用参与时更适合转为经营动作。"
+  },
+  {
+    "event_type": "contract_document",
+    "specific_label": "合同文书",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "合同文书由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：合同条款、文书确认、签约准备。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕合同文书提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "官杀与金象对应规则、流程、合同，伤官参与时需把口头表达落到文字。"
+  },
+  {
+    "event_type": "approval_process",
+    "specific_label": "审批流程",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "审批流程由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：流程审批、盖章签字、内部流转。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕审批流程提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "官杀与金象对应规则、流程、合同，伤官参与时需把口头表达落到文字。"
+  },
+  {
+    "event_type": "legal_compliance",
+    "specific_label": "规则合规",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "规则合规由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：合规检查、制度要求、监管规则。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕规则合规提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "官杀与金象对应规则、流程、合同，伤官参与时需把口头表达落到文字。"
+  },
+  {
+    "event_type": "official_dispute",
+    "specific_label": "投诉争议",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "投诉争议由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：投诉沟通、争议处理、口舌是非。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕投诉争议提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "官杀与金象对应规则、流程、合同，伤官参与时需把口头表达落到文字。"
+  },
+  {
+    "event_type": "license_document",
+    "specific_label": "证照手续",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "证照手续由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：证件办理、执照手续、资质材料。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕证照手续提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "官杀与金象对应规则、流程、合同，伤官参与时需把口头表达落到文字。"
+  },
+  {
+    "event_type": "document_error",
+    "specific_label": "材料遗漏",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "材料遗漏由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：资料缺项、填写错误、反复补件。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕材料遗漏提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "官杀与金象对应规则、流程、合同，伤官参与时需把口头表达落到文字。"
+  },
+  {
+    "event_type": "policy_change",
+    "specific_label": "规则变化",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "规则变化由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：政策调整、制度更新、流程变化。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕规则变化提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "官杀与金象对应规则、流程、合同，伤官参与时需把口头表达落到文字。"
+  },
+  {
+    "event_type": "tax_invoice",
+    "specific_label": "发票税务",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "发票税务由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：开票报税、发票核对、税务资料。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕发票税务提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "官杀与金象对应规则、流程、合同，伤官参与时需把口头表达落到文字。"
+  },
+  {
+    "event_type": "insurance_claim",
+    "specific_label": "保险理赔",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "保险理赔由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：理赔材料、保险沟通、赔付确认。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕保险理赔提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "官杀与金象对应规则、流程、合同，伤官参与时需把口头表达落到文字。"
+  },
+  {
+    "event_type": "dispute_mediation",
+    "specific_label": "争议协调",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "争议协调由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：中间协调、协商解决、调解沟通。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕争议协调提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "官杀与金象对应规则、流程、合同，伤官参与时需把口头表达落到文字。"
+  },
+  {
+    "event_type": "property_housing",
+    "specific_label": "房产居住",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "房产居住由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：房屋安排、居住事务、房产沟通。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕房产居住提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "san_ming_tong_hui",
+      "qiong_tong_bao_jian",
+      "ming_li_tan_yuan",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "土象、印星与财星共同引动时，常对应房屋、店铺、设备和居住承载事务。"
+  },
+  {
+    "event_type": "asset_purchase",
+    "specific_label": "大件资产购买",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "大件资产购买由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：房车大件、设备添置、资产采购。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕大件资产购买提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "san_ming_tong_hui",
+      "qiong_tong_bao_jian",
+      "ming_li_tan_yuan",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "土象、印星与财星共同引动时，常对应房屋、店铺、设备和居住承载事务。"
+  },
+  {
+    "event_type": "house_viewing",
+    "specific_label": "看房",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "看房由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：看房比较、房源筛选、价格咨询。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕看房提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "san_ming_tong_hui",
+      "qiong_tong_bao_jian",
+      "ming_li_tan_yuan",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "土象、印星与财星共同引动时，常对应房屋、店铺、设备和居住承载事务。"
+  },
+  {
+    "event_type": "rental_move",
+    "specific_label": "租房搬迁",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "租房搬迁由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：搬家租房、换住处、租约调整。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕租房搬迁提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "san_ming_tong_hui",
+      "qiong_tong_bao_jian",
+      "ming_li_tan_yuan",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "土象、印星与财星共同引动时，常对应房屋、店铺、设备和居住承载事务。"
+  },
+  {
+    "event_type": "renovation_equipment",
+    "specific_label": "装修设备",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "装修设备由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：装修计划、设备配置、空间改造。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕装修设备提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "san_ming_tong_hui",
+      "qiong_tong_bao_jian",
+      "ming_li_tan_yuan",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "土象、印星与财星共同引动时，常对应房屋、店铺、设备和居住承载事务。"
+  },
+  {
+    "event_type": "home_repair",
+    "specific_label": "家中维修",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "家中维修由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：水电维修、家具家电、小修小补。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕家中维修提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "san_ming_tong_hui",
+      "qiong_tong_bao_jian",
+      "ming_li_tan_yuan",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "土象、印星与财星共同引动时，常对应房屋、店铺、设备和居住承载事务。"
+  },
+  {
+    "event_type": "appliance_issue",
+    "specific_label": "家电设备问题",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "家电设备问题由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：家电故障、设备更换、维修预约。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕家电设备问题提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "san_ming_tong_hui",
+      "qiong_tong_bao_jian",
+      "ming_li_tan_yuan",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "土象、印星与财星共同引动时，常对应房屋、店铺、设备和居住承载事务。"
+  },
+  {
+    "event_type": "shop_property",
+    "specific_label": "店铺门面",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "店铺门面由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：店面选址、门面租约、经营场地。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕店铺门面提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "san_ming_tong_hui",
+      "qiong_tong_bao_jian",
+      "ming_li_tan_yuan",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "土象、印星与财星共同引动时，常对应房屋、店铺、设备和居住承载事务。"
+  },
+  {
+    "event_type": "family_asset",
+    "specific_label": "家庭资产",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "家庭资产由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：家庭房产、共同资产、资产商议。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕家庭资产提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "san_ming_tong_hui",
+      "qiong_tong_bao_jian",
+      "ming_li_tan_yuan",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "土象、印星与财星共同引动时，常对应房屋、店铺、设备和居住承载事务。"
+  },
+  {
+    "event_type": "landlord_tenant",
+    "specific_label": "房东租客",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "房东租客由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：租金沟通、房东租客、押金合同。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕房东租客提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "san_ming_tong_hui",
+      "qiong_tong_bao_jian",
+      "ming_li_tan_yuan",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "土象、印星与财星共同引动时，常对应房屋、店铺、设备和居住承载事务。"
+  },
+  {
+    "event_type": "property_contract",
+    "specific_label": "房屋合同",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "房屋合同由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：买卖合同、租赁合同、产权资料。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕房屋合同提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "san_ming_tong_hui",
+      "qiong_tong_bao_jian",
+      "ming_li_tan_yuan",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "土象、印星与财星共同引动时，常对应房屋、店铺、设备和居住承载事务。"
+  },
+  {
+    "event_type": "living_environment_change",
+    "specific_label": "居住环境变化",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "居住环境变化由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：换环境、邻里物业、空间调整。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕居住环境变化提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "san_ming_tong_hui",
+      "qiong_tong_bao_jian",
+      "ming_li_tan_yuan",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "土象、印星与财星共同引动时，常对应房屋、店铺、设备和居住承载事务。"
+  },
+  {
+    "event_type": "travel_traffic",
+    "specific_label": "通勤出行",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "通勤出行由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：通勤奔波、短途出行、路线调整。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕通勤出行提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "冲动、七杀、偏财和火金水取象叠加时，更适合提醒车辆、出行和工具安全。"
+  },
+  {
+    "event_type": "travel_delay",
+    "specific_label": "行程延误",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "行程延误由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：航班高铁延误、堵车等待、计划变动。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕行程延误提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "冲动、七杀、偏财和火金水取象叠加时，更适合提醒车辆、出行和工具安全。"
+  },
+  {
+    "event_type": "business_trip",
+    "specific_label": "出差外出",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "出差外出由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：出差安排、外地沟通、短期奔波。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕出差外出提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "冲动、七杀、偏财和火金水取象叠加时，更适合提醒车辆、出行和工具安全。"
+  },
+  {
+    "event_type": "vehicle_safety",
+    "specific_label": "驾驶安全提醒",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "驾驶安全提醒由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：开车慢一点、车况检查、避免赶路。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕驾驶安全提醒提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "冲动、七杀、偏财和火金水取象叠加时，更适合提醒车辆、出行和工具安全。"
+  },
+  {
+    "event_type": "safety_attention",
+    "specific_label": "操作交通安全",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "操作交通安全由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：工具使用、路上留神、避免急躁。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕操作交通安全提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "冲动、七杀、偏财和火金水取象叠加时，更适合提醒车辆、出行和工具安全。"
+  },
+  {
+    "event_type": "vehicle_expense",
+    "specific_label": "车辆支出",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "车辆支出由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：油费停车、保养费用、交通成本。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕车辆支出提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "冲动、七杀、偏财和火金水取象叠加时，更适合提醒车辆、出行和工具安全。"
+  },
+  {
+    "event_type": "vehicle_repair",
+    "specific_label": "车辆维修",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "车辆维修由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：车辆保养、维修检查、轮胎电瓶。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕车辆维修提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "冲动、七杀、偏财和火金水取象叠加时，更适合提醒车辆、出行和工具安全。"
+  },
+  {
+    "event_type": "traffic_ticket",
+    "specific_label": "罚单违章",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "罚单违章由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：违章罚单、停车罚款、规则提醒。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕罚单违章提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "冲动、七杀、偏财和火金水取象叠加时，更适合提醒车辆、出行和工具安全。"
+  },
+  {
+    "event_type": "parking_insurance",
+    "specific_label": "停车保险",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "停车保险由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：保险续费、停车缴费、车险材料。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕停车保险提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "冲动、七杀、偏财和火金水取象叠加时，更适合提醒车辆、出行和工具安全。"
+  },
+  {
+    "event_type": "route_change",
+    "specific_label": "路线变更",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "路线变更由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：改路线、换交通方式、临时绕行。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕路线变更提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "冲动、七杀、偏财和火金水取象叠加时，更适合提醒车辆、出行和工具安全。"
+  },
+  {
+    "event_type": "long_distance_travel",
+    "specific_label": "远行差旅",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "远行差旅由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：远行安排、跨城出行、长途计划。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕远行差旅提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "冲动、七杀、偏财和火金水取象叠加时，更适合提醒车辆、出行和工具安全。"
+  },
+  {
+    "event_type": "travel_document",
+    "specific_label": "出行证件",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "出行证件由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：证件检查、签证材料、票据凭证。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕出行证件提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "冲动、七杀、偏财和火金水取象叠加时，更适合提醒车辆、出行和工具安全。"
+  },
+  {
+    "event_type": "social_drinking",
+    "specific_label": "酒局应酬",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "酒局应酬由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：酒局饭局、朋友邀约、应酬场合。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕酒局应酬提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "比劫主同辈朋友，桃花与日支引动时，人情往来、饭局和口舌更容易出现。"
+  },
+  {
+    "event_type": "favor_obligation",
+    "specific_label": "人情往来",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "人情往来由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：人情请托、帮忙协调、礼尚往来。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕人情往来提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "比劫主同辈朋友，桃花与日支引动时，人情往来、饭局和口舌更容易出现。"
+  },
+  {
+    "event_type": "friend_request",
+    "specific_label": "朋友求助",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "朋友求助由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：朋友借力、同辈求助、帮忙牵线。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕朋友求助提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "比劫主同辈朋友，桃花与日支引动时，人情往来、饭局和口舌更容易出现。"
+  },
+  {
+    "event_type": "networking",
+    "specific_label": "资源局",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "资源局由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：资源饭局、新圈层、介绍认识。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕资源局提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "比劫主同辈朋友，桃花与日支引动时，人情往来、饭局和口舌更容易出现。"
+  },
+  {
+    "event_type": "reputation_attention",
+    "specific_label": "名声评价",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "名声评价由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：别人评价、口碑传播、面子问题。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕名声评价提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "比劫主同辈朋友，桃花与日支引动时，人情往来、饭局和口舌更容易出现。"
+  },
+  {
+    "event_type": "gossip_dispute",
+    "specific_label": "口舌是非",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "口舌是非由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：闲话误会、被议论、沟通争执。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕口舌是非提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "比劫主同辈朋友，桃花与日支引动时，人情往来、饭局和口舌更容易出现。"
+  },
+  {
+    "event_type": "gift_expense",
+    "specific_label": "礼物红包",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "礼物红包由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：红包礼物、请客送礼、节日人情。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕礼物红包提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "比劫主同辈朋友，桃花与日支引动时，人情往来、饭局和口舌更容易出现。"
+  },
+  {
+    "event_type": "banquet_party",
+    "specific_label": "宴席聚会",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "宴席聚会由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：聚会宴席、婚宴饭局、家庭饭局。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕宴席聚会提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "比劫主同辈朋友，桃花与日支引动时，人情往来、饭局和口舌更容易出现。"
+  },
+  {
+    "event_type": "old_friend_contact",
+    "specific_label": "旧友联系",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "旧友联系由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：老朋友联系、旧关系回访、同学同事消息。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕旧友联系提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "比劫主同辈朋友，桃花与日支引动时，人情往来、饭局和口舌更容易出现。"
+  },
+  {
+    "event_type": "social_boundary",
+    "specific_label": "社交边界",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "社交边界由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：拒绝请托、承诺边界、人情分寸。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕社交边界提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "比劫主同辈朋友，桃花与日支引动时，人情往来、饭局和口舌更容易出现。"
+  },
+  {
+    "event_type": "relationship_progress",
+    "specific_label": "关系推进",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "关系推进由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：关系确认、沟通推进、相处升温。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕关系推进提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "夫妻宫、桃花、财官关系星被引动时，关系推进或关系压力更容易被看见。"
+  },
+  {
+    "event_type": "relationship_conflict",
+    "specific_label": "关系摩擦",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "关系摩擦由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：伴侣争执、语气误会、边界拉扯。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕关系摩擦提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "夫妻宫、桃花、财官关系星被引动时，关系推进或关系压力更容易被看见。"
+  },
+  {
+    "event_type": "old_contact",
+    "specific_label": "旧人联系",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "旧人联系由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：旧人消息、前任动态、旧关系回流。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕旧人联系提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "夫妻宫、桃花、财官关系星被引动时，关系推进或关系压力更容易被看见。"
+  },
+  {
+    "event_type": "peach_blossom_contact",
+    "specific_label": "桃花接触",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "桃花接触由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：新认识、暧昧信号、社交桃花。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕桃花接触提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "夫妻宫、桃花、财官关系星被引动时，关系推进或关系压力更容易被看见。"
+  },
+  {
+    "event_type": "emotional_distance",
+    "specific_label": "冷淡疏离",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "冷淡疏离由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：联系变少、情绪疏远、节奏不同。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕冷淡疏离提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "夫妻宫、桃花、财官关系星被引动时，关系推进或关系压力更容易被看见。"
+  },
+  {
+    "event_type": "partner_planning",
+    "specific_label": "伴侣规划",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "伴侣规划由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：共同计划、未来安排、现实讨论。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕伴侣规划提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "夫妻宫、桃花、财官关系星被引动时，关系推进或关系压力更容易被看见。"
+  },
+  {
+    "event_type": "family_pressure",
+    "specific_label": "家庭介入",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "家庭介入由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：父母意见、家庭压力、亲友参与。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕家庭介入提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "夫妻宫、桃花、财官关系星被引动时，关系推进或关系压力更容易被看见。"
+  },
+  {
+    "event_type": "misunderstanding",
+    "specific_label": "误会解释",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "误会解释由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：解释误会、沟通澄清、信息不对称。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕误会解释提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "夫妻宫、桃花、财官关系星被引动时，关系推进或关系压力更容易被看见。"
+  },
+  {
+    "event_type": "confession_signal",
+    "specific_label": "表白确认",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "表白确认由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：表达心意、确认关系、关键对话。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕表白确认提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "夫妻宫、桃花、财官关系星被引动时，关系推进或关系压力更容易被看见。"
+  },
+  {
+    "event_type": "breakup_risk_signal",
+    "specific_label": "关系降温信号",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "关系降温信号由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：冷战拉扯、关系降温、重新评估。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕关系降温信号提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "夫妻宫、桃花、财官关系星被引动时，关系推进或关系压力更容易被看见。"
+  },
+  {
+    "event_type": "marriage_discussion",
+    "specific_label": "婚姻讨论",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "婚姻讨论由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：婚期房车、结婚安排、双方家庭。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕婚姻讨论提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "夫妻宫、桃花、财官关系星被引动时，关系推进或关系压力更容易被看见。"
+  },
+  {
+    "event_type": "value_conflict",
+    "specific_label": "价值观冲突",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "价值观冲突由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：消费观差异、生活节奏、目标不同。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕价值观冲突提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "夫妻宫、桃花、财官关系星被引动时，关系推进或关系压力更容易被看见。"
+  },
+  {
+    "event_type": "long_distance_issue",
+    "specific_label": "异地距离问题",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "异地距离问题由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：异地沟通、见面不便、时间错位。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕异地距离问题提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "夫妻宫、桃花、财官关系星被引动时，关系推进或关系压力更容易被看见。"
+  },
+  {
+    "event_type": "cooperation_boundary",
+    "specific_label": "合作边界影响关系",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "合作边界影响关系由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：合作暧昧、朋友介入、边界不清。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕合作边界影响关系提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "夫妻宫、桃花、财官关系星被引动时，关系推进或关系压力更容易被看见。"
+  },
+  {
+    "event_type": "family_issue",
+    "specific_label": "家庭事务",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "家庭事务由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：家中安排、家庭沟通、旧事处理。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕家庭事务提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "年支对应家庭背景与长辈，印星和土象主承载，被流月带动时容易转为家庭事务。"
+  },
+  {
+    "event_type": "elder_issue",
+    "specific_label": "长辈事务",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "长辈事务由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：长辈沟通、探望照顾、长辈安排。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕长辈事务提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "年支对应家庭背景与长辈，印星和土象主承载，被流月带动时容易转为家庭事务。"
+  },
+  {
+    "event_type": "family_discussion",
+    "specific_label": "家庭商议",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "家庭商议由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：家庭会议、共同决定、家人沟通。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕家庭商议提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "年支对应家庭背景与长辈，印星和土象主承载，被流月带动时容易转为家庭事务。"
+  },
+  {
+    "event_type": "family_asset_discussion",
+    "specific_label": "家庭资产讨论",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "家庭资产讨论由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：房产资产、分配商量、共同出资。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕家庭资产讨论提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "年支对应家庭背景与长辈，印星和土象主承载，被流月带动时容易转为家庭事务。"
+  },
+  {
+    "event_type": "household_repair",
+    "specific_label": "家中维修",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "家中维修由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：水电维修、家居处理、物业问题。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕家中维修提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "年支对应家庭背景与长辈，印星和土象主承载，被流月带动时容易转为家庭事务。"
+  },
+  {
+    "event_type": "sibling_relative_issue",
+    "specific_label": "亲戚兄弟事务",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "亲戚兄弟事务由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：亲戚往来、兄弟姐妹、家族协调。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕亲戚兄弟事务提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "年支对应家庭背景与长辈，印星和土象主承载，被流月带动时容易转为家庭事务。"
+  },
+  {
+    "event_type": "parent_health_attention",
+    "specific_label": "父母状态关注",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "父母状态关注由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：父母体检、长辈作息、陪伴照看。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕父母状态关注提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "年支对应家庭背景与长辈，印星和土象主承载，被流月带动时容易转为家庭事务。"
+  },
+  {
+    "event_type": "family_responsibility",
+    "specific_label": "家庭责任增加",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "家庭责任增加由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：家中责任、照顾安排、事务承担。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕家庭责任增加提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "年支对应家庭背景与长辈，印星和土象主承载，被流月带动时容易转为家庭事务。"
+  },
+  {
+    "event_type": "study_exam",
+    "specific_label": "学习考试",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "学习考试由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：考试准备、课程学习、复习资料。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕学习考试提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "印星主学习系统，食伤主输出表达，喜用参与时更适合学习、考试和技能提升。"
+  },
+  {
+    "event_type": "certificate_training",
+    "specific_label": "证书培训",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "证书培训由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：证书报名、培训课程、资质提升。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕证书培训提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "印星主学习系统，食伤主输出表达，喜用参与时更适合学习、考试和技能提升。"
+  },
+  {
+    "event_type": "skill_upgrade",
+    "specific_label": "技能提升",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "技能提升由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：技能练习、专业进修、工具学习。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕技能提升提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "印星主学习系统，食伤主输出表达，喜用参与时更适合学习、考试和技能提升。"
+  },
+  {
+    "event_type": "writing_output",
+    "specific_label": "写作输出",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "写作输出由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：写方案、文章输出、资料整理。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕写作输出提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "印星主学习系统，食伤主输出表达，喜用参与时更适合学习、考试和技能提升。"
+  },
+  {
+    "event_type": "learning_block",
+    "specific_label": "学习卡点",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "学习卡点由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：理解卡点、进度拖慢、考试焦虑。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕学习卡点提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "印星主学习系统，食伤主输出表达，喜用参与时更适合学习、考试和技能提升。"
+  },
+  {
+    "event_type": "interview_exam",
+    "specific_label": "面试考核",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "面试考核由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：面试准备、资格审核、能力测评。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕面试考核提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "印星主学习系统，食伤主输出表达，喜用参与时更适合学习、考试和技能提升。"
+  },
+  {
+    "event_type": "knowledge_payment",
+    "specific_label": "知识付费",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "知识付费由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：买课程、咨询付费、学习投入。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕知识付费提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "印星主学习系统，食伤主输出表达，喜用参与时更适合学习、考试和技能提升。"
+  },
+  {
+    "event_type": "teacher_mentor_help",
+    "specific_label": "老师导师帮助",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "老师导师帮助由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：导师点拨、老师建议、前辈指导。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕老师导师帮助提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "印星主学习系统，食伤主输出表达，喜用参与时更适合学习、考试和技能提升。"
+  },
+  {
+    "event_type": "sleep_issue",
+    "specific_label": "睡眠状态",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "睡眠状态由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：入睡困难、熬夜恢复、睡眠质量。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕睡眠状态提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "san_ming_tong_hui",
+      "qiong_tong_bao_jian",
+      "ming_li_tan_yuan",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "忌神、冲动、官杀压力和五行偏旺偏弱叠加时，只做身体状态管理提醒，不作医学判断。"
+  },
+  {
+    "event_type": "emotional_pressure",
+    "specific_label": "情绪压力",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "情绪压力由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：焦虑烦躁、压力积累、情绪波动。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕情绪压力提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "san_ming_tong_hui",
+      "qiong_tong_bao_jian",
+      "ming_li_tan_yuan",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "忌神、冲动、官杀压力和五行偏旺偏弱叠加时，只做身体状态管理提醒，不作医学判断。"
+  },
+  {
+    "event_type": "digestion_issue",
+    "specific_label": "脾胃消化",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "脾胃消化由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：胃口变化、消化不适、饮食不规律。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕脾胃消化提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "san_ming_tong_hui",
+      "qiong_tong_bao_jian",
+      "ming_li_tan_yuan",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "忌神、冲动、官杀压力和五行偏旺偏弱叠加时，只做身体状态管理提醒，不作医学判断。"
+  },
+  {
+    "event_type": "fire_anxiety",
+    "specific_label": "心火焦虑",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "心火焦虑由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：上火焦躁、心烦睡浅、急躁感。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕心火焦虑提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "san_ming_tong_hui",
+      "qiong_tong_bao_jian",
+      "ming_li_tan_yuan",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "忌神、冲动、官杀压力和五行偏旺偏弱叠加时，只做身体状态管理提醒，不作医学判断。"
+  },
+  {
+    "event_type": "kidney_fatigue",
+    "specific_label": "腰肾精力",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "腰肾精力由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：腰背疲劳、精力不足、恢复变慢。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕腰肾精力提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "san_ming_tong_hui",
+      "qiong_tong_bao_jian",
+      "ming_li_tan_yuan",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "忌神、冲动、官杀压力和五行偏旺偏弱叠加时，只做身体状态管理提醒，不作医学判断。"
+  },
+  {
+    "event_type": "respiratory_skin",
+    "specific_label": "呼吸皮肤",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "呼吸皮肤由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：皮肤过敏、呼吸干燥、鼻咽不适。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕呼吸皮肤提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "san_ming_tong_hui",
+      "qiong_tong_bao_jian",
+      "ming_li_tan_yuan",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "忌神、冲动、官杀压力和五行偏旺偏弱叠加时，只做身体状态管理提醒，不作医学判断。"
+  },
+  {
+    "event_type": "overwork",
+    "specific_label": "过劳疲劳",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "过劳疲劳由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：工作过量、身体透支、休息不足。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕过劳疲劳提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "san_ming_tong_hui",
+      "qiong_tong_bao_jian",
+      "ming_li_tan_yuan",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "忌神、冲动、官杀压力和五行偏旺偏弱叠加时，只做身体状态管理提醒，不作医学判断。"
+  },
+  {
+    "event_type": "health_fluctuation",
+    "specific_label": "状态波动",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "状态波动由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：精神不稳、疲劳波动、小问题反复。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕状态波动提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "san_ming_tong_hui",
+      "qiong_tong_bao_jian",
+      "ming_li_tan_yuan",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "忌神、冲动、官杀压力和五行偏旺偏弱叠加时，只做身体状态管理提醒，不作医学判断。"
+  },
+  {
+    "event_type": "medical_attention",
+    "specific_label": "体检复查",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "体检复查由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：体检安排、复查项目、早处理小不适。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕体检复查提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "san_ming_tong_hui",
+      "qiong_tong_bao_jian",
+      "ming_li_tan_yuan",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "忌神、冲动、官杀压力和五行偏旺偏弱叠加时，只做身体状态管理提醒，不作医学判断。"
+  },
+  {
+    "event_type": "eye_head_attention",
+    "specific_label": "头眼提醒",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "头眼提醒由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：头眼疲劳、用眼过度、头部紧张。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕头眼提醒提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "san_ming_tong_hui",
+      "qiong_tong_bao_jian",
+      "ming_li_tan_yuan",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "忌神、冲动、官杀压力和五行偏旺偏弱叠加时，只做身体状态管理提醒，不作医学判断。"
+  },
+  {
+    "event_type": "shoulder_neck_issue",
+    "specific_label": "肩颈筋骨",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "肩颈筋骨由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：肩颈酸紧、筋骨拉扯、久坐问题。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕肩颈筋骨提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "san_ming_tong_hui",
+      "qiong_tong_bao_jian",
+      "ming_li_tan_yuan",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "忌神、冲动、官杀压力和五行偏旺偏弱叠加时，只做身体状态管理提醒，不作医学判断。"
+  },
+  {
+    "event_type": "liver_gallbladder_tension",
+    "specific_label": "肝胆疏泄",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "肝胆疏泄由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：情绪郁结、肝胆压力、运动疏泄。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕肝胆疏泄提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "san_ming_tong_hui",
+      "qiong_tong_bao_jian",
+      "ming_li_tan_yuan",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "忌神、冲动、官杀压力和五行偏旺偏弱叠加时，只做身体状态管理提醒，不作医学判断。"
+  },
+  {
+    "event_type": "dampness_metabolism",
+    "specific_label": "湿气代谢",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "湿气代谢由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：困倦沉重、代谢慢、脾胃湿重。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕湿气代谢提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "san_ming_tong_hui",
+      "qiong_tong_bao_jian",
+      "ming_li_tan_yuan",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "忌神、冲动、官杀压力和五行偏旺偏弱叠加时，只做身体状态管理提醒，不作医学判断。"
+  },
+  {
+    "event_type": "recovery_rest",
+    "specific_label": "恢复休养",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "恢复休养由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：休整恢复、调养节奏、减少透支。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕恢复休养提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "san_ming_tong_hui",
+      "qiong_tong_bao_jian",
+      "ming_li_tan_yuan",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "忌神、冲动、官杀压力和五行偏旺偏弱叠加时，只做身体状态管理提醒，不作医学判断。"
+  },
+  {
+    "event_type": "illness_symbol_attention",
+    "specific_label": "病符小疾提醒",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "病符小疾提醒由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：小病早看、体检复查、炎症上火。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕病符小疾提醒提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "san_ming_tong_hui",
+      "qiong_tong_bao_jian",
+      "ming_li_tan_yuan",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "忌神、冲动、官杀压力和五行偏旺偏弱叠加时，只做身体状态管理提醒，不作医学判断。"
+  },
+  {
+    "event_type": "nobleman_help",
+    "specific_label": "贵人协助",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "贵人协助由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：关键帮助、有人搭桥、被人提醒。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕贵人协助提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "印星、喜用和原局资源星共同出现时，更容易对应帮助、平台、导师和转介绍。"
+  },
+  {
+    "event_type": "mentor_advice",
+    "specific_label": "前辈建议",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "前辈建议由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：前辈点拨、导师建议、专业意见。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕前辈建议提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "印星、喜用和原局资源星共同出现时，更容易对应帮助、平台、导师和转介绍。"
+  },
+  {
+    "event_type": "resource_connection",
+    "specific_label": "资源连接",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "资源连接由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：资源对接、信息介绍、渠道连接。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕资源连接提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "印星、喜用和原局资源星共同出现时，更容易对应帮助、平台、导师和转介绍。"
+  },
+  {
+    "event_type": "referral_opportunity",
+    "specific_label": "转介绍机会",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "转介绍机会由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：客户介绍、朋友推荐、机会转介。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕转介绍机会提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "印星、喜用和原局资源星共同出现时，更容易对应帮助、平台、导师和转介绍。"
+  },
+  {
+    "event_type": "platform_support",
+    "specific_label": "平台扶持",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "平台扶持由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：平台资源、组织支持、制度保护。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕平台扶持提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "印星、喜用和原局资源星共同出现时，更容易对应帮助、平台、导师和转介绍。"
+  },
+  {
+    "event_type": "team_support",
+    "specific_label": "团队支持",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "团队支持由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：团队帮忙、同事支援、共同推进。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕团队支持提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "印星、喜用和原局资源星共同出现时，更容易对应帮助、平台、导师和转介绍。"
+  },
+  {
+    "event_type": "family_support",
+    "specific_label": "家庭支持",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "家庭支持由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：家人支持、家庭资源、情绪依靠。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕家庭支持提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "印星、喜用和原局资源星共同出现时，更容易对应帮助、平台、导师和转介绍。"
+  },
+  {
+    "event_type": "hidden_help",
+    "specific_label": "暗中帮助",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "暗中帮助由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：背后支持、隐性资源、有人照应。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕暗中帮助提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "san_ming_tong_hui",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "印星、喜用和原局资源星共同出现时，更容易对应帮助、平台、导师和转介绍。"
+  },
+  {
+    "event_type": "minor_loss",
+    "specific_label": "小额损耗",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "小额损耗由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：丢小物、小额花费、反复补钱。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕小额损耗提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "忌神、冲动、比劫和官杀叠加时，更适合提示损耗、延误、规则和误会风险。"
+  },
+  {
+    "event_type": "delayed_issue",
+    "specific_label": "拖延滞后",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "拖延滞后由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：进度拖慢、等待回复、反复确认。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕拖延滞后提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "忌神、冲动、比劫和官杀叠加时，更适合提示损耗、延误、规则和误会风险。"
+  },
+  {
+    "event_type": "misunderstanding_risk",
+    "specific_label": "误会风险",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "误会风险由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：沟通误差、表达被误解、信息错位。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕误会风险提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "忌神、冲动、比劫和官杀叠加时，更适合提示损耗、延误、规则和误会风险。"
+  },
+  {
+    "event_type": "rule_penalty",
+    "specific_label": "规则处罚",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "规则处罚由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：罚单处罚、流程违规、制度提醒。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕规则处罚提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "忌神、冲动、比劫和官杀叠加时，更适合提示损耗、延误、规则和误会风险。"
+  },
+  {
+    "event_type": "impulsive_decision",
+    "specific_label": "冲动决策",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "冲动决策由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：一时冲动、未经核算、情绪化决定。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕冲动决策提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "忌神、冲动、比劫和官杀叠加时，更适合提示损耗、延误、规则和误会风险。"
+  },
+  {
+    "event_type": "overcommitment",
+    "specific_label": "承诺过多",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "承诺过多由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：答应太多、责任超量、时间排满。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕承诺过多提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "忌神、冲动、比劫和官杀叠加时，更适合提示损耗、延误、规则和误会风险。"
+  },
+  {
+    "event_type": "hidden_cost",
+    "specific_label": "隐藏成本",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "隐藏成本由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：附加费用、后续成本、看不见的消耗。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕隐藏成本提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "忌神、冲动、比劫和官杀叠加时，更适合提示损耗、延误、规则和误会风险。"
+  },
+  {
+    "event_type": "emotional_spending",
+    "specific_label": "情绪消费",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "情绪消费由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：心情消费、冲动下单、补偿式花钱。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕情绪消费提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "忌神、冲动、比劫和官杀叠加时，更适合提示损耗、延误、规则和误会风险。"
+  },
+  {
+    "event_type": "equipment_fault",
+    "specific_label": "设备故障",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "设备故障由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：电脑手机、工具故障、设备掉链子。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕设备故障提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "忌神、冲动、比劫和官杀叠加时，更适合提示损耗、延误、规则和误会风险。"
+  },
+  {
+    "event_type": "document_missing",
+    "specific_label": "资料遗漏",
+    "trigger_profile": {
+      "min_trigger_count": 2,
+      "required_evidence": [
+        "流月十神",
+        "五行喜忌",
+        "原局结构或地支关系"
+      ]
+    },
+    "evidence_template": "资料遗漏由流月十神、喜忌和命盘结构共同触发，不以单一符号下结论。",
+    "real_world_template": "现实中可观察：漏材料、忘带证件、信息缺项。",
+    "risk_template": "需要注意节奏、凭证和边界，不宜凭情绪或口头承诺推进。",
+    "advice_template": "建议围绕资料遗漏提前列清单、留凭证、设缓冲。",
+    "source_ids": [
+      "yuan_hai_zi_ping",
+      "ming_li_tan_yuan",
+      "yu_zhao_ding_zhen_jing",
+      "wu_xing_jing_ji"
+    ],
+    "basis": "忌神、冲动、比劫和官杀叠加时，更适合提示损耗、延误、规则和误会风险。"
+  }
+]

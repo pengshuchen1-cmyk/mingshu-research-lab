@@ -17,3 +17,4 @@ __pycache__/
 *.sql
 *.log
 openapi.json
+build/

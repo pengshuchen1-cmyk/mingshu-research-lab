@@ -18,6 +18,7 @@ include = ["app*"]
 
 [tool.setuptools.package-data]
 "app.bazi" = ["rules/*.json", "rules/bazi_skill/*.json"]
+"app.fortune" = ["rules/*.json"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
