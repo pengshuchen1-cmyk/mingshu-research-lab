@@ -1320,6 +1320,114 @@ ApiPost 测试步骤：
 }
 ```
 
+### `monthly[]` 字段说明
+
+`monthly` 固定包含 12 个对象，按 `month=1` 到 `month=12` 排列。流月干支使用目标年份
+对应月份 15 日的节气定月和五虎遁规则计算；这里的月份序号是接口的公历月份索引，不是让
+客户端提交的农历月份。
+
+| 字段 | 类型 | 必有 | 说明与来源 |
+|---|---|:---:|---|
+| `month` | integer | 是 | 月份序号，固定为 1～12，也是数组的业务排序依据 |
+| `month_name` | string | 是 | 用于展示的月份名称，例如 `1月`、`12月` |
+| `pillar` | string | 是 | 该月月柱，例如 `己丑`；由后端日历与干支规则计算，不由客户端提交 |
+| `gan` | string | 是 | `pillar` 中的月干，例如 `己` |
+| `zhi` | string | 是 | `pillar` 中的月支，例如 `丑` |
+| `gan_element` | string | 是 | 月干对应五行，取值为 `木`、`火`、`土`、`金`、`水`之一 |
+| `zhi_element` | string | 是 | 月支主气对应五行，取值为 `木`、`火`、`土`、`金`、`水`之一 |
+| `ten_god` | string | 是 | 月干相对命盘日主计算出的十神，例如 `正官`、`伤官`；这是个人化结果 |
+| `relation_to_favorable` | string | 是 | 月干、月支五行与命盘喜用、忌神的关系，当前常见值为 `喜用相关`、`忌神相关`、`平稳观察` |
+| `branch_relations` | array<object> | 是 | 流月地支与原局年、月、日、时支之间命中的六冲关系；没有命中时为空数组，子字段见下表 |
+| `theme` | string | 是 | 综合十神、五行喜忌和规则叙事得到的本月主题摘要 |
+| `event_tags` | array<string> | 是 | 用于列表、标签栏快速展示的本月关键词，已去重；它不是 `top_events` 的事件详情 |
+| `event_tendency` | string | 是 | 本月整体事件倾向及本盘校准依据的说明文本 |
+| `likely_events` | array<string> | 是 | 月度叙事层生成的概括性事件提示；与结构更完整的 `top_events` 用途不同 |
+| `career_text` | string | 是 | 本月事业、工作与项目方向的文字分析 |
+| `wealth_text` | string | 是 | 本月财务、预算、回款和支出方向的文字分析 |
+| `relationship_text` | string | 是 | 本月感情、人际、家庭或合作关系方向的文字分析 |
+| `health_text` | string | 是 | 本月作息和身心节奏提示，仅作生活管理参考，不是医疗结论 |
+| `risk_text` | string | 是 | 本月需要注意的整体风险和现实约束 |
+| `advice_text` | string | 是 | 针对本月整体趋势生成的行动建议 |
+| `suitable_actions` | array<string> | 是 | 本月相对适合执行的行动建议列表 |
+| `actions_to_avoid` | array<string> | 是 | 本月建议避免或谨慎处理的行动列表 |
+| `basis` | string | 是 | 本月命中的规则依据摘要；没有明确规则文本时可能为空字符串 |
+| `source_ids` | array<string> | 是 | 本月命中规则引用的内部来源编号；没有来源时为空数组 |
+| `source_titles` | array<string> | 是 | `source_ids` 对应的可读资料名称；顺序不表示资料优先级 |
+| `top_events` | array<object> | 是 | 证据激活链筛选的本月重点事件，当前最多 5 项；可能少于 5 项，字段见后文 |
+
+`branch_relations[]` 子字段：
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `type` | string | 关系类型，当前为 `六冲` |
+| `label` | string | 可读标签，例如 `冲日支` |
+| `target` | string | 被影响的原局位置，例如 `年支`、`月支`、`日支`、`时支` |
+| `native_zhi` | string | 对应位置的原局地支 |
+| `year_zhi` | string | 当前参与比较的流月地支；字段名为兼容原引擎沿用 `year_zhi` |
+| `text` | string | 该位置关系对应的现实领域提示 |
+
+### `monthly[].top_events[]` 字段说明
+
+以下是所有事件都应具备、并由接口响应模型约束的核心字段：
+
+| 字段 | 类型 | 必有 | 说明与来源 |
+|---|---|:---:|---|
+| `event_type` | string | 是 | 稳定的事件类型机器标识，例如 `contract_cooperation_cluster`；前端判断类型时使用它，不要使用中文 `label` |
+| `label` | string | 是 | 面向用户的事件名称，例如“合同与合作边界” |
+| `category` | string | 是 | 事件所属领域，例如事业规则、财务支出、关系家庭或健康状态 |
+| `score` | number | 是 | 规则命中后用于本月事件内部排序的 0～100 分；不是统计概率，也不能解释为事件有百分之多少会发生 |
+| `probability_level` | string/null | 是 | 根据规则分数转换的定性可能性等级；没有可靠等级时为 `null`，它不等同于 `score` 的百分比 |
+| `trigger_count` | integer/null | 是 | 事件命中的触发证据数量；聚合事件可能合并多条证据，因此不要假定它永远等于 `evidence` 数组长度 |
+| `evidence` | array | 是 | 引擎原始触发证据。桥接事件通常是对象数组，兼容事件也可能是字符串数组；用于追溯，不建议直接展示 |
+| `display_trigger_factors` | array<string> | 是 | 将 `evidence` 按旧页面规则翻译、去重后的用户可读“触发因素”，最多 3 项；前端应优先展示这个字段 |
+| `reason` | string/null | 是 | 兼容基础事件的命中原因说明；桥接事件通常为 `null`，可使用 `one_line` 和 `user_visible_basis` 展示 |
+| `advice` | string | 是 | 针对该重点事件的行动建议 |
+
+`evidence[]` 为对象时，常见子字段如下：
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `type` | string | 内部证据类型，例如 `ten_god`、`element`、`group_count_at_least`；用于翻译触发因素 |
+| `value` | array | 实际命中的规则值；内容由证据类型决定，可能为空数组 |
+| `detail` | string | 供规则追溯的内部说明，不建议原样展示给普通用户 |
+| `source_ids` | array<string> | 支持该条证据的来源编号 |
+| `source_relevance` | number | 该来源与本条规则的内部相关度，不是事件发生概率 |
+
+下列是事件激活链返回的扩展字段。它们会随事件类型、规则版本和是否发生事件聚合而变化；
+前端读取时应提供默认值，不应把它们都视为必有字段：
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `one_line` | string | 该事件的一句话用户摘要，适合作为事件卡片简介 |
+| `real_world_signals` | array<string> | 建议用户在现实中观察的具体信号 |
+| `possible_manifestations` | array<string> | 事件可能出现的现实表现，聚合事件可能使用专门的表现列表 |
+| `risk_points` | array<string> | 该事件需要留意的风险点 |
+| `basis` | string | 事件类型本身的规则依据摘要 |
+| `user_visible_basis` | string | 已整理成用户可读形式的命中依据，前端需要展示依据时优先使用 |
+| `source_ids` | array<string> | 支持该事件结论的来源编号 |
+| `source_titles` | array<string> | 来源编号对应的可读资料名称 |
+| `confidence_level` | string | 综合证据数量、证据维度、反向条件和来源质量得到的置信等级，常见为 `high`、`medium`、`low` |
+| `confidence_dimensions` | array<string> | 本事件覆盖的证据维度，例如十神、五行喜忌、宫位或地支 |
+| `confidence_reasons` | array<string> | 形成当前置信等级的说明 |
+| `downgrade_reasons` | array<string> | 导致置信等级被下调的原因；没有时为空数组 |
+| `source_confidence_score` | number | 来源支撑质量的内部评分，不是事件发生概率 |
+| `source_has_specific_support` | boolean | 是否存在针对该事件的具体来源支撑 |
+| `source_has_category_match` | boolean | 来源领域是否与事件类别匹配 |
+| `traditional_basis` | object | 规则资源中保存的传统依据结构，主要用于追溯和研究 |
+| `structure_basis` | object | 原局结构相关的规则依据 |
+| `palace_basis` | object | 宫位或地支落点相关的规则依据 |
+| `modern_mapping` | object | 传统规则到现代现实场景的映射 |
+| `confidence_basis` | object | 该事件类型的置信判断配置 |
+| `anti_triggers` | array | 可能削弱或反转事件判断的条件 |
+| `required_evidence_count` | integer | 该事件规则建议达到的最低证据数量 |
+| `subtype_rules` | object | 事件子类型识别规则 |
+| `subtype_candidates` | array<string> | 本次命中的事件子类型候选 |
+| `subtype_label` | string | 最优先的事件子类型标签；没有时为空字符串 |
+| `from_bridge` | boolean | 是否来自完整事件激活桥接链；当前主要重点事件通常为 `true` |
+| `merged_from` | array<string> | 聚合事件由哪些原始 `event_type` 合并而来；未发生聚合时通常不存在 |
+| `possible_sources` | array<string> | 聚合事件对应的原始事件名称；未发生聚合时通常不存在 |
+| `trigger_factors` | array<string> | 兼容基础事件可能携带的原始触发文本；前端展示仍应使用稳定的 `display_trigger_factors` |
+
 主要返回值来源：
 
 | 字段 | 说明 |
