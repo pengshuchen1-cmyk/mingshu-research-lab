@@ -1045,9 +1045,266 @@ POST /api/v1/chart-profiles/{profile_id}/regenerate
 时间。成功返回新的 `BaziChartOut`，结构与 7.7 相同；`generated_at`、引擎版本、命盘
 内容及相关指纹会更新，`profile.id` 和个人信息不会改变。
 
-## 8. 运维接口
+## 8. 今日指引接口
 
-### 8.1 存活检查
+该接口迁移自旧应用的“今日”页面公共内容。它不读取用户帐号、命理档案或命盘，未登录
+用户也可以调用；同一日期和年份的结果对所有用户相同。
+
+```http
+GET /api/v1/guidance/today
+```
+
+权限：公开。没有请求体。
+
+| 查询参数 | 类型 | 必填 | 来源与规则 |
+|---|---:|:---:|---|
+| `target_date` | date | 否 | 客户端日期选择器，格式为 `YYYY-MM-DD`，范围 `1900-01-01`～`2100-12-31`；省略时使用 `Asia/Shanghai` 的当天 |
+| `target_year` | integer | 否 | 客户端年度选择器，范围 1900～2100；省略时使用 `target_date` 所在年份 |
+
+查看当天内容：
+
+```http
+GET /api/v1/guidance/today
+```
+
+查看指定日期并同时查看指定年度内容：
+
+```http
+GET /api/v1/guidance/today?target_date=2026-07-11&target_year=2026
+```
+
+成功响应示例：
+
+```json
+{
+  "timezone": "Asia/Shanghai",
+  "daily_guidance": {
+    "kind": "daily_guidance",
+    "is_personal": false,
+    "date": "2026-07-11",
+    "day_pillar": "丙戌",
+    "title": "今日建议｜丙戌日",
+    "element_theme": "火",
+    "wearing_colors": ["红色", "暖橙", "米黄"],
+    "wearing_advice": "可用一点红色、橙色或暖色配饰提气，但不必过度张扬。",
+    "cautions": ["急躁争辩", "过度透支", "拖延堆积"],
+    "primary_action": "表达展示",
+    "theme": "火",
+    "focus": "表达展示",
+    "action": "可用一点红色、橙色或暖色配饰提气，但不必过度张扬。",
+    "reminder": "急躁争辩",
+    "details": {
+      "colors": ["红色", "暖橙", "米黄"],
+      "relaxation": "适合收纳、慢走、规律饮食，用秩序感安顿压力。",
+      "actions": ["表达展示", "推进事项", "整理目标", "整理财务"]
+    },
+    "basis": "依据今日干支丙戌的天干五行火、地支主气土生成大众节律提醒；不替代个人命盘分析。",
+    "boundary_note": "本内容未读取姓名、性别或出生资料，是同一天所有用户共用的传统历法生活参考，属于非个人命盘分析。不作为医疗、投资、法律、婚姻等重大决定依据。"
+  },
+  "yearly_guidance": {
+    "kind": "yearly_guidance",
+    "is_personal": false,
+    "year": 2026,
+    "title": "今年建议｜2026年 丙午",
+    "theme": "丙午年可从重视表达、行动、曝光、热度管理和节奏控制。同时留意重视表达、行动、曝光、热度管理和节奏控制。",
+    "focus": "表达",
+    "actions": ["表达展示", "推进事项", "整理目标"],
+    "basis": "依据2026年干支丙午、天干五行火、地支主气火生成大众化年度提醒；个人运势仍需结合完整命盘。",
+    "boundary_note": "八字年柱通常以立春为换年点，不是简单按公历1月1日切换；如果生日在2月3日至2月5日前后，需要结合当年立春时间复核。"
+  }
+}
+```
+
+响应字段来源和用途：
+
+| 字段 | 来源与用途 |
+|---|---|
+| `timezone` | 服务端计算默认日期使用的固定时区，当前为 `Asia/Shanghai` |
+| `daily_guidance` | 根据 `target_date` 的日柱及天干、地支五行生成的公共日建议 |
+| `daily_guidance.day_pillar` | 后端权威历法适配器计算的当日干支，不由客户端提交 |
+| `daily_guidance.wearing_colors` / `details` | 旧今日页面的颜色、穿搭、行动、注意和放松内容 |
+| `daily_guidance.basis` | 本次公共建议使用的传统历法依据 |
+| `daily_guidance.boundary_note` | 明确内容不是个人命盘预测，也不能替代重大现实决策 |
+| `yearly_guidance` | 根据 `target_year` 年干支生成的同页公共年度节奏 |
+| `is_personal` | 固定为 `false`，表示响应没有读取任何个人资料 |
+
+如果日历适配器临时无法可靠计算日柱，接口仍返回 `200` 和可用的年度内容，此时
+`daily_guidance` 为 `null`。日期或年份格式错误、超出支持范围时返回 `422`。
+
+## 9. 个人运势接口
+
+该接口等价迁移旧应用“个人年度分析”中的年度总览、事业/财务/关系/身心专项、机会月、
+高关注月、12 个月流月、叙事结果和完整事件激活规则。它直接使用第 7 节已经保存的命盘
+快照计算，不要求客户端再次发送姓名或出生资料。接口仅允许档案所有者访问；旧版分析
+依据文本可能包含命盘中的出生日期或时辰摘要，因此客户端应按个人敏感数据保护整个响应。
+
+```http
+GET /api/v1/chart-profiles/{profile_id}/fortune?target_year=2026
+```
+
+权限：登录用户。只能查询当前用户自己的档案。请求没有 Body。
+
+| 参数 | 位置 | 类型 | 必填 | 规则与来源 |
+|---|---|---:|:---:|---|
+| `profile_id` | Path | string | 是 | 新建档案响应中的 `profile.id`，或档案列表接口每一项的 `id`；不是 `chart.id` |
+| `target_year` | Query | integer | 否 | 1900～2100；省略时使用服务端当前年份 |
+| `Authorization` | Header | string | 是 | `Bearer <短信或密码登录返回的 access_token>` |
+
+ApiPost 测试步骤：
+
+1. 先完成短信或密码登录，复制响应中的 `access_token`。
+2. 调用 `GET /api/v1/chart-profiles?offset=0&limit=20`，复制目标档案的 `id`。
+3. 新建 GET 请求，将地址写成
+   `http://127.0.0.1:8000/api/v1/chart-profiles/档案ID/fortune?target_year=2026`。
+4. 在 Auth 中选择 Bearer Token，粘贴 `access_token`；Body 保持空白。
+5. 发送请求。成功状态码为 `200`。
+
+成功响应示例（数组内容做了缩短；真实响应固定返回 12 个月）：
+
+```json
+{
+  "kind": "personal_fortune",
+  "is_personal": true,
+  "profile_id": "b3bcb9f0-f9e1-4cab-bd69-cf1b0599533a",
+  "chart_fingerprint": "64位十六进制命盘指纹",
+  "target_year": 2026,
+  "fortune_engine_version": "personal-fortune-legacy-equivalent-v1",
+  "generated_at": "2026-08-22T12:30:00Z",
+  "luck_context": {
+    "available": true,
+    "direction": "forward",
+    "direction_label": "顺排",
+    "start_text": "顺排，取相应节气折算……",
+    "current_period": {
+      "index": 3,
+      "pillar": "己亥",
+      "gan": "己",
+      "zhi": "亥",
+      "start_age": 22,
+      "end_age": 31,
+      "start_year": 2018,
+      "end_year": 2027,
+      "start_date": "2018-10-01",
+      "end_date": "2028-10-01"
+    }
+  },
+  "yearly": {
+    "year": 2026,
+    "pillar": "丙午",
+    "gan": "丙",
+    "zhi": "午",
+    "gan_element": "火",
+    "zhi_element": "火",
+    "ten_god": "食神",
+    "branch_ten_god": "伤官",
+    "branch_relations": [],
+    "relation_to_favorable": "喜用相关",
+    "overall_level": "助力较明显",
+    "keywords": ["表达", "技能", "作品", "喜用相关"],
+    "annual_keywords": ["表达", "技能", "作品", "喜用相关"],
+    "overall_text": "2026年为丙午年……",
+    "career_text": "事业上适合把年度主题拆成阶段目标……",
+    "wealth_text": "财务上优先管理预算、现金流和合同……",
+    "relationship_text": "关系上以真实沟通和长期相处为准……",
+    "health_text": "身心内容只作生活节奏提醒……",
+    "risk_text": "整体按既定计划推进……",
+    "advice_text": "先处理可验证、可回退的事项……",
+    "brief_text": "2026年年度摘要……",
+    "suitable_actions": ["设定阶段目标", "复核合同与预算", "保持稳定作息"],
+    "actions_to_avoid": ["冲动投资或借贷", "把命理提示当成确定事件", "忽略专业意见"],
+    "high_attention_months": ["1月（己丑）"],
+    "opportunity_months": ["2月（庚寅）"],
+    "career_good_months": [],
+    "career_bad_months": [],
+    "wealth_good_months": ["2月"],
+    "wealth_bad_months": [],
+    "relationship_good_months": [],
+    "relationship_bad_months": [],
+    "peach_months": ["2月"],
+    "health_concerns": []
+  },
+  "monthly": [
+    {
+      "month": 1,
+      "month_name": "1月",
+      "pillar": "己丑",
+      "gan": "己",
+      "zhi": "丑",
+      "gan_element": "土",
+      "zhi_element": "土",
+      "ten_god": "伤官",
+      "relation_to_favorable": "平稳观察",
+      "branch_relations": [],
+      "theme": "突破和表达意愿增强……",
+      "event_tags": ["创意与突破", "表达摩擦"],
+      "event_tendency": "本月现实事件倾向……",
+      "likely_events": ["事件提示一", "事件提示二"],
+      "career_text": "事业方面宜稳步观察……",
+      "wealth_text": "财务上先核对现金流、成本与承诺……",
+      "relationship_text": "关系上把期待和边界说清楚……",
+      "health_text": "身心提示只用于作息管理……",
+      "risk_text": "按计划推进，并根据现实反馈及时校准。",
+      "advice_text": "创新方案同时准备规则与风险说明。",
+      "suitable_actions": ["复核本月重点", "把计划拆成可验证步骤"],
+      "actions_to_avoid": ["仅凭命理提示作重大决定", "忽略现实条件和专业意见"],
+      "basis": "流月规则命中依据……",
+      "source_ids": ["san_ming_tong_hui"],
+      "source_titles": ["三命通会"],
+      "top_events": [
+        {
+          "event_type": "contract_cooperation_cluster",
+          "label": "合同与合作边界",
+          "category": "事业规则",
+          "probability_level": "中等",
+          "score": 64.0,
+          "trigger_count": 4,
+           "evidence": [
+             {
+               "type": "ten_god",
+               "value": ["正官"],
+               "detail": "流月十神匹配"
+             }
+           ],
+           "display_trigger_factors": ["流月十神主题被引动"],
+           "one_line": "合同、审批或合作边界信号被引动。",
+          "real_world_signals": ["合同复核", "流程确认", "职责边界"],
+          "advice": "重要事项落到文字，并复核金额、期限和责任。",
+          "source_ids": ["san_ming_tong_hui"],
+          "source_titles": ["三命通会"]
+        }
+      ]
+    }
+  ],
+  "boundary_note": "本结果基于传统命理模型，仅供个人兴趣与文化研究参考……"
+}
+```
+
+主要返回值来源：
+
+| 字段 | 说明 |
+|---|---|
+| `chart_fingerprint` | 本次计算实际使用的已保存命盘版本；档案重排后会变化 |
+| `luck_context` | 根据档案出生信息和后端大运规则计算的目标年份大运背景；计算失败时 `available=false`，但流年、流月仍可返回 |
+| `yearly` | 目标年份干支与命盘的十神、喜忌、地支关系及年度专项结论 |
+| `monthly` | 固定 12 项，按公历 1～12 月排列；每项含当月干支、十神、喜忌和事件提示 |
+| `branch_relations` | 流年或流月地支与原局年、月、日、时支之间的六冲关系；没有时为空数组 |
+| `top_events` | 旧版完整事件激活链输出的最多 5 项趋势提示，包含触发证据、现实表现、置信依据、降级原因和规则来源；`score` 只用于本次结果内部排序，不是事件发生概率 |
+| `top_events[].evidence` | 引擎返回的原始结构化触发证据，供追溯规则依据，不建议直接作为前端文案展示 |
+| `top_events[].display_trigger_factors` | 后端按照旧页面 `_EVIDENCE_TYPE_COPY` 规则将证据翻译并去重后的用户可读“触发因素”，固定为字符串数组，最多 3 项；前端应优先展示该字段 |
+| `monthly[].basis/source_ids/source_titles` | 流月规则依据及参考来源；来源顺序不表达优先级 |
+| `generated_at` | 本次接口生成响应的时间；相同命盘与年份的业务字段保持稳定，但该时间每次调用会更新 |
+
+年度、流月、叙事和事件引擎以及所需 JSON 规则资源均位于后端 `app/fortune`，运行时不读取
+`bazi_ziwei_app`。存储策略仍是数据库只保存个人档案和命盘快照，个人运势按请求实时生成。
+这样规则升级后无需批量改写历史结果。后续需要提速时，应以
+`chart_fingerprint + target_year + fortune_engine_version` 作为缓存键，而不是新增一份个人资料。
+
+可能错误：`401` 未登录、token 无效或已过期；`404` 档案不属于当前用户、档案不存在或尚无
+命盘；`422` 年份超出范围，或保存的命盘无法用于个人运势计算。
+
+## 10. 运维接口
+
+### 10.1 存活检查
 
 ```http
 GET /healthz
@@ -1061,7 +1318,7 @@ GET /healthz
 }
 ```
 
-### 8.2 就绪检查
+### 10.2 就绪检查
 
 ```http
 GET /readyz
@@ -1093,7 +1350,7 @@ Redis 不可用时返回 `503`：
 
 响应不会泄露连接字符串或底层异常。
 
-## 9. 当前能力边界
+## 11. 当前能力边界
 
 以下功能已有接口或模型骨架，但尚未完成真实第三方接入：
 
@@ -1107,7 +1364,7 @@ Redis 不可用时返回 `503`：
 
 不要将占位接口返回值视为第三方平台已接入。
 
-## 10. 点数与支付安全约定
+## 12. 点数与支付安全约定
 
 - `PointLedger` 是不可变审计记录。
 - `PointBalance` 是同一事务内更新并加行锁保护的余额投影。
@@ -1116,7 +1373,7 @@ Redis 不可用时返回 `503`：
 - 生产运营应定期核对账本 `SUM(delta)` 与余额投影，发现偏差时以账本重建投影。
 - 数据库、Redis、短信和支付密钥不得写入前端、接口响应、日志或本文档。
 
-## 11. 密码安全约定
+## 13. 密码安全约定
 
 - 数据库只保存带独立随机盐的 `scrypt` 密码摘要，不保存或记录明文密码。
 - 密码长度为 8～128 个字符，服务端不会擅自裁剪首尾空格或改变字符内容。
