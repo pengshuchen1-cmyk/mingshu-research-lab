@@ -10,3 +10,5 @@ pydantic-settings>=2.5
 PyJWT>=2.9
 phonenumbers>=8.13
 lunar_python==1.4.8
+reportlab>=4.2,<6
+openai>=2.53,<3

@@ -1,0 +1,292 @@
+{
+  "rules": [
+    {
+      "id": "zw_palace_ming",
+      "title": "命宫",
+      "category": "基本宫位",
+      "life_area": "人生主轴 · 性格气质 · 自我定位",
+      "positive_tendencies": [
+        "自我认知清晰",
+        "领导力",
+        "目标感强"
+      ],
+      "risk_tendencies": [
+        "主观过强",
+        "压力集中",
+        "自我怀疑"
+      ],
+      "advice": "命宫是命盘核心，适合先读懂命宫再延伸看其他宫位。",
+      "source_ids": [
+        "ziwei_doushu_quanshu",
+        "ziwei_doushu_daquan",
+        "traditional_ziwei_palace_system"
+      ],
+      "confidence": "高",
+      "basis": "基于紫微斗数十二宫体系——命宫为命盘之首，决定性格基调和人生主轴。"
+    },
+    {
+      "id": "zw_palace_brother",
+      "title": "兄弟宫",
+      "category": "基本宫位",
+      "life_area": "手足关系 · 同辈互动 · 朋友互助",
+      "positive_tendencies": [
+        "手足和谐",
+        "朋友帮助",
+        "团队协作"
+      ],
+      "risk_tendencies": [
+        "同辈竞争",
+        "资源争夺",
+        "人际关系压力"
+      ],
+      "advice": "兄弟宫也代表同辈关系和协作质量，可以参考但不用过度聚焦。",
+      "source_ids": [
+        "ziwei_doushu_quanshu",
+        "ziwei_doushu_daquan",
+        "traditional_ziwei_palace_system"
+      ],
+      "confidence": "高",
+      "basis": "基于紫微斗数十二宫体系——兄弟宫反映手足、同辈和团队关系。"
+    },
+    {
+      "id": "zw_palace_spouse",
+      "title": "夫妻宫",
+      "category": "重点宫位",
+      "life_area": "伴侣类型 · 亲密关系模式 · 合作关系",
+      "positive_tendencies": [
+        "伴侣支持",
+        "感情深刻",
+        "合作能力"
+      ],
+      "risk_tendencies": [
+        "关系摩擦",
+        "期待落差",
+        "信任调整"
+      ],
+      "advice": "夫妻宫影响亲密关系和重要合作，需要与八字喜忌交叉参考。",
+      "source_ids": [
+        "ziwei_doushu_quanshu",
+        "ziwei_doushu_quanji",
+        "traditional_ziwei_palace_system"
+      ],
+      "confidence": "高",
+      "basis": "基于紫微斗数十二宫体系——夫妻宫决定伴侣类型和亲密关系质量。"
+    },
+    {
+      "id": "zw_palace_child",
+      "title": "子女宫",
+      "category": "基本宫位",
+      "life_area": "子女缘分 · 创造力 · 晚辈关系",
+      "positive_tendencies": [
+        "子女缘分好",
+        "创造力强",
+        "传承意识"
+      ],
+      "risk_tendencies": [
+        "期望过高",
+        "管教压力",
+        "付出感强"
+      ],
+      "advice": "子女宫也代表创作力和作品延伸，可结合八字食伤星判断。",
+      "source_ids": [
+        "ziwei_doushu_quanshu",
+        "ziwei_doushu_daquan",
+        "traditional_ziwei_palace_system"
+      ],
+      "confidence": "中等",
+      "basis": "基于紫微斗数十二宫体系——子女宫反映子女关系和创造力。"
+    },
+    {
+      "id": "zw_palace_wealth",
+      "title": "财帛宫",
+      "category": "重点宫位",
+      "life_area": "财富方式 · 收入结构 · 金钱观念",
+      "positive_tendencies": [
+        "财星入宫",
+        "理财有道",
+        "收入来源多元"
+      ],
+      "risk_tendencies": [
+        "支出冲动",
+        "投资波动",
+        "财务压力"
+      ],
+      "advice": "财帛宫观察金钱观和财富方式，不能单独判断实际财富量。",
+      "source_ids": [
+        "ziwei_doushu_quanshu",
+        "ziwei_doushu_quanji",
+        "ziwei_doushu_daquan"
+      ],
+      "confidence": "高",
+      "basis": "基于紫微斗数十二宫体系——财帛宫决定金钱观和收入方式。"
+    },
+    {
+      "id": "zw_palace_health",
+      "title": "疾厄宫",
+      "category": "重点宫位",
+      "life_area": "身心状态 · 压力反应 · 生活习惯",
+      "positive_tendencies": [
+        "身体基础好",
+        "恢复力强",
+        "健康意识好"
+      ],
+      "risk_tendencies": [
+        "压力积累",
+        "慢性疲劳",
+        "饮食作息需注意"
+      ],
+      "advice": "疾厄宫不做医学诊断，仅用于提醒身心状态和生活习惯。",
+      "source_ids": [
+        "ziwei_doushu_quanshu",
+        "ziwei_doushu_daquan",
+        "traditional_ziwei_palace_system"
+      ],
+      "confidence": "中等",
+      "basis": "基于紫微斗数十二宫体系——疾厄宫反映身心健康倾向。"
+    },
+    {
+      "id": "zw_palace_travel",
+      "title": "迁移宫",
+      "category": "重点宫位",
+      "life_area": "外部机会 · 出行发展 · 外地机遇",
+      "positive_tendencies": [
+        "外出发展有利",
+        "适应力强",
+        "社交广泛"
+      ],
+      "risk_tendencies": [
+        "环境变动多",
+        "归属感弱",
+        "离乡发展压力"
+      ],
+      "advice": "迁移宫强时适合在变化中寻找机会，适合出差、留学、异地工作。",
+      "source_ids": [
+        "ziwei_doushu_quanshu",
+        "ziwei_doushu_quanji",
+        "traditional_ziwei_palace_system"
+      ],
+      "confidence": "中等",
+      "basis": "基于紫微斗数十二宫体系——迁移宫决定外部环境和异地发展潜力。"
+    },
+    {
+      "id": "zw_palace_friend",
+      "title": "交友宫",
+      "category": "基本宫位",
+      "life_area": "朋友 · 团队 · 合作伙伴",
+      "positive_tendencies": [
+        "人脉广泛",
+        "团队协作",
+        "合作伙伴优质"
+      ],
+      "risk_tendencies": [
+        "朋友关系波动",
+        "合作边界模糊",
+        "人脉消耗"
+      ],
+      "advice": "交友宫观察朋友圈质量，适合与八字比劫交叉验证。",
+      "source_ids": [
+        "ziwei_doushu_quanshu",
+        "ziwei_doushu_daquan",
+        "traditional_ziwei_palace_system"
+      ],
+      "confidence": "中等",
+      "basis": "基于紫微斗数十二宫体系——交友宫反映人际支持和团队质量。"
+    },
+    {
+      "id": "zw_palace_career",
+      "title": "官禄宫",
+      "category": "重点宫位",
+      "life_area": "事业方向 · 工作模式 · 成就模式",
+      "positive_tendencies": [
+        "事业目标明确",
+        "工作能力强",
+        "适合管理或专业路线"
+      ],
+      "risk_tendencies": [
+        "工作压力大",
+        "职业方向调整",
+        "过度投入"
+      ],
+      "advice": "官禄宫适合结合八字官杀和食伤星一起判断事业倾向。",
+      "source_ids": [
+        "ziwei_doushu_quanshu",
+        "ziwei_doushu_quanji",
+        "ziwei_doushu_daquan"
+      ],
+      "confidence": "高",
+      "basis": "基于紫微斗数十二宫体系——官禄宫决定事业方向和成就模式。"
+    },
+    {
+      "id": "zw_palace_house",
+      "title": "田宅宫",
+      "category": "基本宫位",
+      "life_area": "家宅 · 居住 · 资产稳定度",
+      "positive_tendencies": [
+        "居住稳定",
+        "资产积累",
+        "家庭支持"
+      ],
+      "risk_tendencies": [
+        "家居变动",
+        "资产波动",
+        "家族责任"
+      ],
+      "advice": "田宅宫观察不动产和家庭稳定性，适合与八字土五行交叉参考。",
+      "source_ids": [
+        "ziwei_doushu_quanshu",
+        "ziwei_doushu_daquan",
+        "traditional_ziwei_palace_system"
+      ],
+      "confidence": "中等",
+      "basis": "基于紫微斗数十二宫体系——田宅宫反映居住环境和资产状况。"
+    },
+    {
+      "id": "zw_palace_fortune",
+      "title": "福德宫",
+      "category": "重点宫位",
+      "life_area": "内在状态 · 精神享受 · 情绪稳定度",
+      "positive_tendencies": [
+        "内心充实",
+        "精神独立",
+        "情绪稳定"
+      ],
+      "risk_tendencies": [
+        "情绪波动",
+        "精神消耗",
+        "焦虑倾向"
+      ],
+      "advice": "福德宫影响长期幸福感和内心状态，适合与八字印星交叉参考。",
+      "source_ids": [
+        "ziwei_doushu_quanshu",
+        "ziwei_doushu_quanji",
+        "traditional_ziwei_palace_system"
+      ],
+      "confidence": "中等",
+      "basis": "基于紫微斗数十二宫体系——福德宫决定精神世界和内心满足感。"
+    },
+    {
+      "id": "zw_palace_parent",
+      "title": "父母宫",
+      "category": "基本宫位",
+      "life_area": "长辈 · 家庭背景 · 上级缘分",
+      "positive_tendencies": [
+        "长辈支持",
+        "家庭背景好",
+        "上级提携"
+      ],
+      "risk_tendencies": [
+        "家庭压力",
+        "长辈健康",
+        "代际差异"
+      ],
+      "advice": "父母宫也反映上级关系和外部保护力，可与八字印星交叉验证。",
+      "source_ids": [
+        "ziwei_doushu_quanshu",
+        "ziwei_doushu_daquan",
+        "traditional_ziwei_palace_system"
+      ],
+      "confidence": "中等",
+      "basis": "基于紫微斗数十二宫体系——父母宫反映长辈关系和外部支持。"
+    }
+  ]
+}

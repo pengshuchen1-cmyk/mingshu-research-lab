@@ -48,6 +48,11 @@ def digest(value: str):
 async def issue_otp(db: AsyncSession, phone: str, purpose: str = OTP_LOGIN):
     if sms_provider is None:
         raise APIError(Errors.SMS_PROVIDER_NOT_CONFIGURED)
+    user = (
+        await db.execute(select(User).where(User.phone == phone))
+    ).scalar_one_or_none()
+    if user is not None and not user.is_active:
+        raise APIError(Errors.USER_UNAVAILABLE)
     now = datetime.now(UTC)
     # Check the daily limit and resend interval before issuing a new OTP.
     recent = (
@@ -156,6 +161,8 @@ async def verify_otp(
             user = (await db.execute(select(User).where(User.phone == phone))).scalar_one()
             new = False
     assert user is not None
+    if not user.is_active:
+        raise APIError(Errors.USER_UNAVAILABLE)
     return user, new
 
 

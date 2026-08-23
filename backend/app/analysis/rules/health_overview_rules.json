@@ -1,0 +1,176 @@
+{
+  "rules": [
+    {
+      "id": "health_elements_balanced",
+      "condition": {
+        "missing_element_count": "<=1"
+      },
+      "tags": [
+        "五行较全"
+      ],
+      "text": "五行格局较完整，先天身体素质基础较好。",
+      "type": "strength",
+      "source_ids": [
+        "san_ming_tong_hui",
+        "qiong_tong_bao_jian"
+      ],
+      "school": "调候",
+      "basis": "五行全则五脏功能基础完整，能量分布较为均衡。",
+      "confidence": "中等"
+    },
+    {
+      "id": "health_element_strong_wood",
+      "condition": {
+        "strong_elements": [
+          "木"
+        ]
+      },
+      "tags": [
+        "木旺"
+      ],
+      "text": "木五行偏旺，需要注意肝胆、筋骨、肩颈的养护，避免计划压力过大。",
+      "type": "risk",
+      "source_ids": [
+        "san_ming_tong_hui",
+        "qiong_tong_bao_jian"
+      ],
+      "school": "调候",
+      "basis": "木对应肝胆和筋骨系统，五行过旺时对应脏腑负担较重。",
+      "confidence": "中等"
+    },
+    {
+      "id": "health_element_strong_fire",
+      "condition": {
+        "strong_elements": [
+          "火"
+        ]
+      },
+      "tags": [
+        "火旺"
+      ],
+      "text": "火五行偏旺，需要注意心火、睡眠质量和血压状态，减少亢奋和焦虑积累。",
+      "type": "risk",
+      "source_ids": [
+        "san_ming_tong_hui",
+        "qiong_tong_bao_jian"
+      ],
+      "school": "调候",
+      "basis": "火对应心和小肠系统，五行过旺时容易出现亢奋、失眠和心血管压力。",
+      "confidence": "中等"
+    },
+    {
+      "id": "health_element_strong_earth",
+      "condition": {
+        "strong_elements": [
+          "土"
+        ]
+      },
+      "tags": [
+        "土旺"
+      ],
+      "text": "土五行偏旺，需要注意脾胃消化负担、湿气代谢和体重管理。",
+      "type": "risk",
+      "source_ids": [
+        "san_ming_tong_hui",
+        "qiong_tong_bao_jian"
+      ],
+      "school": "调候",
+      "basis": "土对应脾胃和肌肉系统，五行过旺时容易出现消化不良和代谢负担。",
+      "confidence": "中等"
+    },
+    {
+      "id": "health_element_strong_metal",
+      "condition": {
+        "strong_elements": [
+          "金"
+        ]
+      },
+      "tags": [
+        "金旺"
+      ],
+      "text": "金五行偏旺，需要注意呼吸系统、皮肤敏感和规则压力带来的紧绷感。",
+      "type": "risk",
+      "source_ids": [
+        "san_ming_tong_hui",
+        "qiong_tong_bao_jian"
+      ],
+      "school": "调候",
+      "basis": "金对应肺和大肠系统，五行过旺时容易出现呼吸和皮肤问题。",
+      "confidence": "中等"
+    },
+    {
+      "id": "health_element_strong_water",
+      "condition": {
+        "strong_elements": [
+          "水"
+        ]
+      },
+      "tags": [
+        "水旺"
+      ],
+      "text": "水五行偏旺，需要注意腰肾、泌尿系统和精力储备的平衡。",
+      "type": "risk",
+      "source_ids": [
+        "san_ming_tong_hui",
+        "qiong_tong_bao_jian"
+      ],
+      "school": "调候",
+      "basis": "水对应肾和膀胱系统，五行过旺时腰肾负担较重。",
+      "confidence": "中等"
+    },
+    {
+      "id": "health_body_strong",
+      "condition": {
+        "strength": "身强"
+      },
+      "tags": [
+        "日主强旺"
+      ],
+      "text": "日主强旺，先天承受力和恢复力较好，不易被环境压力击倒。",
+      "type": "strength",
+      "source_ids": [
+        "di_tian_sui_chan_wei",
+        "san_ming_tong_hui"
+      ],
+      "school": "调候",
+      "basis": "日主强旺代表自我能量充足，抗压和恢复能力较好。",
+      "confidence": "中等"
+    },
+    {
+      "id": "health_body_weak",
+      "condition": {
+        "strength": "身弱"
+      },
+      "tags": [
+        "日主偏弱"
+      ],
+      "text": "日主偏弱，需要注意精力和免疫力的维护，避免长期透支和高强度消耗。",
+      "type": "risk",
+      "source_ids": [
+        "di_tian_sui_chan_wei",
+        "san_ming_tong_hui"
+      ],
+      "school": "调候",
+      "basis": "日主偏弱时抗压和恢复能力较弱，需要更重视作息和压力管理。",
+      "confidence": "中等"
+    },
+    {
+      "id": "health_officer_pressure",
+      "condition": {
+        "officer_star_count": ">=3"
+      },
+      "tags": [
+        "官杀压力"
+      ],
+      "text": "官杀明显，生活和工作中压力感较突出，需要注意压力积累对身心状态的长期影响。",
+      "type": "risk",
+      "source_ids": [
+        "qiong_tong_bao_jian",
+        "yuan_hai_zi_ping"
+      ],
+      "school": "调候",
+      "basis": "官杀在健康层面代表压力和消耗，官杀过旺时身心负担较重。",
+      "confidence": "中等"
+    }
+  ]
+}

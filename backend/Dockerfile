@@ -14,6 +14,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
+# Chinese fonts are required for valid PDF report exports in the Linux image.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends fonts-noto-cjk \
+    && rm -rf /var/lib/apt/lists/*
+
 # Keep third-party installation in its own cacheable layer. Update this file
 # together with pyproject.toml when production dependencies change.
 COPY requirements-prod.txt ./

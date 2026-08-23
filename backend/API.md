@@ -126,7 +126,7 @@ POST /api/v1/auth/otp/login/code
 
 规则：验证码为 6 位数字，默认有效期 5 分钟，60 秒内不能重复发送，每个手机号每天最多请求 10 次。生产环境不返回真实验证码。
 
-可能错误：`422` 手机号无效；`429` 请求过于频繁或达到每日上限；`503` 生产短信适配器未配置。
+可能错误：`401` 用户已停用；`422` 手机号无效；`429` 请求过于频繁或达到每日上限；`503` 生产短信适配器未配置。
 
 ### 3.2 验证验证码并注册/登录
 
@@ -170,7 +170,7 @@ POST /api/v1/auth/otp/login
 
 验证码错误会累加失败次数，默认达到 5 次后锁定本次验证码；验证码成功使用后不能再次使用。
 
-可能错误：`400` 验证码错误、过期或已使用；`422` 手机号或验证码格式不正确；`429` 错误次数达到上限。
+可能错误：`400` 验证码错误、过期或已使用；`401` 用户已停用；`422` 手机号或验证码格式不正确；`429` 错误次数达到上限。
 
 ### 3.3 设置或修改密码
 
@@ -257,7 +257,7 @@ POST /api/v1/auth/password/reset/otp
 }
 ```
 
-该验证码只允许用于密码重置，不能用于注册登录；普通登录验证码也不能用于重置密码。发送频率、每日上限和开发环境响应格式与登录验证码相同。
+该验证码只允许用于密码重置，不能用于注册登录；普通登录验证码也不能用于重置密码。发送频率、每日上限和开发环境响应格式与登录验证码相同。用户已停用时返回 `401`，不会发送重置验证码。
 
 ### 3.6 使用短信验证码重置密码
 
@@ -690,7 +690,7 @@ PATCH /api/v1/admin/users/{user_id}/active
 }
 ```
 
-停用后，目标用户不能刷新令牌或调用需要登录的接口。可能错误：`404` 用户不存在。
+停用后，目标用户不能获取或验证登录验证码、使用密码登录、获取密码重置验证码、刷新令牌或调用需要登录的接口。启用、停用状态每次真正发生变化时都会撤销此前签发的 access token 和 refresh token，因此重新启用后用户必须重新登录。可能错误：`404` 用户不存在。
 
 ### 6.6 查询充值统计
 
@@ -1410,9 +1410,536 @@ ApiPost 测试步骤：
 可能错误：`401` 未登录、token 无效或已过期；`404` 档案不属于当前用户、档案不存在或尚无
 命盘；`422` 年份超出范围，或保存的命盘无法用于个人运势计算。
 
-## 10. 运维接口
+## 10. 命盘综合分析接口
 
-### 10.1 存活检查
+### 10.1 获取八字详情、命盘总览和五行喜忌
+
+```http
+GET /api/v1/chart-profiles/{profile_id}/analysis
+Authorization: Bearer <access_token>
+```
+
+权限：用户。`profile_id` 必须属于当前登录用户。接口读取已经确认并保存的命盘快照，
+不会重新接收或覆盖出生信息。
+
+路径参数：
+
+| 参数 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| `profile_id` | string | 是 | 命理档案 ID，来自档案创建、列表或详情接口 |
+
+成功返回：
+
+```json
+{
+  "profile_id": "b3bcb9f0-f9e1-4cab-bd69-cf1b0599533a",
+  "chart_fingerprint": "9e69e15bb2f7f5522d8f5a4423889ab621a24c1dde199e5081cfeafd8ded608a",
+  "chart_type": {
+    "basic_pattern": "常规格局",
+    "element_pattern": "五行分布说明",
+    "ten_god_pattern": "十神结构说明",
+    "special_combinations": [],
+    "summary": "命局类型摘要"
+  },
+  "basic_report": {
+    "life_overview": "命局总论",
+    "personality_text": "性格与行为模式",
+    "career_text": "事业基础解读",
+    "wealth_text": "财富基础解读",
+    "love_text": "关系基础解读",
+    "risk_text": "风险提醒",
+    "advice": "综合建议"
+  },
+  "life_assessment": {
+    "opening": "总体开场",
+    "wealth": {},
+    "romance": {},
+    "health": {}
+  },
+  "life_overview": {
+    "overall_pattern": "总体类型",
+    "overall_summary": "总体结论",
+    "life_keywords": ["关键词一", "关键词二"],
+    "wealth_overview": {},
+    "romance_overview": {},
+    "health_overview": {},
+    "career_overview": {},
+    "scores": {"wealth": 70, "romance": 65, "health": 72, "career": 75},
+    "score_details": {},
+    "key_strengths": ["优势说明"],
+    "key_risks": ["风险说明"],
+    "long_term_advice": ["长期建议"],
+    "evidence": ["命盘依据"],
+    "source_ids": ["source_id"],
+    "source_titles": ["参考来源"]
+  },
+  "five_elements": {
+    "element_overview": "五行总览",
+    "element_balance_summary": "平衡情况",
+    "strong_elements": ["木"],
+    "weak_elements": ["金"],
+    "favorable_elements": ["水", "木"],
+    "unfavorable_elements": ["土"],
+    "element_details": {},
+    "career_implications": "事业影响",
+    "wealth_implications": "财富影响",
+    "relationship_implications": "关系影响",
+    "health_implications": "健康生活方式提醒",
+    "adjustment_advice": ["调整建议"],
+    "evidence": [],
+    "source_ids": [],
+    "source_titles": []
+  },
+  "useful_god": {
+    "favorable_elements": ["水", "木"],
+    "summary": "喜用五行摘要",
+    "details": []
+  }
+}
+```
+
+主要字段：
+
+| 字段 | 说明 |
+|---|---|
+| `chart_type` | 命局基础类型、五行类型、十神类型和特殊组合 |
+| `basic_report` | 旧八字页面的基础白话解读 |
+| `life_assessment` | 财富、感情和生活状态的基础评估 |
+| `life_overview` | 五维总览、分数构成、优势、风险和长期建议 |
+| `five_elements` | 五行强弱、喜忌、现实领域影响和调整建议 |
+| `useful_god` | 喜用五行的摘要和逐项说明 |
+| `evidence/source_ids/source_titles` | 结论依据和规则来源，用于解释及追溯 |
+
+可能错误：`401` 未登录；`404` 档案不属于当前用户或命盘不存在；`422` 保存的命盘无法完成分析。
+
+## 11. 完整大运接口
+
+### 11.1 查询起运、十步大运和未来十年流年
+
+```http
+GET /api/v1/chart-profiles/{profile_id}/luck-cycles
+Authorization: Bearer <access_token>
+```
+
+权限：用户。没有请求体和查询参数。
+
+```json
+{
+  "profile_id": "b3bcb9f0-f9e1-4cab-bd69-cf1b0599533a",
+  "chart_fingerprint": "9e69e15bb2f7f5522d8f5a4423889ab621a24c1dde199e5081cfeafd8ded608a",
+  "available": true,
+  "direction": "forward",
+  "direction_label": "顺排",
+  "start_age": 7,
+  "start_year": 2007,
+  "start_month": 2,
+  "start_day": 5,
+  "start_text": "7岁2个月5天起运",
+  "dayun_basis": {
+    "boundary_name": "节气名称",
+    "boundary_datetime": "2000-09-07 15:59:00",
+    "interval_seconds": 123456,
+    "start_datetime": "2007-11-09 00:00:00",
+    "time_is_estimated": false,
+    "rule_ids": ["dayun.rule.id"]
+  },
+  "dayun_list": [
+    {
+      "index": 1,
+      "pillar": "甲子",
+      "gan": "甲",
+      "zhi": "子",
+      "start_age": 7,
+      "end_age": 16,
+      "start_year": 2007,
+      "end_year": 2016,
+      "start_date": "2007-11-09",
+      "end_date": "2017-11-08",
+      "gan_element": "木",
+      "zhi_element": "水",
+      "ten_god": "正印",
+      "stage_score": 72,
+      "stage_level": "稳中有进",
+      "stage_text": "阶段说明",
+      "stage_summary": "阶段摘要",
+      "career_focus": "事业重点",
+      "wealth_focus": "财富重点",
+      "relationship_focus": "关系重点",
+      "risk_focus": "风险重点",
+      "action_advice": "行动建议"
+    }
+  ],
+  "yearly_list": [
+    {
+      "year": 2026,
+      "pillar": "丙午",
+      "overall_text": "年度趋势",
+      "advice_text": "年度建议"
+    }
+  ],
+  "data_warnings": []
+}
+```
+
+`dayun_list` 固定最多十步，每一步包括起止年龄、起止日期、五行、十神和阶段分析；
+`yearly_list` 从当前年份起返回十年。起运时间使用后端确定性节气规则计算。
+
+## 12. 六十甲子接口
+
+### 12.1 查询六十甲子知识
+
+```http
+GET /api/v1/knowledge/sixty-jiazi?year=1984
+```
+
+权限：公开，不需要登录。
+
+| 查询参数 | 类型 | 必填 | 规则 |
+|---|---|---|---|
+| `year` | integer | 否 | `1900`～`2100`，根据年份查询干支 |
+| `pillar` | string | 否 | 两个汉字，例如 `甲子` |
+| `offset` | integer | 否 | 默认 `0`，不能小于 `0` |
+| `limit` | integer | 否 | 默认 `60`，范围 `1`～`60` |
+
+`year` 和 `pillar` 不能同时提交。两者都不提交时返回完整知识列表并应用分页。
+
+```json
+{
+  "total": 1,
+  "offset": 0,
+  "limit": 60,
+  "items": [
+    {
+      "index": 1,
+      "pillar": "甲子",
+      "gan": "甲",
+      "zhi": "子",
+      "gan_element": "木",
+      "zhi_element": "水",
+      "nayin": "海中金",
+      "nayin_element": "金",
+      "sample_years": [1924, 1984],
+      "plain_explanation": "白话解释",
+      "symbolic_keywords": ["关键词"],
+      "reality_mapping": "现实映射",
+      "user_advice": "参考建议",
+      "lichun_boundary_note": "立春换年边界说明"
+    }
+  ]
+}
+```
+
+### 12.2 查询某个命盘的四柱甲子卡片
+
+```http
+GET /api/v1/chart-profiles/{profile_id}/sixty-jiazi
+Authorization: Bearer <access_token>
+```
+
+```json
+{
+  "profile_id": "档案 ID",
+  "chart_fingerprint": "命盘指纹",
+  "pillar_cards": [
+    {
+      "position": "year",
+      "label": "年柱",
+      "pillar": "甲子",
+      "nayin": "海中金",
+      "user_explanation": "面向用户的白话解释",
+      "reality_hint": "现实映射",
+      "advice": "参考建议",
+      "keywords": ["关键词"],
+      "boundary_note": "使用边界"
+    }
+  ],
+  "nayin_comparison": {
+    "nayin_distribution": {"金": 2, "木": 1, "水": 1},
+    "chart_distribution": {},
+    "dominant_nayin_elements": ["金"],
+    "dominant_chart_elements": ["水", "木"],
+    "explanation": "四柱纳音与原局五行对照"
+  }
+}
+```
+
+`pillar_cards` 正常为年、月、日、时四项；出生时辰不详时，时柱内容以实际引擎结果为准。
+
+## 13. 专项报告和导出接口
+
+### 13.1 获取结构化专项报告
+
+```http
+GET /api/v1/chart-profiles/{profile_id}/reports/{report_type}
+Authorization: Bearer <access_token>
+```
+
+`report_type` 只允许：
+
+| 值 | 含义 |
+|---|---|
+| `career` | 事业专项报告 |
+| `wealth` | 财富专项报告 |
+| `love` | 感情关系专项报告 |
+
+```json
+{
+  "profile_id": "档案 ID",
+  "chart_fingerprint": "命盘指纹",
+  "report_type": "career",
+  "report": {
+    "title": "事业专项报告",
+    "evidence": ["命盘依据"],
+    "chart_signature": "本盘差异化结构",
+    "sections": [
+      {"title": "事业核心定位", "text": "分析内容"},
+      {"title": "适合工作模式", "text": "分析内容"}
+    ],
+    "advice": "行动建议",
+    "disclaimer": "免责声明"
+  }
+}
+```
+
+不同报告还会返回其专有字段：
+
+| 报告 | 主要专有字段 |
+|---|---|
+| `career` | `career_identity`、`career_portrait`、`suitable_work_modes`、`suitable_industries`、`career_risks`、`action_plan` |
+| `wealth` | `wealth_identity`、`financial_structure`、`main_income_modes`、`secondary_income_modes`、`money_risks`、`cashflow_advice` |
+| `love` | `relationship_pattern`、`relationship_structure`、`suitable_partner_type`、`relationship_strengths`、`relationship_risks`、`communication_advice` |
+
+### 13.2 下载综合或专项报告
+
+```http
+GET /api/v1/chart-profiles/{profile_id}/reports/{report_type}/export?format=markdown
+Authorization: Bearer <access_token>
+```
+
+| 参数 | 允许值 |
+|---|---|
+| `report_type` | `comprehensive`、`career`、`wealth`、`love` |
+| `format` | `markdown`、`txt`、`pdf`，默认 `markdown` |
+
+该接口返回文件内容，不返回 JSON：
+
+| 格式 | `Content-Type` | 扩展名 |
+|---|---|---|
+| `markdown` | `text/markdown; charset=utf-8` | `.md` |
+| `txt` | `text/plain; charset=utf-8` | `.txt` |
+| `pdf` | `application/pdf` | `.pdf` |
+
+PDF 生成需要 `reportlab` 和可嵌入中文字体。Docker 镜像已经安装 Noto CJK 字体；本机缺少依赖或字体时返回 `422`，不会把错误文本伪装成 PDF。
+
+## 14. 合婚匹配接口
+
+### 14.1 比较两个命理档案
+
+```http
+POST /api/v1/compatibility/analyze
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+
+```json
+{
+  "profile_id_1": "第一个档案 ID",
+  "profile_id_2": "第二个档案 ID"
+}
+```
+
+两个 ID 必须不同，并且都必须属于当前登录用户。接口不会允许使用其他用户的档案。
+
+```json
+{
+  "profile_id_1": "第一个档案 ID",
+  "profile_id_2": "第二个档案 ID",
+  "chart_fingerprint_1": "第一个命盘指纹",
+  "chart_fingerprint_2": "第二个命盘指纹",
+  "result": {
+    "overall_score": 78,
+    "level": "较匹配",
+    "summary": "总体结论",
+    "dimensions": [
+      {
+        "label": "日主关系",
+        "score": 18,
+        "max_score": 20,
+        "text": "维度说明",
+        "detail": "具体依据"
+      }
+    ],
+    "key_cautions": ["重点提醒"],
+    "person_a": {},
+    "person_b": {},
+    "match_reasons": ["互补原因"],
+    "conflict_reasons": ["可能冲突"],
+    "advice_list": ["相处建议"],
+    "basis": "命理依据",
+    "source_titles": ["参考来源"]
+  }
+}
+```
+
+### 14.2 下载合婚报告
+
+```http
+POST /api/v1/compatibility/export?format=txt
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+
+请求体与分析接口相同，`format` 支持 `markdown`、`txt`、`pdf`，响应为下载文件。
+
+## 15. 紫微斗数接口
+
+### 15.1 获取紫微命盘和综合解读
+
+```http
+GET /api/v1/chart-profiles/{profile_id}/ziwei
+Authorization: Bearer <access_token>
+```
+
+```json
+{
+  "profile_id": "档案 ID",
+  "chart_fingerprint": "对应八字命盘指纹",
+  "chart": {
+    "available": true,
+    "lunar_month": 8,
+    "lunar_day": 7,
+    "hour_branch": "巳",
+    "year_gan": "庚",
+    "year_branch": "午",
+    "life_palace": "辰",
+    "body_palace": "申",
+    "palaces": [],
+    "main_stars_ready": true,
+    "main_stars_by_palace": {},
+    "minor_stars_ready": true,
+    "minor_stars_by_palace": {},
+    "fierce_stars_ready": true,
+    "fierce_stars_by_palace": {},
+    "daxian": {}
+  },
+  "life_card": {
+    "title": "紫微命盘名片",
+    "ziwei_profile_type": "命宫与身宫类型",
+    "profile_keywords": [],
+    "ming_gong_summary": "命宫说明",
+    "shen_gong_summary": "身宫说明",
+    "key_palace_summaries": {},
+    "personalized_evidence": [],
+    "source_titles": []
+  },
+  "report": {
+    "title": "紫微人生说明书",
+    "sections": [],
+    "advice": "综合建议",
+    "disclaimer": "免责声明",
+    "main_stars_ready": true,
+    "minor_stars_ready": true,
+    "fierce_stars_ready": true,
+    "daxian_ready": true
+  }
+}
+```
+
+`palaces` 正常为十二项，包含宫名、地支、主星、辅星、煞星和宫位说明；`report.sections`
+包含人生说明书、重点宫位、三方四正、四化和算法完成度说明。
+
+### 15.2 下载紫微报告
+
+```http
+GET /api/v1/chart-profiles/{profile_id}/ziwei/export?format=markdown
+Authorization: Bearer <access_token>
+```
+
+`format` 支持 `markdown`、`txt`、`pdf`，响应为下载文件。
+
+## 16. AI 命理问答接口
+
+### 16.1 对已保存命盘提问
+
+```http
+POST /api/v1/chart-profiles/{profile_id}/questions
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+
+```json
+{
+  "question": "未来三年的事业重点是什么？",
+  "history": [
+    {"role": "user", "content": "我想了解事业方向"},
+    {"role": "assistant", "content": "可以具体到年份或工作类型"}
+  ]
+}
+```
+
+输入规则：
+
+| 字段 | 类型 | 必填 | 规则 |
+|---|---|---|---|
+| `question` | string | 是 | `1`～`1000` 字符，只支持四柱命理范围内的问题 |
+| `history` | array | 否 | 默认空数组，最多 10 条 |
+| `history[].role` | string | 是 | `user` 或 `assistant` |
+| `history[].content` | string | 是 | `1`～`4000` 字符 |
+
+成功或安全降级均返回 `200`：
+
+```json
+{
+  "profile_id": "档案 ID",
+  "chart_fingerprint": "命盘指纹",
+  "mode": "local",
+  "answer": "本地规则生成并经过安全边界处理的回答",
+  "structured_answer": {
+    "source": "local_rules",
+    "provider": null,
+    "sections": {},
+    "chart_evidence": ["命盘事实依据"],
+    "rule_evidence": ["规则依据"],
+    "timing_conditions": ["时间条件"],
+    "practical_advice": ["现实建议"],
+    "uncertainty": ["不确定性和边界"],
+    "interpretation_receipt": "问题解释回执",
+    "retryable": false,
+    "violation_codes": []
+  },
+  "degradation_reason": "service_unavailable",
+  "boundary_note": "命理分析仅供传统文化参考，不替代医疗、法律、投资或其他现实专业决策。"
+}
+```
+
+字段解释：
+
+| 字段 | 说明 |
+|---|---|
+| `mode` | `local` 表示本地规则回答，`cloud` 表示云模型结果通过本地事实校验 |
+| `structured_answer.source` | `local_rules`、`cloud_validated`、`boundary` 或 `clarification` |
+| `degradation_reason` | 云模型未使用或不可用的原因；正常云回答时为 `null` |
+| `violation_codes` | 云输出被修复或拒绝时的安全校验编码 |
+| `retryable` | 本次降级是否适合稍后重试 |
+
+默认配置 `AI_PROVIDER=local`，完全不调用外部模型。启用云增强时在服务器 `.env` 配置：
+
+```dotenv
+AI_PROVIDER=kimi
+AI_API_KEY=仅保存在服务器的密钥
+AI_MODEL=kimi-k3
+AI_BASE_URL=https://api.moonshot.cn/v1
+```
+
+也可以将 `AI_PROVIDER` 设置为 `openai` 并指定对应模型。后端只把去标识化后的命盘事实、
+本地规则和问题语义发送给模型，不发送姓名、地点、档案 ID、完整出生资料或内部密钥；云回答还会经过
+事实矛盾、越界结论、提示词注入和输出结构检查。速率、每日请求和并发限制由
+`AI_PER_USER_PER_MINUTE`、`AI_PER_USER_DAILY_REQUESTS`、`AI_DAILY_TOKEN_BUDGET` 和
+`AI_MAX_CONCURRENT_REQUESTS` 配置。当前限制为单进程限制，多实例部署时应升级为 Redis 分布式限流。
+
+## 17. 运维接口
+
+### 17.1 存活检查
 
 ```http
 GET /healthz
@@ -1426,7 +1953,7 @@ GET /healthz
 }
 ```
 
-### 10.2 就绪检查
+### 17.2 就绪检查
 
 ```http
 GET /readyz
@@ -1458,7 +1985,7 @@ Redis 不可用时返回 `503`：
 
 响应不会泄露连接字符串或底层异常。
 
-## 11. 当前能力边界
+## 18. 当前能力边界
 
 以下功能已有接口或模型骨架，但尚未完成真实第三方接入：
 
@@ -1472,7 +1999,7 @@ Redis 不可用时返回 `503`：
 
 不要将占位接口返回值视为第三方平台已接入。
 
-## 12. 点数与支付安全约定
+## 19. 点数与支付安全约定
 
 - `PointLedger` 是不可变审计记录。
 - `PointBalance` 是同一事务内更新并加行锁保护的余额投影。
@@ -1481,7 +2008,7 @@ Redis 不可用时返回 `503`：
 - 生产运营应定期核对账本 `SUM(delta)` 与余额投影，发现偏差时以账本重建投影。
 - 数据库、Redis、短信和支付密钥不得写入前端、接口响应、日志或本文档。
 
-## 13. 密码安全约定
+## 20. 密码安全约定
 
 - 数据库只保存带独立随机盐的 `scrypt` 密码摘要，不保存或记录明文密码。
 - 密码长度为 8～128 个字符，服务端不会擅自裁剪首尾空格或改变字符内容。

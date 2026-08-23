@@ -151,6 +151,46 @@ class Errors:
         status.HTTP_422_UNPROCESSABLE_CONTENT,
         "Personal fortune could not be generated from this chart",
     )
+    CHART_ANALYSIS_UNAVAILABLE = ErrorDefinition(
+        "CHART_ANALYSIS_UNAVAILABLE",
+        status.HTTP_422_UNPROCESSABLE_CONTENT,
+        "Chart interpretation could not be generated",
+    )
+    LUCK_CYCLES_UNAVAILABLE = ErrorDefinition(
+        "FORTUNE_LUCK_CYCLES_UNAVAILABLE",
+        status.HTTP_422_UNPROCESSABLE_CONTENT,
+        "Luck cycles could not be generated from this profile",
+    )
+    SIXTY_JIAZI_QUERY_CONFLICT = ErrorDefinition(
+        "KNOWLEDGE_SIXTY_JIAZI_QUERY_CONFLICT",
+        status.HTTP_422_UNPROCESSABLE_CONTENT,
+        "Use either year or pillar, not both",
+    )
+    SIXTY_JIAZI_NOT_FOUND = ErrorDefinition(
+        "KNOWLEDGE_SIXTY_JIAZI_NOT_FOUND",
+        status.HTTP_404_NOT_FOUND,
+        "Sixty Jiazi entry not found",
+    )
+    REPORT_EXPORT_UNAVAILABLE = ErrorDefinition(
+        "REPORT_EXPORT_UNAVAILABLE",
+        status.HTTP_422_UNPROCESSABLE_CONTENT,
+        "Report could not be exported",
+    )
+    COMPATIBILITY_UNAVAILABLE = ErrorDefinition(
+        "COMPATIBILITY_UNAVAILABLE",
+        status.HTTP_422_UNPROCESSABLE_CONTENT,
+        "Compatibility analysis could not be generated",
+    )
+    ZIWEI_UNAVAILABLE = ErrorDefinition(
+        "ZIWEI_UNAVAILABLE",
+        status.HTTP_422_UNPROCESSABLE_CONTENT,
+        "Ziwei analysis could not be generated from this profile",
+    )
+    AI_QUESTION_UNAVAILABLE = ErrorDefinition(
+        "AI_QUESTION_UNAVAILABLE",
+        status.HTTP_422_UNPROCESSABLE_CONTENT,
+        "The question could not be analyzed safely",
+    )
 
     UNKNOWN_PAYMENT_PROVIDER = ErrorDefinition(
         "PAYMENT_PROVIDER_UNKNOWN", status.HTTP_404_NOT_FOUND, "Unknown payment provider"

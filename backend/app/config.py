@@ -1,7 +1,7 @@
 from pathlib import Path
 from urllib.parse import urlparse
 
-from pydantic import Field, field_validator
+from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from redis.asyncio.connection import parse_url as parse_redis_url
 from sqlalchemy.engine import make_url
@@ -34,6 +34,24 @@ class Settings(BaseSettings):
     wechat_app_secret: str = ""
     alipay_app_id: str = ""
     alipay_private_key: str = ""
+    ai_provider: str = "local"
+    ai_api_key: SecretStr = SecretStr("")
+    ai_model: str = ""
+    ai_base_url: str = ""
+    ai_reasoning_effort: str = "low"
+    ai_timeout_seconds: int = Field(default=30, ge=5, le=90)
+    ai_per_user_per_minute: int = Field(default=3, ge=1, le=60)
+    ai_per_user_daily_requests: int = Field(default=30, ge=1, le=1000)
+    ai_daily_token_budget: int = Field(default=500_000, ge=1000)
+    ai_max_concurrent_requests: int = Field(default=4, ge=1, le=100)
+
+    @field_validator("ai_provider")
+    @classmethod
+    def validate_ai_provider(cls, value: str) -> str:
+        normalized = value.strip().lower()
+        if normalized not in {"local", "kimi", "openai"}:
+            raise ValueError("AI_PROVIDER must be local, kimi, or openai")
+        return normalized
 
     @field_validator("database_url")
     @classmethod

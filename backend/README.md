@@ -87,6 +87,10 @@ Linux/macOS 激活环境使用 `source .venv/bin/activate`，其余命令相同�
 
 登录用户可调用 `GET /api/v1/chart-profiles/{profile_id}/fortune?target_year=2026`，从自己已保存的命盘快照生成年度总览、专项分析、目标年份大运背景和 12 个月流月事件。旧版年度、流月、叙事和完整事件规则已迁入后端自有 `app/fortune`，并由多档案、多年份合同测试保护；运行时不依赖旧 `bazi_ziwei_app`。结果实时派生，不另建运势数据表。完整参数、响应字段和 ApiPost 测试步骤见 [API.md](API.md#9-个人运势接口)。
 
+## 深度命理能力
+
+后端还提供命盘总览与五行喜忌、完整大运、六十甲子、事业/财富/感情专项报告、Markdown/TXT/PDF 导出、合婚、紫微斗数和带本地安全兜底的 AI 问答。相关计算与规则均在 `app/analysis`、`app/reports`、`app/ziwei` 和 `app/ai` 内，运行时不读取旧 Streamlit 项目。全部路径、输入和输出示例见 [API.md](API.md#10-命盘综合分析接口)。
+
 ## 登录方式
 
 短信验证码仍是注册入口：先调用 `POST /api/v1/auth/otp/login/code` 获取登录验证码，首次调用 `POST /api/v1/auth/otp/login` 会自动创建用户。登录后可调用 `PUT /api/v1/auth/password` 设置密码，之后可使用 `POST /api/v1/auth/password/login` 登录；忘记密码时通过密码重置专用短信验证码找回。密码变更后旧 JWT 会失效，客户端需要保存接口返回的新令牌。完整参数见 [API.md](API.md#3-认证接口)。

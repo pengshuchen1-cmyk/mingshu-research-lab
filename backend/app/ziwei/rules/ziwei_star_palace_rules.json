@@ -1,0 +1,162 @@
+{
+  "version": "v1.0.4",
+  "description": "紫微斗数主星落入重点宫位的白话解释。只解释已排出的十四主星落宫，不推演未接入飞化。",
+  "rules": [
+    {
+      "id": "zw_star_palace_ziwei_ming",
+      "title": "紫微入命宫",
+      "condition": {"star": "紫微", "palace": "命宫"},
+      "text": "紫微在命宫，像一个人内在带着主轴和统筹意识，容易重视身份、责任、格局和长期方向。",
+      "real_world_view": "现实里常表现为愿意负责、喜欢把事情放到大局里看，也容易在团队中被期待做决定。",
+      "strengths": ["统筹意识较强", "目标感明显", "适合承担核心角色"],
+      "risks": ["容易把压力往自己身上收", "有时不容易放下身段", "需要避免只看大局忽略细节"],
+      "advice": "建议把领导感转成清楚分工，重要事情多听反馈，减少单点承压。",
+      "boundary": "这是性格和角色倾向参考，不能单独判断现实地位或成就。",
+      "source_ids": ["ziwei_doushu_quanshu", "ziwei_doushu_quanji", "traditional_ziwei_palace_system"]
+    },
+    {
+      "id": "zw_star_palace_ziwei_guanlu",
+      "title": "紫微入官禄宫",
+      "condition": {"star": "紫微", "palace": "官禄宫"},
+      "text": "紫微在官禄宫，事业上更适合做有组织、有责任、有统筹空间的事情。",
+      "real_world_view": "现实里容易关注管理、职位责任、平台建设、制度搭建和团队方向。",
+      "strengths": ["适合统筹型岗位", "职业目标感较强", "容易重视长期职业形象"],
+      "risks": ["容易承担超出边界的责任", "需要避免只讲方向不落执行", "对职位评价可能较敏感"],
+      "advice": "建议把事业目标拆成制度、团队、结果三层，先建立可复用流程。",
+      "boundary": "这是事业发力方式参考，不等同于职位高低。",
+      "source_ids": ["ziwei_doushu_quanshu", "ziwei_doushu_daquan"]
+    },
+    {
+      "id": "zw_star_palace_wuqu_caibo",
+      "title": "武曲入财帛宫",
+      "condition": {"star": "武曲", "palace": "财帛宫"},
+      "text": "武曲在财帛宫，钱的主题更偏执行、规则、预算、经营和长期积累。",
+      "real_world_view": "现实里容易适合靠专业能力、管理能力、财务意识、项目执行或稳定经营获得收入。",
+      "strengths": ["理财和成本意识较强", "适合务实赚钱方式", "容易重视现金流和结果"],
+      "risks": ["容易因钱和责任感到紧绷", "关系表达可能偏硬", "投资和扩张需要缓冲"],
+      "advice": "建议建立预算表、现金流表和风险预案，先稳住基本盘再扩大收益来源。",
+      "boundary": "这是赚钱方式和财务习惯参考，不作为投资、借贷、合伙决策依据。",
+      "source_ids": ["ziwei_doushu_quanshu", "ziwei_doushu_daquan", "traditional_ziwei_palace_system"]
+    },
+    {
+      "id": "zw_star_palace_wuqu_guanlu",
+      "title": "武曲入官禄宫",
+      "condition": {"star": "武曲", "palace": "官禄宫"},
+      "text": "武曲在官禄宫，事业更看执行、规则、结果、财务或管理能力。",
+      "real_world_view": "现实里适合财务、运营、管理、工程、执行、绩效导向较强的岗位。",
+      "strengths": ["执行力强", "结果意识明显", "适合处理制度和数字"],
+      "risks": ["沟通可能偏直接", "容易把工作压力带到关系里", "需要避免过度刚硬"],
+      "advice": "建议把执行标准写清楚，同时训练柔性沟通。",
+      "boundary": "这是职业风格参考，不替代行业经验和现实能力。",
+      "source_ids": ["ziwei_doushu_quanshu", "ziwei_doushu_daquan"]
+    },
+    {
+      "id": "zw_star_palace_qisha_ming",
+      "title": "七杀入命宫",
+      "condition": {"star": "七杀", "palace": "命宫"},
+      "text": "七杀在命宫，个性里更有突破、竞争、决断和不喜欢被困住的倾向。",
+      "real_world_view": "现实里常表现为遇到压力反而想行动，适合挑战型任务，但节奏容易偏快。",
+      "strengths": ["行动果断", "适合开局和攻坚", "面对压力反应快"],
+      "risks": ["容易急进", "说话做事可能偏硬", "需要注意冲动决策"],
+      "advice": "建议遇到大事先设缓冲时间，把冲劲用在明确目标上。",
+      "boundary": "这是性格动力参考，不代表现实中自然会出现冲突事件。",
+      "source_ids": ["ziwei_doushu_quanshu", "ziwei_doushu_daquan"]
+    },
+    {
+      "id": "zw_star_palace_qisha_guanlu",
+      "title": "七杀入官禄宫",
+      "condition": {"star": "七杀", "palace": "官禄宫"},
+      "text": "七杀在官禄宫，事业上容易遇到竞争、压力、改革、攻坚或高目标任务。",
+      "real_world_view": "现实里适合项目制、竞争型、管理型、开拓型工作，也容易被推到难题面前。",
+      "strengths": ["攻坚能力强", "适合开拓和转型", "目标压力下效率较高"],
+      "risks": ["工作节奏容易紧", "与上级或同事容易因目标产生摩擦", "需要控制风险决策"],
+      "advice": "建议在接高压任务前明确权限、资源、时间表和退出条件。",
+      "boundary": "这是事业压力和突破倾向参考，不直接判断职业成败。",
+      "source_ids": ["ziwei_doushu_quanshu", "ziwei_doushu_daquan"]
+    },
+    {
+      "id": "zw_star_palace_taiyang_guanlu",
+      "title": "太阳入官禄宫",
+      "condition": {"star": "太阳", "palace": "官禄宫"},
+      "text": "太阳在官禄宫，事业上更适合公开表达、责任承担、服务他人和影响力建设。",
+      "real_world_view": "现实里容易与教育、传播、管理、公共服务、品牌曝光或对外沟通有关。",
+      "strengths": ["责任感强", "适合对外表达", "容易被看见和委以任务"],
+      "risks": ["容易过度照顾别人", "精力消耗较快", "需要避免把所有责任都扛下"],
+      "advice": "建议把曝光、表达、责任分层管理，给自己保留恢复时间。",
+      "boundary": "这是事业表达方式参考，不代表现实名声或职位结果。",
+      "source_ids": ["ziwei_doushu_quanshu", "ziwei_doushu_quanji"]
+    },
+    {
+      "id": "zw_star_palace_taiyin_caibo",
+      "title": "太阴入财帛宫",
+      "condition": {"star": "太阴", "palace": "财帛宫"},
+      "text": "太阴在财帛宫，钱的主题更偏细腻经营、长期储蓄、审美服务和稳定资源。",
+      "real_world_view": "现实里适合服务、咨询、审美、女性客户、居家空间、长期理财和稳定积累。",
+      "strengths": ["财务细节感较好", "适合长期经营", "容易重视安全感"],
+      "risks": ["容易犹豫", "情绪会影响消费", "需要避免只存不动或只想不做"],
+      "advice": "建议用预算、储蓄和长期计划稳定财务节奏，重大支出先冷静观察。",
+      "boundary": "这是财务习惯参考，不作为投资收益判断。",
+      "source_ids": ["ziwei_doushu_quanshu", "ziwei_doushu_quanji"]
+    },
+    {
+      "id": "zw_star_palace_taiyin_fuqi",
+      "title": "太阴入夫妻宫",
+      "condition": {"star": "太阴", "palace": "夫妻宫"},
+      "text": "太阴在夫妻宫，关系里更重视细腻感受、安全感、照顾和情绪回应。",
+      "real_world_view": "现实里容易被温柔、细致、会照顾感受的人吸引，也容易在关系中在意细节。",
+      "strengths": ["关系感受力细腻", "愿意经营安全感", "适合温和沟通"],
+      "risks": ["容易敏感", "容易把话藏在心里", "需要避免情绪积累后集中爆发"],
+      "advice": "建议把感受具体说出来，用清楚表达代替猜测。",
+      "boundary": "这是关系模式参考，不替代双方真实沟通和选择。",
+      "source_ids": ["ziwei_doushu_quanshu", "traditional_ziwei_palace_system"]
+    },
+    {
+      "id": "zw_star_palace_tianfu_caibo",
+      "title": "天府入财帛宫",
+      "condition": {"star": "天府", "palace": "财帛宫"},
+      "text": "天府在财帛宫，财富主题偏稳定承接、资源库、长期积累和保守经营。",
+      "real_world_view": "现实里适合做资源管理、稳定收入、资产沉淀、平台型收益和长期客户经营。",
+      "strengths": ["资源承接力较好", "适合长期积累", "风险意识较强"],
+      "risks": ["行动可能偏慢", "容易过度保守", "需要避免只守不攻"],
+      "advice": "建议在稳住基本盘的同时设置小规模试错计划。",
+      "boundary": "这是财富承接方式参考，不代表财富数量。",
+      "source_ids": ["ziwei_doushu_quanshu", "ziwei_doushu_daquan"]
+    },
+    {
+      "id": "zw_star_palace_tianji_ming",
+      "title": "天机入命宫",
+      "condition": {"star": "天机", "palace": "命宫"},
+      "text": "天机在命宫，思考、学习、变化和策划能力会成为性格底色的一部分。",
+      "real_world_view": "现实里容易爱研究、爱比较方案、适应变化快，但也可能想太多。",
+      "strengths": ["学习快", "善于规划", "适应变化"],
+      "risks": ["思虑过多", "执行容易分散", "情绪容易被不确定性牵动"],
+      "advice": "建议把想法拆成三步行动，先做小验证，再决定是否扩大。",
+      "boundary": "这是思维方式参考，不等同于现实聪明程度。",
+      "source_ids": ["ziwei_doushu_quanshu", "ziwei_doushu_daquan"]
+    },
+    {
+      "id": "zw_star_palace_jumen_guanlu",
+      "title": "巨门入官禄宫",
+      "condition": {"star": "巨门", "palace": "官禄宫"},
+      "text": "巨门在官禄宫，事业容易和表达、解释、分析、谈判、文书或争议处理有关。",
+      "real_world_view": "现实里适合法律、咨询、教育、传媒、产品说明、技术分析等需要讲清复杂问题的方向。",
+      "strengths": ["表达分析力强", "适合处理复杂问题", "能把隐性问题说清楚"],
+      "risks": ["口舌摩擦较多", "容易被误解", "需要注意语气和证据"],
+      "advice": "建议重要表达先写提纲，用事实和记录减少误会。",
+      "boundary": "这是事业沟通方式参考，不代表现实纠纷会发生。",
+      "source_ids": ["ziwei_doushu_quanshu", "ziwei_doushu_quanji"]
+    },
+    {
+      "id": "zw_star_palace_tanlang_fuqi",
+      "title": "贪狼入夫妻宫",
+      "condition": {"star": "贪狼", "palace": "夫妻宫"},
+      "text": "贪狼在夫妻宫，关系里更容易出现吸引力、社交感、才艺感和欲望议题。",
+      "real_world_view": "现实里容易被有魅力、有才华、会互动的人吸引，也更需要关系边界和稳定沟通。",
+      "strengths": ["吸引力较强", "关系互动感明显", "适合共同兴趣经营"],
+      "risks": ["容易被新鲜感牵动", "边界需要说清楚", "人情和感情容易交织"],
+      "advice": "建议把承诺、边界、钱和社交空间提前讲清楚。",
+      "boundary": "这是关系吸引模式参考，不直接判断婚恋结果。",
+      "source_ids": ["ziwei_doushu_quanshu", "ziwei_doushu_quanji"]
+    }
+  ]
+}
