@@ -45,7 +45,6 @@ from .ai_segment_guard import validate_and_repair_segments
 from .local_bazi_answer import build_local_answer, render_local_plan
 from .providers.ai_client_factory import build_ai_client
 from .providers.ai_service_errors import AIServiceError
-from .providers.kimi_bazi_client import KIMI_MODEL
 
 _TRADITIONAL_CULTURE_DISCLAIMER = (
     "命理分析仅供传统文化参考，不替代现实中的医疗、法律或财务决策。"
@@ -65,6 +64,7 @@ _SERVICE_DEGRADATION_REASONS = frozenset(
         "network_error",
         "timeout",
         "service_unavailable",
+        "model_unavailable",
         "unparseable_response",
         "daily_budget",
         "duplicate_request",
@@ -346,17 +346,6 @@ def answer_question(
 
     selected_config = config or AIConfig.from_environment()
     if selected_config.provider not in {"kimi", "openai"}:
-        emit("degraded")
-        return _local_result(
-            local,
-            resolved,
-            "service_unavailable",
-            retryable=False,
-        )
-    if (
-        selected_config.provider == "kimi"
-        and selected_config.model != KIMI_MODEL
-    ):
         emit("degraded")
         return _local_result(
             local,

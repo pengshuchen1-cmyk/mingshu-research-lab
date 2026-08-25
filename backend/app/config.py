@@ -39,7 +39,8 @@ class Settings(BaseSettings):
     ai_model: str = ""
     ai_base_url: str = ""
     ai_reasoning_effort: str = "low"
-    ai_timeout_seconds: int = Field(default=30, ge=5, le=90)
+    ai_kimi_thinking: bool = False
+    ai_timeout_seconds: int = Field(default=90, ge=5, le=90)
     ai_per_user_per_minute: int = Field(default=3, ge=1, le=60)
     ai_per_user_daily_requests: int = Field(default=30, ge=1, le=1000)
     ai_daily_token_budget: int = Field(default=500_000, ge=1000)

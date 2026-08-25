@@ -10,6 +10,12 @@ _QUOTA_ERROR_MARKERS = {
     "billing",
     "quota",
 }
+_MODEL_ERROR_MARKERS = {
+    "invalid_model",
+    "model_not_found",
+    "model_not_available",
+    "model_access_denied",
+}
 
 
 class AIServiceError(RuntimeError):
@@ -23,11 +29,24 @@ def classify_service_error(exc: Exception) -> str:
     status = getattr(exc, "status_code", None)
     code = str(getattr(exc, "code", "") or "").lower()
     error_type = str(getattr(exc, "type", "") or "").lower()
+    message = str(getattr(exc, "message", "") or exc).lower()
 
     if isinstance(exc, TimeoutError) or "timeout" in exception_name:
         return "timeout"
     if {code, error_type} & _QUOTA_ERROR_MARKERS and status in {402, 403, 429}:
         return "insufficient_quota"
+    if (
+        status == 404
+        or {code, error_type} & _MODEL_ERROR_MARKERS
+        or (
+            "model" in message
+            and any(
+                marker in message
+                for marker in ("not found", "does not exist", "not available")
+            )
+        )
+    ):
+        return "model_unavailable"
     if status in {401, 403}:
         return "invalid_credentials"
     if status == 429:
