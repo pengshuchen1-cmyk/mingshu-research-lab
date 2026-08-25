@@ -9,6 +9,8 @@ from typing import Annotated, Literal, Optional, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
+DEFAULT_KIMI_MODEL = "kimi-k2.6"
+
 QuestionCategory = Literal[
     "overview", "wealth", "career", "relationship", "timing", "family", "other"
 ]
@@ -189,9 +191,10 @@ def _setting(
 class AIConfig:
     api_key: str = field(repr=False)
     enabled: bool
-    model: str = "kimi-k3"
+    model: str = DEFAULT_KIMI_MODEL
     reasoning_effort: str = "low"
-    timeout_seconds: int = 30
+    kimi_thinking: bool = False
+    timeout_seconds: int = 90
     provider: str = "kimi"
     base_url: str = "https://api.moonshot.cn/v1"
     per_session_per_minute: int = 3
@@ -208,7 +211,9 @@ class AIConfig:
         provider = _setting(source, "MINGSHU_AI_PROVIDER", "kimi").lower()
         key_name = "OPENAI_API_KEY" if provider == "openai" else "MOONSHOT_API_KEY"
         api_key = _setting(source, key_name)
-        default_model = "gpt-5.6-sol" if provider == "openai" else "kimi-k3"
+        default_model = (
+            "gpt-5.6-sol" if provider == "openai" else DEFAULT_KIMI_MODEL
+        )
         default_base_url = (
             "https://api.openai.com/v1"
             if provider == "openai"
@@ -228,14 +233,20 @@ class AIConfig:
         elif reasoning not in {"low", "medium", "high"}:
             reasoning = "medium"
         try:
-            timeout = int(_setting(source, "MINGSHU_AI_TIMEOUT_SECONDS", "30"))
+            timeout = int(_setting(source, "MINGSHU_AI_TIMEOUT_SECONDS", "90"))
         except ValueError:
-            timeout = 30
+            timeout = 90
+        kimi_thinking = _setting(
+            source,
+            "MINGSHU_AI_KIMI_THINKING",
+            "false",
+        ).lower() in {"1", "true", "yes", "on"}
         return cls(
             api_key=api_key,
             enabled=bool(api_key) and provider in {"kimi", "openai"},
             model=model,
             reasoning_effort=reasoning,
+            kimi_thinking=kimi_thinking,
             timeout_seconds=min(90, max(5, timeout)),
             provider=provider,
             base_url=_setting(source, "MINGSHU_AI_BASE_URL", default_base_url),
@@ -250,6 +261,7 @@ DegradationReason = Literal[
     "network_error",
     "timeout",
     "service_unavailable",
+    "model_unavailable",
     "unparseable_response",
     "local_validation_failed",
     "daily_budget",
