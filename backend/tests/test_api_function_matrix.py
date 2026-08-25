@@ -308,7 +308,8 @@ def test_admin_points_payments_and_statistics_matrix(tmp_path):
                 json={"is_active": True},
                 headers=admin_headers,
             ).status_code == 200
-            assert client.get("/api/v1/me", headers=user_headers).status_code == 200
+            # Reactivation must not revive tokens issued before the status change.
+            assert client.get("/api/v1/me", headers=user_headers).status_code == 401
             assert client.patch(
                 "/api/v1/admin/users/not-a-uuid/active",
                 json={"is_active": False},

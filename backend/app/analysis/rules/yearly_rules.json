@@ -1,0 +1,46 @@
+{
+  "rules": [
+    {
+      "id": "year-favorable",
+      "title": "喜用年份",
+      "condition": {
+        "year_relation": "喜用相关"
+      },
+      "tags": [
+        "机会",
+        "推进"
+      ],
+      "text": "喜用相关年份更适合推进已验证计划和资源积累。",
+      "advice": "建议主动争取资源，同时保留复盘。",
+      "risk": "需要注意扩张过快。",
+      "source_ids": [
+        "san_ming_tong_hui",
+        "zi_ping_zhen_quan"
+      ],
+      "basis": "喜用相关年份基于五行喜忌和用神格局理论，喜用五行当旺时更适合推进计划和资源积累。参考《子平真诠》用神理论和《三命通会》大运流年综合判断。",
+      "school": "子平八字",
+      "confidence": "高"
+    },
+    {
+      "id": "year-pressure",
+      "title": "忌神年份",
+      "condition": {
+        "year_relation": "忌神相关"
+      },
+      "tags": [
+        "压力",
+        "收敛"
+      ],
+      "text": "忌神相关年份更容易感到消耗或反复，适合收紧节奏。",
+      "advice": "建议先稳住基本盘，重要决定多验证。",
+      "risk": "需要注意高成本试错。",
+      "source_ids": [
+        "san_ming_tong_hui",
+        "qi_sha_ji_shen"
+      ],
+      "school": "子平八字",
+      "confidence": "高",
+      "basis": "忌神相关年份基于五行喜忌理论，忌神五行当旺时更容易出现消耗和压力，适合收紧节奏。参考《三命通会》大运流年判断和《滴天髓阐微》旺衰理论。"
+    }
+  ]
+}

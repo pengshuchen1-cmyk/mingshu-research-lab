@@ -1,0 +1,114 @@
+{
+  "rules": [
+    {
+      "id": "element_wood",
+      "title": "木五行特性",
+      "condition": {
+        "element": "木"
+      },
+      "tags": [
+        "生发",
+        "向上",
+        "拓展"
+      ],
+      "text": "木代表生发、向上、拓展和成长能量，过旺则容易固执，过弱则缺乏行动力。",
+      "advice": "建议发挥木的扩展力，同时注意灵活调整方向，避免一意孤行。",
+      "risk": "需要注意过于刚直或计划太多执行不足。",
+      "source_ids": [
+        "san_ming_tong_hui",
+        "qiong_tong_bao_jian"
+      ],
+      "basis": "根据《三命通会》五行特性和《穷通宝鉴》五行四时理论，木主生发向上，春夏旺而秋冬休囚。",
+      "school": "调候",
+      "confidence": "高"
+    },
+    {
+      "id": "element_fire",
+      "title": "火五行特性",
+      "condition": {
+        "element": "火"
+      },
+      "tags": [
+        "热情",
+        "传播",
+        "光明"
+      ],
+      "text": "火代表热情、传播、光明和表现能量，过旺则容易急躁冲动，过弱则缺乏自信和影响力。",
+      "advice": "适合发挥表达和感染力，同时注意节奏控制和情绪管理。",
+      "risk": "需要注意焦躁、冲动和精力过度消耗。",
+      "source_ids": [
+        "san_ming_tong_hui",
+        "qiong_tong_bao_jian"
+      ],
+      "basis": "根据《三命通会》五行特性和《穷通宝鉴》五行四时理论，火主热情传播，夏旺而冬衰。",
+      "school": "调候",
+      "confidence": "高"
+    },
+    {
+      "id": "element_earth",
+      "title": "土五行特性",
+      "condition": {
+        "element": "土"
+      },
+      "tags": [
+        "稳定",
+        "承载",
+        "务实"
+      ],
+      "text": "土代表稳定、承载、务实和包容能量，过旺则容易保守固执，过弱则缺乏稳定力和信用。",
+      "advice": "适合扎根和积累，同时注意不要过于保守错过变化中的机会。",
+      "risk": "需要注意固执、拖延和缺乏变通。",
+      "source_ids": [
+        "san_ming_tong_hui",
+        "qiong_tong_bao_jian"
+      ],
+      "basis": "根据《三命通会》五行特性和《穷通宝鉴》五行四时理论，土主稳定承载，四季末旺而各季末休囚。",
+      "school": "调候",
+      "confidence": "高"
+    },
+    {
+      "id": "element_metal",
+      "title": "金五行特性",
+      "condition": {
+        "element": "金"
+      },
+      "tags": [
+        "决断",
+        "规则",
+        "执行力"
+      ],
+      "text": "金代表决断、规则、执行和权威能量，过旺则容易冷漠严苛，过弱则缺乏决断力和边界。",
+      "advice": "适合做决策和制度建设，同时保持柔和沟通，避免过于刚硬。",
+      "risk": "需要注意过于苛刻、缺乏弹性或沟通生硬。",
+      "source_ids": [
+        "san_ming_tong_hui",
+        "qiong_tong_bao_jian"
+      ],
+      "basis": "根据《三命通会》五行特性和《穷通宝鉴》五行四时理论，金主决断规则，秋旺而夏衰。",
+      "school": "调候",
+      "confidence": "高"
+    },
+    {
+      "id": "element_water",
+      "title": "水五行特性",
+      "condition": {
+        "element": "水"
+      },
+      "tags": [
+        "智慧",
+        "流动",
+        "适应"
+      ],
+      "text": "水代表智慧、流动、适应和变通能量，过旺则容易情绪化或缺乏定性，过弱则缺乏灵活和深度思考。",
+      "advice": "适合发挥灵活适应力，同时注意深耕方向，避免浅尝辄止。",
+      "risk": "需要注意情绪起伏、信息过载和难以聚焦。",
+      "source_ids": [
+        "san_ming_tong_hui",
+        "qiong_tong_bao_jian"
+      ],
+      "basis": "根据《三命通会》五行特性和《穷通宝鉴》五行四时理论，水主智慧流动，冬旺而土旺时受制。",
+      "school": "调候",
+      "confidence": "高"
+    }
+  ]
+}

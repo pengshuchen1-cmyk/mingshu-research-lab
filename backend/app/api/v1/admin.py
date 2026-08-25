@@ -72,10 +72,16 @@ async def set_user_active(
     user_id: str, body: UserActiveIn, _: AdminUser, db: DBSession
 ):
     """管理员启用或停用指定用户；被停用用户不能继续访问受保护接口。"""
-    target = await db.get(User, user_id)
+    target = (
+        await db.execute(select(User).where(User.id == user_id).with_for_update())
+    ).scalar_one_or_none()
     if not target:
         raise APIError(Errors.USER_NOT_FOUND)
-    target.is_active = body.is_active
+    if target.is_active != body.is_active:
+        target.is_active = body.is_active
+        # Revoke every token issued before an account-status transition. This
+        # also prevents old tokens becoming valid again after reactivation.
+        target.auth_version += 1
     await db.commit()
     return {"id": target.id, "is_active": target.is_active}
 

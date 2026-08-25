@@ -3,7 +3,7 @@ name = "mingshu-backend"
 version = "0.1.0"
 requires-python = ">=3.11"
 dependencies = [
-  "fastapi>=0.115,<1", "uvicorn[standard]>=0.30", "sqlalchemy[asyncio]>=2.0", "asyncmy>=0.2.9", "PyMySQL>=1.1", "aiosqlite>=0.20", "alembic>=1.13", "redis>=5.0", "pydantic-settings>=2.5", "PyJWT>=2.9", "phonenumbers>=8.13", "lunar_python==1.4.8"
+  "fastapi>=0.115,<1", "uvicorn[standard]>=0.30", "sqlalchemy[asyncio]>=2.0", "asyncmy>=0.2.9", "PyMySQL>=1.1", "aiosqlite>=0.20", "alembic>=1.13", "redis>=5.0", "pydantic-settings>=2.5", "PyJWT>=2.9", "phonenumbers>=8.13", "lunar_python==1.4.8", "reportlab>=4.2,<6", "openai>=2.53,<3"
 ]
 
 [project.optional-dependencies]
@@ -19,6 +19,8 @@ include = ["app*"]
 [tool.setuptools.package-data]
 "app.bazi" = ["rules/*.json", "rules/bazi_skill/*.json"]
 "app.fortune" = ["rules/*.json"]
+"app.analysis" = ["rules/*.json"]
+"app.ziwei" = ["rules/*.json"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
@@ -26,3 +28,10 @@ testpaths = ["tests"]
 
 [tool.ruff]
 line-length = 100
+
+[tool.ruff.lint.per-file-ignores]
+# These engines intentionally retain a few legacy intermediate variables so
+# their migrated calculations stay byte-for-byte comparable with the old app.
+"app/analysis/*.py" = ["F841"]
+"app/reports/*.py" = ["F841"]
+"app/ziwei/*.py" = ["F841"]

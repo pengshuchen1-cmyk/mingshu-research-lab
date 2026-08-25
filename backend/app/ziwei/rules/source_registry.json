@@ -1,0 +1,1251 @@
+{
+  "yuan_hai_zi_ping": {
+    "title": "渊海子平",
+    "category": "八字经典",
+    "used_for": [
+      "十神",
+      "六亲",
+      "子平基础断法"
+    ],
+    "authority_weight": 0.9,
+    "specificity": "classic",
+    "domains": [
+      "十神",
+      "六亲",
+      "财务收入",
+      "财务支出",
+      "感情婚恋",
+      "事业职场",
+      "家庭关系",
+      "子女养育",
+      "迁移发展"
+    ],
+    "broadness_penalty": 0.12,
+    "note": "用于十神和基础关系解释，软件中不直接复制古籍原文，只做规则化转写。"
+  },
+  "san_ming_tong_hui": {
+    "title": "三命通会",
+    "category": "八字综合",
+    "used_for": [
+      "干支",
+      "五行",
+      "纳音",
+      "大运流年"
+    ],
+    "authority_weight": 0.88,
+    "specificity": "classic",
+    "domains": [
+      "干支",
+      "五行",
+      "大运流年",
+      "事业职场",
+      "财务收入",
+      "健康状态"
+    ],
+    "broadness_penalty": 0.12,
+    "note": "用于干支、五行、纳音和综合命理框架。"
+  },
+  "zi_ping_zhen_quan": {
+    "title": "子平真诠",
+    "category": "格局用神",
+    "used_for": [
+      "用神",
+      "格局",
+      "成败救应"
+    ],
+    "authority_weight": 0.86,
+    "specificity": "chapter",
+    "domains": [
+      "用神",
+      "格局",
+      "事业职场",
+      "财务收入",
+      "贵人与资源",
+      "教育学习",
+      "房产居住"
+    ],
+    "broadness_penalty": 0.05,
+    "note": "用于用神、忌神、格局成败逻辑。"
+  },
+  "qiong_tong_bao_jian": {
+    "title": "穷通宝鉴",
+    "category": "调候五行",
+    "used_for": [
+      "五行四时",
+      "调候",
+      "健康状态"
+    ],
+    "authority_weight": 0.86,
+    "specificity": "chapter",
+    "domains": [
+      "五行四时",
+      "调候",
+      "健康状态",
+      "房产居住"
+    ],
+    "broadness_penalty": 0.05,
+    "note": "用于寒暖燥湿、五行太过不及和状态提醒。"
+  },
+  "di_tian_sui_chan_wei": {
+    "title": "滴天髓阐微",
+    "category": "旺衰体用",
+    "used_for": [
+      "旺衰",
+      "月令",
+      "体用",
+      "命局气势"
+    ],
+    "authority_weight": 0.84,
+    "specificity": "chapter",
+    "domains": [
+      "旺衰",
+      "月令",
+      "体用",
+      "事业职场",
+      "健康状态",
+      "健康建议"
+    ],
+    "broadness_penalty": 0.05,
+    "note": "用于命局气势、旺衰和运势层次变化。"
+  },
+  "ming_li_tan_yuan": {
+    "title": "命理探源",
+    "category": "命理整理",
+    "used_for": [
+      "强弱",
+      "化合刑冲",
+      "流年流月",
+      "子女养育",
+      "教育学习",
+      "贵人与资源"
+    ],
+    "authority_weight": 0.72,
+    "specificity": "broad",
+    "domains": [
+      "强弱",
+      "化合刑冲",
+      "流年流月",
+      "子女养育",
+      "教育学习",
+      "贵人与资源"
+    ],
+    "broadness_penalty": 0.35,
+    "note": "用于强弱、化合刑冲和流年流月关系整理。"
+  },
+  "shen_feng_tong_kao": {
+    "title": "神峰通考",
+    "category": "命例参考",
+    "used_for": [
+      "格局",
+      "命例",
+      "应事"
+    ],
+    "authority_weight": 0.78,
+    "specificity": "case",
+    "domains": [
+      "格局",
+      "命例",
+      "应事",
+      "事业职场",
+      "财务收入",
+      "感情婚恋",
+      "迁移发展"
+    ],
+    "broadness_penalty": 0,
+    "note": "用于命例式判断和运势应事方式参考。"
+  },
+  "yu_zhao_ding_zhen_jing": {
+    "title": "玉照定真经",
+    "category": "命理整理",
+    "used_for": [
+      "干支取象",
+      "流月应事",
+      "象法参考"
+    ],
+    "authority_weight": 0.76,
+    "specificity": "chapter",
+    "domains": [
+      "干支取象",
+      "流月应事",
+      "交通车辆",
+      "合同法务",
+      "风险损耗"
+    ],
+    "broadness_penalty": 0.08,
+    "note": "用于把干支、五行和冲合刑害转写为现代生活事件对象，软件中只做趋势化表达。"
+  },
+  "wu_xing_jing_ji": {
+    "title": "五行精纪",
+    "category": "命理整理",
+    "used_for": [
+      "五行取象",
+      "神煞资料",
+      "事件分类"
+    ],
+    "authority_weight": 0.7,
+    "specificity": "broad",
+    "domains": [
+      "五行取象",
+      "神煞资料",
+      "事件分类"
+    ],
+    "broadness_penalty": 0.35,
+    "note": "用于五行、神煞和干支取象的来源补充，主要服务流月事件对象化。"
+  },
+  "xing_ping_hui_hai": {
+    "title": "星平会海",
+    "category": "命例参考",
+    "used_for": [
+      "神煞",
+      "命例",
+      "应事参考"
+    ],
+    "authority_weight": 0.72,
+    "specificity": "case",
+    "domains": [
+      "神煞",
+      "命例",
+      "应事参考",
+      "贵人与资源",
+      "感情婚恋",
+      "社交人情"
+    ],
+    "broadness_penalty": 0,
+    "note": "用于神煞和命例式应事的参考来源，具体结论仍需结合八字主结构谨慎判断。"
+  },
+  "xie_ji_bian_fang_shu": {
+    "title": "协纪辨方书",
+    "category": "命理整理",
+    "used_for": [
+      "神煞体系",
+      "传统术数资料",
+      "来源整理"
+    ],
+    "authority_weight": 0.62,
+    "specificity": "broad",
+    "domains": [
+      "神煞体系",
+      "传统术数资料",
+      "来源整理"
+    ],
+    "broadness_penalty": 0.35,
+    "note": "用于传统神煞体系的来源登记，不直接生成绝对化断语。"
+  },
+  "ziwei_doushu_quanshu": {
+    "title": "紫微斗数全书",
+    "category": "紫微斗数经典",
+    "used_for": [
+      "十四主星",
+      "十二宫",
+      "星曜性质",
+      "斗数准绳"
+    ],
+    "authority_weight": 0.88,
+    "specificity": "classic",
+    "domains": [
+      "紫微斗数",
+      "十四主星",
+      "十二宫",
+      "星曜性质"
+    ],
+    "broadness_penalty": 0.1,
+    "note": "用于紫微斗数基础框架、星曜含义和宫位解释，软件中只做现代规则化转写。"
+  },
+  "ziwei_doushu_quanji": {
+    "title": "紫微斗数全集",
+    "category": "紫微斗数综合",
+    "used_for": [
+      "星曜组合",
+      "宫位分析",
+      "四化",
+      "大限流年"
+    ],
+    "authority_weight": 0.82,
+    "specificity": "chapter",
+    "domains": [
+      "紫微斗数",
+      "星曜组合",
+      "宫位分析",
+      "四化",
+      "大限流年"
+    ],
+    "broadness_penalty": 0.05,
+    "note": "用于后续星曜组合、四化和大限流年规则校验。"
+  },
+  "ziwei_doushu_daquan": {
+    "title": "紫微斗数大全",
+    "category": "紫微斗数综合",
+    "used_for": [
+      "十二宫系统",
+      "命盘综合判断",
+      "星群组合"
+    ],
+    "authority_weight": 0.8,
+    "specificity": "chapter",
+    "domains": [
+      "紫微斗数",
+      "十二宫系统",
+      "命盘综合判断",
+      "星群组合"
+    ],
+    "broadness_penalty": 0.05,
+    "note": "用于十二宫系统和紫微命盘综合判断框架。"
+  },
+  "traditional_ziwei_palace_system": {
+    "title": "传统紫微斗数十二宫体系",
+    "category": "紫微斗数宫位",
+    "used_for": [
+      "命宫",
+      "身宫",
+      "十二宫位",
+      "宫位含义"
+    ],
+    "authority_weight": 0.7,
+    "specificity": "rule",
+    "domains": [
+      "紫微斗数",
+      "命宫",
+      "身宫",
+      "十二宫位",
+      "宫位含义"
+    ],
+    "broadness_penalty": 0,
+    "note": "用于命宫、身宫、十二宫位的基础解释。"
+  },
+  "traditional_ziwei_sihua_system": {
+    "title": "传统紫微斗数四化体系",
+    "category": "紫微斗数四化",
+    "used_for": [
+      "化禄",
+      "化权",
+      "化科",
+      "化忌"
+    ],
+    "authority_weight": 0.74,
+    "specificity": "rule",
+    "domains": [
+      "紫微斗数",
+      "四化",
+      "化禄",
+      "化权",
+      "化科",
+      "化忌"
+    ],
+    "broadness_penalty": 0,
+    "note": "用于四化基础解释和后续飞化算法准备。"
+  },
+  "source_wealth_star_income_mapping": {
+    "title": "财星主收入、客户与钱款的规则化映射",
+    "category": "命理整理",
+    "used_for": [
+      "财星",
+      "收入",
+      "客户",
+      "钱款",
+      "财务收入"
+    ],
+    "authority_weight": 0.82,
+    "specificity": "rule",
+    "domains": [
+      "财务收入",
+      "财星",
+      "收入",
+      "客户",
+      "钱款"
+    ],
+    "broadness_penalty": 0,
+    "note": "把传统财星含义规则化为客户、订单、进账、回款等现代财务收入事件；必须与流月十神、喜忌或地支证据合用。"
+  },
+  "source_output_wealth_conversion": {
+    "title": "食伤生财与输出变现的规则化映射",
+    "category": "命理整理",
+    "used_for": [
+      "食伤",
+      "生财",
+      "销售",
+      "交付",
+      "变现"
+    ],
+    "authority_weight": 0.8,
+    "specificity": "rule",
+    "domains": [
+      "财务收入",
+      "食伤",
+      "销售",
+      "交付",
+      "变现"
+    ],
+    "broadness_penalty": 0,
+    "note": "把食伤代表表达、技能、作品、服务输出的传统含义映射为销售成交、项目收益、副业收入等变现事件。"
+  },
+  "source_contract_payment_settlement": {
+    "title": "合同账期、凭证与款项结算的现实映射",
+    "category": "命理整理",
+    "used_for": [
+      "合同",
+      "账期",
+      "凭证",
+      "尾款",
+      "结算"
+    ],
+    "authority_weight": 0.76,
+    "specificity": "rule",
+    "domains": [
+      "财务收入",
+      "合同法务",
+      "客户回款",
+      "延迟款项",
+      "结算"
+    ],
+    "broadness_penalty": 0,
+    "note": "用于区分客户回款、延迟到账、退款返利、提成结算等需要合同、票据、账期或合作方确认的收入事件。"
+  },
+  "source_expense_pressure_mapping": {
+    "title": "财星受压与现实支出压力的规则化映射",
+    "category": "命理整理",
+    "used_for": [
+      "支出",
+      "破耗",
+      "费用",
+      "财务支出",
+      "现实成本"
+    ],
+    "authority_weight": 0.8,
+    "specificity": "rule",
+    "domains": [
+      "财务支出",
+      "支出",
+      "破耗",
+      "费用",
+      "现实成本"
+    ],
+    "broadness_penalty": 0,
+    "note": "把财星受冲、忌神参与、现实成本增加等信号映射为支出增加、设备采购、维修、罚款、续费等财务支出事件。"
+  },
+  "source_peer_wealth_split_mapping": {
+    "title": "比劫分财、人情往来与合伙分账的规则化映射",
+    "category": "命理整理",
+    "used_for": [
+      "比劫",
+      "分财",
+      "人情",
+      "合伙",
+      "分账"
+    ],
+    "authority_weight": 0.78,
+    "specificity": "rule",
+    "domains": [
+      "财务支出",
+      "社交人情",
+      "合伙分账",
+      "人情破耗",
+      "借贷往来"
+    ],
+    "broadness_penalty": 0,
+    "note": "用于区分比劫、同辈、人情、合伙关系引发的分账、借贷、礼金、应酬消费和坏账拖欠。"
+  },
+  "source_cashflow_debt_risk_mapping": {
+    "title": "现金流、借贷与坏账风险的现实映射",
+    "category": "命理整理",
+    "used_for": [
+      "现金流",
+      "借贷",
+      "坏账",
+      "拖欠",
+      "预算压力"
+    ],
+    "authority_weight": 0.76,
+    "specificity": "rule",
+    "domains": [
+      "财务支出",
+      "现金流压力",
+      "借贷往来",
+      "坏账拖欠",
+      "投资谨慎"
+    ],
+    "broadness_penalty": 0,
+    "note": "用于把钱款被占用、账期拖延、借贷往来、投资谨慎等现实情境映射为现金流压力和债务风险类事件。"
+  },
+  "source_officer_career_responsibility": {
+    "title": "官杀主职场责任、上级与考核的规则化映射",
+    "category": "命理整理",
+    "used_for": [
+      "官杀",
+      "上级",
+      "责任",
+      "考核",
+      "事业职场"
+    ],
+    "authority_weight": 0.82,
+    "specificity": "rule",
+    "domains": [
+      "事业职场",
+      "官杀",
+      "上级",
+      "责任",
+      "考核",
+      "岗位变化"
+    ],
+    "broadness_penalty": 0,
+    "note": "把官杀代表规则、压力、职位、上级和责任的传统含义映射为职场考核、升职机会、上级压力、责任增加和岗位变化。"
+  },
+  "source_resource_workflow_support": {
+    "title": "印星主流程、资质、制度与支持的规则化映射",
+    "category": "命理整理",
+    "used_for": [
+      "印星",
+      "流程",
+      "资质",
+      "制度",
+      "支持"
+    ],
+    "authority_weight": 0.78,
+    "specificity": "rule",
+    "domains": [
+      "事业职场",
+      "印星",
+      "流程",
+      "制度",
+      "同事协助",
+      "项目推进"
+    ],
+    "broadness_penalty": 0,
+    "note": "用于区分流程审批、资质材料、组织支持、同事协助和项目推进中的制度性支撑。"
+  },
+  "source_output_performance_expression": {
+    "title": "食伤主表达、作品、汇报与技能输出的规则化映射",
+    "category": "命理整理",
+    "used_for": [
+      "食伤",
+      "表达",
+      "汇报",
+      "作品",
+      "技能输出"
+    ],
+    "authority_weight": 0.8,
+    "specificity": "rule",
+    "domains": [
+      "事业职场",
+      "食伤",
+      "表达",
+      "汇报展示",
+      "技能输出",
+      "职场评价"
+    ],
+    "broadness_penalty": 0,
+    "note": "把食伤代表表达、作品、技术、服务输出的传统含义映射为汇报展示、技能输出、公开表达和职场评价。"
+  },
+  "source_spouse_relationship_palace_mapping": {
+    "title": "夫妻宫、日支与伴侣关系事件的规则化映射",
+    "category": "命理整理",
+    "used_for": [
+      "夫妻宫",
+      "日支",
+      "伴侣",
+      "关系推进",
+      "婚姻讨论"
+    ],
+    "authority_weight": 0.82,
+    "specificity": "rule",
+    "domains": [
+      "感情婚恋",
+      "夫妻宫",
+      "日支",
+      "伴侣规划",
+      "婚姻讨论",
+      "关系推进"
+    ],
+    "broadness_penalty": 0,
+    "note": "把日支和夫妻宫被引动的传统关系含义映射为伴侣沟通、关系推进、婚姻讨论、伴侣规划等现实事件。"
+  },
+  "source_peach_blossom_social_contact": {
+    "title": "桃花、人缘与旧人新缘接触的规则化映射",
+    "category": "命理整理",
+    "used_for": [
+      "桃花",
+      "人缘",
+      "旧人",
+      "表白",
+      "社交接触"
+    ],
+    "authority_weight": 0.76,
+    "specificity": "rule",
+    "domains": [
+      "感情婚恋",
+      "桃花",
+      "旧人联系",
+      "桃花接触",
+      "表白确认"
+    ],
+    "broadness_penalty": 0,
+    "note": "用于区分桃花、人缘、旧关系回流、新缘接触和表白确认等偏接触型感情事件。"
+  },
+  "source_relationship_pressure_boundary": {
+    "title": "冲动、边界与关系压力的现实映射",
+    "category": "命理整理",
+    "used_for": [
+      "冲动",
+      "误会",
+      "边界",
+      "家庭压力",
+      "关系降温"
+    ],
+    "authority_weight": 0.78,
+    "specificity": "rule",
+    "domains": [
+      "感情婚恋",
+      "关系摩擦",
+      "误会解释",
+      "家庭介入",
+      "价值观冲突",
+      "异地距离问题"
+    ],
+    "broadness_penalty": 0,
+    "note": "把日支冲动、忌神参与、家庭意见和现实边界压力映射为关系摩擦、误会、冷淡、分歧和降温信号。"
+  },
+  "source_health_element_state_mapping": {
+    "title": "五行偏性与身体状态提醒的规则化映射",
+    "category": "命理整理",
+    "used_for": [
+      "五行偏性",
+      "睡眠",
+      "消化",
+      "呼吸皮肤",
+      "肝胆疏泄"
+    ],
+    "authority_weight": 0.78,
+    "specificity": "rule",
+    "domains": [
+      "健康状态",
+      "五行偏性",
+      "睡眠状态",
+      "脾胃消化",
+      "呼吸皮肤",
+      "肝胆疏泄"
+    ],
+    "broadness_penalty": 0,
+    "note": "把五行寒暖燥湿、太过不及映射为生活状态提醒；只提示作息和观察，不做医学诊断。"
+  },
+  "source_health_rest_recovery_mapping": {
+    "title": "过劳、情绪压力与休息恢复的现实映射",
+    "category": "命理整理",
+    "used_for": [
+      "过劳",
+      "情绪压力",
+      "恢复休养",
+      "精力波动",
+      "状态波动"
+    ],
+    "authority_weight": 0.76,
+    "specificity": "rule",
+    "domains": [
+      "健康状态",
+      "过劳疲劳",
+      "情绪压力",
+      "恢复休养",
+      "状态波动",
+      "腰肾精力"
+    ],
+    "broadness_penalty": 0,
+    "note": "用于把忌神、冲动和作息压力映射为疲劳、情绪、恢复和精力波动等非诊断性状态提醒。"
+  },
+  "source_health_checkup_attention": {
+    "title": "体检复查与专业求助边界的现实映射",
+    "category": "命理整理",
+    "used_for": [
+      "体检",
+      "复查",
+      "专业医生",
+      "病符提醒",
+      "健康边界"
+    ],
+    "authority_weight": 0.74,
+    "specificity": "rule",
+    "domains": [
+      "健康状态",
+      "体检复查",
+      "病符小疾提醒",
+      "头眼提醒",
+      "肩颈筋骨"
+    ],
+    "broadness_penalty": 0,
+    "note": "用于把健康类事件限定为体检、复查、作息调整和专业求助提醒，避免疾病断语。"
+  },
+  "source_business_operation_flow": {
+    "title": "经营流程、门店/线上运营与日常周转的现实映射",
+    "category": "命理整理",
+    "used_for": [
+      "经营流程",
+      "门店经营",
+      "线上运营",
+      "收银对账"
+    ],
+    "authority_weight": 0.78,
+    "specificity": "rule",
+    "domains": [
+      "创业经营",
+      "经营流程",
+      "门店经营",
+      "线上运营",
+      "收银对账",
+      "平台线上",
+      "客户销售"
+    ],
+    "broadness_penalty": 0,
+    "note": "经营流程、门店/线上运营与日常周转的现实映射；必须与十神、喜忌、宫位或现实场景证据合用。"
+  },
+  "source_customer_growth_retention": {
+    "title": "客户增长、复购留存与评价管理的现实映射",
+    "category": "命理整理",
+    "used_for": [
+      "客户增长",
+      "会员留存",
+      "评价管理",
+      "营销曝光"
+    ],
+    "authority_weight": 0.78,
+    "specificity": "rule",
+    "domains": [
+      "创业经营",
+      "客户增长",
+      "会员留存",
+      "评价管理",
+      "营销曝光",
+      "客户销售",
+      "平台线上"
+    ],
+    "broadness_penalty": 0,
+    "note": "客户增长、复购留存与评价管理的现实映射；必须与十神、喜忌、宫位或现实场景证据合用。"
+  },
+  "source_supply_pricing_inventory": {
+    "title": "供应、定价、库存与排班成本的现实映射",
+    "category": "命理整理",
+    "used_for": [
+      "供应商",
+      "价格调整",
+      "库存压力",
+      "排班调整"
+    ],
+    "authority_weight": 0.78,
+    "specificity": "rule",
+    "domains": [
+      "创业经营",
+      "供应商",
+      "价格调整",
+      "库存压力",
+      "排班调整",
+      "供应库存"
+    ],
+    "broadness_penalty": 0,
+    "note": "供应、定价、库存与排班成本的现实映射；必须与十神、喜忌、宫位或现实场景证据合用。"
+  },
+  "source_travel_mobility_route": {
+    "title": "出行移动、路线变化与通勤延误的现实映射",
+    "category": "命理整理",
+    "used_for": [
+      "通勤出行",
+      "路线变更",
+      "公共交通",
+      "远行差旅"
+    ],
+    "authority_weight": 0.76,
+    "specificity": "rule",
+    "domains": [
+      "交通车辆",
+      "通勤出行",
+      "路线变更",
+      "公共交通",
+      "远行差旅"
+    ],
+    "broadness_penalty": 0,
+    "note": "出行移动、路线变化与通勤延误的现实映射；必须与十神、喜忌、宫位或现实场景证据合用。"
+  },
+  "source_vehicle_safety_maintenance": {
+    "title": "车辆安全、维修保养与年检的现实映射",
+    "category": "命理整理",
+    "used_for": [
+      "驾驶安全",
+      "车辆维修",
+      "年检保养",
+      "操作安全"
+    ],
+    "authority_weight": 0.76,
+    "specificity": "rule",
+    "domains": [
+      "交通车辆",
+      "驾驶安全",
+      "车辆维修",
+      "年检保养",
+      "操作安全",
+      "车辆安全"
+    ],
+    "broadness_penalty": 0,
+    "note": "车辆安全、维修保养与年检的现实映射；必须与十神、喜忌、宫位或现实场景证据合用。"
+  },
+  "source_route_document_compliance": {
+    "title": "证件、保险、罚单与通行合规的现实映射",
+    "category": "命理整理",
+    "used_for": [
+      "出行证件",
+      "保险理赔",
+      "罚单违章",
+      "驾照续期"
+    ],
+    "authority_weight": 0.76,
+    "specificity": "rule",
+    "domains": [
+      "交通车辆",
+      "出行证件",
+      "保险理赔",
+      "罚单违章",
+      "驾照续期",
+      "证件手续",
+      "车辆安全",
+      "公共交通"
+    ],
+    "broadness_penalty": 0,
+    "note": "证件、保险、罚单与通行合规的现实映射；必须与十神、喜忌、宫位或现实场景证据合用。"
+  },
+  "source_learning_exam_progress": {
+    "title": "学习进度、考试报名与复习节奏的现实映射",
+    "category": "命理整理",
+    "used_for": [
+      "学习考试",
+      "考试报名",
+      "网课进度",
+      "复习资料"
+    ],
+    "authority_weight": 0.78,
+    "specificity": "rule",
+    "domains": [
+      "学习证书",
+      "学习考试",
+      "考试报名",
+      "网课进度",
+      "复习资料"
+    ],
+    "broadness_penalty": 0,
+    "note": "学习进度、考试报名与复习节奏的现实映射；必须与十神、喜忌、宫位或现实场景证据合用。"
+  },
+  "source_certificate_training_path": {
+    "title": "证书培训、续期与资质路径的现实映射",
+    "category": "命理整理",
+    "used_for": [
+      "证书培训",
+      "证书续期",
+      "资质材料",
+      "面试考核"
+    ],
+    "authority_weight": 0.78,
+    "specificity": "rule",
+    "domains": [
+      "学习证书",
+      "证书培训",
+      "证书续期",
+      "资质材料",
+      "面试考核"
+    ],
+    "broadness_penalty": 0,
+    "note": "证书培训、续期与资质路径的现实映射；必须与十神、喜忌、宫位或现实场景证据合用。"
+  },
+  "source_skill_credential_output": {
+    "title": "技能作品、作品集与输出评估的现实映射",
+    "category": "命理整理",
+    "used_for": [
+      "技能提升",
+      "作品集准备",
+      "写作输出",
+      "语言练习"
+    ],
+    "authority_weight": 0.78,
+    "specificity": "rule",
+    "domains": [
+      "学习证书",
+      "技能提升",
+      "作品集准备",
+      "写作输出",
+      "语言练习"
+    ],
+    "broadness_penalty": 0,
+    "note": "技能作品、作品集与输出评估的现实映射；必须与十神、喜忌、宫位或现实场景证据合用。"
+  },
+  "source_noble_resource_connection": {
+    "title": "贵人资源、专家建议与关键提醒的现实映射",
+    "category": "命理整理",
+    "used_for": [
+      "贵人协助",
+      "专家咨询",
+      "资源连接",
+      "关键提醒"
+    ],
+    "authority_weight": 0.79,
+    "specificity": "rule",
+    "domains": [
+      "贵人与资源",
+      "贵人协助",
+      "专家咨询",
+      "资源连接",
+      "关键提醒",
+      "导师前辈"
+    ],
+    "broadness_penalty": 0,
+    "note": "贵人资源、专家建议与关键提醒的现实映射；必须与十神、喜忌、宫位或现实场景证据合用。"
+  },
+  "source_referral_platform_support": {
+    "title": "转介绍、平台扶持与社群推荐的现实映射",
+    "category": "命理整理",
+    "used_for": [
+      "转介绍机会",
+      "平台扶持",
+      "社群推荐",
+      "客户转介绍"
+    ],
+    "authority_weight": 0.79,
+    "specificity": "rule",
+    "domains": [
+      "贵人与资源",
+      "转介绍机会",
+      "平台扶持",
+      "社群推荐",
+      "客户转介绍"
+    ],
+    "broadness_penalty": 0,
+    "note": "转介绍、平台扶持与社群推荐的现实映射；必须与十神、喜忌、宫位或现实场景证据合用。"
+  },
+  "source_mentor_support_guidance": {
+    "title": "导师前辈、校友与内部支持的现实映射",
+    "category": "命理整理",
+    "used_for": [
+      "导师建议",
+      "前辈建议",
+      "校友资源",
+      "内部支持者"
+    ],
+    "authority_weight": 0.79,
+    "specificity": "rule",
+    "domains": [
+      "贵人与资源",
+      "导师建议",
+      "前辈建议",
+      "校友资源",
+      "内部支持者",
+      "导师前辈"
+    ],
+    "broadness_penalty": 0,
+    "note": "导师前辈、校友与内部支持的现实映射；必须与十神、喜忌、宫位或现实场景证据合用。"
+  },
+  "mei_hua_yi_shu": {
+    "title": "梅花易数",
+    "category": "命理整理",
+    "used_for": [
+      "象法取象",
+      "应事映射",
+      "动静变化",
+      "现实事件校准"
+    ],
+    "authority_weight": 0.68,
+    "specificity": "classic",
+    "domains": [
+      "象法取象",
+      "应事映射",
+      "动静变化",
+      "现实事件校准",
+      "证件手续",
+      "客户销售",
+      "平台线上",
+      "供应库存",
+      "车辆安全",
+      "公共交通",
+      "导师前辈",
+      "事业项目",
+      "合同合作",
+      "社交应酬",
+      "家庭长辈",
+      "社交人情",
+      "房产居住",
+      "风险损耗"
+    ],
+    "broadness_penalty": 0.12,
+    "note": "用于辅助现实事件取象和动静变化映射，只作为辅助来源，不单独决定事件。"
+  },
+  "source_document_license_procedure": {
+    "title": "证件手续的现实事件细则",
+    "category": "命理整理",
+    "used_for": [
+      "材料递交",
+      "证照续期",
+      "审批预约"
+    ],
+    "authority_weight": 0.76,
+    "specificity": "rule",
+    "domains": [
+      "证件手续",
+      "材料递交",
+      "证照续期",
+      "审批预约"
+    ],
+    "broadness_penalty": 0,
+    "note": "证件手续类事件来源，用于把传统取象转写为可观察的现代事项。"
+  },
+  "source_customer_sales_pipeline": {
+    "title": "客户销售的现实事件细则",
+    "category": "命理整理",
+    "used_for": [
+      "报价跟进",
+      "销售转化",
+      "客户复购"
+    ],
+    "authority_weight": 0.76,
+    "specificity": "rule",
+    "domains": [
+      "客户销售",
+      "报价跟进",
+      "销售转化",
+      "客户复购"
+    ],
+    "broadness_penalty": 0,
+    "note": "客户销售类事件来源，用于把传统取象转写为可观察的现代事项。"
+  },
+  "source_platform_online_operation": {
+    "title": "平台线上的现实事件细则",
+    "category": "命理整理",
+    "used_for": [
+      "账号运营",
+      "页面更新",
+      "平台规则"
+    ],
+    "authority_weight": 0.76,
+    "specificity": "rule",
+    "domains": [
+      "平台线上",
+      "账号运营",
+      "页面更新",
+      "平台规则"
+    ],
+    "broadness_penalty": 0,
+    "note": "平台线上类事件来源，用于把传统取象转写为可观察的现代事项。"
+  },
+  "source_supplier_inventory_flow": {
+    "title": "供应库存的现实事件细则",
+    "category": "命理整理",
+    "used_for": [
+      "供货周期",
+      "库存盘点",
+      "价格调整"
+    ],
+    "authority_weight": 0.76,
+    "specificity": "rule",
+    "domains": [
+      "供应库存",
+      "供货周期",
+      "库存盘点",
+      "价格调整"
+    ],
+    "broadness_penalty": 0,
+    "note": "供应库存类事件来源，用于把传统取象转写为可观察的现代事项。"
+  },
+  "source_vehicle_safety_compliance": {
+    "title": "车辆安全的现实事件细则",
+    "category": "命理整理",
+    "used_for": [
+      "驾驶安全",
+      "年检保养",
+      "保险罚单"
+    ],
+    "authority_weight": 0.76,
+    "specificity": "rule",
+    "domains": [
+      "车辆安全",
+      "驾驶安全",
+      "年检保养",
+      "保险罚单"
+    ],
+    "broadness_penalty": 0,
+    "note": "车辆安全类事件来源，用于把传统取象转写为可观察的现代事项。"
+  },
+  "source_public_transit_mobility": {
+    "title": "公共交通的现实事件细则",
+    "category": "命理整理",
+    "used_for": [
+      "公交地铁",
+      "网约车",
+      "路线延误"
+    ],
+    "authority_weight": 0.76,
+    "specificity": "rule",
+    "domains": [
+      "公共交通",
+      "公交地铁",
+      "网约车",
+      "路线延误"
+    ],
+    "broadness_penalty": 0,
+    "note": "公共交通类事件来源，用于把传统取象转写为可观察的现代事项。"
+  },
+  "source_mentor_elder_guidance": {
+    "title": "导师前辈的现实事件细则",
+    "category": "命理整理",
+    "used_for": [
+      "导师建议",
+      "前辈提醒",
+      "专业指导"
+    ],
+    "authority_weight": 0.76,
+    "specificity": "rule",
+    "domains": [
+      "导师前辈",
+      "导师建议",
+      "前辈提醒",
+      "专业指导"
+    ],
+    "broadness_penalty": 0,
+    "note": "导师前辈类事件来源，用于把传统取象转写为可观察的现代事项。"
+  },
+  "source_project_opportunity_delivery": {
+    "title": "事业项目推进、交付与复盘的现实映射",
+    "category": "命理整理",
+    "used_for": [
+      "项目启动",
+      "项目复盘",
+      "项目交付",
+      "合作机会"
+    ],
+    "authority_weight": 0.75,
+    "specificity": "rule",
+    "domains": [
+      "事业项目",
+      "项目启动",
+      "项目复盘",
+      "项目交付",
+      "合作机会"
+    ],
+    "broadness_penalty": 0,
+    "note": "事业项目推进、交付与复盘的现实映射；用于把传统取象转写为可观察的现实事项。"
+  },
+  "source_contract_cooperation_boundary": {
+    "title": "合同合作、短期协作与责任边界的现实映射",
+    "category": "命理整理",
+    "used_for": [
+      "短期合作",
+      "责任边界",
+      "协作协议",
+      "临时项目"
+    ],
+    "authority_weight": 0.75,
+    "specificity": "rule",
+    "domains": [
+      "合同合作",
+      "短期合作",
+      "责任边界",
+      "协作协议",
+      "临时项目"
+    ],
+    "broadness_penalty": 0,
+    "note": "合同合作、短期协作与责任边界的现实映射；用于把传统取象转写为可观察的现实事项。"
+  },
+  "source_social_banquet_obligation": {
+    "title": "社交应酬、宴席邀约与人情义务的现实映射",
+    "category": "命理整理",
+    "used_for": [
+      "宴席邀约",
+      "闺蜜亲友",
+      "酒局应酬",
+      "人情往来"
+    ],
+    "authority_weight": 0.75,
+    "specificity": "rule",
+    "domains": [
+      "社交应酬",
+      "宴席邀约",
+      "闺蜜亲友",
+      "酒局应酬",
+      "人情往来"
+    ],
+    "broadness_penalty": 0,
+    "note": "社交应酬、宴席邀约与人情义务的现实映射；用于把传统取象转写为可观察的现实事项。"
+  },
+  "source_family_elder_responsibility": {
+    "title": "家庭长辈、亲属责任与家事协调的现实映射",
+    "category": "命理整理",
+    "used_for": [
+      "长辈事务",
+      "家庭商议",
+      "亲戚兄弟事务",
+      "子女事"
+    ],
+    "authority_weight": 0.75,
+    "specificity": "rule",
+    "domains": [
+      "家庭长辈",
+      "长辈事务",
+      "家庭商议",
+      "亲戚兄弟事务",
+      "子女事"
+    ],
+    "broadness_penalty": 0,
+    "note": "家庭长辈、亲属责任与家事协调的现实映射；用于把传统取象转写为可观察的现实事项。"
+  },
+  "source_social_reputation_boundary": {
+    "title": "社交人情、口碑边界与圈层互动的现实映射",
+    "category": "命理整理",
+    "used_for": [
+      "名声评价",
+      "口舌是非",
+      "社交边界",
+      "旧友联系"
+    ],
+    "authority_weight": 0.75,
+    "specificity": "rule",
+    "domains": [
+      "社交人情",
+      "名声评价",
+      "口舌是非",
+      "社交边界",
+      "旧友联系"
+    ],
+    "broadness_penalty": 0,
+    "note": "社交人情、口碑边界与圈层互动的现实映射；用于把传统取象转写为可观察的现实事项。"
+  },
+  "source_property_living_asset": {
+    "title": "房产居住、租赁维修与家庭资产的现实映射",
+    "category": "命理整理",
+    "used_for": [
+      "看房",
+      "租房搬迁",
+      "房屋合同",
+      "居住环境变化"
+    ],
+    "authority_weight": 0.75,
+    "specificity": "rule",
+    "domains": [
+      "房产居住",
+      "看房",
+      "租房搬迁",
+      "房屋合同",
+      "居住环境变化"
+    ],
+    "broadness_penalty": 0,
+    "note": "房产居住、租赁维修与家庭资产的现实映射；用于把传统取象转写为可观察的现实事项。"
+  },
+  "source_risk_loss_warning": {
+    "title": "风险损耗、资料遗失与隐藏成本的现实映射",
+    "category": "命理整理",
+    "used_for": [
+      "小额损耗",
+      "资料遗漏",
+      "隐藏成本",
+      "冲动决策"
+    ],
+    "authority_weight": 0.75,
+    "specificity": "rule",
+    "domains": [
+      "风险损耗",
+      "小额损耗",
+      "资料遗漏",
+      "隐藏成本",
+      "冲动决策"
+    ],
+    "broadness_penalty": 0,
+    "note": "风险损耗、资料遗失与隐藏成本的现实映射；用于把传统取象转写为可观察的现实事项。"
+  }
+}

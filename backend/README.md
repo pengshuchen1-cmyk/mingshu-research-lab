@@ -71,6 +71,7 @@ Linux/macOS 激活环境使用 `source .venv/bin/activate`，其余命令相同�
 - `.env.remote.example`：本机原生 Python 通过 SSH 隧道连接远程依赖。
 - `.env.remote-docker.example`：本机 API 容器通过 SSH 隧道连接远程依赖。
 - [API.md](API.md)：接口、参数和示例。
+- [FRONTEND_API_INTEGRATION.md](FRONTEND_API_INTEGRATION.md)：本次新增及行为变更接口的前端联调说明、TypeScript 类型和验收清单。
 - [运维与Docker运行指南.md](运维与Docker运行指南.md)：生产部署、SSH 隧道和备份。
 
 真实 `.env`、`.env.*`、导出的 `openapi.json`、本地数据库和虚拟环境均被 Git 忽略；`*.example` 配置模板会被保留。提交前建议执行 `git status --ignored -- backend` 再次确认。
@@ -87,9 +88,13 @@ Linux/macOS 激活环境使用 `source .venv/bin/activate`，其余命令相同�
 
 登录用户可调用 `GET /api/v1/chart-profiles/{profile_id}/fortune?target_year=2026`，从自己已保存的命盘快照生成年度总览、专项分析、目标年份大运背景和 12 个月流月事件。旧版年度、流月、叙事和完整事件规则已迁入后端自有 `app/fortune`，并由多档案、多年份合同测试保护；运行时不依赖旧 `bazi_ziwei_app`。结果实时派生，不另建运势数据表。完整参数、响应字段和 ApiPost 测试步骤见 [API.md](API.md#9-个人运势接口)。
 
+## 深度命理能力
+
+后端还提供命盘总览与五行喜忌、完整大运、六十甲子、事业/财富/感情专项报告、Markdown/TXT/PDF 导出、合婚、紫微斗数和带本地安全兜底的 AI 问答。相关计算与规则均在 `app/analysis`、`app/reports`、`app/ziwei` 和 `app/ai` 内，运行时不读取旧 Streamlit 项目。全部路径、输入和输出示例见 [API.md](API.md#10-命盘综合分析接口)。
+
 ## 登录方式
 
-无需验证码的密码注册使用 `POST /api/v1/auth/password/register`，提交手机号和 8～128 字符密码，成功后直接返回 JWT；之后可使用 `POST /api/v1/auth/password/login` 登录。原有短信验证码注册/登录仍可使用：先调用 `POST /api/v1/auth/otp/login/code`，再调用 `POST /api/v1/auth/otp/login`。忘记密码仍通过密码重置专用短信验证码找回。密码变更后旧 JWT 会失效，客户端需要保存接口返回的新令牌。完整参数见 [API.md](API.md#3-认证接口)。
+无需验证码的密码注册使用 `POST /api/v1/auth/password/register`，提交手机号和 8～128 字符密码，成功后直接返回 JWT；之后可使用 `POST /api/v1/auth/password/login` 登录。短信验证码注册/登录仍可使用：先调用 `POST /api/v1/auth/otp/login/code`，再调用 `POST /api/v1/auth/otp/login`。忘记密码仍通过密码重置专用短信验证码找回。密码变更后旧 JWT 会失效，客户端需要保存接口返回的新令牌。完整参数见 [API.md](API.md#3-认证接口)。
 
 ## 上线前限制
 
