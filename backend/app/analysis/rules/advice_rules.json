@@ -1,0 +1,46 @@
+{
+  "rules": [
+    {
+      "id": "advice_favorable",
+      "title": "喜用年份行动建议",
+      "condition": {
+        "year_relation": "喜用相关"
+      },
+      "tags": [
+        "主动开拓",
+        "资源积累"
+      ],
+      "text": "喜用年份适合主动争取资源，推进已验证计划，扩大能力和影响力。",
+      "advice": "建议制定阶段性目标，每个节点做复盘，不要因为运势顺就省略风险预判。",
+      "risk": "需要注意过度扩张和忽略成本。",
+      "source_ids": [
+        "zi_ping_zhen_quan",
+        "san_ming_tong_hui"
+      ],
+      "basis": "根据《子平真诠》用神理论和《三命通会》大运流年综合判断，喜用五行当旺年份更适合主动推进和资源积累。",
+      "school": "子平八字",
+      "confidence": "高"
+    },
+    {
+      "id": "advice_unfavorable",
+      "title": "忌神年份行动建议",
+      "condition": {
+        "year_relation": "忌神相关"
+      },
+      "tags": [
+        "保守稳健",
+        "风险管理"
+      ],
+      "text": "忌神年份更适合放慢节奏、收紧预算、复核计划和关键决定多验证。",
+      "advice": "建议以稳为主，减少高风险投入和新方向试错，重要决策留出观察期。",
+      "risk": "需要注意高压硬扛和冲动转型。",
+      "source_ids": [
+        "zi_ping_zhen_quan",
+        "di_tian_sui_chan_wei"
+      ],
+      "basis": "根据《子平真诠》忌神理论和《滴天髓阐微》旺衰判断，忌神五行当旺时更适合保持稳定节奏和风险管理。",
+      "school": "子平八字",
+      "confidence": "高"
+    }
+  ]
+}

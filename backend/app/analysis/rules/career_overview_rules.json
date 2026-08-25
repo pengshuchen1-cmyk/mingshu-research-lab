@@ -1,0 +1,168 @@
+{
+  "rules": [
+    {
+      "id": "career_output_type",
+      "condition": {
+        "output_star_count": ">=3"
+      },
+      "tags": [
+        "输出创作型"
+      ],
+      "text": "食伤较明显，适合通过表达、创意、技术方案、内容输出和专业服务来体现价值。",
+      "type": "guidance",
+      "source_ids": [
+        "yuan_hai_zi_ping",
+        "san_ming_tong_hui"
+      ],
+      "school": "子平八字",
+      "basis": "食伤在事业上代表创造力、表达力和专业技能输出。",
+      "confidence": "高"
+    },
+    {
+      "id": "career_management_type",
+      "condition": {
+        "officer_star_count": ">=3"
+      },
+      "tags": [
+        "管理规则型"
+      ],
+      "text": "官杀较明显，适合在组织、管理、制度和规则化体系中发展。",
+      "type": "guidance",
+      "source_ids": [
+        "yuan_hai_zi_ping",
+        "zi_ping_zhen_quan"
+      ],
+      "school": "子平八字",
+      "basis": "官杀代表规则、责任和管理能力，适合制度化平台发展。",
+      "confidence": "高"
+    },
+    {
+      "id": "career_resource_type",
+      "condition": {
+        "resource_star_count": ">=3"
+      },
+      "tags": [
+        "平台资质型"
+      ],
+      "text": "印星较明显，适合通过学习、资质积累、专业背景和平台借力来建立事业。",
+      "type": "guidance",
+      "source_ids": [
+        "yuan_hai_zi_ping",
+        "zi_ping_zhen_quan"
+      ],
+      "school": "子平八字",
+      "basis": "印星代表学习能力、资质背书和贵人资源，适合知识型发展路径。",
+      "confidence": "高"
+    },
+    {
+      "id": "career_wealth_type",
+      "condition": {
+        "wealth_star_count": ">=3",
+        "officer_star_count": "<2"
+      },
+      "tags": [
+        "经营资源型"
+      ],
+      "text": "财星较明显而不见明显官杀，适合通过客户经营、资源整合、项目管理和市场化路径发展。",
+      "type": "guidance",
+      "source_ids": [
+        "yuan_hai_zi_ping",
+        "san_ming_tong_hui"
+      ],
+      "school": "子平八字",
+      "basis": "财星在事业上代表市场经营、客户关系和资源整合能力。",
+      "confidence": "中等"
+    },
+    {
+      "id": "career_peer_type",
+      "condition": {
+        "peer_star_count": ">=3"
+      },
+      "tags": [
+        "自主竞争型"
+      ],
+      "text": "比劫较明显，独立性和竞争意识较强，适合自主经营、项目主导或合伙创业。",
+      "type": "guidance",
+      "source_ids": [
+        "yuan_hai_zi_ping",
+        "san_ming_tong_hui"
+      ],
+      "school": "子平八字",
+      "basis": "比劫代表自我驱动力和竞争意识，在事业上适合独立主导或合伙模式。",
+      "confidence": "中等"
+    },
+    {
+      "id": "career_body_strong",
+      "condition": {
+        "strength": "身强"
+      },
+      "tags": [
+        "主动开拓型"
+      ],
+      "text": "日主强旺，在事业上有较好的主动性和承受力，适合承担关键角色和主动争取机会。",
+      "type": "strength",
+      "source_ids": [
+        "di_tian_sui_chan_wei",
+        "zi_ping_zhen_quan"
+      ],
+      "school": "子平八字",
+      "basis": "身强者自我驱动和抗压能力较好，适合承担主导角色。",
+      "confidence": "中等"
+    },
+    {
+      "id": "career_body_weak",
+      "condition": {
+        "strength": "身弱"
+      },
+      "tags": [
+        "平台借力型"
+      ],
+      "text": "日主偏弱，在事业上更适合借力平台、团队、资质和贵人资源来推进。",
+      "type": "guidance",
+      "source_ids": [
+        "di_tian_sui_chan_wei",
+        "zi_ping_zhen_quan"
+      ],
+      "school": "子平八字",
+      "basis": "身弱者更需借力，适合通过平台和团队来放大个人价值。",
+      "confidence": "中等"
+    },
+    {
+      "id": "career_favorable_elements",
+      "condition": {
+        "favorable_elements_present": true
+      },
+      "tags": [
+        "喜用助力"
+      ],
+      "text": "命局有明确的喜用五行，适合在喜用五行对应的行业方向和环境中发展。",
+      "type": "strength",
+      "source_ids": [
+        "zi_ping_zhen_quan",
+        "qiong_tong_bao_jian"
+      ],
+      "school": "子平八字",
+      "basis": "喜用五行对应的行业方向有助于能量补充和长期发展。",
+      "confidence": "中等"
+    },
+    {
+      "id": "career_risk_peer",
+      "condition": {
+        "peer_star_count": ">=3",
+        "officer_star_count": 0
+      },
+      "tags": [
+        "竞争摩擦风险"
+      ],
+      "text": "比劫旺而官杀弱，事业上需要注意团队合作中的摩擦、分工冲突和竞争消耗。",
+      "type": "risk",
+      "source_ids": [
+        "yuan_hai_zi_ping",
+        "san_ming_tong_hui"
+      ],
+      "school": "子平八字",
+      "basis": "比劫旺无官杀制约时，容易在团队合作中出现竞争和摩擦。",
+      "confidence": "中等"
+    }
+  ]
+}

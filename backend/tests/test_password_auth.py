@@ -212,3 +212,105 @@ def test_sms_registration_password_lifecycle_lockout_and_token_revocation(
     finally:
         app.dependency_overrides.clear()
         asyncio.run(engine.dispose())
+
+
+def test_deactivated_user_cannot_authenticate_and_old_tokens_stay_revoked(
+    tmp_path, monkeypatch
+):
+    engine = create_async_engine(f"sqlite+aiosqlite:///{tmp_path / 'deactivated.db'}")
+    sessions = async_sessionmaker(engine, expire_on_commit=False)
+    monkeypatch.setattr(settings, "otp_resend_seconds", 0)
+
+    async def setup():
+        async with engine.begin() as connection:
+            await connection.run_sync(Base.metadata.create_all)
+        async with sessions() as session:
+            admin = User(phone="+8613800138010", role="admin")
+            target = User(
+                phone="+8613800138011",
+                password_hash=hash_password("Target-Passphrase"),
+            )
+            session.add_all([admin, target])
+            await session.commit()
+            await session.refresh(admin)
+            await session.refresh(target)
+            return target.id, token_for(admin), token_for(target, "refresh"), token_for(target)
+
+    async def override_db():
+        async with sessions() as session:
+            yield session
+
+    target_id, admin_token, target_refresh, target_access = asyncio.run(setup())
+    admin_headers = {"Authorization": f"Bearer {admin_token}"}
+    target_headers = {"Authorization": f"Bearer {target_access}"}
+    app.dependency_overrides[get_db] = override_db
+    try:
+        with TestClient(app) as client:
+            issued_before_disable = client.post(
+                "/api/v1/auth/otp/login/code",
+                json={"phone": "13800138011"},
+            )
+            assert issued_before_disable.status_code == 200, issued_before_disable.text
+
+            disabled = client.patch(
+                f"/api/v1/admin/users/{target_id}/active",
+                json={"is_active": False},
+                headers=admin_headers,
+            )
+            assert disabled.status_code == 200, disabled.text
+            assert disabled.json()["is_active"] is False
+
+            assert client.get("/api/v1/me", headers=target_headers).status_code == 401
+            assert client.post(
+                "/api/v1/auth/refresh",
+                json={"refresh_token": target_refresh},
+            ).status_code == 401
+            assert client.post(
+                "/api/v1/auth/password/login",
+                json={"phone": "13800138011", "password": "Target-Passphrase"},
+            ).status_code == 401
+            assert client.post(
+                "/api/v1/auth/otp/login",
+                json={
+                    "phone": "13800138011",
+                    "code": issued_before_disable.json()["development_code"],
+                },
+            ).status_code == 401
+            assert client.post(
+                "/api/v1/auth/otp/login/code",
+                json={"phone": "13800138011"},
+            ).status_code == 401
+            assert client.post(
+                "/api/v1/auth/password/reset/otp",
+                json={"phone": "13800138011"},
+            ).status_code == 401
+
+            enabled = client.patch(
+                f"/api/v1/admin/users/{target_id}/active",
+                json={"is_active": True},
+                headers=admin_headers,
+            )
+            assert enabled.status_code == 200, enabled.text
+            assert enabled.json()["is_active"] is True
+
+            # Reactivation must not revive tokens issued before deactivation.
+            assert client.get("/api/v1/me", headers=target_headers).status_code == 401
+            assert client.post(
+                "/api/v1/auth/refresh",
+                json={"refresh_token": target_refresh},
+            ).status_code == 401
+
+            otp = client.post(
+                "/api/v1/auth/otp/login/code",
+                json={"phone": "13800138011"},
+            )
+            assert otp.status_code == 200, otp.text
+            login = client.post(
+                "/api/v1/auth/password/login",
+                json={"phone": "13800138011", "password": "Target-Passphrase"},
+            )
+            assert login.status_code == 200, login.text
+            assert login.json()["new_user"] is False
+    finally:
+        app.dependency_overrides.clear()
+        asyncio.run(engine.dispose())

@@ -1,0 +1,48 @@
+{
+  "rules": [
+    {
+      "id": "risk_over_expansion",
+      "title": "过度扩张风险",
+      "condition": {
+        "year_relation": "喜用相关"
+      },
+      "tags": [
+        "扩张",
+        "成本",
+        "节奏"
+      ],
+      "text": "喜用年份容易因为运势顺而过度扩张，忽视成本和风险边界。",
+      "advice": "建议在推进的同时保留复盘机制和应急调整空间。",
+      "risk": "需要注意现金流紧张、承诺过多和精力分散。",
+      "source_ids": [
+        "san_ming_tong_hui",
+        "zi_ping_zhen_quan"
+      ],
+      "basis": "根据《三命通会》大运流年判断和《子平真诠》格局成败理论，顺运中仍需注意物极必反和风险积累。",
+      "school": "子平八字",
+      "confidence": "中等"
+    },
+    {
+      "id": "risk_high_cost",
+      "title": "高成本试错风险",
+      "condition": {
+        "year_relation": "忌神相关"
+      },
+      "tags": [
+        "试错",
+        "成本",
+        "保守"
+      ],
+      "text": "忌神年份容易因为急于改善现状而投入高成本试错，风险收益比偏低。",
+      "advice": "建议先用最小成本验证假设，保留充足的安全边际。",
+      "risk": "需要注意冲动投资、感情用事和忽视长期后果。",
+      "source_ids": [
+        "san_ming_tong_hui",
+        "di_tian_sui_chan_wei"
+      ],
+      "basis": "根据《滴天髓阐微》旺衰理论和《三命通会》综合判断，逆运中更应防止因求变心切而加大风险。",
+      "school": "子平八字",
+      "confidence": "中等"
+    }
+  ]
+}
