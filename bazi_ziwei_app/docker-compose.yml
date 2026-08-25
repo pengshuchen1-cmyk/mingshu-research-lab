@@ -7,9 +7,12 @@ services:
     ports:
       - "80:8501"
     environment:
-      - MINGSHU_RUNTIME_MODE=public
-      # 如果有 Kimi API Key，取消注释下面这行
-      # - MOONSHOT_API_KEY=sk-你的密钥
-      # - MINGSHU_AI_PROVIDER=kimi
-      # - MINGSHU_AI_MODEL=kimi-k3
+      MINGSHU_RUNTIME_MODE: public
+      # Coolify 在运行时注入这些变量；本地 Docker Compose 也可从同目录 .env 读取。
+      MINGSHU_AI_PROVIDER: "${MINGSHU_AI_PROVIDER:-kimi}"
+      MOONSHOT_API_KEY: "${MOONSHOT_API_KEY:?请在 Coolify 环境变量中配置 MOONSHOT_API_KEY}"
+      MINGSHU_AI_MODEL: "${MINGSHU_AI_MODEL:-kimi-k3}"
+      MINGSHU_AI_BASE_URL: "${MINGSHU_AI_BASE_URL:-https://api.moonshot.cn/v1}"
+      MINGSHU_AI_REASONING: "${MINGSHU_AI_REASONING:-low}"
+      MINGSHU_AI_TIMEOUT_SECONDS: "${MINGSHU_AI_TIMEOUT_SECONDS:-90}"
     restart: unless-stopped
