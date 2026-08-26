@@ -352,7 +352,9 @@ GET /api/v1/me
   "phone": "+8613800138000",
   "role": "user",
   "has_password": true,
-  "points": 20
+  "points": 20,
+  "created_at": "2026-08-26T03:20:15Z",
+  "companion_days": 1
 }
 ```
 
@@ -361,7 +363,12 @@ GET /api/v1/me
 | `id` | string | 用户 ID |
 | `phone` | string/null | E.164 格式手机号 |
 | `role` | string | `user` 或 `admin` |
+| `has_password` | boolean | 当前账号是否已经设置密码 |
 | `points` | integer | 当前可用点数 |
+| `created_at` | string(datetime) | 账号创建时间，使用 UTC ISO 8601 格式返回 |
+| `companion_days` | integer | 陪伴天数；按照 `APP_TIMEZONE` 的自然日计算，注册当天为第 1 天 |
+
+`companion_days` 是服务端根据 `created_at` 实时计算的派生值，不存入数据库。前端首页应直接展示该字段，不要根据客户端时间重复计算。默认业务时区为 `Asia/Shanghai`，可通过服务端环境变量 `APP_TIMEZONE` 修改。
 
 可能错误：`401` access token 缺失、无效、过期或用户已停用。
 

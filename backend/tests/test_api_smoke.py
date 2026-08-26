@@ -1,6 +1,7 @@
 """Isolated API smoke coverage: all persistence uses a temporary SQLite database."""
 
 import asyncio
+from datetime import UTC, datetime
 
 from fastapi.testclient import TestClient
 from redis.exceptions import RedisError
@@ -8,11 +9,23 @@ from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
+from app.api.v1.users import _companion_days_since
 from app.cache import get_redis
+from app.config import settings
 from app.database import get_db
 from app.main import app
 from app.models import Base, User
 from app.security import token_for
+
+
+def test_companion_days_use_product_calendar_dates_inclusively(monkeypatch):
+    monkeypatch.setattr(settings, "app_timezone", "Asia/Shanghai")
+    created_at = datetime(2026, 8, 26, 15, 59, tzinfo=UTC)
+
+    assert _companion_days_since(
+        created_at,
+        datetime(2026, 8, 26, 16, 1, tzinfo=UTC),
+    ) == 2
 
 
 def test_readyz_returns_503_when_database_query_fails():
@@ -141,7 +154,12 @@ def test_api_auth_points_admin_and_openapi(tmp_path):
             assert login.status_code == 200
             assert login.json()["new_user"] is True
             headers = {"Authorization": f"Bearer {login.json()['access_token']}"}
-            assert client.get("/api/v1/me", headers=headers).json()["points"] == 20
+            current_user = client.get("/api/v1/me", headers=headers)
+            assert current_user.status_code == 200
+            current_user_body = current_user.json()
+            assert current_user_body["points"] == 20
+            assert current_user_body["created_at"].endswith("Z")
+            assert current_user_body["companion_days"] == 1
 
             admin_token = asyncio.run(make_admin(phone))
             admin_headers = {"Authorization": f"Bearer {admin_token}"}
