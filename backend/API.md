@@ -1962,14 +1962,24 @@ Content-Type: application/json
 | `violation_codes` | 云输出被修复或拒绝时的安全校验编码 |
 | `retryable` | 本次降级是否适合稍后重试 |
 
+常见的 `degradation_reason` 包括：`missing_api_key`（缺少密钥）、
+`model_unavailable`（模型名称不存在或当前账号无权使用）、`invalid_credentials`（密钥无效）、
+`insufficient_quota`（额度不足）、`rate_limited`（触发限流）、`timeout`（调用超时）、
+`network_error`（网络异常）和 `local_validation_failed`（云回答未通过本地事实校验）。
+
 默认配置 `AI_PROVIDER=local`，完全不调用外部模型。启用云增强时在服务器 `.env` 配置：
 
 ```dotenv
 AI_PROVIDER=kimi
 AI_API_KEY=仅保存在服务器的密钥
-AI_MODEL=kimi-k3
+AI_MODEL=kimi-k2.6
 AI_BASE_URL=https://api.moonshot.cn/v1
+AI_KIMI_THINKING=false
+AI_TIMEOUT_SECONDS=90
 ```
+
+`AI_KIMI_THINKING=false` 表示关闭 Kimi 深度推理。命盘事实与允许输出的结论已经由本地规则生成，
+云模型只负责组织表达，因此默认关闭可以显著降低响应时间和 token 消耗；需要额外推理时可显式改为 `true`。
 
 也可以将 `AI_PROVIDER` 设置为 `openai` 并指定对应模型。后端只把去标识化后的命盘事实、
 本地规则和问题语义发送给模型，不发送姓名、地点、档案 ID、完整出生资料或内部密钥；云回答还会经过

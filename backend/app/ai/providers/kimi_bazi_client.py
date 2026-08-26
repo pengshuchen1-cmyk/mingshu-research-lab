@@ -1,4 +1,4 @@
-"""Kimi K3 Chat Completions adapter for de-identified Bazi facts."""
+"""Kimi Chat Completions adapter for de-identified Bazi facts."""
 
 from __future__ import annotations
 
@@ -13,8 +13,6 @@ from ..ai_models import (
 )
 from .ai_service_errors import AIServiceError, classify_service_error
 from .bazi_ai_prompt import build_messages
-
-KIMI_MODEL = "kimi-k3"
 
 
 def _response_format(
@@ -52,8 +50,8 @@ class KimiBaziClient:
             self._client = None
 
     def answer(self, context: AIRequestContext) -> CloudGeneration:
-        if self._config.model != KIMI_MODEL:
-            raise AIServiceError("service_unavailable")
+        if not self._config.model.strip():
+            raise AIServiceError("model_unavailable")
         if self._client is None:
             raise AIServiceError("disabled")
         try:
@@ -61,15 +59,18 @@ class KimiBaziClient:
             if plan is None:
                 raise AIServiceError("unparseable_response")
             allowed_claim_ids = tuple(claim.id for claim in plan.claims)
+            generation_options = (
+                {"reasoning_effort": self._config.reasoning_effort}
+                if self._config.kimi_thinking
+                else {"thinking": {"type": "disabled"}}
+            )
             response = self._client.chat.completions.create(
                 model=self._config.model,
                 messages=build_messages(context),
                 response_format=_response_format(allowed_claim_ids),
                 stream=False,
                 max_completion_tokens=6000,
-                extra_body={
-                    "reasoning_effort": self._config.reasoning_effort,
-                },
+                extra_body=generation_options,
                 timeout=self._config.timeout_seconds,
             )
             choices = getattr(response, "choices", None) or []

@@ -7,7 +7,7 @@ from copy import deepcopy
 from fastapi import APIRouter
 from fastapi.concurrency import run_in_threadpool
 
-from ...ai.ai_models import AIConfig
+from ...ai.ai_models import DEFAULT_KIMI_MODEL, AIConfig
 from ...ai.ai_orchestrator import answer_question
 from ...chart_domain import owned_profile_chart, profile_payload
 from ...config import settings
@@ -23,7 +23,7 @@ def _ai_config() -> AIConfig:
     provider = settings.ai_provider
     model = settings.ai_model.strip()
     if not model:
-        model = "kimi-k3" if provider == "kimi" else "gpt-5.6-sol"
+        model = DEFAULT_KIMI_MODEL if provider == "kimi" else "gpt-5.6-sol"
     base_url = settings.ai_base_url.strip()
     if not base_url:
         base_url = (
@@ -37,6 +37,7 @@ def _ai_config() -> AIConfig:
         enabled=bool(key) and provider in {"kimi", "openai"},
         model=model,
         reasoning_effort=settings.ai_reasoning_effort,
+        kimi_thinking=settings.ai_kimi_thinking,
         timeout_seconds=settings.ai_timeout_seconds,
         provider=provider,
         base_url=base_url,
