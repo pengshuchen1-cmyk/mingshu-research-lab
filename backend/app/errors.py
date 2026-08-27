@@ -227,6 +227,7 @@ class SystemErrorMessages:
     REDIS_PORT_OUT_OF_RANGE = "REDIS_URL port must be between 1 and 65535"
     REDIS_DATABASE_INVALID = "REDIS_URL contains an invalid database number"
     REDIS_DATABASE_NEGATIVE = "REDIS_URL database number must not be negative"
+    APP_TIMEZONE_INVALID = "APP_TIMEZONE must be a valid IANA time zone"
 
     JWT_SECRET_INSECURE = (
         "JWT_SECRET must be replaced with a random value of at least 32 characters"
