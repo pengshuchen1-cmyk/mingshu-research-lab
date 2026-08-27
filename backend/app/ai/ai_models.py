@@ -197,7 +197,7 @@ class AIConfig:
     timeout_seconds: int = 90
     provider: str = "kimi"
     base_url: str = "https://api.moonshot.cn/v1"
-    per_session_per_minute: int = 3
+    per_session_per_minute: int = 10
     per_session_daily_requests: int = 30
     daily_token_budget: int = 500_000
     max_concurrent_requests: int = 4
