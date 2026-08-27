@@ -1,26 +1,46 @@
 """Current-user profile and point-account endpoints."""
 
+from datetime import UTC, datetime
+from zoneinfo import ZoneInfo
+
 from fastapi import APIRouter
 from sqlalchemy import select
 
+from ...config import settings
 from ...database import DBSession
 from ...models import PointLedger
-from ...schemas import ConsumeIn
+from ...schemas import ConsumeIn, CurrentUserOut
 from ...security import CurrentUser
 from ...services import balance, consume
 
 router = APIRouter(tags=["user"])
 
 
-@router.get("/me")
+def _as_utc(value: datetime) -> datetime:
+    """Normalize database datetimes; this project stores naive MySQL values as UTC."""
+    return value.replace(tzinfo=UTC) if value.tzinfo is None else value.astimezone(UTC)
+
+
+def _companion_days_since(created_at: datetime, now: datetime | None = None) -> int:
+    """Count product-local calendar days inclusively, so registration day is day one."""
+    product_timezone = ZoneInfo(settings.app_timezone)
+    created_date = _as_utc(created_at).astimezone(product_timezone).date()
+    current_date = _as_utc(now or datetime.now(UTC)).astimezone(product_timezone).date()
+    return max((current_date - created_date).days + 1, 1)
+
+
+@router.get("/me", response_model=CurrentUserOut)
 async def profile(user: CurrentUser, db: DBSession):
-    """返回当前登录用户的基本资料、角色和可用点数余额。"""
+    """返回当前用户资料、余额、注册时间及按业务时区计算的陪伴天数。"""
+    created_at = _as_utc(user.created_at)
     return {
         "id": user.id,
         "phone": user.phone,
         "role": user.role,
         "has_password": user.has_password,
         "points": await balance(db, user.id),
+        "created_at": created_at,
+        "companion_days": _companion_days_since(created_at),
     }
 
 

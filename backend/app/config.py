@@ -1,5 +1,6 @@
 from pathlib import Path
 from urllib.parse import urlparse
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -28,6 +29,7 @@ class Settings(BaseSettings):
     password_max_attempts: int = Field(default=5, ge=1, le=20)
     password_lock_minutes: int = Field(default=15, ge=1, le=1440)
     profile_edit_cooldown_days: int = Field(default=30, ge=0)
+    app_timezone: str = "Asia/Shanghai"
     cors_origins: list[str] = []
     redis_url: str
     wechat_app_id: str = ""
@@ -52,6 +54,16 @@ class Settings(BaseSettings):
         normalized = value.strip().lower()
         if normalized not in {"local", "kimi", "openai"}:
             raise ValueError("AI_PROVIDER must be local, kimi, or openai")
+        return normalized
+
+    @field_validator("app_timezone")
+    @classmethod
+    def validate_app_timezone(cls, value: str) -> str:
+        normalized = value.strip()
+        try:
+            ZoneInfo(normalized)
+        except (ValueError, ZoneInfoNotFoundError):
+            raise ValueError(SystemErrorMessages.APP_TIMEZONE_INVALID) from None
         return normalized
 
     @field_validator("database_url")

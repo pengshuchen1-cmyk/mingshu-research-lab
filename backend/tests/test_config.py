@@ -44,6 +44,25 @@ def test_profile_edit_cooldown_is_configurable():
         )
 
 
+def test_app_timezone_is_configurable_and_validated():
+    configured = Settings(
+        _env_file=None,
+        database_url="sqlite+aiosqlite:///:memory:",
+        redis_url="redis://127.0.0.1:6379/0",
+        app_timezone="Asia/Hong_Kong",
+    )
+
+    assert configured.app_timezone == "Asia/Hong_Kong"
+
+    with pytest.raises(ValidationError, match="valid IANA time zone"):
+        Settings(
+            _env_file=None,
+            database_url="sqlite+aiosqlite:///:memory:",
+            redis_url="redis://127.0.0.1:6379/0",
+            app_timezone="not/a-timezone",
+        )
+
+
 @pytest.mark.parametrize(
     ("redis_url", "expected"),
     [

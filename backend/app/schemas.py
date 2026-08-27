@@ -86,6 +86,16 @@ class UserOut(BaseModel):
     created_at: datetime
 
 
+class CurrentUserOut(BaseModel):
+    id: str
+    phone: str | None
+    role: str
+    has_password: bool
+    points: int = Field(ge=0)
+    created_at: datetime
+    companion_days: int = Field(ge=1)
+
+
 class UserActiveIn(BaseModel):
     is_active: bool
 
