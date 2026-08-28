@@ -199,6 +199,36 @@ class Errors:
         status.HTTP_422_UNPROCESSABLE_CONTENT,
         "The question could not be analyzed safely",
     )
+    AI_CONVERSATION_NOT_FOUND = ErrorDefinition(
+        "AI_CONVERSATION_NOT_FOUND",
+        status.HTTP_404_NOT_FOUND,
+        "AI conversation not found",
+    )
+    AI_CONVERSATION_NOT_ACTIVE = ErrorDefinition(
+        "AI_CONVERSATION_NOT_ACTIVE",
+        status.HTTP_409_CONFLICT,
+        "AI conversation is not active",
+    )
+    AI_CONVERSATION_BUSY = ErrorDefinition(
+        "AI_CONVERSATION_BUSY",
+        status.HTTP_409_CONFLICT,
+        "Another question is already being processed for this conversation",
+    )
+    AI_IDEMPOTENCY_KEY_CONFLICT = ErrorDefinition(
+        "AI_IDEMPOTENCY_KEY_CONFLICT",
+        status.HTTP_409_CONFLICT,
+        "Idempotency key was reused for a different question",
+    )
+    AI_REQUEST_PREVIOUSLY_FAILED = ErrorDefinition(
+        "AI_REQUEST_PREVIOUSLY_FAILED",
+        status.HTTP_409_CONFLICT,
+        "The previous request with this idempotency key failed; retry with a new key",
+    )
+    AI_CURSOR_INVALID = ErrorDefinition(
+        "AI_CURSOR_INVALID",
+        status.HTTP_422_UNPROCESSABLE_CONTENT,
+        "Invalid AI conversation cursor",
+    )
 
     UNKNOWN_PAYMENT_PROVIDER = ErrorDefinition(
         "PAYMENT_PROVIDER_UNKNOWN", status.HTTP_404_NOT_FOUND, "Unknown payment provider"

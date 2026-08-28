@@ -9,6 +9,7 @@ from sqlalchemy import (
     Date,
     DateTime,
     ForeignKey,
+    Index,
     Integer,
     String,
     Text,
@@ -120,27 +121,124 @@ class MemoryEntry(Base):
         ),
     )
 
+class AIConversation(Base):
+    """One user-owned AI consultation bound to a single birth profile."""
+
+    __tablename__ = "ai_conversations"
+    __table_args__ = (
+        CheckConstraint(
+            "status IN ('active', 'archived', 'deleted')",
+            name="ck_ai_conversations_status",
+        ),
+        Index(
+            "ix_ai_conversations_user_last_message",
+            "user_id",
+            "last_message_at",
+        ),
+        Index(
+            "ix_ai_conversations_user_profile_last_message",
+            "user_id",
+            "profile_id",
+            "last_message_at",
+        ),
+    )
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
     user_id: Mapped[str] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"), index=True
     )
-    title: Mapped[str] = mapped_column(String(50))
-    category: Mapped[str] = mapped_column(String(16), index=True)
-    content: Mapped[str] = mapped_column(Text)
-    occurred_on: Mapped[date] = mapped_column(Date, index=True)
-    is_timeline_event: Mapped[bool] = mapped_column(
-        Boolean, default=True, server_default="1"
+    profile_id: Mapped[str] = mapped_column(
+        ForeignKey("birth_profiles.id", ondelete="CASCADE"), index=True
     )
-    source: Mapped[str] = mapped_column(String(16), default="manual", server_default="manual")
-    feedback: Mapped[str | None] = mapped_column(Text)
-    ai_use_count: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
-    last_used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    title: Mapped[str] = mapped_column(String(100), default="新会话")
+    status: Mapped[str] = mapped_column(String(16), default="active", index=True)
+    message_count: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    last_message_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
+
+
+class AIMessage(Base):
+    """One persisted user or assistant message in a conversation."""
+
+    __tablename__ = "ai_messages"
+    __table_args__ = (
+        CheckConstraint("role IN ('user', 'assistant')", name="ck_ai_messages_role"),
+        CheckConstraint(
+            "status IN ('pending', 'completed', 'failed')",
+            name="ck_ai_messages_status",
+        ),
+        UniqueConstraint(
+            "conversation_id",
+            "sequence_no",
+            name="uq_ai_messages_conversation_sequence",
+        ),
+        UniqueConstraint(
+            "conversation_id",
+            "turn_id",
+            "role",
+            name="uq_ai_messages_conversation_turn_role",
+        ),
+        Index("ix_ai_messages_conversation_created", "conversation_id", "created_at"),
+    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
+    conversation_id: Mapped[str] = mapped_column(
+        ForeignKey("ai_conversations.id", ondelete="CASCADE"), index=True
+    )
+    turn_id: Mapped[str] = mapped_column(String(36), index=True)
+    sequence_no: Mapped[int] = mapped_column(Integer)
+    role: Mapped[str] = mapped_column(String(16))
+    content: Mapped[str | None] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(String(16), default="completed", index=True)
+    structured_content: Mapped[dict | None] = mapped_column(JSON)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
+class AIAnswerRun(Base):
+    """Operational metadata for one persisted question-answer turn."""
+
+    __tablename__ = "ai_answer_runs"
+    __table_args__ = (
+        CheckConstraint(
+            "status IN ('pending', 'completed', 'failed')",
+            name="ck_ai_answer_runs_status",
+        ),
+        UniqueConstraint(
+            "conversation_id",
+            "idempotency_key",
+            name="uq_ai_answer_runs_conversation_idempotency",
+        ),
+        Index("ix_ai_answer_runs_conversation_status", "conversation_id", "status"),
+    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
+    conversation_id: Mapped[str] = mapped_column(
+        ForeignKey("ai_conversations.id", ondelete="CASCADE"), index=True
+    )
+    idempotency_key: Mapped[str] = mapped_column(String(128))
+    status: Mapped[str] = mapped_column(String(16), default="pending", index=True)
+    provider: Mapped[str | None] = mapped_column(String(16))
+    model: Mapped[str | None] = mapped_column(String(128))
+    source: Mapped[str | None] = mapped_column(String(32))
+    degradation_reason: Mapped[str | None] = mapped_column(String(64))
+    failure_code: Mapped[str | None] = mapped_column(String(64))
+    chart_fingerprint: Mapped[str] = mapped_column(String(64), index=True)
+    input_tokens: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    output_tokens: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    latency_ms: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    violation_codes: Mapped[list[str]] = mapped_column(JSON, default=list)
+    interpretation_receipt: Mapped[str] = mapped_column(Text, default="")
+    started_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
 class OTPChallenge(Base):

@@ -90,7 +90,7 @@ Linux/macOS 激活环境使用 `source .venv/bin/activate`，其余命令相同�
 
 ## 深度命理能力
 
-后端还提供命盘总览与五行喜忌、完整大运、六十甲子、事业/财富/感情专项报告、Markdown/TXT/PDF 导出、合婚、紫微斗数和带本地安全兜底的 AI 问答。相关计算与规则均在 `app/analysis`、`app/reports`、`app/ziwei` 和 `app/ai` 内，运行时不读取旧 Streamlit 项目。全部路径、输入和输出示例见 [API.md](API.md#10-命盘综合分析接口)。
+后端还提供命盘总览与五行喜忌、完整大运、六十甲子、事业/财富/感情专项报告、Markdown/TXT/PDF 导出、合婚、紫微斗数和带本地安全兜底的 AI 问答。AI 问答通过 `/api/v1/ai-conversations` 创建持久化会话，问题、回答和调用元数据保存在 MySQL，后端从数据库读取可信历史。相关计算与规则均在 `app/analysis`、`app/reports`、`app/ziwei` 和 `app/ai` 内，运行时不读取旧 Streamlit 项目。全部路径、输入和输出示例见 [API.md](API.md#10-命盘综合分析接口)。
 
 ## 登录方式
 

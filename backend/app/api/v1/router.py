@@ -3,7 +3,7 @@
 from fastapi import APIRouter
 
 from .admin import router as admin_router
-from .ai import router as ai_router
+from .ai_conversations import router as ai_conversations_router
 from .auth import router as auth_router
 from .chart_analysis import router as chart_analysis_router
 from .chart_profiles import router as chart_profiles_router
@@ -29,4 +29,4 @@ router.include_router(chart_analysis_router)
 router.include_router(reports_router)
 router.include_router(compatibility_router)
 router.include_router(ziwei_router)
-router.include_router(ai_router)
+router.include_router(ai_conversations_router)

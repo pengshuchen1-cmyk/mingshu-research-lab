@@ -1906,10 +1906,167 @@ Authorization: Bearer <access_token>
 
 ## 16. AI 命理问答接口
 
-### 16.1 对已保存命盘提问
+AI 问答现在使用服务端持久化会话。会话固定绑定当前用户的一份命理档案，问题和最终回答保存在 MySQL；前端不再上传 `history`，后端自动读取当前会话最近 6 条已完成消息作为上下文。
+
+原 `POST /api/v1/chart-profiles/{profile_id}/questions` 已直接替换，不再提供。新页面应按照“创建或选择会话 → 查询消息 → 发送问题”的顺序调用以下接口。
+
+### 16.1 创建会话
 
 ```http
-POST /api/v1/chart-profiles/{profile_id}/questions
+POST /api/v1/ai-conversations
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+
+```json
+{
+  "profile_id": "命理档案 ID",
+  "title": "未来三年事业分析"
+}
+```
+
+| 字段 | 类型 | 必填 | 规则 |
+|---|---|---|---|
+| `profile_id` | string | 是 | 必须是当前用户名下、且已经生成命盘的档案 ID |
+| `title` | string/null | 否 | `1`～`100` 字符；省略时先显示“新会话”，第一次提问后自动取问题前 30 个字符 |
+
+成功返回 `201`：
+
+```json
+{
+  "id": "会话 ID",
+  "profile_id": "命理档案 ID",
+  "title": "未来三年事业分析",
+  "status": "active",
+  "message_count": 0,
+  "last_message_at": "2026-08-26T08:00:00Z",
+  "created_at": "2026-08-26T08:00:00Z",
+  "updated_at": "2026-08-26T08:00:00Z"
+}
+```
+
+### 16.2 查询会话列表
+
+```http
+GET /api/v1/ai-conversations?profile_id={profile_id}&status=active&limit=20&cursor={cursor}
+Authorization: Bearer <access_token>
+```
+
+| Query 参数 | 类型 | 必填 | 规则 |
+|---|---|---|---|
+| `profile_id` | string | 否 | 只查询指定命理档案的会话 |
+| `status` | string | 否 | `active` 或 `archived` |
+| `limit` | integer | 否 | `1`～`100`，默认 `20` |
+| `cursor` | string | 否 | 上一页返回的 `next_cursor`；这是不透明游标，前端不要解析或修改 |
+
+结果按 `last_message_at` 从新到旧返回：
+
+```json
+{
+  "items": [
+    {
+      "id": "会话 ID",
+      "profile_id": "命理档案 ID",
+      "title": "未来三年事业分析",
+      "status": "active",
+      "message_count": 4,
+      "last_message_at": "2026-08-26T08:05:00Z",
+      "created_at": "2026-08-26T08:00:00Z",
+      "updated_at": "2026-08-26T08:05:00Z"
+    }
+  ],
+  "next_cursor": null
+}
+```
+
+### 16.3 查询会话详情
+
+```http
+GET /api/v1/ai-conversations/{conversation_id}
+Authorization: Bearer <access_token>
+```
+
+返回值与创建会话的响应结构相同。会话不存在、已删除或不属于当前用户时统一返回 `404`，不会泄露其他用户的会话是否存在。
+
+### 16.4 修改标题或归档状态
+
+```http
+PATCH /api/v1/ai-conversations/{conversation_id}
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+
+请求体至少提供一个字段：
+
+```json
+{
+  "title": "事业发展分析",
+  "status": "archived"
+}
+```
+
+`title` 为 `1`～`100` 字符；`status` 只能是 `active` 或 `archived`。归档会话不能继续发送问题，重新修改为 `active` 后可以继续。响应结构与会话详情相同。
+
+### 16.5 删除会话
+
+```http
+DELETE /api/v1/ai-conversations/{conversation_id}
+Authorization: Bearer <access_token>
+```
+
+成功返回 `204`。当前版本执行软删除，删除后不会再出现在列表中，也不能继续读取消息；正在生成回答的会话不能归档或删除。
+
+### 16.6 查询会话消息
+
+```http
+GET /api/v1/ai-conversations/{conversation_id}/messages?limit=30&before_sequence=71
+Authorization: Bearer <access_token>
+```
+
+| Query 参数 | 类型 | 必填 | 规则 |
+|---|---|---|---|
+| `limit` | integer | 否 | `1`～`100`，默认 `30` |
+| `before_sequence` | integer | 否 | 查询序号小于该值的更早消息；第一次加载时省略 |
+
+响应中的 `items` 按 `sequence_no` 从小到大排列，但第一次请求返回会话中最新的一页消息：
+
+```json
+{
+  "items": [
+    {
+      "id": "用户消息 ID",
+      "conversation_id": "会话 ID",
+      "sequence_no": 1,
+      "role": "user",
+      "content": "未来三年的事业重点是什么？",
+      "status": "completed",
+      "structured_content": null,
+      "created_at": "2026-08-26T08:01:00Z"
+    },
+    {
+      "id": "AI 消息 ID",
+      "conversation_id": "会话 ID",
+      "sequence_no": 2,
+      "role": "assistant",
+      "content": "回答正文",
+      "status": "completed",
+      "structured_content": {
+        "source": "local_rules",
+        "provider": null
+      },
+      "created_at": "2026-08-26T08:01:00Z"
+    }
+  ],
+  "next_before_sequence": null
+}
+```
+
+`status` 可能为 `pending`、`completed` 或 `failed`。当前接口同步等待回答，正常情况下前端会直接看到 `completed`；如果服务在调用过程中异常退出，历史中可能留下 `failed` 状态。
+
+### 16.7 发送问题并保存回答
+
+```http
+POST /api/v1/ai-conversations/{conversation_id}/messages
 Authorization: Bearer <access_token>
 Content-Type: application/json
 ```
@@ -1917,10 +2074,7 @@ Content-Type: application/json
 ```json
 {
   "question": "未来三年的事业重点是什么？",
-  "history": [
-    {"role": "user", "content": "我想了解事业方向"},
-    {"role": "assistant", "content": "可以具体到年份或工作类型"}
-  ]
+  "idempotency_key": "chat-20260826-0001"
 }
 ```
 
@@ -1929,14 +2083,17 @@ Content-Type: application/json
 | 字段 | 类型 | 必填 | 规则 |
 |---|---|---|---|
 | `question` | string | 是 | `1`～`1000` 字符，只支持四柱命理范围内的问题 |
-| `history` | array | 否 | 默认空数组，最多 10 条 |
-| `history[].role` | string | 是 | `user` 或 `assistant` |
-| `history[].content` | string | 是 | `1`～`4000` 字符 |
+| `idempotency_key` | string | 是 | `8`～`128` 字符，只能包含字母、数字、`.`、`_`、`:`、`-`；每次新问题生成一个新值 |
+
+请求体不允许包含 `history`、`role` 或前端伪造的 AI 回答。服务端会从数据库读取最近 6 条已完成消息；本阶段暂不生成长对话摘要。
 
 成功或安全降级均返回 `200`：
 
 ```json
 {
+  "conversation_id": "会话 ID",
+  "user_message_id": "用户消息 ID",
+  "assistant_message_id": "AI 消息 ID",
   "profile_id": "档案 ID",
   "chart_fingerprint": "命盘指纹",
   "mode": "local",
@@ -1955,7 +2112,8 @@ Content-Type: application/json
     "violation_codes": []
   },
   "degradation_reason": "service_unavailable",
-  "boundary_note": "命理分析仅供传统文化参考，不替代医疗、法律、投资或其他现实专业决策。"
+  "boundary_note": "命理分析仅供传统文化参考，不替代医疗、法律、投资或其他现实专业决策。",
+  "idempotent_replay": false
 }
 ```
 
@@ -1968,6 +2126,9 @@ Content-Type: application/json
 | `degradation_reason` | 云模型未使用或不可用的原因；正常云回答时为 `null` |
 | `violation_codes` | 云输出被修复或拒绝时的安全校验编码 |
 | `retryable` | 本次降级是否适合稍后重试 |
+| `idempotent_replay` | `true` 表示相同幂等键的重试，没有重复创建消息或再次调用模型 |
+
+同一个会话同一时间只允许处理一个问题。相同 `idempotency_key` 和相同问题会返回第一次保存的结果；相同键对应不同问题返回 `409`。问题、回答、命盘指纹、模型、token、耗时、降级原因和校验编码分别保存在会话消息与调用记录表中。
 
 常见的 `degradation_reason` 包括：`missing_api_key`（缺少密钥）、
 `model_unavailable`（模型名称不存在或当前账号无权使用）、`invalid_credentials`（密钥无效）、
