@@ -14,13 +14,14 @@ from .errors import APIError, Errors, SystemErrorMessages
 app = FastAPI(
     title="Mingshu Backend API", version="0.1.0", openapi_url="/openapi.json", docs_url="/docs"
 )
+default_cors_origins = [
+    "https://mingshu.cloud",
+    "https://www.mingshu.cloud",
+    "http://localhost:5173",
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://mingshu.cloud",
-        "https://www.mingshu.cloud",
-        "http://localhost:5173",
-    ],
+    allow_origins=settings.cors_origins or default_cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -151,6 +151,9 @@ class Errors:
     CHART_NOT_FOUND = ErrorDefinition(
         "CHART_NOT_FOUND", status.HTTP_404_NOT_FOUND, "Chart has not been generated"
     )
+    MEMORY_NOT_FOUND = ErrorDefinition(
+        "MEMORY_NOT_FOUND", status.HTTP_404_NOT_FOUND, "Memory entry not found"
+    )
     PERSONAL_FORTUNE_UNAVAILABLE = ErrorDefinition(
         "FORTUNE_PERSONAL_UNAVAILABLE",
         status.HTTP_422_UNPROCESSABLE_CONTENT,

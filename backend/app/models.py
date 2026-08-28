@@ -11,6 +11,7 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     String,
+    Text,
     UniqueConstraint,
     func,
 )
@@ -100,6 +101,45 @@ class BaziChart(Base):
     chart_json: Mapped[dict] = mapped_column(JSON)
     generated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
+    )
+
+
+class MemoryEntry(Base):
+    """User-owned facts and life events used by the memory archive UI."""
+
+    __tablename__ = "memory_entries"
+    __table_args__ = (
+        CheckConstraint(
+            "category IN ('基本信息', '职业事业', '感情关系', '家庭生活', "
+            "'健康状态', '目标愿望', '重要人物', '其他记忆')",
+            name="ck_memory_entries_category",
+        ),
+        CheckConstraint(
+            "source IN ('manual', 'ai')",
+            name="ck_memory_entries_source",
+        ),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
+    user_id: Mapped[str] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    title: Mapped[str] = mapped_column(String(50))
+    category: Mapped[str] = mapped_column(String(16), index=True)
+    content: Mapped[str] = mapped_column(Text)
+    occurred_on: Mapped[date] = mapped_column(Date, index=True)
+    is_timeline_event: Mapped[bool] = mapped_column(
+        Boolean, default=True, server_default="1"
+    )
+    source: Mapped[str] = mapped_column(String(16), default="manual", server_default="manual")
+    feedback: Mapped[str | None] = mapped_column(Text)
+    ai_use_count: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    last_used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
 
 

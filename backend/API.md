@@ -2073,3 +2073,144 @@ Redis 不可用时返回 `503`：
 - 默认连续输错 5 次后锁定密码登录 15 分钟，可通过 `PASSWORD_MAX_ATTEMPTS` 和 `PASSWORD_LOCK_MINUTES` 调整。
 - 登录验证码与密码重置验证码用途隔离，验证码使用一次后即失效。
 - 设置、修改或重置密码都会递增帐号认证版本，使旧 access token 和 refresh token 失效。
+
+## 21. 记忆档案接口
+
+本组接口为前端“记忆档案”页面提供账号级持久化。所有接口都需要 Bearer access token，
+数据按当前用户隔离；请求其他用户的记忆 ID 与请求不存在的 ID 一样返回 `404`。
+
+记忆类别固定为：`基本信息`、`职业事业`、`感情关系`、`家庭生活`、`健康状态`、
+`目标愿望`、`重要人物`、`其他记忆`。
+
+### 21.1 查询记忆总览
+
+```http
+GET /api/v1/memories/overview
+Authorization: Bearer <access_token>
+```
+
+响应示例：
+
+```json
+{
+  "total_memories": 3,
+  "goal_count": 1,
+  "important_people_count": 1,
+  "life_event_count": 2,
+  "feedback_count": 0,
+  "latest_updated_at": "2026-08-28T08:30:00Z",
+  "categories": [
+    {
+      "category": "职业事业",
+      "count": 1,
+      "latest_date": "2026-08-28"
+    }
+  ],
+  "focus_tags": ["关注事业发展", "有目标感", "珍视重要关系"],
+  "understanding_summary": "目前已记录 3 条记忆，主要集中在职业事业、目标愿望、重要人物。你可以继续补充背景和变化，让这些资料保持准确。"
+}
+```
+
+`categories` 固定返回全部八个类别，没有数据的类别返回 `count: 0` 和
+`latest_date: null`。`focus_tags` 和概述只根据用户实际记录的类别生成，不会凭空推断人格。
+
+### 21.2 查询、搜索和筛选记忆
+
+```http
+GET /api/v1/memories?category=职业事业&search=咖啡&has_feedback=true&timeline_only=false&offset=0&limit=100
+Authorization: Bearer <access_token>
+```
+
+查询参数均可省略：
+
+| 参数 | 类型 | 规则 |
+|---|---:|---|
+| `category` | string | 必须是八个固定类别之一 |
+| `search` | string | 最多 100 字，匹配标题或正文 |
+| `has_feedback` | boolean | `true` 只返回已有 AI 使用反馈的记忆 |
+| `timeline_only` | boolean | `true` 只返回人生时间轴记忆 |
+| `offset` | integer | 最小为 `0` |
+| `limit` | integer | `1`～`200`，默认 `100` |
+
+响应按照记忆发生日期、创建时间从新到旧排列：
+
+```json
+[
+  {
+    "id": "f90831e4-7815-4b28-9367-1ec63c90c837",
+    "title": "准备启动咖啡项目",
+    "category": "职业事业",
+    "content": "正在验证产品定位和启动预算。",
+    "occurred_on": "2026-08-28",
+    "is_timeline_event": true,
+    "source": "manual",
+    "deletable": true,
+    "feedback": null,
+    "ai_use_count": 0,
+    "last_used_at": null,
+    "created_at": "2026-08-28T08:30:00Z",
+    "updated_at": "2026-08-28T08:30:00Z"
+  }
+]
+```
+
+### 21.3 新增记忆
+
+```http
+POST /api/v1/memories
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+
+请求示例：
+
+```json
+{
+  "title": "准备启动咖啡项目",
+  "category": "职业事业",
+  "content": "正在验证产品定位和启动预算。",
+  "occurred_on": "2026-08-28",
+  "is_timeline_event": true
+}
+```
+
+| 字段 | 类型 | 必填 | 规则 |
+|---|---:|:---:|---|
+| `title` | string | 是 | 去除首尾空格后 1～50 字 |
+| `category` | string | 是 | 八个固定类别之一 |
+| `content` | string | 是 | 去除首尾空格后 1～500 字 |
+| `occurred_on` | date | 否 | `YYYY-MM-DD`；省略时使用服务端业务时区当天 |
+| `is_timeline_event` | boolean | 否 | 是否出现在人生时间轴，默认 `true` |
+
+成功返回 `201` 和完整记忆对象。当前公开接口创建的记录均为 `source: manual`。
+
+### 21.4 查询单条记忆
+
+```http
+GET /api/v1/memories/{memory_id}
+Authorization: Bearer <access_token>
+```
+
+成功返回与列表元素相同的完整对象。记忆不存在或不属于当前用户时返回：
+
+```http
+404 {"detail":"Memory entry not found"}
+```
+
+### 21.5 删除记忆
+
+```http
+DELETE /api/v1/memories/{memory_id}
+Authorization: Bearer <access_token>
+```
+
+成功返回 `204 No Content`，没有响应体。删除是永久操作；重复删除、删除不存在的记录或
+删除其他用户的记录均返回 `404`。前端删除成功后应重新获取总览，或同步更新列表和统计。
+
+### 21.6 当前边界
+
+- 记忆已经按账号保存在数据库，可跨设备同步，不再依赖浏览器 `localStorage`。
+- `feedback`、`ai_use_count` 和 `last_used_at` 已纳入响应合同，为后续记录 AI 使用回执预留；
+  当前记忆管理接口不会伪造反馈。
+- 当前页面支持新增和删除，尚未提供编辑记忆接口。
+- 当前 AI 命理问答仍执行既有的去标识化与事实安全边界，不会自动把私人记忆发送给云模型。

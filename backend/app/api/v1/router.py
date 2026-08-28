@@ -10,6 +10,7 @@ from .chart_profiles import router as chart_profiles_router
 from .compatibility import router as compatibility_router
 from .fortunes import router as fortunes_router
 from .guidance import router as guidance_router
+from .memories import router as memories_router
 from .payments import router as payments_router
 from .reports import router as reports_router
 from .users import router as users_router
@@ -23,6 +24,7 @@ router.include_router(payments_router)
 router.include_router(chart_profiles_router)
 router.include_router(fortunes_router)
 router.include_router(guidance_router)
+router.include_router(memories_router)
 router.include_router(chart_analysis_router)
 router.include_router(reports_router)
 router.include_router(compatibility_router)
