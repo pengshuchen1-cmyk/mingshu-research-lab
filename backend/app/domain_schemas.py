@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -101,17 +102,73 @@ class ZiweiOut(BaseModel):
     report: dict[str, Any]
 
 
-class AIChatMessageIn(BaseModel):
-    role: Literal["user", "assistant"]
-    content: str = Field(min_length=1, max_length=4000)
+class AIConversationCreateIn(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
+
+    profile_id: str = Field(min_length=36, max_length=36)
+    title: str | None = Field(default=None, min_length=1, max_length=100)
 
 
-class AIQuestionIn(BaseModel):
+class AIConversationUpdateIn(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
+
+    title: str | None = Field(default=None, min_length=1, max_length=100)
+    status: Literal["active", "archived"] | None = None
+
+    @model_validator(mode="after")
+    def at_least_one_change(self):
+        if self.title is None and self.status is None:
+            raise ValueError("at least one conversation field must be provided")
+        return self
+
+
+class AIConversationOut(BaseModel):
+    id: str
+    profile_id: str
+    title: str
+    status: Literal["active", "archived"]
+    message_count: int
+    last_message_at: datetime
+    created_at: datetime
+    updated_at: datetime
+
+
+class AIConversationListOut(BaseModel):
+    items: list[AIConversationOut]
+    next_cursor: str | None = None
+
+
+class AIMessageCreateIn(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
+
     question: str = Field(min_length=1, max_length=1000)
-    history: list[AIChatMessageIn] = Field(default_factory=list, max_length=10)
+    idempotency_key: str = Field(
+        min_length=8,
+        max_length=128,
+        pattern=r"^[A-Za-z0-9._:-]+$",
+    )
 
 
-class AIQuestionOut(BaseModel):
+class AIMessageOut(BaseModel):
+    id: str
+    conversation_id: str
+    sequence_no: int
+    role: Literal["user", "assistant"]
+    content: str | None
+    status: Literal["pending", "completed", "failed"]
+    structured_content: dict[str, Any] | None = None
+    created_at: datetime
+
+
+class AIMessageListOut(BaseModel):
+    items: list[AIMessageOut]
+    next_before_sequence: int | None = None
+
+
+class AIMessageCreateOut(BaseModel):
+    conversation_id: str
+    user_message_id: str
+    assistant_message_id: str
     profile_id: str
     chart_fingerprint: str
     mode: Literal["local", "cloud"]
@@ -119,3 +176,4 @@ class AIQuestionOut(BaseModel):
     structured_answer: dict[str, Any]
     degradation_reason: str | None = None
     boundary_note: str
+    idempotent_replay: bool = False
