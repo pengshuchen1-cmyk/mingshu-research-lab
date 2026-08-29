@@ -1,13 +1,13 @@
 import asyncio
 
 from fastapi.testclient import TestClient
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from app.config import settings
 from app.database import get_db
 from app.main import app
-from app.models import Base, User
+from app.models import Base, OTPChallenge, User
 from app.passwords import hash_password, password_needs_rehash, verify_password
 from app.security import token_for
 
@@ -22,6 +22,94 @@ def test_scrypt_hashes_are_salted_and_self_describing():
     assert verify_password("错误密码", first) is False
     assert verify_password("任意密码", "malformed") is False
     assert password_needs_rehash(first) is False
+
+
+def test_direct_password_registration_without_otp(tmp_path):
+    engine = create_async_engine(f"sqlite+aiosqlite:///{tmp_path / 'register.db'}")
+    sessions = async_sessionmaker(engine, expire_on_commit=False)
+
+    async def setup():
+        async with engine.begin() as connection:
+            await connection.run_sync(Base.metadata.create_all)
+
+    async def override_db():
+        async with sessions() as session:
+            yield session
+
+    async def registration_state():
+        async with sessions() as session:
+            user = (
+                await session.execute(
+                    select(User).where(User.phone == "+8613800138006")
+                )
+            ).scalar_one()
+            otp_count = await session.scalar(
+                select(func.count()).select_from(OTPChallenge)
+            )
+            return user.password_hash, otp_count
+
+    asyncio.run(setup())
+    app.dependency_overrides[get_db] = override_db
+    try:
+        with TestClient(app) as client:
+            registered = client.post(
+                "/api/v1/auth/password/register",
+                json={
+                    "phone": "13800138006",
+                    "password": "Initial-Passphrase",
+                },
+            )
+            assert registered.status_code == 201, registered.text
+            tokens = registered.json()
+            assert tokens["new_user"] is True
+            assert tokens["token_type"] == "bearer"
+
+            headers = {"Authorization": f"Bearer {tokens['access_token']}"}
+            me = client.get("/api/v1/me", headers=headers)
+            assert me.status_code == 200
+            assert me.json()["phone"] == "+8613800138006"
+            assert me.json()["has_password"] is True
+            assert me.json()["points"] == 20
+
+            password_login = client.post(
+                "/api/v1/auth/password/login",
+                json={
+                    "phone": "+8613800138006",
+                    "password": "Initial-Passphrase",
+                },
+            )
+            assert password_login.status_code == 200
+            assert password_login.json()["new_user"] is False
+
+            duplicate = client.post(
+                "/api/v1/auth/password/register",
+                json={
+                    "phone": "+8613800138006",
+                    "password": "Different-Passphrase",
+                },
+            )
+            assert duplicate.status_code == 409
+            assert duplicate.json() == {"detail": "Account already registered"}
+
+            short_password = client.post(
+                "/api/v1/auth/password/register",
+                json={"phone": "13800138007", "password": "short"},
+            )
+            assert short_password.status_code == 422
+
+            invalid_phone = client.post(
+                "/api/v1/auth/password/register",
+                json={"phone": "not-a-phone", "password": "Valid-Passphrase"},
+            )
+            assert invalid_phone.status_code == 422
+
+            stored_hash, otp_count = asyncio.run(registration_state())
+            assert stored_hash.startswith("scrypt$")
+            assert "Initial-Passphrase" not in stored_hash
+            assert otp_count == 0
+    finally:
+        app.dependency_overrides.clear()
+        asyncio.run(engine.dispose())
 
 
 def test_sms_registration_password_lifecycle_lockout_and_token_revocation(

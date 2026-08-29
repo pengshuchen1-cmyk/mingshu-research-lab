@@ -18,6 +18,8 @@ def check_dependencies(importer: Callable[[str], ModuleType] = importlib.import_
     for package_name, display_name in [
         ("streamlit", "streamlit"),
         ("pandas", "pandas"),
+        ("fastapi", "fastapi"),
+        ("uvicorn", "uvicorn"),
     ]:
         try:
             importer(package_name)

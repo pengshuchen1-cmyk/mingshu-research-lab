@@ -10,10 +10,30 @@ LAST_ACTIVE_KEY = "private_session_last_active_at"
 PENDING_INQUIRY_KEY = "inquiry_pending_question"
 PRIVATE_SESSION_KEYS = (
     "profile_draft",
+    "profile_paste_source",
+    "profile_paste_result",
+    "profile_name_input",
+    "profile_relationship_input",
+    "profile_gender_input",
+    "profile_place_input",
+    "profile_calendar_label",
+    "profile_picker_open",
+    "profile_picker_snapshot",
+    "profile_picker_calendar",
+    "profile_picker_year",
+    "profile_picker_month",
+    "profile_picker_day",
+    "profile_picker_hour",
+    "profile_picker_minute",
+    "profile_picker_precision",
+    "profile_picker_traditional",
+    "profile_picker_leap",
+    "profile_birth_wheel",
     "profile_use_solar_time",
     "profile_privacy_consent",
     "profile_birth_preview",
     "profile_birth_preview_input",
+    "profile_success_return_to",
     "current_profile",
     "current_chart",
     "current_report",
@@ -84,14 +104,24 @@ def maintain_private_session(
     """先执行到期清除；仍有效且含个人资料时刷新活动时间。"""
     current = _as_utc(now or datetime.now(timezone.utc))
     expired = expire_private_session(state, current, ttl_minutes)
+    private_activity_keys = (
+        "profile_birth_preview",
+        "current_profile",
+        "current_chart",
+        "current_report",
+        "profile_picker_open",
+        "profile_picker_calendar",
+        "profile_picker_year",
+        "profile_picker_month",
+        "profile_picker_day",
+        "profile_birth_wheel",
+        "profile_name_input",
+        "profile_place_input",
+        "profile_paste_source",
+    )
     if not expired and any(
         key in state
-        for key in (
-            "profile_birth_preview",
-            "current_profile",
-            "current_chart",
-            "current_report",
-        )
+        for key in private_activity_keys
     ):
         touch_private_session(state, current)
     return expired

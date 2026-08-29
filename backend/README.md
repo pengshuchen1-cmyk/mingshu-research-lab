@@ -1,6 +1,6 @@
 # Mingshu 独立后端
 
-基于 FastAPI、SQLAlchemy 2 异步 ORM、MySQL 8.4、Alembic、Redis 和 JWT。认证同时支持短信验证码注册/登录和手机号密码登录，并提供设置密码、修改密码与短信找回密码接口。应用使用 `asyncmy`，数据库迁移使用同步 `PyMySQL`。SQLite 只用于隔离测试，正常运行必须配置 MySQL 和 Redis。命盘接口使用后端自有的 `app/bazi` 确定性排盘包，不依赖旧 Streamlit 应用。
+基于 FastAPI、SQLAlchemy 2 异步 ORM、MySQL 8.4、Alembic、Redis 和 JWT。认证支持手机号密码直接注册/登录，也保留短信验证码注册/登录，并提供设置密码、修改密码与短信找回密码接口。应用使用 `asyncmy`，数据库迁移使用同步 `PyMySQL`。SQLite 只用于隔离测试，正常运行必须配置 MySQL 和 Redis。命盘接口使用后端自有的 `app/bazi` 确定性排盘包，不依赖旧 Streamlit 应用。
 
 版本化业务接口统一放在 `app/api/v1`：`auth.py` 负责认证，`users.py` 负责当前用户与点数，`admin.py` 负责管理端，`payments.py` 负责支付，`chart_profiles.py` 负责命理档案与命盘，`fortunes.py` 负责个人年度与流月运势，`guidance.py` 负责公共今日指引，`router.py` 统一聚合后交给 `app/main.py` 挂载。无版本号的 `/healthz`、`/readyz` 是基础设施探针，保留在应用入口。
 
@@ -71,6 +71,7 @@ Linux/macOS 激活环境使用 `source .venv/bin/activate`，其余命令相同�
 - `.env.remote.example`：本机原生 Python 通过 SSH 隧道连接远程依赖。
 - `.env.remote-docker.example`：本机 API 容器通过 SSH 隧道连接远程依赖。
 - [API.md](API.md)：接口、参数和示例。
+- [FRONTEND_API_INTEGRATION.md](FRONTEND_API_INTEGRATION.md)：本次新增及行为变更接口的前端联调说明、TypeScript 类型和验收清单。
 - [运维与Docker运行指南.md](运维与Docker运行指南.md)：生产部署、SSH 隧道和备份。
 
 真实 `.env`、`.env.*`、导出的 `openapi.json`、本地数据库和虚拟环境均被 Git 忽略；`*.example` 配置模板会被保留。提交前建议执行 `git status --ignored -- backend` 再次确认。
@@ -93,7 +94,7 @@ Linux/macOS 激活环境使用 `source .venv/bin/activate`，其余命令相同�
 
 ## 登录方式
 
-短信验证码仍是注册入口：先调用 `POST /api/v1/auth/otp/login/code` 获取登录验证码，首次调用 `POST /api/v1/auth/otp/login` 会自动创建用户。登录后可调用 `PUT /api/v1/auth/password` 设置密码，之后可使用 `POST /api/v1/auth/password/login` 登录；忘记密码时通过密码重置专用短信验证码找回。密码变更后旧 JWT 会失效，客户端需要保存接口返回的新令牌。完整参数见 [API.md](API.md#3-认证接口)。
+无需验证码的密码注册使用 `POST /api/v1/auth/password/register`，提交手机号和 8～128 字符密码，成功后直接返回 JWT；之后可使用 `POST /api/v1/auth/password/login` 登录。短信验证码注册/登录仍可使用：先调用 `POST /api/v1/auth/otp/login/code`，再调用 `POST /api/v1/auth/otp/login`。忘记密码仍通过密码重置专用短信验证码找回。密码变更后旧 JWT 会失效，客户端需要保存接口返回的新令牌。完整参数见 [API.md](API.md#3-认证接口)。
 
 ## 上线前限制
 

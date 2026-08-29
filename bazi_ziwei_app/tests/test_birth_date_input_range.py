@@ -11,24 +11,22 @@ from utils.validators import validate_profile
 class TestBirthDateInputRange(unittest.TestCase):
     """验证出生日期选择范围正确性。"""
 
-    def test_profile_form_max_value_is_today(self):
-        """profile_form.py 中 date_input 的 max_value 应为 date.today()。"""
-        path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                            "ui", "profile_form.py")
-        with open(path, "r") as f:
-            text = f.read()
-        self.assertIn("max_value=date.today()", text,
-                      "profile_form.py 应包含 max_value=date.today()")
+    def test_profile_form_explicit_picker_caps_dates_at_today(self):
+        """显式选择器不提供未来的年、月或日。"""
+        from ui.profile_form import valid_solar_days
+
+        today = date(2026, 8, 13)
+        self.assertEqual(valid_solar_days(2026, 8, today=today)[-1], 13)
+        self.assertEqual(valid_solar_days(2026, 9, today=today), [])
+        self.assertEqual(valid_solar_days(2027, 1, today=today), [])
 
     def test_unified_profile_form_keeps_full_supported_date_range(self):
         """一页式表单仍允许选择 1900 年起至今日的出生日期。"""
-        path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                            "ui", "profile_form.py")
-        with open(path, "r") as f:
-            text = f.read()
-        self.assertIn("def _render_unified_profile_form", text)
-        self.assertIn("min_value=date(1900, 1, 1)", text)
-        self.assertIn("max_value=date.today()", text)
+        from ui.profile_form import valid_solar_days
+
+        today = date(2026, 8, 13)
+        self.assertEqual(valid_solar_days(1900, 1, today=today)[0], 1)
+        self.assertEqual(valid_solar_days(1899, 12, today=today), [])
 
     def test_archive_page_max_value_is_today(self):
         """archive_page.py 中 date_input 的 max_value 应为 date.today()。"""

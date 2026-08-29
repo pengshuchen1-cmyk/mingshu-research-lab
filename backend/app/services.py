@@ -204,6 +204,39 @@ async def authenticate_password(
     return user
 
 
+async def register_password_user(
+    db: AsyncSession, phone: str, password: str
+) -> User:
+    """Create one phone/password account without SMS verification."""
+    existing = (
+        await db.execute(select(User).where(User.phone == phone))
+    ).scalar_one_or_none()
+    if existing is not None:
+        raise APIError(Errors.ACCOUNT_ALREADY_REGISTERED)
+
+    candidate = User(
+        phone=phone,
+        password_hash=await run_in_threadpool(hash_password, password),
+    )
+    try:
+        async with db.begin_nested():
+            db.add(candidate)
+            await db.flush()
+            db.add(PointBalance(user_id=candidate.id, balance=0))
+            await db.flush()
+            await credit(
+                db,
+                candidate.id,
+                settings.registration_bonus_points,
+                "registration_bonus",
+                f"signup:{candidate.id}",
+            )
+    except IntegrityError:
+        # A concurrent request may have registered the same normalized phone.
+        raise APIError(Errors.ACCOUNT_ALREADY_REGISTERED)
+    return candidate
+
+
 async def change_user_password(
     db: AsyncSession,
     user_id: str,

@@ -88,6 +88,7 @@ def test_profile_form_uses_single_standard_time_mode():
     )
 
     assert "使用真太阳时校正" not in source
-    assert '"出生时间精度"' in source
-    assert '["精确时间", "传统时辰", "时辰不详"]' in source
-    assert "是否闰月" in source
+    assert 'st.radio("出生时间精度"' not in source
+    assert 'time_precision = "精确时间"' in source
+    assert 'st.checkbox("闰月"' in source
+    assert "lunar_month_days" in source

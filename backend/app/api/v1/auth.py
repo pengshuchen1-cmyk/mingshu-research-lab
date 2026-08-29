@@ -2,7 +2,7 @@
 
 import jwt
 import phonenumbers
-from fastapi import APIRouter
+from fastapi import APIRouter, status
 
 from ...config import settings
 from ...database import DBSession
@@ -12,6 +12,7 @@ from ...schemas import (
     AccessTokenOut,
     OTPOut,
     PasswordChangeIn,
+    PasswordRegisterIn,
     PasswordResetIn,
     PhoneIn,
     PhonePasswordIn,
@@ -25,6 +26,7 @@ from ...services import (
     authenticate_password,
     change_user_password,
     issue_otp,
+    register_password_user,
     verify_otp,
 )
 
@@ -82,6 +84,18 @@ async def password_login(body: PhonePasswordIn, db: DBSession):
         raise
     await db.commit()
     return _token_pair(user)
+
+
+@router.post(
+    "/password/register",
+    response_model=TokenPairOut,
+    status_code=status.HTTP_201_CREATED,
+)
+async def password_register(body: PasswordRegisterIn, db: DBSession):
+    """使用手机号和初始密码直接创建新用户并签发令牌。"""
+    user = await register_password_user(db, normalize(body.phone), body.password)
+    await db.commit()
+    return _token_pair(user, new_user=True)
 
 
 @router.put("/password", response_model=TokenPairOut)

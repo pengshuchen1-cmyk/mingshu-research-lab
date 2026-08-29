@@ -23,7 +23,7 @@ def test_public_pages_replace_archive_and_remove_storage_routes(monkeypatch):
 
     pages = app.get_pages()
 
-    assert pages["设置/档案"].__name__ == "render_privacy_center_page"
+    assert pages["设置/档案"].__name__ == "render_my_page"
     assert "命盘档案" not in pages
     assert "数据备份" not in pages
 

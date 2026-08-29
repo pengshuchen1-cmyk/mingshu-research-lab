@@ -32,7 +32,7 @@ class AIRequestController:
     def __init__(
         self,
         *,
-        per_minute: int = 3,
+        per_minute: int = 10,
         daily_requests: int = 30,
         daily_tokens: int = 500_000,
         max_concurrent: int = 4,
@@ -140,7 +140,7 @@ _CONTROLLER_REGISTRY_LOCK = Lock()
 def request_controller_for_config(config: object) -> AIRequestController:
     """Return the process-shared controller for one configured limit set."""
     limits = (
-        int(getattr(config, "per_session_per_minute", 3)),
+        int(getattr(config, "per_session_per_minute", 10)),
         int(getattr(config, "per_session_daily_requests", 30)),
         int(getattr(config, "daily_token_budget", 500_000)),
         int(getattr(config, "max_concurrent_requests", 4)),

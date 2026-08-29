@@ -71,10 +71,11 @@ Authorization: Bearer <access_token>
 | 状态码 | 含义 |
 |---|---|
 | `200` | 请求成功 |
+| `201` | 新用户或资源创建成功 |
 | `401` | 未登录、令牌错误、令牌过期、密码错误或用户已停用 |
 | `403` | 当前用户不是管理员 |
 | `404` | 用户、套餐、功能规则、命理档案、命盘或支付渠道不存在 |
-| `409` | 新旧密码相同、点数不足、幂等键冲突，或保存时的命盘与预览结果不一致 |
+| `409` | 帐号已注册、新旧密码相同、点数不足、幂等键冲突，或保存时的命盘与预览结果不一致 |
 | `422` | 请求体、路径参数或查询参数不合法 |
 | `429` | 验证码受限、密码连续输错后暂时锁定，或命理档案尚未到允许修改的日期 |
 | `501` | 预留接口尚未接入真实适配器 |
@@ -82,16 +83,16 @@ Authorization: Bearer <access_token>
 
 ## 2. 快速完成一次注册登录
 
-注册没有单独接口。手机号第一次验证码登录成功时会自动注册，并赠送配置的注册点数。
+系统支持密码直接注册和短信验证码注册。密码直接注册不需要短信验证码：
 
-1. 调用 `POST /api/v1/auth/otp/login/code` 获取登录验证码。
-2. 开发环境从 `development_code` 取得验证码。
-3. 调用 `POST /api/v1/auth/otp/login` 完成注册或登录。
-4. 保存返回的 `access_token` 和 `refresh_token`。
-5. 携带 access token 调用 `GET /api/v1/me` 验证登录状态。
-6. 如需以后使用密码登录，携带 access token 调用 `PUT /api/v1/auth/password` 设置首个密码。
+1. 调用 `POST /api/v1/auth/password/register`，提交手机号和密码。
+2. 保存返回的 `access_token` 和 `refresh_token`。
+3. 携带 access token 调用 `GET /api/v1/me` 验证登录状态。
+4. 后续调用 `POST /api/v1/auth/password/login` 登录。
 
-生产环境不会在响应中返回验证码；当前尚未注册真实短信适配器，因此生产环境请求验证码会返回 `503`。
+短信验证码注册/登录仍可使用：调用 `POST /api/v1/auth/otp/login/code` 获取验证码，再调用 `POST /api/v1/auth/otp/login`。两种注册方式都会创建钱包并赠送配置的注册点数。
+
+⚠️ 密码直接注册只校验手机号格式，不验证手机号归属。生产环境不会在 OTP 响应中返回验证码；当前尚未注册真实短信适配器，因此生产环境请求验证码会返回 `503`，但不影响密码直接注册。
 
 ## 3. 认证接口
 
@@ -172,7 +173,46 @@ POST /api/v1/auth/otp/login
 
 可能错误：`400` 验证码错误、过期或已使用；`401` 用户已停用；`422` 手机号或验证码格式不正确；`429` 错误次数达到上限。
 
-### 3.3 设置或修改密码
+### 3.3 手机号密码直接注册
+
+```http
+POST /api/v1/auth/password/register
+```
+
+权限：公开。不需要短信验证码。
+
+| 字段 | 类型 | 必填 | 规则 |
+|---|---:|:---:|---|
+| `phone` | string | 是 | 有效手机号；中国号码支持国内格式或 `+86` 格式 |
+| `password` | string | 是 | 8～128 个字符 |
+
+请求示例：
+
+```json
+{
+  "phone": "13800138000",
+  "password": "My-Secure-Passphrase-2026"
+}
+```
+
+成功返回 `201 Created`：
+
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIs...",
+  "refresh_token": "eyJhbGciOiJIUzI1NiIs...",
+  "token_type": "bearer",
+  "new_user": true
+}
+```
+
+服务端会把手机号规范化为 E.164，使用 scrypt 保存密码摘要，创建点数钱包并发放注册赠送点数。不会创建或消费 OTP 记录。已有手机号不会被覆盖。
+
+可能错误：`409 Account already registered`；`422` 手机号无效、密码长度或请求格式不正确。
+
+⚠️ 该接口按当前产品要求不验证手机号归属，客户端不应展示“已完成手机验证”等误导状态。
+
+### 3.4 设置或修改密码
 
 ```http
 PUT /api/v1/auth/password
@@ -217,7 +257,7 @@ PUT /api/v1/auth/password
 
 可能错误：`400` 已有密码但未提交当前密码；`401` 当前密码错误或登录令牌无效；`409` 新密码与当前密码相同；`422` 密码长度或请求格式不正确。
 
-### 3.4 手机号密码登录
+### 3.5 手机号密码登录
 
 ```http
 POST /api/v1/auth/password/login
@@ -243,7 +283,7 @@ POST /api/v1/auth/password/login
 
 可能错误：`401` 手机号不存在、尚未设置密码、密码错误或用户已停用；`429` 连续输错达到上限，密码登录被暂时锁定；`422` 手机号或密码格式不正确。为避免泄露帐号是否存在，前三类失败使用相同的错误信息。
 
-### 3.5 获取密码重置验证码
+### 3.6 获取密码重置验证码
 
 ```http
 POST /api/v1/auth/password/reset/otp
@@ -259,7 +299,7 @@ POST /api/v1/auth/password/reset/otp
 
 该验证码只允许用于密码重置，不能用于注册登录；普通登录验证码也不能用于重置密码。发送频率、每日上限和开发环境响应格式与登录验证码相同。用户已停用时返回 `401`，不会发送重置验证码。
 
-### 3.6 使用短信验证码重置密码
+### 3.7 使用短信验证码重置密码
 
 ```http
 POST /api/v1/auth/password/reset
@@ -287,7 +327,7 @@ POST /api/v1/auth/password/reset
 
 可能错误：`400` 验证码错误、过期或已使用；`401` 帐号不可用；`422` 字段格式不正确；`429` 验证码错误次数达到上限。
 
-### 3.7 刷新访问令牌
+### 3.8 刷新访问令牌
 
 ```http
 POST /api/v1/auth/refresh
@@ -320,7 +360,7 @@ POST /api/v1/auth/refresh
 
 当前尚未实现 refresh token 的逐次轮换、单设备撤销和退出登录会话管理。修改或重置密码时可以通过帐号认证版本统一撤销该用户此前签发的令牌。
 
-### 3.8 微信扫码登录预留接口
+### 3.9 微信扫码登录预留接口
 
 ```http
 GET /api/v1/auth/wechat/qr
@@ -2188,8 +2228,150 @@ Redis 不可用时返回 `503`：
 
 ## 20. 密码安全约定
 
+- 密码直接注册只校验手机号格式，不进行短信验证；这属于当前产品要求，不代表手机号归属已验证。
 - 数据库只保存带独立随机盐的 `scrypt` 密码摘要，不保存或记录明文密码。
 - 密码长度为 8～128 个字符，服务端不会擅自裁剪首尾空格或改变字符内容。
 - 默认连续输错 5 次后锁定密码登录 15 分钟，可通过 `PASSWORD_MAX_ATTEMPTS` 和 `PASSWORD_LOCK_MINUTES` 调整。
 - 登录验证码与密码重置验证码用途隔离，验证码使用一次后即失效。
 - 设置、修改或重置密码都会递增帐号认证版本，使旧 access token 和 refresh token 失效。
+
+## 21. 记忆档案接口
+
+本组接口为前端“记忆档案”页面提供账号级持久化。所有接口都需要 Bearer access token，
+数据按当前用户隔离；请求其他用户的记忆 ID 与请求不存在的 ID 一样返回 `404`。
+
+记忆类别固定为：`基本信息`、`职业事业`、`感情关系`、`家庭生活`、`健康状态`、
+`目标愿望`、`重要人物`、`其他记忆`。
+
+### 21.1 查询记忆总览
+
+```http
+GET /api/v1/memories/overview
+Authorization: Bearer <access_token>
+```
+
+响应示例：
+
+```json
+{
+  "total_memories": 3,
+  "goal_count": 1,
+  "important_people_count": 1,
+  "life_event_count": 2,
+  "feedback_count": 0,
+  "latest_updated_at": "2026-08-28T08:30:00Z",
+  "categories": [
+    {
+      "category": "职业事业",
+      "count": 1,
+      "latest_date": "2026-08-28"
+    }
+  ],
+  "focus_tags": ["关注事业发展", "有目标感", "珍视重要关系"],
+  "understanding_summary": "目前已记录 3 条记忆，主要集中在职业事业、目标愿望、重要人物。你可以继续补充背景和变化，让这些资料保持准确。"
+}
+```
+
+`categories` 固定返回全部八个类别，没有数据的类别返回 `count: 0` 和
+`latest_date: null`。`focus_tags` 和概述只根据用户实际记录的类别生成，不会凭空推断人格。
+
+### 21.2 查询、搜索和筛选记忆
+
+```http
+GET /api/v1/memories?category=职业事业&search=咖啡&has_feedback=true&timeline_only=false&offset=0&limit=100
+Authorization: Bearer <access_token>
+```
+
+查询参数均可省略：
+
+| 参数 | 类型 | 规则 |
+|---|---:|---|
+| `category` | string | 必须是八个固定类别之一 |
+| `search` | string | 最多 100 字，匹配标题或正文 |
+| `has_feedback` | boolean | `true` 只返回已有 AI 使用反馈的记忆 |
+| `timeline_only` | boolean | `true` 只返回人生时间轴记忆 |
+| `offset` | integer | 最小为 `0` |
+| `limit` | integer | `1`～`200`，默认 `100` |
+
+响应按照记忆发生日期、创建时间从新到旧排列：
+
+```json
+[
+  {
+    "id": "f90831e4-7815-4b28-9367-1ec63c90c837",
+    "title": "准备启动咖啡项目",
+    "category": "职业事业",
+    "content": "正在验证产品定位和启动预算。",
+    "occurred_on": "2026-08-28",
+    "is_timeline_event": true,
+    "source": "manual",
+    "deletable": true,
+    "feedback": null,
+    "ai_use_count": 0,
+    "last_used_at": null,
+    "created_at": "2026-08-28T08:30:00Z",
+    "updated_at": "2026-08-28T08:30:00Z"
+  }
+]
+```
+
+### 21.3 新增记忆
+
+```http
+POST /api/v1/memories
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+
+请求示例：
+
+```json
+{
+  "title": "准备启动咖啡项目",
+  "category": "职业事业",
+  "content": "正在验证产品定位和启动预算。",
+  "occurred_on": "2026-08-28",
+  "is_timeline_event": true
+}
+```
+
+| 字段 | 类型 | 必填 | 规则 |
+|---|---:|:---:|---|
+| `title` | string | 是 | 去除首尾空格后 1～50 字 |
+| `category` | string | 是 | 八个固定类别之一 |
+| `content` | string | 是 | 去除首尾空格后 1～500 字 |
+| `occurred_on` | date | 否 | `YYYY-MM-DD`；省略时使用服务端业务时区当天 |
+| `is_timeline_event` | boolean | 否 | 是否出现在人生时间轴，默认 `true` |
+
+成功返回 `201` 和完整记忆对象。当前公开接口创建的记录均为 `source: manual`。
+
+### 21.4 查询单条记忆
+
+```http
+GET /api/v1/memories/{memory_id}
+Authorization: Bearer <access_token>
+```
+
+成功返回与列表元素相同的完整对象。记忆不存在或不属于当前用户时返回：
+
+```http
+404 {"detail":"Memory entry not found"}
+```
+
+### 21.5 删除记忆
+
+```http
+DELETE /api/v1/memories/{memory_id}
+Authorization: Bearer <access_token>
+```
+
+成功返回 `204 No Content`，没有响应体。删除是永久操作；重复删除、删除不存在的记录或
+删除其他用户的记录均返回 `404`。前端删除成功后应重新获取总览，或同步更新列表和统计。
+
+### 21.6 当前边界
+
+- 记忆已经按账号保存在数据库，可跨设备同步，不再依赖浏览器 `localStorage`。
+- `feedback`、`ai_use_count` 和 `last_used_at` 已纳入响应合同，为后续记录 AI 使用回执预留；
+  当前记忆管理接口不会伪造反馈。
+- 当前页面支持新增和删除，尚未提供编辑记忆接口。
+- 当前 AI 命理问答仍执行既有的去标识化与事实安全边界，不会自动把私人记忆发送给云模型。

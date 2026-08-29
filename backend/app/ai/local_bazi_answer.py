@@ -564,7 +564,7 @@ def _prefixed_values(
     return _deduplicated(values, limit=limit)
 
 
-def _render_plan_body(plan: AnalysisPlan, rules: Sequence[str]) -> str:
+def _render_plan_body(plan: AnalysisPlan) -> str:
     depth = plan.resolved.requested_depth
     paragraphs = []
     if plan.resolved.interpretation_receipt:
@@ -575,10 +575,6 @@ def _render_plan_body(plan: AnalysisPlan, rules: Sequence[str]) -> str:
         paragraphs.extend(
             f"**{claim.topic}**\n{claim.local_text}"
             for claim in plan.claims
-        )
-    if rules:
-        paragraphs.append(
-            "本地规则依据：" + "；".join(rules[:4])
         )
     disclaimer = "命理分析仅供传统文化参考，不替代现实中的医疗、法律或财务决策。"
     body = "\n\n".join(paragraphs)
@@ -603,7 +599,7 @@ def render_local_plan(plan: AnalysisPlan) -> BaziAIAnswer:
         limit=8,
     )
     return BaziAIAnswer(
-        analysis_conclusion=_render_plan_body(plan, rule_statements),
+        analysis_conclusion=_render_plan_body(plan),
         chart_evidence=chart_evidence,
         rule_evidence=rule_statements,
         timing_conditions=timing,

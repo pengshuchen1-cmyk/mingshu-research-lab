@@ -73,7 +73,8 @@ class _FakeStreamlit(types.ModuleType):
 
     def selectbox(self, label, options, **kwargs):
         options = list(options)
-        return self.values.get(label, options[kwargs.get("index", 0)])
+        selected = self.values.get(label, options[kwargs.get("index", 0)])
+        return selected if selected in options else options[kwargs.get("index", 0)]
 
     def radio(self, label, options, **kwargs):
         return self.values.get(label, options[kwargs.get("index", 0)])
@@ -136,13 +137,14 @@ def _lunar_values(**overrides):
     values = {
         "姓名": "测试用户",
         "性别": "男",
+        "关系": "本人",
         "出生日期类型": "农历",
-        "农历年份": 1999,
-        "农历月份": 7,
-        "农历日期": 1,
-        "是否闰月": False,
+        "年": 1999,
+        "月": 7,
+        "日": 1,
+        "闰月": False,
         "出生时间精度": "传统时辰",
-        "传统时辰": "巳时",
+        "时": "巳时",
         "出生地点": "北京",
     }
     values.update(overrides)
@@ -161,9 +163,31 @@ def _run_form(
     import ui.profile_form as profile_form
 
     state = session_state if session_state is not None else {}
+    supplied = values or _lunar_values()
     draft = state.setdefault(profile_form.PROFILE_DRAFT_KEY, {})
+    calendar_label = supplied.get("出生日期类型", draft.get("calendar_label", "农历"))
+    precision = supplied.get("出生时间精度", draft.get("time_precision", "传统时辰"))
+    supplied_hour = supplied.get("时", draft.get("birth_hour", 10))
+    exact_hour = supplied_hour if isinstance(supplied_hour, int) else draft.get("birth_hour", 10)
+    draft.update(
+        {
+            "calendar_label": calendar_label,
+            "lunar_year": supplied.get("年", draft.get("lunar_year", 1999)),
+            "lunar_month": supplied.get("月", draft.get("lunar_month", 7)),
+            "lunar_day": supplied.get("日", draft.get("lunar_day", 1)),
+            "birth_hour": exact_hour if precision == "精确时间" else draft.get("birth_hour", 10),
+            "birth_minute": supplied.get("分", draft.get("birth_minute", 0)),
+            "time_precision": precision,
+            "traditional_time": supplied.get("时", "巳时") if precision == "传统时辰" else None,
+            "is_leap_month": supplied.get("闰月", False),
+        }
+    )
+    if calendar_label == "公历":
+        draft["birth_date"] = date(
+            supplied.get("年", 1990), supplied.get("月", 1), supplied.get("日", 1)
+        )
     fake = _FakeStreamlit(
-        values=values or _lunar_values(),
+        values=supplied,
         preview_submitted=preview_submitted,
         confirm_submitted=confirm_submitted,
         session_state=state,
@@ -195,16 +219,15 @@ def test_first_submit_saves_receipt_without_saving_chart_and_renders_confirmatio
     fake = _run_form(monkeypatch, session_state=state)
 
     assert first_render.rerun_calls == 1
-    assert fake.submit_calls == [
-        ("校验并预览", True),
-        ("确认生成命盘", True),
-    ]
-    assert fake.button_calls == []
+    assert fake.submit_calls == [("确认生成命盘", True)]
+    assert len(fake.button_calls) == 1
+    assert fake.button_calls[0][0].startswith("出生时间")
     receipt = "\n".join(fake.markdowns)
-    assert "原始输入：农历1999年七月初一，非闰月，男，巳时" in receipt
-    assert "标准时间：中国标准时间 1999-08-11 10:00" in receipt
-    assert "四柱预览：己卯 / 壬申 / 乙未 / 辛巳" in receipt
-    assert "计算依据：本地规则证据" in receipt
+    assert "请核对排盘预览" in receipt
+    assert "农历1999年七月初一，非闰月，男，巳时" in receipt
+    assert "中国标准时间 1999-08-11 10:00" in receipt
+    assert "己卯 / 壬申 / 乙未 / 辛巳" in receipt
+    assert "本地规则证据" in receipt
     saved = state[profile_form.PROFILE_PREVIEW_KEY]
     assert "profile" in saved
     assert "chart" not in saved
@@ -219,7 +242,7 @@ def test_changing_birth_field_invalidates_saved_preview(monkeypatch):
     _run_form(monkeypatch, preview_submitted=True, session_state=state)
     fake = _run_form(
         monkeypatch,
-        values=_lunar_values(**{"农历日期": 2}),
+        values=_lunar_values(**{"日": 2}),
         session_state=state,
     )
 
@@ -240,8 +263,8 @@ def test_changing_exact_time_to_equivalent_traditional_hour_invalidates_preview(
         values=_lunar_values(
             **{
                 "出生时间精度": "精确时间",
-                "出生小时": 10,
-                "出生分钟": 0,
+                "时": 10,
+                "分": 0,
             }
         ),
         preview_submitted=True,
@@ -284,8 +307,8 @@ def test_exact_midnight_is_restored_without_invalidating_preview(monkeypatch):
     midnight_values = _lunar_values(
         **{
             "出生时间精度": "精确时间",
-            "出生小时": 0,
-            "出生分钟": 0,
+            "时": 0,
+            "分": 0,
         }
     )
     _run_form(
@@ -401,7 +424,32 @@ def test_profile_form_remains_one_data_entry_form():
     source = (ROOT / "ui" / "profile_form.py").read_text(encoding="utf-8")
     assert source.count("with st.form(") == 1
     assert "PROFILE_STEP_KEY" not in source
-    assert 'st.session_state["navigate_to"] = "个人命盘"' in source
+    assert 'st.session_state.pop(PROFILE_SUCCESS_RETURN_KEY, "个人命盘")' in source
+
+
+def test_structured_preview_escapes_dynamic_values_and_has_one_confirm_action():
+    import ui.profile_form as profile_form
+
+    fake = _FakeStreamlit()
+    profile_form._render_birth_preview_summary(
+        fake,
+        {
+            "input_text": '<script>alert("x")</script>',
+            "solar_datetime": "1990-01-01 12:00",
+            "pillars": ["甲子", "<乙丑>"],
+            "calculation_basis": "规则 & 证据",
+        },
+    )
+
+    rendered = "\n".join(fake.markdowns)
+    assert '<script>alert("x")</script>' not in rendered
+    assert "&lt;script&gt;" in rendered
+    assert "&lt;乙丑&gt;" in rendered
+    assert "规则 &amp; 证据" in rendered
+    source = (ROOT / "ui" / "profile_form.py").read_text(encoding="utf-8")
+    preview_branch = source.split("if saved_preview:", 1)[1].split("else:", 1)[0]
+    assert '"确认生成命盘"' in preview_branch
+    assert '"校验并预览"' not in preview_branch
 
 
 def test_true_solar_longitude_rejects_non_numeric_or_out_of_range_values():
@@ -441,7 +489,7 @@ def test_public_profile_payload_allows_blank_optional_nickname(monkeypatch):
 def test_public_form_keeps_consent_and_discloses_cloud_ai(monkeypatch):
     source = (ROOT / "ui" / "profile_form.py").read_text(encoding="utf-8")
 
-    assert "称呼（可选，建议昵称）" in source
+    assert "昵称（可选）" in source
     assert "我已阅读并同意本次会话隐私说明" in source
     assert "请先阅读并同意本次会话隐私说明" in source
     privacy_notice = (
@@ -453,15 +501,12 @@ def test_public_form_keeps_consent_and_discloses_cloud_ai(monkeypatch):
     assert "touch_private_session(st.session_state)" in source
 
 
-def test_birth_input_explains_name_is_not_required_before_calendar_choice():
+def test_birth_input_explains_china_standard_time_before_profile_controls():
     source = (ROOT / "ui" / "profile_form.py").read_text(encoding="utf-8")
-    notice = (
-        "无需输入姓名，只需选择农历或公历的出生日期及时间；"
-        "性别仍用于排盘规则。"
-    )
-
+    notice = "排盘统一采用中国标准时间（北京时间）。"
     assert notice in source
-    assert source.index(notice) < source.index('"出生日期类型"')
+    render_source = source[source.index("def _render_unified_profile_form") :]
+    assert render_source.index(notice) < render_source.index("name = st.text_input")
 
 
 def test_profile_card_styles_flatten_the_nested_submit_form():

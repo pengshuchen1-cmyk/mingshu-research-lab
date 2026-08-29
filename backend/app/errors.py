@@ -77,6 +77,11 @@ class Errors:
         status.HTTP_401_UNAUTHORIZED,
         "Invalid phone number or password",
     )
+    ACCOUNT_ALREADY_REGISTERED = ErrorDefinition(
+        "AUTH_ACCOUNT_ALREADY_REGISTERED",
+        status.HTTP_409_CONFLICT,
+        "Account already registered",
+    )
     CURRENT_PASSWORD_REQUIRED = ErrorDefinition(
         "AUTH_CURRENT_PASSWORD_REQUIRED",
         status.HTTP_400_BAD_REQUEST,
@@ -145,6 +150,9 @@ class Errors:
     )
     CHART_NOT_FOUND = ErrorDefinition(
         "CHART_NOT_FOUND", status.HTTP_404_NOT_FOUND, "Chart has not been generated"
+    )
+    MEMORY_NOT_FOUND = ErrorDefinition(
+        "MEMORY_NOT_FOUND", status.HTTP_404_NOT_FOUND, "Memory entry not found"
     )
     PERSONAL_FORTUNE_UNAVAILABLE = ErrorDefinition(
         "FORTUNE_PERSONAL_UNAVAILABLE",

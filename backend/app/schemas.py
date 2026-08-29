@@ -16,6 +16,10 @@ class PhonePasswordIn(PhoneIn):
     password: str = Field(min_length=8, max_length=128, repr=False)
 
 
+class PasswordRegisterIn(PhonePasswordIn):
+    pass
+
+
 class PasswordChangeIn(BaseModel):
     current_password: str | None = Field(default=None, min_length=8, max_length=128, repr=False)
     new_password: str = Field(min_length=8, max_length=128, repr=False)
@@ -185,6 +189,62 @@ class BaziChartOut(BaseModel):
 class BirthProfileDetailOut(BaseModel):
     profile: BirthProfileOut
     chart: BaziChartOut
+
+
+MemoryCategory = Literal[
+    "基本信息",
+    "职业事业",
+    "感情关系",
+    "家庭生活",
+    "健康状态",
+    "目标愿望",
+    "重要人物",
+    "其他记忆",
+]
+
+
+class MemoryCreateIn(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    title: str = Field(min_length=1, max_length=50)
+    category: MemoryCategory
+    content: str = Field(min_length=1, max_length=500)
+    occurred_on: date | None = None
+    is_timeline_event: bool = True
+
+
+class MemoryEntryOut(BaseModel):
+    id: str
+    title: str
+    category: MemoryCategory
+    content: str
+    occurred_on: date
+    is_timeline_event: bool
+    source: Literal["manual", "ai"]
+    deletable: bool
+    feedback: str | None
+    ai_use_count: int = Field(ge=0)
+    last_used_at: datetime | None
+    created_at: datetime
+    updated_at: datetime
+
+
+class MemoryCategorySummaryOut(BaseModel):
+    category: MemoryCategory
+    count: int = Field(ge=0)
+    latest_date: date | None
+
+
+class MemoryOverviewOut(BaseModel):
+    total_memories: int = Field(ge=0)
+    goal_count: int = Field(ge=0)
+    important_people_count: int = Field(ge=0)
+    life_event_count: int = Field(ge=0)
+    feedback_count: int = Field(ge=0)
+    latest_updated_at: datetime | None
+    categories: list[MemoryCategorySummaryOut]
+    focus_tags: list[str]
+    understanding_summary: str
 
 
 class DailyGuidanceDetailsOut(BaseModel):
