@@ -12,6 +12,55 @@ from app.passwords import hash_password, password_needs_rehash, verify_password
 from app.security import token_for
 
 
+def test_password_registration_creates_login_ready_account(tmp_path):
+    engine = create_async_engine(f"sqlite+aiosqlite:///{tmp_path / 'registration.db'}")
+    sessions = async_sessionmaker(engine, expire_on_commit=False)
+
+    async def setup():
+        async with engine.begin() as connection:
+            await connection.run_sync(Base.metadata.create_all)
+
+    async def override_db():
+        async with sessions() as session:
+            yield session
+
+    asyncio.run(setup())
+    app.dependency_overrides[get_db] = override_db
+    try:
+        with TestClient(app) as client:
+            registered = client.post(
+                "/api/v1/auth/password/register",
+                json={"phone": "13800138099", "password": "Aa123456"},
+            )
+            assert registered.status_code == 201, registered.text
+            assert registered.json()["new_user"] is True
+
+            headers = {
+                "Authorization": f"Bearer {registered.json()['access_token']}"
+            }
+            account = client.get("/api/v1/me", headers=headers)
+            assert account.status_code == 200, account.text
+            assert account.json()["phone"] == "+8613800138099"
+            assert account.json()["has_password"] is True
+            assert account.json()["points"] == settings.registration_bonus_points
+
+            duplicate = client.post(
+                "/api/v1/auth/password/register",
+                json={"phone": "+8613800138099", "password": "Different123"},
+            )
+            assert duplicate.status_code == 409
+            assert duplicate.json() == {"detail": "Account already registered"}
+
+            login = client.post(
+                "/api/v1/auth/password/login",
+                json={"phone": "13800138099", "password": "Aa123456"},
+            )
+            assert login.status_code == 200, login.text
+    finally:
+        app.dependency_overrides.clear()
+        asyncio.run(engine.dispose())
+
+
 def test_scrypt_hashes_are_salted_and_self_describing():
     first = hash_password("一个足够长的测试密码")
     second = hash_password("一个足够长的测试密码")

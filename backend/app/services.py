@@ -166,6 +166,37 @@ async def verify_otp(
     return user, new
 
 
+async def register_password_user(
+    db: AsyncSession, phone: str, password: str
+) -> User:
+    """Create a password account and grant the registration bonus once."""
+    existing = (
+        await db.execute(select(User).where(User.phone == phone))
+    ).scalar_one_or_none()
+    if existing is not None:
+        raise APIError(Errors.ACCOUNT_ALREADY_REGISTERED)
+
+    password_hash = await run_in_threadpool(hash_password, password)
+    candidate = User(phone=phone, password_hash=password_hash)
+    try:
+        async with db.begin_nested():
+            db.add(candidate)
+            await db.flush()
+            db.add(PointBalance(user_id=candidate.id, balance=0))
+            await db.flush()
+            await credit(
+                db,
+                candidate.id,
+                settings.registration_bonus_points,
+                "registration_bonus",
+                f"signup:{candidate.id}",
+            )
+    except IntegrityError:
+        # A concurrent request registered this normalized phone first.
+        raise APIError(Errors.ACCOUNT_ALREADY_REGISTERED) from None
+    return candidate
+
+
 def _as_utc(value: datetime) -> datetime:
     return value.replace(tzinfo=UTC) if value.tzinfo is None else value.astimezone(UTC)
 
