@@ -170,7 +170,8 @@ def test_migrated_chart_analysis_luck_reports_compatibility_and_ziwei(tmp_path):
             assert question.status_code == 200, question.text
             assert question.json()["mode"] == "local"
             assert question.json()["answer"]
-            assert question.json()["degradation_reason"] == "service_unavailable"
+            assert question.json()["degradation_reason"] is None
+            assert question.json()["structured_answer"]["retryable"] is False
             serialized_answer = question.text
             assert "第一个档案" not in serialized_answer
             assert "测试地点" not in serialized_answer

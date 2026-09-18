@@ -1,10 +1,12 @@
 import json
 from types import SimpleNamespace
 
+from app.ai import ai_orchestrator
 from app.ai.ai_models import (
     AIConfig,
     AIRequestContext,
     AnalysisPlan,
+    BaziAIAnswer,
     ClaimPlan,
     FactItem,
     FactPacket,
@@ -151,3 +153,50 @@ def test_missing_provider_model_is_classified_separately():
     error.code = "model_not_found"  # type: ignore[attr-defined]
 
     assert classify_service_error(error) == "model_unavailable"
+
+
+def test_local_provider_completes_without_false_degradation(monkeypatch):
+    resolved = ResolvedQuestion(
+        safe_question="命盘整体特点是什么？",
+        domain="overview",
+    )
+    local_answer = BaziAIAnswer(
+        analysis_conclusion="本地规则回答",
+        chart_evidence=["本地命盘事实"],
+        rule_evidence=["本地规则"],
+        timing_conditions=[],
+        practical_advice=["现实建议"],
+        uncertainty_limitations=["仅供传统文化参考"],
+    )
+    monkeypatch.setattr(
+        ai_orchestrator,
+        "check_bazi_scope",
+        lambda _question: SimpleNamespace(allowed=True),
+    )
+    monkeypatch.setattr(
+        ai_orchestrator,
+        "resolve_question",
+        lambda *_args, **_kwargs: resolved,
+    )
+    monkeypatch.setattr(ai_orchestrator, "compile_fact_packet", lambda *_args: object())
+    monkeypatch.setattr(ai_orchestrator, "build_analysis_plan", lambda _packet: object())
+    monkeypatch.setattr(
+        ai_orchestrator,
+        "_complete_local_answer",
+        lambda *_args: local_answer,
+    )
+    stages = []
+
+    result = ai_orchestrator.answer_question(
+        {},
+        "命盘整体特点是什么？",
+        [],
+        config=AIConfig(api_key="", enabled=False, provider="local"),
+        on_progress=stages.append,
+    )
+
+    assert result.source == "local_rules"
+    assert result.degraded_reason is None
+    assert result.retryable is False
+    assert result.answer
+    assert stages[-1] == "completed"

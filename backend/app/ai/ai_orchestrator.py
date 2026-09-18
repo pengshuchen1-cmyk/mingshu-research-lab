@@ -345,6 +345,13 @@ def answer_question(
         )
 
     selected_config = config or AIConfig.from_environment()
+    if selected_config.provider == "local":
+        emit("completed")
+        return _answer_result(
+            local,
+            source="local_rules",
+            interpretation_receipt=resolved.interpretation_receipt,
+        )
     if selected_config.provider not in {"kimi", "openai"}:
         emit("degraded")
         return _local_result(
